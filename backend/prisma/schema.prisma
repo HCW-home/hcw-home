@@ -7,8 +7,86 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  PATIENT
+  PRACTITIONER
+  ADMIN
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  name              String?
+  role              UserRole
+  phone             String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  patientConsultations    Consultation[]      @relation("PatientConsultations")
+  practitionerConsultations Consultation[]    @relation("PractitionerConsultations")
+  sentReminders     Reminder[]         @relation("SentReminders")
+  receivedReminders Reminder[]         @relation("ReceivedReminders")
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Consultation {
+  id              Int                @id @default(autoincrement())
+  patientId       Int
+  practitionerId  Int
+  scheduledAt     DateTime
+  endedAt         DateTime?
+  status          ConsultationStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  patient         User               @relation("PatientConsultations", fields: [patientId], references: [id])
+  practitioner    User               @relation("PractitionerConsultations", fields: [practitionerId], references: [id])
+  reminders       Reminder[]
+
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([scheduledAt])
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRY
+}
+
+enum ReminderType {
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+model Reminder {
+  id              Int             @id @default(autoincrement())
+  consultationId  Int
+  recipientId     Int
+  senderId        Int
+  type            ReminderType
+  status          ReminderStatus  @default(PENDING)
+  scheduledFor    DateTime
+  sentAt          DateTime?
+  message         String
+  retryCount      Int             @default(0)
+  maxRetries      Int             @default(3)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  consultation    Consultation    @relation(fields: [consultationId], references: [id])
+  recipient       User            @relation("ReceivedReminders", fields: [recipientId], references: [id])
+  sender          User            @relation("SentReminders", fields: [senderId], references: [id])
+
+  @@index([consultationId])
+  @@index([recipientId])
+  @@index([senderId])
+  @@index([scheduledFor])
+  @@index([status])
 }

@@ -1,0 +1,43 @@
+<div class="dashboard-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <button mat-icon-button (click)="toggleMenu()" aria-label="Toggle menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="app-title">HCW Home - Practitioner</span>
+    <span class="spacer"></span>
+    <button mat-icon-button aria-label="User profile">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav [opened]="isMenuOpen" mode="side" class="sidenav">
+      <mat-nav-list>
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+        <a mat-list-item routerLink="/consultations" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>event</mat-icon>
+          <span matListItemTitle>Upcoming Consultations</span>
+        </a>
+        <a mat-list-item routerLink="/history" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>history</mat-icon>
+          <span matListItemTitle>Consultation History</span>
+        </a>
+        <a mat-list-item routerLink="/patients" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle>Patients</span>
+        </a>
+        <a mat-list-item routerLink="/settings" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          <span matListItemTitle>Settings</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="content">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,80 @@
+<div class="welcome-container">
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>account_circle</mat-icon>
+      <mat-card-title>Welcome to HCW Home</mat-card-title>
+      <mat-card-subtitle>Practitioner Dashboard</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>
+        Welcome to your practitioner dashboard. From here, you can manage your consultations,
+        view patient information, and access your consultation history.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="dashboard-cards">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>event</mat-icon>
+        <mat-card-title>Upcoming Consultations</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner diameter="30"></mat-spinner>
+          <p>Loading consultations...</p>
+        </div>
+
+        <div *ngIf="!loading && upcomingConsultations.length > 0; else noConsultations">
+          <div *ngFor="let consultation of upcomingConsultations" class="consultation-item">
+            <div class="consultation-info">
+              <span class="patient-name">{{ consultation.patient?.name || 'Unknown Patient' }}</span>
+              <span class="consultation-time">{{ formatDate(consultation.scheduledAt) }}</span>
+            </div>
+            <button mat-icon-button color="primary" aria-label="Join consultation">
+              <mat-icon>video_call</mat-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noConsultations>
+          <p class="no-data-message">No upcoming consultations scheduled.</p>
+        </ng-template>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" routerLink="/consultations">
+          <mat-icon>visibility</mat-icon>
+          View All
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>history</mat-icon>
+        <mat-card-title>Recent Consultations</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="recentConsultations.length > 0; else noRecentConsultations">
+          <div *ngFor="let consultation of recentConsultations" class="consultation-item">
+            <div class="consultation-info">
+              <span class="patient-name">{{ consultation.patient?.name || 'Unknown Patient' }}</span>
+              <span class="consultation-time">{{ formatDate(consultation.endedAt || consultation.scheduledAt) }}</span>
+            </div>
+            <button mat-icon-button color="primary" [routerLink]="['/consultation', consultation.id]" matTooltip="View Details">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noRecentConsultations>
+          <p class="no-data-message">No recent consultations to display.</p>
+        </ng-template>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" routerLink="/history">
+          <mat-icon>visibility</mat-icon>
+          View History
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,127 @@
+<div class="consultation-history-container">
+  <mat-card class="history-card">
+    <mat-card-header>
+      <mat-card-title>Consultation History</mat-card-title>
+      <mat-card-subtitle>View your past consultations</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Filter Form -->
+      <form [formGroup]="filterForm" class="filter-form">
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Patient Name</mat-label>
+            <input matInput formControlName="patientName" placeholder="Search by patient name">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+
+          <div class="filter-actions">
+            <button mat-raised-button color="primary" (click)="applyFilter()">
+              <mat-icon>filter_list</mat-icon>
+              Filter
+            </button>
+            <button mat-button (click)="resetFilter()">
+              <mat-icon>clear</mat-icon>
+              Reset
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading consultations...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+
+      <!-- No Results Message -->
+      <div *ngIf="!loading && !error && consultations.length === 0" class="no-results-container">
+        <mat-icon>info</mat-icon>
+        <p>No consultations found. Try adjusting your filters.</p>
+      </div>
+
+      <!-- Results Table -->
+      <div *ngIf="!loading && !error && consultations.length > 0" class="table-container">
+        <table mat-table [dataSource]="filteredConsultations" matSort (matSortChange)="sortData($event)" class="mat-elevation-z2">
+          
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+            <td mat-cell *matCellDef="let consultation">{{ consultation.id }}</td>
+          </ng-container>
+
+          <!-- Patient Name Column -->
+          <ng-container matColumnDef="patientName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient</th>
+            <td mat-cell *matCellDef="let consultation">{{ consultation.patient?.name || 'Unknown' }}</td>
+          </ng-container>
+
+          <!-- Scheduled At Column -->
+          <ng-container matColumnDef="scheduledAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Scheduled</th>
+            <td mat-cell *matCellDef="let consultation">{{ formatDate(consultation.scheduledAt) }}</td>
+          </ng-container>
+
+          <!-- Ended At Column -->
+          <ng-container matColumnDef="endedAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Ended</th>
+            <td mat-cell *matCellDef="let consultation">{{ formatDate(consultation.endedAt) }}</td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+            <td mat-cell *matCellDef="let consultation">
+              <span class="status-chip" [ngClass]="getStatusClass(consultation.status)">
+                {{ consultation.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let consultation">
+              <button mat-icon-button color="primary" (click)="viewDetails(consultation)" matTooltip="View Details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Pagination -->
+        <mat-paginator 
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 25, 50]"
+          [pageIndex]="pageIndex"
+          (page)="handlePageEvent($event)"
+          aria-label="Select page">
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

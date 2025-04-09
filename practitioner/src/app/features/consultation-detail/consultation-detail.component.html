@@ -1,0 +1,98 @@
+<div class="consultation-detail-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading consultation details...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to History
+    </button>
+  </div>
+
+  <!-- Consultation Details -->
+  <mat-card *ngIf="!loading && !error && consultation" class="detail-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>event_note</mat-icon>
+      <mat-card-title>Consultation Details</mat-card-title>
+      <mat-card-subtitle>ID: {{ consultation.id }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="detail-section">
+        <h3>Status</h3>
+        <span class="status-chip" [ngClass]="getStatusClass(consultation.status)">
+          {{ consultation.status }}
+        </span>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="detail-section">
+        <h3>Patient Information</h3>
+        <div class="detail-row">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">{{ consultation.patient?.name || 'Unknown' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Email:</span>
+          <span class="detail-value">{{ consultation.patient?.email || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="detail-section">
+        <h3>Schedule Information</h3>
+        <div class="detail-row">
+          <span class="detail-label">Scheduled At:</span>
+          <span class="detail-value">{{ formatDate(consultation.scheduledAt) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Ended At:</span>
+          <span class="detail-value">{{ formatDate(consultation.endedAt) }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="detail-section">
+        <h3>Reminders</h3>
+        <div class="reminder-info">
+          <mat-icon class="reminder-icon">notifications_active</mat-icon>
+          <div class="reminder-text">
+            <p>Automated reminders are sent to both you and the patient:</p>
+            <ul>
+              <li>24 hours before the consultation</li>
+              <li>1 hour before the consultation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="detail-section">
+        <h3>Notes</h3>
+        <p *ngIf="consultation.notes; else noNotes" class="consultation-notes">
+          {{ consultation.notes }}
+        </p>
+        <ng-template #noNotes>
+          <p class="no-data-message">No notes available for this consultation.</p>
+        </ng-template>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button color="primary" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

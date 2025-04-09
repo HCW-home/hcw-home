@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="dashboard-container">
+    <ion-card class="welcome-card">
+      <ion-card-header>
+        <ion-card-title>Welcome to HCW Home</ion-card-title>
+        <ion-card-subtitle>Your healthcare, at home</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Manage your consultations and book new appointments from your dashboard.</p>
+        <ion-button expand="block" (click)="bookConsultation()">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Book Consultation
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Active Consultations -->
+    <div *ngIf="activeConsultations.length > 0" class="section">
+      <h2 class="section-title">Active Consultations</h2>
+      <ion-card *ngFor="let consultation of activeConsultations" class="consultation-card active">
+        <ion-card-header>
+          <ion-card-subtitle>
+            <ion-badge color="success">ACTIVE NOW</ion-badge>
+          </ion-card-subtitle>
+          <ion-card-title>
+            Consultation with 
+            <span *ngIf="consultation.practitioner">Dr. {{ consultation.practitioner.name }}</span>
+            <span *ngIf="!consultation.practitioner">Healthcare Provider</span>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p><ion-icon name="calendar-outline"></ion-icon> {{ formatDate(consultation.scheduledStart) }}</p>
+          <ion-button expand="block" color="success" (click)="joinConsultation(consultation)">
+            <ion-icon name="videocam-outline" slot="start"></ion-icon>
+            Join Now
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Upcoming Consultations -->
+    <div *ngIf="upcomingConsultations.length > 0" class="section">
+      <h2 class="section-title">Upcoming Consultations</h2>
+      <ion-card *ngFor="let consultation of upcomingConsultations" class="consultation-card">
+        <ion-card-header>
+          <ion-card-subtitle>
+            <ion-badge [color]="getStatusColor(consultation.status)">{{ consultation.status }}</ion-badge>
+          </ion-card-subtitle>
+          <ion-card-title>
+            Consultation with 
+            <span *ngIf="consultation.practitioner">Dr. {{ consultation.practitioner.name }}</span>
+            <span *ngIf="!consultation.practitioner">Healthcare Provider</span>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p><ion-icon name="calendar-outline"></ion-icon> {{ formatDate(consultation.scheduledStart) }}</p>
+          <ion-button expand="block" fill="outline" (click)="viewConsultationDetails(consultation)">
+            View Details
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Past Consultations -->
+    <div *ngIf="pastConsultations.length > 0" class="section">
+      <h2 class="section-title">Past Consultations</h2>
+      <ion-card *ngFor="let consultation of pastConsultations.slice(0, 3)" class="consultation-card past">
+        <ion-card-header>
+          <ion-card-subtitle>
+            <ion-badge [color]="getStatusColor(consultation.status)">{{ consultation.status }}</ion-badge>
+          </ion-card-subtitle>
+          <ion-card-title>
+            Consultation with 
+            <span *ngIf="consultation.practitioner">Dr. {{ consultation.practitioner.name }}</span>
+            <span *ngIf="!consultation.practitioner">Healthcare Provider</span>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p><ion-icon name="calendar-outline"></ion-icon> {{ formatDate(consultation.scheduledStart) }}</p>
+          <ion-button expand="block" fill="outline" (click)="viewConsultationDetails(consultation)">
+            View Details
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-button *ngIf="pastConsultations.length > 3" expand="block" fill="clear" routerLink="/tabs/history">
+        View All Past Consultations
+      </ion-button>
+    </div>
+
+    <!-- No Consultations -->
+    <div *ngIf="!isLoading && upcomingConsultations.length === 0 && activeConsultations.length === 0 && pastConsultations.length === 0" class="empty-state">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <h3>No Consultations Yet</h3>
+      <p>Book your first consultation to get started.</p>
+      <ion-button expand="block" (click)="bookConsultation()">
+        Book Consultation
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

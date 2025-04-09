@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleEditMode()" *ngIf="!isEditing">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="toggleEditMode()" *ngIf="isEditing">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="avatar">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </div>
+      <h2 *ngIf="user">{{ user.name || 'Patient' }}</h2>
+      <p *ngIf="user">{{ user.email }}</p>
+    </div>
+
+    <div class="profile-content">
+      <form [formGroup]="profileForm">
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label position="stacked">Full Name</ion-label>
+            <ion-input formControlName="name" [readonly]="!isEditing"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input formControlName="email" readonly></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Phone Number</ion-label>
+            <ion-input formControlName="phoneNumber" [readonly]="!isEditing" type="tel"></ion-input>
+          </ion-item>
+          <div class="validation-error" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+            <span *ngIf="profileForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid 10-digit phone number</span>
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Date of Birth</ion-label>
+            <ion-datetime formControlName="dateOfBirth" [readonly]="!isEditing" displayFormat="MMM DD, YYYY"></ion-datetime>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Address</ion-label>
+            <ion-textarea formControlName="address" [readonly]="!isEditing" rows="3"></ion-textarea>
+          </ion-item>
+        </ion-list>
+
+        <div class="save-button" *ngIf="isEditing">
+          <ion-button expand="block" (click)="saveProfile()" [disabled]="profileForm.invalid || isLoading">
+            <ion-spinner *ngIf="isLoading" name="dots"></ion-spinner>
+            <span *ngIf="!isLoading">Save Profile</span>
+          </ion-button>
+        </div>
+      </form>
+
+      <div class="logout-button">
+        <ion-button expand="block" fill="outline" color="danger" (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Logout
+        </ion-button>
+      </div>
+
+      <div class="app-info">
+        <p>HCW Home</p>
+        <p>Version 1.0.0</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

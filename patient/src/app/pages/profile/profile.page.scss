@@ -1,0 +1,76 @@
+.profile-container {
+  height: 100%;
+}
+
+.profile-header {
+  background: linear-gradient(to right, var(--ion-color-primary), var(--ion-color-primary-shade));
+  padding: 32px 16px;
+  text-align: center;
+  color: white;
+  
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    ion-icon {
+      font-size: 64px;
+      color: white;
+    }
+  }
+  
+  h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0;
+    opacity: 0.8;
+  }
+}
+
+.profile-content {
+  padding: 16px;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  
+  ion-label {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.validation-error {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin: 5px 0 0 16px;
+}
+
+.save-button {
+  margin: 24px 0;
+}
+
+.logout-button {
+  margin: 32px 0;
+}
+
+.app-info {
+  text-align: center;
+  margin-top: 32px;
+  color: var(--ion-color-medium);
+  
+  p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+}

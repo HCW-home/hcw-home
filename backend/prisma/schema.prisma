@@ -7,8 +7,108 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  PATIENT
+  PRACTITIONER
+  ADMIN
+}
+
+enum ConsultationStatus {
+  REQUESTED
+  SCHEDULED
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  name              String?
+  role              UserRole           @default(PATIENT)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  patient           Patient?
+  practitioner      Practitioner?
+  consultationsAsPatient     Consultation[]     @relation("PatientConsultations")
+  consultationsAsPractitioner Consultation[]     @relation("PractitionerConsultations")
+}
+
+model Patient {
+  id                Int                @id @default(autoincrement())
+  userId            Int                @unique
+  user              User               @relation(fields: [userId], references: [id])
+  phoneNumber       String?
+  dateOfBirth       DateTime?
+  address           String?
+  bookingRequests   BookingRequest[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Practitioner {
+  id                Int                @id @default(autoincrement())
+  userId            Int                @unique
+  user              User               @relation(fields: [userId], references: [id])
+  specialization    String?
+  bio               String?
+  availability      Availability[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Availability {
+  id                Int                @id @default(autoincrement())
+  practitionerId    Int
+  practitioner      Practitioner       @relation(fields: [practitionerId], references: [id])
+  dayOfWeek         Int                // 0-6 for Sunday-Saturday
+  startTime         String             // Format: HH:MM in 24-hour format
+  endTime           String             // Format: HH:MM in 24-hour format
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([practitionerId, dayOfWeek, startTime, endTime])
+}
+
+model Consultation {
+  id                Int                @id @default(autoincrement())
+  patientId         Int
+  patient           User               @relation("PatientConsultations", fields: [patientId], references: [id])
+  practitionerId    Int?
+  practitioner      User?              @relation("PractitionerConsultations", fields: [practitionerId], references: [id])
+  scheduledStart    DateTime
+  scheduledEnd      DateTime
+  actualStart       DateTime?
+  actualEnd         DateTime?
+  status            ConsultationStatus @default(REQUESTED)
+  notes             String?
+  joinLink          String?            // Magic link for joining the consultation
+  feedback          Feedback?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model BookingRequest {
+  id                Int                @id @default(autoincrement())
+  patientId         Int
+  patient           Patient            @relation(fields: [patientId], references: [id])
+  preferredDate     DateTime[]
+  notes             String?
+  status            String             @default("PENDING") // PENDING, APPROVED, REJECTED
+  consultation      Consultation?      @relation(fields: [consultationId], references: [id])
+  consultationId    Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Feedback {
+  id                Int                @id @default(autoincrement())
+  consultationId    Int                @unique
+  consultation      Consultation       @relation(fields: [consultationId], references: [id])
+  rating            Int                // 1-5 star rating
+  comments          String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }

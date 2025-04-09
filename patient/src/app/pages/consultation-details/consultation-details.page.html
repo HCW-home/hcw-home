@@ -1,0 +1,158 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Consultation Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="details-container" *ngIf="consultation">
+    <ion-card class="consultation-card">
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-badge [color]="getStatusColor(consultation.status)">{{ consultation.status }}</ion-badge>
+        </ion-card-subtitle>
+        <ion-card-title>
+          Consultation with 
+          <span *ngIf="consultation.practitioner">Dr. {{ consultation.practitioner.name }}</span>
+          <span *ngIf="!consultation.practitioner">Healthcare Provider</span>
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="detail-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <div>
+            <div class="label">Scheduled Date & Time</div>
+            <div class="value">{{ formatDate(consultation.scheduledStart) }}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item" *ngIf="consultation.actualStart">
+          <ion-icon name="time-outline"></ion-icon>
+          <div>
+            <div class="label">Actual Start Time</div>
+            <div class="value">{{ formatDate(consultation.actualStart) }}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item" *ngIf="consultation.actualEnd">
+          <ion-icon name="time-outline"></ion-icon>
+          <div>
+            <div class="label">Actual End Time</div>
+            <div class="value">{{ formatDate(consultation.actualEnd) }}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item" *ngIf="consultation.notes">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <div>
+            <div class="label">Notes</div>
+            <div class="value">{{ consultation.notes }}</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <!-- Join Button (for active or upcoming consultations) -->
+      <ion-button expand="block" color="success" *ngIf="['SCHEDULED', 'CONFIRMED', 'ACTIVE'].includes(consultation.status)" (click)="joinConsultation()">
+        <ion-icon name="videocam-outline" slot="start"></ion-icon>
+        {{ consultation.status === 'ACTIVE' ? 'Join Now' : 'Join Consultation' }}
+      </ion-button>
+      
+      <!-- Cancel Button (for upcoming consultations) -->
+      <ion-button expand="block" color="danger" fill="outline" *ngIf="['SCHEDULED', 'CONFIRMED'].includes(consultation.status)" (click)="cancelConsultation()">
+        <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+        Cancel Consultation
+      </ion-button>
+      
+      <!-- Feedback Button (for completed consultations without feedback) -->
+      <ion-button expand="block" color="tertiary" *ngIf="consultation.status === 'COMPLETED' && !hasFeedback" (click)="toggleFeedbackForm()">
+        <ion-icon name="star-outline" slot="start"></ion-icon>
+        Provide Feedback
+      </ion-button>
+    </div>
+
+    <!-- Feedback Form -->
+    <ion-card *ngIf="showFeedbackForm" class="feedback-card">
+      <ion-card-header>
+        <ion-card-title>Your Feedback</ion-card-title>
+        <ion-card-subtitle>Please rate your consultation experience</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
+          <div class="rating-container">
+            <div class="rating-label">Rating:</div>
+            <div class="star-rating">
+              <ion-icon 
+                *ngFor="let star of [1, 2, 3, 4, 5]" 
+                [name]="feedbackForm.get('rating')?.value >= star ? 'star' : 'star-outline'"
+                (click)="feedbackForm.get('rating')?.setValue(star)">
+              </ion-icon>
+            </div>
+          </div>
+          
+          <ion-item>
+            <ion-label position="stacked">Comments (Optional)</ion-label>
+            <ion-textarea rows="4" formControlName="comments" placeholder="Share your experience..."></ion-textarea>
+          </ion-item>
+          
+          <div class="feedback-buttons">
+            <ion-button fill="outline" type="button" (click)="toggleFeedbackForm()">
+              Cancel
+            </ion-button>
+            <ion-button type="submit" [disabled]="feedbackForm.invalid">
+              Submit Feedback
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Existing Feedback -->
+    <ion-card *ngIf="consultation.feedback" class="feedback-card">
+      <ion-card-header>
+        <ion-card-title>Your Feedback</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="rating-container">
+          <div class="rating-label">Rating:</div>
+          <div class="star-rating">
+            <ion-icon 
+              *ngFor="let star of [1, 2, 3, 4, 5]" 
+              [name]="consultation.feedback.rating >= star ? 'star' : 'star-outline'">
+            </ion-icon>
+          </div>
+        </div>
+        
+        <div *ngIf="consultation.feedback.comments" class="feedback-comments">
+          <div class="label">Comments:</div>
+          <div class="value">{{ consultation.feedback.comments }}</div>
+        </div>
+        
+        <div class="feedback-date">
+          <small>Submitted on {{ formatDate(consultation.feedback.createdAt) }}</small>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="circles"></ion-spinner>
+    <p>Loading consultation details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <h3>{{ error }}</h3>
+    <ion-button (click)="loadConsultation()">Try Again</ion-button>
+  </div>
+</ion-content>

@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="HCW Home Logo" class="logo">
+      <h1>HCW Home</h1>
+      <p>Your healthcare, at home</p>
+    </div>
+
+    <div *ngIf="!emailSent">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input type="email" formControlName="email"></ion-input>
+        </ion-item>
+        <div class="validation-error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+        </div>
+
+        <ion-button expand="block" type="submit" [disabled]="loginForm.invalid || isSubmitting" class="ion-margin-top">
+          <ion-spinner name="dots" *ngIf="isSubmitting"></ion-spinner>
+          <span *ngIf="!isSubmitting">Send Login Link</span>
+        </ion-button>
+      </form>
+
+      <div class="register-link">
+        <p>Don't have an account? <a (click)="goToRegister()">Register</a></p>
+      </div>
+    </div>
+
+    <div *ngIf="emailSent" class="email-sent-container">
+      <ion-icon name="mail-outline" class="email-icon"></ion-icon>
+      <h2>Check your email</h2>
+      <p>We've sent a login link to your email address. Please check your inbox and click the link to log in.</p>
+      <p class="email-note">The link will expire in 15 minutes.</p>
+      
+      <ion-button expand="block" (click)="emailSent = false" class="ion-margin-top">
+        Back to Login
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,130 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Book Consultation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="booking-container" *ngIf="!bookingSuccess">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress" [style.width]="(currentStep / totalSteps * 100) + '%'"></div>
+      </div>
+      <div class="step-indicators">
+        <div class="step" [class.active]="currentStep >= 1">1</div>
+        <div class="step" [class.active]="currentStep >= 2">2</div>
+        <div class="step" [class.active]="currentStep >= 3">3</div>
+      </div>
+      <div class="step-labels">
+        <div class="step-label">Schedule</div>
+        <div class="step-label">Contact</div>
+        <div class="step-label">Details</div>
+      </div>
+    </div>
+
+    <form [formGroup]="bookingForm">
+      <!-- Step 1: Date and Time Selection -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h2>Select Preferred Date & Time</h2>
+        <p>Choose your preferred consultation dates and times. You can select multiple options.</p>
+
+        <ion-item>
+          <ion-label position="stacked">Date</ion-label>
+          <ion-datetime displayFormat="MMM DD, YYYY" min="{{ (new Date()).toISOString() }}" formControlName="preferredDate"></ion-datetime>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Time</ion-label>
+          <ion-datetime displayFormat="HH:mm" pickerFormat="HH:mm" formControlName="preferredTime"></ion-datetime>
+        </ion-item>
+
+        <ion-button expand="block" fill="outline" (click)="nextStep()" class="add-time-button">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Add This Time Slot
+        </ion-button>
+
+        <div class="selected-times" *ngIf="selectedDates.length > 0">
+          <h3>Selected Time Slots:</h3>
+          <ion-list>
+            <ion-item *ngFor="let date of selectedDates; let i = index">
+              <ion-label>{{ formatDate(date) }}</ion-label>
+              <ion-button slot="end" fill="clear" color="danger" (click)="removeDate(i)">
+                <ion-icon name="close-circle-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </div>
+      </div>
+
+      <!-- Step 2: Contact Information -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h2>Contact Information</h2>
+        <p>Please provide your contact details so we can reach you regarding your consultation.</p>
+
+        <ion-item>
+          <ion-label position="stacked">Phone Number</ion-label>
+          <ion-input type="tel" formControlName="phoneNumber" placeholder="Enter your phone number"></ion-input>
+        </ion-item>
+        <div class="validation-error" *ngIf="bookingForm.get('phoneNumber')?.invalid && bookingForm.get('phoneNumber')?.touched">
+          <span *ngIf="bookingForm.get('phoneNumber')?.errors?.['required']">Phone number is required</span>
+          <span *ngIf="bookingForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid 10-digit phone number</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Additional Information -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h2>Additional Information</h2>
+        <p>Please provide any relevant information about your health concerns.</p>
+
+        <ion-item>
+          <ion-label position="stacked">Symptoms (if any)</ion-label>
+          <ion-textarea rows="3" formControlName="symptoms" placeholder="Describe your symptoms"></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Medical History</ion-label>
+          <ion-textarea rows="3" formControlName="medicalHistory" placeholder="Any relevant medical history"></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Additional Notes</ion-label>
+          <ion-textarea rows="3" formControlName="notes" placeholder="Any other information you'd like to share"></ion-textarea>
+        </ion-item>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="navigation-buttons">
+        <ion-button *ngIf="currentStep > 1" fill="outline" (click)="prevStep()">
+          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+          Back
+        </ion-button>
+        
+        <ion-button *ngIf="currentStep < totalSteps" (click)="nextStep()">
+          Next
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+        
+        <ion-button *ngIf="currentStep === totalSteps" color="success" (click)="submitBooking()" [disabled]="isSubmitting">
+          <ion-spinner *ngIf="isSubmitting" name="dots"></ion-spinner>
+          <span *ngIf="!isSubmitting">Submit Request</span>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Success Screen -->
+  <div class="success-container" *ngIf="bookingSuccess">
+    <ion-icon name="checkmark-circle-outline" class="success-icon"></ion-icon>
+    <h2>Booking Request Submitted!</h2>
+    <p>Thank you for your booking request. We will review your preferred time slots and confirm your consultation soon.</p>
+    <p class="note">You will receive a notification once your consultation is confirmed.</p>
+    
+    <ion-button expand="block" (click)="goToDashboard()">
+      Return to Dashboard
+    </ion-button>
+  </div>
+</ion-content>

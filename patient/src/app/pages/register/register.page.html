@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Register</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="register-container">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="HCW Home Logo" class="logo">
+      <h1>HCW Home</h1>
+      <p>Create your account</p>
+    </div>
+
+    <div *ngIf="!registrationSuccess">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <ion-item>
+          <ion-label position="floating">Full Name</ion-label>
+          <ion-input type="text" formControlName="name"></ion-input>
+        </ion-item>
+        <div class="validation-error" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+          <span *ngIf="registerForm.get('name')?.errors?.['required']">Name is required</span>
+        </div>
+
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input type="email" formControlName="email"></ion-input>
+        </ion-item>
+        <div class="validation-error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+        </div>
+
+        <ion-button expand="block" type="submit" [disabled]="registerForm.invalid || isSubmitting" class="ion-margin-top">
+          <ion-spinner name="dots" *ngIf="isSubmitting"></ion-spinner>
+          <span *ngIf="!isSubmitting">Register</span>
+        </ion-button>
+      </form>
+
+      <div class="login-link">
+        <p>Already have an account? <a (click)="goToLogin()">Login</a></p>
+      </div>
+    </div>
+
+    <div *ngIf="registrationSuccess" class="success-container">
+      <ion-icon name="checkmark-circle-outline" class="success-icon"></ion-icon>
+      <h2>Registration Successful!</h2>
+      <p>We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.</p>
+      
+      <ion-button expand="block" (click)="goToLogin()" class="ion-margin-top">
+        Go to Login
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,126 @@
+.booking-container {
+  padding: 16px;
+}
+
+.progress-container {
+  margin-bottom: 24px;
+  
+  .progress-bar {
+    height: 8px;
+    background-color: var(--ion-color-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    
+    .progress {
+      height: 100%;
+      background-color: var(--ion-color-primary);
+      transition: width 0.3s ease;
+    }
+  }
+  
+  .step-indicators {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    
+    .step {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--ion-color-light);
+      color: var(--ion-color-medium);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      
+      &.active {
+        background-color: var(--ion-color-primary);
+        color: white;
+      }
+    }
+  }
+  
+  .step-labels {
+    display: flex;
+    justify-content: space-between;
+    
+    .step-label {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      text-align: center;
+      width: 33.33%;
+    }
+  }
+}
+
+.step-content {
+  margin-bottom: 24px;
+  
+  h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+}
+
+.add-time-button {
+  margin-top: 16px;
+}
+
+.selected-times {
+  margin-top: 24px;
+  
+  h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.validation-error {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin: 5px 0 0 16px;
+}
+
+.success-container {
+  padding: 32px 16px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .success-icon {
+    font-size: 80px;
+    color: var(--ion-color-success);
+    margin-bottom: 24px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+  }
+  
+  .note {
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+}

@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Consultation History</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="history-container">
+    <!-- Past Consultations -->
+    <div *ngIf="pastConsultations.length > 0">
+      <ion-list>
+        <ion-item-group>
+          <ion-item-divider sticky>
+            <ion-label>Past Consultations</ion-label>
+          </ion-item-divider>
+
+          <ion-item *ngFor="let consultation of pastConsultations" button detail (click)="viewConsultationDetails(consultation)">
+            <ion-avatar slot="start">
+              <ion-icon name="person-circle-outline" class="avatar-icon"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+              <h2>
+                <span *ngIf="consultation.practitioner">Dr. {{ consultation.practitioner.name }}</span>
+                <span *ngIf="!consultation.practitioner">Healthcare Provider</span>
+              </h2>
+              <p>{{ formatDate(consultation.scheduledStart) }}</p>
+              <p *ngIf="consultation.notes">{{ consultation.notes | slice:0:50 }}{{ consultation.notes.length > 50 ? '...' : '' }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="getStatusColor(consultation.status)">{{ consultation.status }}</ion-badge>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    </div>
+
+    <!-- No Consultations -->
+    <div *ngIf="!isLoading && pastConsultations.length === 0" class="empty-state">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <h3>No Past Consultations</h3>
+      <p>Your consultation history will appear here.</p>
+      <ion-button expand="block" routerLink="/tabs/booking">
+        Book Your First Consultation
+      </ion-button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-spinner name="circles"></ion-spinner>
+      <p>Loading consultation history...</p>
+    </div>
+  </div>
+</ion-content>

@@ -7,8 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id               Int         @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  role             UserRole    @default(USER)
+  password         String
+  temporaryAccount Boolean     @default(false)
+  phoneNumber      String?      
+  country          String?      
+  sex              String?      
+  status           UserStatus  @default(ACTIVE)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 }

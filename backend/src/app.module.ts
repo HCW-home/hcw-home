@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { UserModule } from './user/user.module';
+import { PrismaModule } from 'prisma/prisma.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { HealthModule } from './health/health.module';
     }),
     DatabaseModule,
     HealthModule,
+    UserModule,
+    PrismaModule
   ],
   controllers: [AppController],
   providers: [AppService],

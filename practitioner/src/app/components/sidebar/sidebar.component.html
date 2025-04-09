@@ -1,0 +1,21 @@
+<div class="sidebar">
+    <div class="sidebar-item home">
+      <a routerLink="/">
+        <div class="icon"></div>
+        <div class="label">HOME</div>
+      </a>
+    </div>
+    
+    <ng-container *ngFor="let item of sidebarItems">
+      <div class="sidebar-item" [routerLinkActive]="'active'">
+        <a [routerLink]="item.route">
+          <div class="icon">
+            <i class="fas {{ item.icon }}"></i>
+          </div>
+          <div class="label">{{ item.label }}</div>
+          <div class="badge" *ngIf="item.badge">{{ item.badge }}</div>
+        </a>
+      </div>
+    </ng-container>
+  </div>
+  

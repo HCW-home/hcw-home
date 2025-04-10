@@ -18,6 +18,9 @@ model User {
   country          String
   sex              Sex           // Enum: male, female, other
   status           Status         @default(not_approved) // Enum: approved, not_approved
+  // Relations
+  patientConsultations  Participant[] @relation("PatientConsultations")
+  practitionerConsultations Participant[] @relation("PractitionerConsultations")
 }
 
 enum Role {
@@ -47,17 +50,51 @@ enum MessageService {
   MANUALLY
 }
 
+enum ConsultationStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipantRole {
+  PATIENT
+  PRACTITIONER
+}
+
 model Consultation {
   id                 Int             @id @default(autoincrement())
+  uuid               String          @unique @default(uuid())
+  status             ConsultationStatus @default(PENDING)
+  language           String          @default("en")
+  messageService     MessageService
   scheduledDate      DateTime?
-  createdAt          DateTime?
+  createdAt          DateTime        @default(now())
   startedAt          DateTime?
   closedAt           DateTime?
-  createdBy          Int?
-  groupId            Int?
-  owner              Int?
-  messageService     MessageService?
-  whatsappTemplateId Int?
+  magicLink          String?
+  introMessage       String?
+  templateId         String?         // Reference to Whatsapp_Template
+  // Relations
+  participants       Participant[]
+  patientId          Int?            // For direct reference lookup
+  practitionerId     Int?            // For direct reference lookup
+}
+
+model Participant {
+  id             Int              @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  role           ParticipantRole
+  name           String
+  email          String?
+  phone          String?
+  // Relations
+  consultation   Consultation     @relation(fields: [consultationId], references: [id])
+  patient        User?            @relation("PatientConsultations", fields: [userId], references: [id], map: "Participant_patientId_fkey")
+  practitioner   User?            @relation("PractitionerConsultations", fields: [userId], references: [id], map: "Participant_practitionerId_fkey")
+
+  @@unique([consultationId, userId, role])
 }
 
 model Whatsapp_Template {

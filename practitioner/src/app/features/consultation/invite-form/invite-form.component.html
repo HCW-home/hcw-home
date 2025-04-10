@@ -1,0 +1,149 @@
+<div class="invite-form-container">
+  <h2>Invite Patient to Consultation</h2>
+  
+  <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()">
+    <!-- Patient Information -->
+    <div class="form-section">
+      <h3>Patient Information</h3>
+      
+      <div class="form-field">
+        <label for="patientName">Patient Name *</label>
+        <input 
+          id="patientName" 
+          type="text" 
+          formControlName="patientName" 
+          placeholder="Enter patient name"
+        >
+        <div class="error-message" *ngIf="inviteForm.get('patientName')?.invalid && inviteForm.get('patientName')?.touched">
+          Patient name is required
+        </div>
+      </div>
+      
+      <!-- Email (shown/required for email method) -->
+      <div class="form-field" [ngClass]="{'required': inviteForm.get('messageService')?.value === 'EMAIL'}">
+        <label for="patientEmail">Patient Email</label>
+        <input 
+          id="patientEmail" 
+          type="email" 
+          formControlName="patientEmail" 
+          placeholder="Enter patient email"
+        >
+        <div class="error-message" *ngIf="inviteForm.get('patientEmail')?.invalid && inviteForm.get('patientEmail')?.touched">
+          <span *ngIf="inviteForm.get('patientEmail')?.errors?.['required']">Email is required</span>
+          <span *ngIf="inviteForm.get('patientEmail')?.errors?.['email']">Enter a valid email</span>
+        </div>
+      </div>
+      
+      <!-- Phone (shown/required for SMS/WhatsApp methods) -->
+      <div class="form-field" [ngClass]="{'required': inviteForm.get('messageService')?.value === 'SMS' || inviteForm.get('messageService')?.value === 'WHATSAPP'}">
+        <label for="patientPhone">Patient Phone</label>
+        <input 
+          id="patientPhone" 
+          type="tel" 
+          formControlName="patientPhone" 
+          placeholder="Enter patient phone number"
+        >
+        <div class="error-message" *ngIf="inviteForm.get('patientPhone')?.invalid && inviteForm.get('patientPhone')?.touched">
+          Phone number is required
+        </div>
+      </div>
+    </div>
+    
+    <!-- Consultation Settings -->
+    <div class="form-section">
+      <h3>Consultation Settings</h3>
+      
+      <div class="form-field">
+        <label for="language">Language *</label>
+        <select id="language" formControlName="language">
+          <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.name }}</option>
+        </select>
+      </div>
+      
+      <div class="form-field">
+        <label for="messageService">Delivery Method *</label>
+        <select id="messageService" formControlName="messageService">
+          <option *ngFor="let type of messageTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      
+      <!-- WhatsApp template selector (only visible when WhatsApp is selected) -->
+      <div class="form-field" *ngIf="inviteForm.get('messageService')?.value === 'WHATSAPP'">
+        <label for="templateId">WhatsApp Template *</label>
+        <select id="templateId" formControlName="templateId">
+          <option value="">-- Select a template --</option>
+          <option *ngFor="let template of whatsAppTemplates" [value]="template.id">
+            {{ template.name }}
+          </option>
+        </select>
+        <div class="error-message" *ngIf="inviteForm.get('templateId')?.invalid && inviteForm.get('templateId')?.touched">
+          Template is required for WhatsApp messages
+        </div>
+      </div>
+      
+      <div class="form-field">
+        <label for="introMessage">Intro Message (Optional)</label>
+        <textarea 
+          id="introMessage" 
+          formControlName="introMessage" 
+          placeholder="Enter an optional introduction message"
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Sending Invite...' : 'Send Invite' }}
+      </button>
+    </div>
+    
+    <!-- Success message -->
+    <div class="success-message" *ngIf="submissionSuccess">
+      <p>Invitation sent successfully!</p>
+      
+      <!-- Remove duplicate magic link section inside the form -->
+    </div>
+    
+    <!-- Error message -->
+    <div class="error-alert" *ngIf="submissionError">
+      <p>{{ submissionError }}</p>
+    </div>
+  </form>
+</div>
+
+<!-- Improved success message section below the form -->
+<div *ngIf="submissionSuccess" class="success-message mt-4 p-4 border rounded">
+  <div class="alert alert-success">
+    <h4>Consultation created successfully!</h4>
+    <p>The consultation has been created and the patient will be notified.</p>
+  </div>
+  
+  <!-- Enhanced magic link section with better styling -->
+  <div *ngIf="generatedMagicLink" class="magic-link-container mt-3 p-3 border rounded bg-light">
+    <h5>Magic Link for Patient</h5>
+    <p>Share this link with your patient to join the consultation:</p>
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" [value]="generatedMagicLink" readonly #magicLinkInput>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" (click)="copyToClipboard(generatedMagicLink)">
+          Copy
+        </button>
+      </div>
+    </div>
+    <div *ngIf="linkCopied" class="text-success small">
+      <i class="fas fa-check"></i> Link copied to clipboard!
+    </div>
+    <div class="mt-2">
+      <button class="btn btn-primary btn-sm" (click)="resetForm()">Create Another Consultation</button>
+    </div>
+  </div>
+</div>
+
+<!-- Error message section -->
+<div *ngIf="submissionError" class="error-message mt-4">
+  <div class="alert alert-danger">
+    {{ submissionError }}
+  </div>
+</div>

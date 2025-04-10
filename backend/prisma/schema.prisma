@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+
+model User {
+  id               Int      @id @default(autoincrement())
+  // OIDC fields
+  sub              String?  @unique 
+  email            String?  @unique 
+  provider         String?  
+  
+ 
+  role             Role     @default(Patient)
+  firstName        String  
+  lastName         String  
+  password         String?  // Optional for OIDC users
+  temporaryAccount Boolean 
+  phoneNumber      String  
+  country          String  
+  sex              Sex
+  status           Status   @default(not_approved)
+
+  
+  ownedConsultations    Consultation[] @relation("ConsultationOwner")
+  createdConsultations  Consultation[] @relation("ConsultationCreator")
+  participantIn         Participant[]
+ 
+  languages             User_Language[]
+  specialities          User_Speciality[]
+  messages              Message[]
+}
+
+
+
+model User_Language {
+  userId     Int
+  languageId Int
+
+ 
+  user       User     @relation(fields: [userId], references: [id])
+  language   Language @relation(fields: [languageId], references: [id])
+
+  @@id([userId, languageId])
+}
+
+model User_Speciality {
+  userId      Int
+  specialityId Int
+
+  
+  user        User      @relation(fields: [userId], references: [id])
+  speciality  Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([userId, specialityId])
+}
+
+model Consultation {
+  id                Int             @id @default(autoincrement())
+  scheduledDate     DateTime?       
+  createdAt         DateTime       @default(now()) 
+  startedAt         DateTime?       
+  closedAt          DateTime?       
+  createdBy         Int?
+  owner             Int?
+  groupId           Int?
+  messageService    MessageService?
+  whatsappTemplateId Int?
+  status            ConsultationStatus @default(pending)
+
+  
+  ownerUser         User?           @relation("ConsultationOwner", fields: [owner], references: [id])
+  creatorUser       User?           @relation("ConsultationCreator", fields: [createdBy], references: [id])
+ 
+  participants      Participant[]
+  messages          Message[]
+}
+
+model Participant {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  consultationId   Int
+  isInvited        Boolean?  
+  isBeneficiary    Boolean?  
+  token            String?   
+  feedback_rate    Int?
+  feedback_message String?   
+
+  
+  user           User         @relation(fields: [userId], references: [id])
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+
+}
+
+
+model Message {
+  id             Int     @id @default(autoincrement())
+  userId         Int?
+  content        String  
+  consultationId Int?
+
+ 
+  user          User?          @relation(fields: [userId], references: [id])
+  consultation  Consultation?  @relation(fields: [consultationId], references: [id])
+}
+
+
+
+
+
+
+
+model Whatsapp_Template {
+  id              String  @id 
+  key             String  
+  friendlyName    String  
+  body            String 
+  language        String  
+  category        String  
+  contentType     String  
+  variables       Json   
+  actions         Json   
+  approvalStatus  String  
+  createdAt       BigInt
+  updatedAt       BigInt
+}
+
+model SMS_Providers {
+  id         String  @id 
+  createdAt  BigInt
+  updatedAt  BigInt
+  order      Int
+  provider   String  
+  prefix     String  
+  isWhatsapp Boolean 
+  isDisabled Boolean 
+}
+
+model Language {
+  id   Int    @id @default(autoincrement())
+  name String
+  userLanguages User_Language[]
+}
+
+model Speciality {
+  id   Int    @id @default(autoincrement())
+  name String
+  userSpecialities User_Speciality[]
+}
+
+
+enum Role {
+  Patient
+  Practitioner
+  Admin
+}
+
+enum Sex {
+  male
+  female
+  other
+}
+
+enum Status {
+  approved
+  not_approved
+}
+
+enum MessageService {
+  SMS
+  EMAIL
+  WHATSAPP
+  MANUALLY
+}
+
+enum ConsultationStatus {
+  pending
+  waiting
+  active
+  completed
+  cancelled
+}

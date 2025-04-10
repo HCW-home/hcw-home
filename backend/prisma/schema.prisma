@@ -10,6 +10,7 @@ datasource db {
 model User {
   id               Int          @id @default(autoincrement())
   role             Role         @default(Patient) // Enum: Patient, Practitioner, Admin
+  email            String       @unique()
   firstName        String
   lastName         String
   password         String

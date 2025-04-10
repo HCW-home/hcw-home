@@ -8,7 +8,84 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id               Int          @id @default(autoincrement())
+  role             Role         @default(Patient) // Enum: Patient, Practitioner, Admin
+  firstName        String
+  lastName         String
+  password         String
+  temporaryAccount Boolean
+  phoneNumber      String        @unique()
+  country          String
+  sex              Sex           // Enum: male, female, other
+  status           Status         @default(not_approved) // Enum: approved, not_approved
+}
+
+enum Role {
+  Patient
+  Practitioner
+  Admin
+}
+
+enum Sex {
+  male
+  female
+  other
+}
+
+enum Status {
+  approved
+  not_approved
+}
+
+
+//  Add the new models/enums that is necessary for consultation remainders
+
+enum MessageService {
+  SMS
+  EMAIL
+  WHATSAPP
+  MANUALLY
+}
+
+model Consultation {
+  id                 Int             @id @default(autoincrement())
+  scheduledDate      DateTime?
+  createdAt          DateTime?
+  startedAt          DateTime?
+  closedAt           DateTime?
+  createdBy          Int?
+  groupId            Int?
+  owner              Int?
+  messageService     MessageService?
+  whatsappTemplateId Int?
+}
+
+model Whatsapp_Template {
+  id              String  @id
+  key             String
+  friendlyName    String
+  body            String
+  language        String
+  category        String
+  contentType     String
+  variables       Json
+  actions         Json
+  approvalStatus  String
+  createdAt       BigInt
+  updatedAt       BigInt
+  sid             String
+  types           Json
+  url             String
+  rejectionReason String
+}
+
+model SMS_Providers {
+  id         String @id
+  createdAt  BigInt
+  updatedAt  BigInt
+  order      Int
+  provider   String
+  prefix     String
+  isWhatsapp Boolean
+  isDisabled Boolean
 }

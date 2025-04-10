@@ -1095,9 +1095,9 @@
     webpack-node-externals "3.0.0"
 
 "@nestjs/common@^11.0.1":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-11.0.13.tgz#532cd172d5b5fa4e7da471c83e6945e0a1ebd80b"
-  integrity sha512-cXqXJPQTcJIYqT8GtBYqjYY9sklCBqp/rh9z1R40E60gWnsU598YIQWkojSFRI9G7lT/+uF+jqSrg/CMPBk7QQ==
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-11.0.14.tgz#27145dbadb4c73da81d87acb00737495aeb6e30f"
+  integrity sha512-7MKloi0F0xh3S7gSH+reytC3axyhTEn1pJfs8Tp80aXCRYopA5zT/WO4CcmOsqmFt61jnlTFG6CeJ4limz/F7A==
   dependencies:
     uid "2.0.2"
     iterare "1.2.1"
@@ -1113,9 +1113,9 @@
     lodash "4.17.21"
 
 "@nestjs/core@^11.0.1":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-11.0.13.tgz#595fd5315c1ba8e5b7136aec4d34297bfdac0b3a"
-  integrity sha512-1xjrsYjff4sg4MfvF+/NInOq+7oI1D1vK8Yj9wkrbBH1dM+h2At71tccbFfl/eJUt4ckZlH+XmROnt/T0daYcA==
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-11.0.14.tgz#cb25b01ed1eb14792954efb78921a3b8e5d331f5"
+  integrity sha512-5lZtGPuMKlyPl7MDzZenoz9183w7tu/2t0ISRcggpBJkhTiWoEtwmJ1qWlMNcASAFtoYDkeuFNdGbF2HWRkLkg==
   dependencies:
     uid "2.0.2"
     "@nuxt/opencollective" "0.4.1"
@@ -1124,10 +1124,15 @@
     path-to-regexp "8.2.0"
     tslib "2.8.1"
 
+"@nestjs/mapped-types@*":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-2.1.0.tgz#b9b536b7c3571567aa1d0223db8baa1a51505a19"
+  integrity sha512-W+n+rM69XsFdwORF11UqJahn4J3xi4g/ZEOlJNL6KoW5ygWSmBB2p0S2BZ4FQeS/NDH72e6xIcu35SfJnE8bXw==
+
 "@nestjs/platform-express@^11.0.1":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.0.13.tgz#f5748a3ba91ab50e4aa808668a34952b239c6e0b"
-  integrity sha512-SaxfIDORX1oV8T6nxr/pltnW2g+3fCRPs5YwO0jBj2d8sC03Axjwlxp/ASg2mf6xvOSBD6ZbhjVLVVDZymyFXQ==
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.0.14.tgz#2b971798a68e8750c7c9fa88c711cdddfa1ad823"
+  integrity sha512-wPDkxO3ynNhxT6yuCXMVeKYK8hdpOz9f88B7+0FnDTpqbcnmC8mF9HbzkQEsJM3S+CZ/1vseFTPwbyUXkBnXog==
   dependencies:
     cors "2.8.5"
     express "5.1.0"
@@ -1155,9 +1160,9 @@
     check-disk-space "3.4.0"
 
 "@nestjs/testing@^11.0.1":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-11.0.13.tgz#c7fcbba741e63fcfeab8c8540b1d4d4061c7d320"
-  integrity sha512-9E9HxD3EmiQky+pqYvpV0cHKlxYJJqHm2GmXoKHF72Raa0JTfQpamnLl6TPjDy2XOqA7oSSBDnEwku8vZ46Cdw==
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-11.0.14.tgz#7a99b85307a1c9fa28e43b07690fc29b04ea0a60"
+  integrity sha512-Zt3mny+kMal1ArRlBGReakrU2rQfGkcGSrvY1L4VbNJQcusiIZKRoypjhFS3x6ubiWuVJNTGoeegSnbMsfMlbQ==
   dependencies:
     tslib "2.8.1"
 
@@ -1190,9 +1195,9 @@
     consola "^3.2.3"
 
 "@pkgr/core@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.1.tgz#6d083acfddae21fb329c8df8c94bf895ce7d0c15"
-  integrity sha512-VzgHzGblFmUeBmmrk55zPyrQIArQN4vujc9shWytaPdB3P7qhi0cpaiKIr7tlCmFv2lYUwnLospIqjL9ZSAhhg==
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.2.tgz#224e466468489466a3ca77832be80cdd0bb8e523"
+  integrity sha512-25L86MyPvnlQoX2MTIV2OiUcb6vJ6aRbFa9pbwByn95INKD5mFH2smgjDhq+fwJoqAgvgbdJLj6Tz7V9X5CFAQ==
 
 "@prisma/client@^6.6.0":
   version "6.6.0"
@@ -2372,9 +2377,9 @@ camelcase@^6.2.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001688:
-  version "1.0.30001712"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001712.tgz#41ee150f12de11b5f57c5889d4f30deb451deedf"
-  integrity sha512-MBqPpGYYdQ7/hfKiet9SCI+nmN5/hp4ZzveOJubl5DTAMa5oggjAuoi0Z4onBpKPFI2ePGnQuQIzF3VxDjDJig==
+  version "1.0.30001713"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001713.tgz#6b33a8857e6c7dcb41a0caa2dd0f0489c823a52d"
+  integrity sha512-wCIWIg+A4Xr7NfhTuHdX+/FKh3+Op3LBbSp2N5Pfx6T/LhdQy3GTyoTg48BReaW/MyMNZAkTadsBtai3ldWK0Q==
 
 chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0, chalk@^4.1.2:
   version "4.1.2"
@@ -2758,9 +2763,9 @@ ejs@^3.1.10:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.73:
-  version "1.5.134"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.134.tgz#d90008c4f8a506c1a6d1b329f922d83e18904101"
-  integrity sha512-zSwzrLg3jNP3bwsLqWHmS5z2nIOQ5ngMnfMZOWWtXnqqQkPVyOipxK98w+1beLw1TB+EImPNcG8wVP/cLVs2Og==
+  version "1.5.135"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.135.tgz#6d835020fa0c7f02f30d7608c2f3c0a764236699"
+  integrity sha512-8gXUdEmvb+WCaYUhA0Svr08uSeRjM2w3x5uHOc1QbaEVzJXB8rgm5eptieXzyKoVEtinLvW6MtTcurA65PeS1Q==
 
 emittery@^0.13.1:
   version "0.13.1"

@@ -1,0 +1,7 @@
+{
+  "name": "patient",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

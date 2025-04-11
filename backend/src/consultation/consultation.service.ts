@@ -105,7 +105,7 @@ export class ConsultationService {
         
         await prisma.consultation.update({
           where: { id: consultation.id },
-          data: { patientId: patientUser.id }
+          data: { patientId: patientUser.id, owner: practitionerUser.id }
         });
 
         await prisma.participant.create({

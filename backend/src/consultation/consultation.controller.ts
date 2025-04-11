@@ -1,7 +1,7 @@
 import {  ParseIntPipe, Request } from '@nestjs/common';
 import { Controller, Post, Body, Get, Param, HttpStatus, HttpException } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
-import { MessageService as PrismaMessageService, ParticipantRole, Prisma, Whatsapp_Template } from '@prisma/client';
+import { MessageService as PrismaMessageService, Role, Prisma, Whatsapp_Template } from '@prisma/client';
 
 export class ConsultationInviteDto {
   patientName: string;

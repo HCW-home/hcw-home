@@ -4,6 +4,7 @@ export interface Consultation {
   id?: string;
   patientId: string;
   practitionerId: string;
+  owner: number;
   createdAt?: Date;
   status: ConsultationStatus;
   language: string;
@@ -14,7 +15,7 @@ export interface Consultation {
 }
 
 export enum ConsultationStatus {
-  PENDING = 'PENDING',
+  SCHEDULED = 'SCHEDULED',
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED'

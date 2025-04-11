@@ -24,10 +24,13 @@ model User {
   temporaryAccount Boolean
   phoneNumber      String        @unique()
   country          String
-  language         String
+  language         String @default("en")
   sex              Sex // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
+//  // Relations
+//  patientConsultations  Participant[] @relation("PatientConsultations")
+//  practitionerConsultations Participant[] @relation("PractitionerConsultations")
 }
 
 enum Role {
@@ -58,18 +61,41 @@ enum MessageService {
 
 model Consultation {
   id                 Int                @id @default(autoincrement())
+  uuid               String          @unique @default(uuid())
+  status             ConsultationStatus @default(SCHEDULED)
+  language           String          @default("en")
+  owner              Int?
+  messageService     MessageService
   scheduledDate      DateTime?
-  createdAt          DateTime?
+  createdAt          DateTime        @default(now())
   startedAt          DateTime?
   closedAt           DateTime?
-  createdBy          Int?
-  groupId            Int?
-  owner              Int?
-  messageService     MessageService?
-  whatsappTemplateId Int?
-  status             ConsultationStatus @default(SCHEDULED)
+  magicLink          String?
+  introMessage       String?
+  templateId         String?         // Reference to Whatsapp_Template
+  // Relations
   participants       Participant[]
+  patientId          Int?            // For direct reference lookup
+  practitionerId     Int?            // For direct reference lookup
 }
+
+// model Participant {
+//   id             Int              @id @default(autoincrement())
+//   consultationId Int
+//   userId         Int
+//   role           ParticipantRole
+//   name           String
+//   email          String?
+//   phone          String?
+//   // Relations
+//   consultation   Consultation     @relation(fields: [consultationId], references: [id])
+//   patient        User?            @relation("PatientConsultations", fields: [userId], references: [id], map: "Participant_patientId_fkey")
+//   practitioner   User?            @relation("PractitionerConsultations", fields: [userId], references: [id], map: "Participant_practitionerId_fkey")
+// 
+//   @@unique([consultationId, userId, role])
+//   status             ConsultationStatus @default(SCHEDULED)
+//   participants       Participant[]
+// }
 
 model Participant {
   id             Int          @id @default(autoincrement())

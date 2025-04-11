@@ -1,0 +1,19 @@
+.layout-container {
+  display: flex;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .layout-container {
+    flex-direction: column;
+  }
+}

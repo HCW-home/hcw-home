@@ -16,8 +16,10 @@ enum ConsultationStatus {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+
+  id               Int          @id @default(autoincrement())
+  role             Role         @default(Patient) // Enum: Patient, Practitioner, Admin
+  email            String       @unique()
   firstName        String
   lastName         String
   password         String
@@ -25,7 +27,7 @@ model User {
   phoneNumber      String        @unique()
   country          String
   language         String
-  sex              Sex // Enum: male, female, other
+  sex              Sex         // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
 }

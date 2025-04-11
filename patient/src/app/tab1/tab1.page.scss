@@ -1,0 +1,97 @@
+.custom-toolbar {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .custom-title {
+    text-align: center;
+    width: 100%;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+  .dashboard-container {
+    max-width: 900px; /* Increased width */
+    margin: 0 auto;
+    padding: 8px;
+  }
+
+  .consultation-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(200, 14, 14, 0.1);
+  }
+
+  /* Card-specific styling */
+  .active-card {
+    border-top: 4px solid #3880ff; /* Primary blue for active */
+  }
+
+  .completed-card {
+    border-top: 4px solid #10dc60; /* Green for completed */
+  }
+
+  .upcoming-card {
+    border-top: 4px solid #ff4961; /* Pinkish-red for upcoming */
+  }
+
+  .consultation-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+  }
+
+  .doctor-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .specialty {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .time-until {
+    color: #3880ff;
+    font-weight: 500;
+  }
+
+  .section-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; 
+  }
+
+  .action-button {
+    margin: 8px;
+    padding: 8px;
+  }
+
+  .status-chip {
+    margin: 0;
+  }
+
+  .empty-list-item ion-icon {
+    display: block;
+    margin: 16px auto 8px;
+    color: #999;
+  }
+
+  .empty-list-item p {
+    color: #666;
+  }
+
+  /* Make list items slightly transparent to show card background */
+  ion-item {
+    --background: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4px;
+    border-radius: 8px;
+  }

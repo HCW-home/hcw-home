@@ -1,0 +1,36 @@
+<div class="card consultation-card">
+  <h2>{{ title }}</h2>
+  <p class="card-description">{{ description }}</p>
+
+  @if (consultations.length === 0) {
+  <div class="empty-state">
+    <p>No consultations</p>
+  </div>
+  }
+
+  @if (consultations.length > 0) {
+  <div class="consultation-list">
+    @for (consultation of consultations; track consultation.id) {
+    <div class="consultation-item">
+      <div class="patient-info">
+        <div class="label">Patient</div>
+        <div class="value">{{ consultation.patientName }}</div>
+      </div>
+      <div class="time-info">
+        <div class="label">Time</div>
+        <div class="value">{{ formatTime(consultation.joinTime) }}</div>
+      </div>
+      <div class="action">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  @if (consultations.length > 3) {
+  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink" [size]="ButtonSize.Medium">
+    View all
+  </app-button>
+  }
+</div>

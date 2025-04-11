@@ -6,6 +6,7 @@ import { OpenConsultationsComponent } from "./open-consultations/open-consultati
 import { ClosedConsultationsComponent } from "./closed-consultations/closed-consultations.component"
 import { InvitesComponent } from "./invites/invites.component"
 import { ProfileComponent } from "./profile/profile.component"
+import { AppComponent } from "./app.component"
 
 
 export const routes: Routes = [

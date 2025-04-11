@@ -7,17 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ConsultationStatus {
+  SCHEDULED
+  WAITING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 model User {
-  id               Int          @id @default(autoincrement())
-  role             Role         @default(Patient) // Enum: Patient, Practitioner, Admin
+  id               Int           @id @default(autoincrement())
+  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
   firstName        String
   lastName         String
   password         String
   temporaryAccount Boolean
   phoneNumber      String        @unique()
   country          String
-  sex              Sex           // Enum: male, female, other
-  status           Status         @default(not_approved) // Enum: approved, not_approved
+  language         String
+  sex              Sex // Enum: male, female, other
+  status           Status        @default(not_approved) // Enum: approved, not_approved
+  Participant      Participant[]
 }
 
 enum Role {
@@ -37,7 +47,6 @@ enum Status {
   not_approved
 }
 
-
 //  Add the new models/enums that is necessary for consultation remainders
 
 enum MessageService {
@@ -48,7 +57,7 @@ enum MessageService {
 }
 
 model Consultation {
-  id                 Int             @id @default(autoincrement())
+  id                 Int                @id @default(autoincrement())
   scheduledDate      DateTime?
   createdAt          DateTime?
   startedAt          DateTime?
@@ -58,10 +67,24 @@ model Consultation {
   owner              Int?
   messageService     MessageService?
   whatsappTemplateId Int?
+  status             ConsultationStatus @default(SCHEDULED)
+  participants       Participant[]
+}
+
+model Participant {
+  id             Int          @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  isActive       Boolean      @default(false)
+  joinedAt       DateTime?
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@unique([consultationId, userId])
 }
 
 model Whatsapp_Template {
-  id              String  @id
+  id              String @id
   key             String
   friendlyName    String
   body            String
@@ -80,7 +103,7 @@ model Whatsapp_Template {
 }
 
 model SMS_Providers {
-  id         String @id
+  id         String  @id
   createdAt  BigInt
   updatedAt  BigInt
   order      Int

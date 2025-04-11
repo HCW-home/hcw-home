@@ -1,0 +1,9 @@
+@if (!routerLink) {
+<button [type]="type" [class]="variant + ' ' + size" [disabled]="disabled">
+    <ng-content></ng-content>
+</button>
+} @else {
+<a [routerLink]="routerLink" class="button-link" [class]="variant + ' ' + size">
+    <ng-content></ng-content>
+</a>
+}

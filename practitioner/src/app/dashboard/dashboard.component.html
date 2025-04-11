@@ -1,0 +1,6 @@
+<div class="dashboard-content">
+    @for (card of cards(); track card.title) {
+    <app-consultation-card [title]="card.title" [description]="card.description" [consultations]="card.consultations"
+        [routerLink]="card.routerLink"></app-consultation-card>
+    }
+</div>

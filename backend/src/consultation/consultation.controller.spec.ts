@@ -3,6 +3,7 @@ import { ConsultationController } from './consultation.controller';
 
 describe('ConsultationController', () => {
   let controller: ConsultationController;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ConsultationController],

@@ -31,8 +31,11 @@
                 "input": "public"
               }
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            },
             "styles": [
-              "src/styles.scss"
+              "src/styles/styles.scss"
             ],
             "scripts": []
           },
@@ -93,8 +96,11 @@
                 "input": "public"
               }
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            },
             "styles": [
-              "src/styles.scss"
+              "src/styles/styles.scss"
             ],
             "scripts": []
           }
@@ -102,7 +108,10 @@
       }
     }
   },
+  // "cli": {
+  //   "analytics": "0c4d974c-851c-4c0a-b35f-97056e7f7d1a"
+  // },
   "cli": {
-    "analytics": "0c4d974c-851c-4c0a-b35f-97056e7f7d1a"
+    "analytics": false
   }
 }

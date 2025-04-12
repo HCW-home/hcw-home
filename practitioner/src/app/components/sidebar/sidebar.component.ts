@@ -19,11 +19,11 @@ interface SidebarItem {
 })
 export class SidebarComponent {
   sidebarItems: SidebarItem[] = [
-    { icon: "house.svg", label: "Dashboard", route: "/dashboard" },
-    { icon: "users-round.svg", label: "Waiting Room", route: "/waiting-room" },
-    { icon: "message-circle.svg", label: "Open Consultations", route: "/open-consultations", badge: 4 },
-    { icon: "message-circle-off.svg", label: "Closed Consultations", route: "/closed-consultations" },
-    { icon: "mail.svg", label: "Invitations", route: "/invites" },
+    { icon: "icon-dashboard.svg", label: "Dashboard", route: "/dashboard" },
+    { icon: "icon-queue.svg", label: "Waiting Room", route: "/waiting-room", badge: 4},
+    { icon: "icon-open.svg", label: "Opened Consultations", route: "/open-consultations"},
+    { icon: "icon-history.svg", label: "Consultation history", route: "/closed-consultations" },
+    { icon: "icon-invite.svg", label: "Invites", route: "/invites" },
     { icon: "user-round-pen.svg", label: "Profile", route: "/profile" },
   ]
 }

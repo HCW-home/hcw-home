@@ -1,12 +1,16 @@
 .badge {
-    background-color: #e63946;
-    color: white;
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    display: inline-block;
-    min-width: 20px;
-    text-align: center;
-  }
-  
+  position: absolute;
+  top: 16px;
+  right: -3px;
+  background-color: #e63946;
+  color: white;
+  font-size: 10px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 600;
+  z-index: 1;
+}

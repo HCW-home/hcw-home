@@ -1,21 +1,21 @@
 <div class="sidebar">
-    <div class="sidebar-item home">
-      <a routerLink="/">
-        <div class="icon"></div>
-        <div class="label">HOME</div>
+  <div class="sidebar-item home">
+    <a routerLink="/">
+      <div class="icon"></div>
+      <div class="label">HOME</div>
+    </a>
+  </div>
+
+  <ng-container *ngFor="let item of sidebarItems">
+    <div class="sidebar-item" [routerLinkActive]="'active'" [routerLink]="item.route">
+      <a>
+        <div class="icon">
+          <img [src]="'assets/icons/' + item.icon" [alt]="item.label + ' icon'" />
+          <app-badge *ngIf="item.badge" [value]="item.badge"></app-badge> 
+        </div>
+        <div class="label">{{ item.label }}</div>
       </a>
     </div>
-    
-    <ng-container *ngFor="let item of sidebarItems">
-      <div class="sidebar-item" [routerLinkActive]="'active'">
-        <a [routerLink]="item.route">
-          <div class="icon">
-            <img [src]="'assets/icons/' + item.icon" alt="{{ item.label }} icon" />
-          </div>
-          <div class="label">{{ item.label }}</div>
-          <app-badge *ngIf="item.badge" [value]="item.badge"></app-badge>
-        </a>
-      </div>
-    </ng-container>
-  </div>
+  </ng-container>
   
+</div>

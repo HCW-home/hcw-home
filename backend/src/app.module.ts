@@ -7,6 +7,8 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ConsultationModule } from './consultation/consultation.module';
+import { ScheduleModule } from '@nestjs/schedule'; 
+import { Reflector } from '@nestjs/core'; // ✅ Import Reflector
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { ConsultationModule } from './consultation/consultation.module';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     HealthModule,
     AuthModule,
@@ -21,6 +24,6 @@ import { ConsultationModule } from './consultation/consultation.module';
     ConsultationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Reflector],
 })
 export class AppModule {}

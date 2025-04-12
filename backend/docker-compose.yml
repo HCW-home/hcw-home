@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: hcw-postgres
+    restart: always
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+volumes:
+  postgres: 

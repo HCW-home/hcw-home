@@ -20,14 +20,23 @@ model User {
   role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
   firstName        String
   lastName         String
+  email            String        @unique
   password         String
-  temporaryAccount Boolean
-  phoneNumber      String        @unique()
-  country          String
-  language         String
-  sex              Sex // Enum: male, female, other
+  temporaryAccount Boolean       @default(false)
+  phoneNumber      String?       @unique()
+  country          String?
+  language         String?
+  sex              Sex? // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
-  Participant      Participant[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  // Relations
+  participants     Participant[]
+  organizations    UserOrganization[]
+  groups           UserGroup[]
+  userLanguages    UserLanguage[]
+  specialties      UserSpecialty[]
 }
 
 enum Role {
@@ -111,4 +120,77 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+model Organization {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  users       UserOrganization[]
+}
+
+model Group {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  users       UserGroup[]
+}
+
+model Language {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  code        String         @unique
+  users       UserLanguage[]
+}
+
+model Specialty {
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  description String?
+  users       UserSpecialty[]
+}
+
+// Junction tables for many-to-many relationships
+model UserOrganization {
+  userId         Int
+  organizationId Int
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@id([userId, organizationId])
+}
+
+model UserGroup {
+  userId    Int
+  groupId   Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, groupId])
+}
+
+model UserLanguage {
+  userId     Int
+  languageId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language   Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, languageId])
+}
+
+model UserSpecialty {
+  userId      Int
+  specialtyId Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([userId, specialtyId])
 }

@@ -1,0 +1,21 @@
+<ion-header>
+    <ion-toolbar>
+      <ion-title>Feedback</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content class="ion-padding">
+    <h2>Feedback for Consultation #{{consultationId}}</h2>
+    
+    <ion-item>
+      <ion-label>Rating:</ion-label>
+      <ion-input type="number" [(ngModel)]="rating" min="1" max="5"></ion-input>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label>Comments:</ion-label>
+      <ion-input [(ngModel)]="comments"></ion-input>
+    </ion-item>
+    
+    <ion-button expand="block" (click)="submitFeedback()">Submit Feedback</ion-button>
+  </ion-content>

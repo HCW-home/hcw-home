@@ -1,17 +1,105 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>My Consultations</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="dashboard-container">
+    <!-- Active Consultations Section -->
+    <div class="section-container">
+      <ion-list-header class="section-header">
+        <ion-label>Active Consultations</ion-label>
+      </ion-list-header>
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+      <div *ngIf="activeConsultations.length > 0; else noActive" class="cards-grid">
+        <ion-card *ngFor="let consult of activeConsultations" class="consultation-card">
+          <ion-item lines="none" class="card-header">
+            <ion-icon slot="start" [name]="getStatusIcon(consult.status)" [color]="getStatusColor(consult.status)"></ion-icon>
+            <ion-label>
+              <h2>{{consult.practitionerName || 'Pending assignment'}}</h2>
+              <p>{{consult.date | date:'medium'}}</p>
+              <ion-badge [color]="getStatusColor(consult.status)">{{consult.status}}</ion-badge>
+            </ion-label>
+          </ion-item>
+
+          <ion-card-content>
+            <p class="reason-text"><strong>Reason:</strong> {{consult.reason}}</p>
+            
+            <div class="action-button">
+              <ion-button *ngIf="consult.status === 'Active'" expand="block" fill="solid" color="primary" (click)="joinConsultation(consult.id)">
+                <ion-icon slot="start" name="videocam"></ion-icon>
+                Join Consultation
+              </ion-button>
+
+              <ion-button *ngIf="consult.status === 'Waiting'" expand="block" fill="outline" color="medium" disabled>
+                <ion-icon slot="start" name="time"></ion-icon>
+                Waiting for practitioner
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+      <ng-template #noActive>
+        <div class="empty-section">
+          <ion-icon name="time-outline"></ion-icon>
+          <p>No active consultations</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Completed Consultations Section -->
+    <div class="section-container">
+      <ion-list-header class="section-header">
+        <ion-label>Completed Consultations</ion-label>
+      </ion-list-header>
+
+      <div *ngIf="completedConsultations.length > 0; else noCompleted" class="cards-grid">
+        <ion-card *ngFor="let consult of completedConsultations" class="consultation-card">
+          <ion-item lines="none" class="card-header">
+            <ion-icon slot="start" name="checkmark-circle" color="success"></ion-icon>
+            <ion-label>
+              <h2>{{consult.practitionerName}}</h2>
+              <p>{{consult.date | date:'medium'}}</p>
+              <ion-badge color="success">Completed</ion-badge>
+            </ion-label>
+          </ion-item>
+
+          <ion-card-content>
+            <p class="reason-text"><strong>Reason:</strong> {{consult.reason}}</p>
+            
+            <div *ngIf="consult.feedback" class="feedback-section">
+              <p class="feedback-label"><strong>Your Feedback:</strong></p>
+              <div class="rating-stars">
+                <ion-icon name="star" *ngFor="let star of [1,2,3,4,5]" 
+                         [color]="star <= consult.feedback.rating ? 'warning' : 'medium'"></ion-icon>
+              </div>
+              <p class="feedback-comment">{{consult.feedback.comments}}</p>
+            </div>
+
+            <div class="action-button">
+              <ion-button *ngIf="!consult.feedback" expand="block" fill="outline" color="medium" (click)="leaveFeedback(consult.id)">
+                <ion-icon slot="start" name="create"></ion-icon>
+                Leave Feedback
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+      <ng-template #noCompleted>
+        <div class="empty-section">
+          <ion-icon name="checkmark-done-outline"></ion-icon>
+          <p>No completed consultations</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="activeConsultations.length === 0 && completedConsultations.length === 0" class="empty-state">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <h2>No consultations yet</h2>
+      <p>Book your first consultation to get started</p>
+      <ion-button fill="solid" color="primary" routerLink="/booking">Book Consultation</ion-button>
+    </div>
+  </div>
 </ion-content>

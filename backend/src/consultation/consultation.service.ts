@@ -5,10 +5,15 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { ConsultationStatus } from '@prisma/client';
+import { ConsultationGateway } from './consultation.gateway';
+
 
 @Injectable()
 export class ConsultationService {
-    constructor(private readonly db: DatabaseService) { }
+    constructor(
+        private readonly db: DatabaseService,
+        private readonly gateway: ConsultationGateway,
+    ) { }
 
     /**
      * Marks a consultation as WAITING when a patient hits the magic‑link.
@@ -31,6 +36,22 @@ export class ConsultationService {
             create: { consultationId, userId: patientId, isActive: true, joinedAt: new Date() },
             update: { joinedAt: new Date() },
         });
+        await this.db.consultation.update({
+            where: { id: consultation.id },
+            data : { status: 'ACTIVE' },
+          });
+          
+         if(!consultation.owner){
+            throw new NotFoundException('Owner does not exist');
+         } 
+         await this.gateway.notifyPractitioner(
+            consultation.owner,
+            {
+              consultationId: consultation.id,
+              patientName:    patient.firstName ?? 'Patient',
+              joinedAt:       new Date().toISOString(),
+            },
+          );
 
         if (consultation.status === ConsultationStatus.SCHEDULED) {
             await this.db.consultation.update({

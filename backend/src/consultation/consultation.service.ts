@@ -69,10 +69,21 @@ export class ConsultationService {
             update: { joinedAt: new Date() },
         });
 
-        await this.db.consultation.update({
-            where: { id: consultationId },
-            data: { status: ConsultationStatus.ACTIVE },
-        });
+        // If this is the first time the consultation is becoming active, record the start time
+        if (consultation.status !== ConsultationStatus.ACTIVE) {
+            await this.db.consultation.update({
+                where: { id: consultationId },
+                data: { 
+                    status: ConsultationStatus.ACTIVE,
+                    startedAt: new Date()
+                },
+            });
+        } else {
+            await this.db.consultation.update({
+                where: { id: consultationId },
+                data: { status: ConsultationStatus.ACTIVE },
+            });
+        }
 
         return { success: true, consultationId };
     }
@@ -123,5 +134,43 @@ export class ConsultationService {
             },
             orderBy: { scheduledDate: 'asc' },
         });
+    }
+
+    /**
+     * Gets active consultation data including participants and message history
+     * 
+     * @param consultationId 
+     * @returns Consultation data, participant list, and message history
+     */
+    async getConsultationSession(consultationId: number) {
+        const consultation = await this.db.consultation.findUnique({
+            where: { id: consultationId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        
+        if (!consultation) throw new NotFoundException('Consultation not found');
+
+        // Temporary solution until Prisma schema is regenerated
+        // Return empty messages array
+        const formattedMessages = [];
+        
+        return {
+            consultation,
+            participants: consultation.participants,
+            messages: formattedMessages,
+        };
     }
 }

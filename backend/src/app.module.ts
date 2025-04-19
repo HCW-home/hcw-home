@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+
+import { Module } from '@nestjs/common';import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ConsultationModule } from './consultation/consultation.module';
+import { OrganisationModule } from './organisation/organisation.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ConsultationModule } from './consultation/consultation.module';
     AuthModule,
     UserModule,
     ConsultationModule,
+    OrganisationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

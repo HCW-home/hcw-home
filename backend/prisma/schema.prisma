@@ -28,6 +28,8 @@ model User {
   sex              Sex // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
+  organisationId   Int?
+  organisation     Organisation? @relation(fields: [organisationId], references: [id])
 }
 
 enum Role {
@@ -111,4 +113,15 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+model Organisation {
+  id             Int      @id @default(autoincrement())
+  name           String
+  logo           String?
+  primaryColor   String?
+  footerMarkdown String?
+  users          User[]   // Relation to users
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

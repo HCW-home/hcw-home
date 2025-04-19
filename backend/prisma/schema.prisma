@@ -17,6 +17,7 @@ enum ConsultationStatus {
 
 model User {
   id               Int           @id @default(autoincrement())
+  email            String        @unique
   role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
   firstName        String
   lastName         String
@@ -28,6 +29,9 @@ model User {
   sex              Sex // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
+  sub              String?   @unique // Subject identifier from OpenID provider
+  provider         String?   // Identity provider name
+  lastLogin        DateTime? @default(now())
 }
 
 enum Role {

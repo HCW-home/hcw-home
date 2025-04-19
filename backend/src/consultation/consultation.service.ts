@@ -4,7 +4,8 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { ConsultationStatus } from '@prisma/client';
+import { Consultation, ConsultationStatus } from '@prisma/client';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class ConsultationService {
@@ -124,4 +125,41 @@ export class ConsultationService {
             orderBy: { scheduledDate: 'asc' },
         });
     }
+    
+    async findAll(): Promise<User[]> {
+        return this.db.user.findMany();
+      }
+    
+      /**
+       * Create a new user
+       */
+      async create(user: User): Promise<User> {
+        return this.db.user.create({
+          data: user,
+        });
+      }
+    
+      /**
+       * Retrieve a single user by ID
+       */
+      async findOne(id: number): Promise<User> {
+        const user = await this.db.user.findUnique({
+          where: { id },
+        });
+        if (!user) {
+          throw new NotFoundException(`User with id ${id} not found`);
+        }
+        return user;
+      }
+    
+      /**
+       * Remove a user by ID
+       */
+      async remove(id: number): Promise<User> {
+        // Ensure the user exists
+        await this.findOne(id);
+        return this.db.user.delete({
+          where: { id },
+        });
+      }
 }

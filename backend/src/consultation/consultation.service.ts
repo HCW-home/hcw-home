@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { ConsultationStatus } from '@prisma/client';
+import { ConsultationStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ConsultationService {

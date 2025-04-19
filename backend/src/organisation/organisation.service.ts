@@ -12,7 +12,11 @@ export class OrganisationService {
     const organisation = await this.db.organisation.create({
       data,
     });
-    return successResponse(organisation, 'Organisation successfully created', 201);
+    return successResponse(
+      organisation,
+      'Organisation successfully created',
+      201,
+    );
   }
 
   async findAll() {
@@ -27,11 +31,11 @@ export class OrganisationService {
         users: true,
       },
     });
-    
+
     if (!organisation) {
       throw new NotFoundException(`Organisation with ID ${id} not found`);
     }
-    
+
     return successResponse(organisation, 'Organisation successfully fetched');
   }
 
@@ -40,17 +44,20 @@ export class OrganisationService {
     const existingOrganisation = await this.db.organisation.findUnique({
       where: { id },
     });
-    
+
     if (!existingOrganisation) {
       throw new NotFoundException(`Organisation with ID ${id} not found`);
     }
-    
+
     const updatedOrganisation = await this.db.organisation.update({
       where: { id },
       data,
     });
-    
-    return successResponse(updatedOrganisation, 'Organisation successfully updated');
+
+    return successResponse(
+      updatedOrganisation,
+      'Organisation successfully updated',
+    );
   }
 
   async remove(id: number) {
@@ -58,15 +65,15 @@ export class OrganisationService {
     const existingOrganisation = await this.db.organisation.findUnique({
       where: { id },
     });
-    
+
     if (!existingOrganisation) {
       throw new NotFoundException(`Organisation with ID ${id} not found`);
     }
-    
+
     await this.db.organisation.delete({
       where: { id },
     });
-    
+
     return successResponse(null, 'Organisation successfully deleted');
   }
 }

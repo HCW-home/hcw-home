@@ -1,0 +1,30 @@
+<div class="test-call">
+    <div class="test-sections">
+        <div class="test-section micro-test">
+            <h2>MICRO TEST</h2>
+            <div class="audio-meter-container">
+                <div class="audio-meter">
+                    <div #audioMeter class="meter-fill"></div>
+                </div>
+            </div>
+            <p class="help-text">
+                A properly tuned microphone should put the VU meter in the green center area when speaking.
+            </p>
+
+            <div class="device-selection" *ngIf="audioInputDevices.length > 1">
+                <select id="audioInput" (change)="switchAudioInput($event)">
+                    <option *ngFor="let device of audioInputDevices" [value]="device.deviceId">
+                        {{ device.label || 'Unknown Device' }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="test-section camera-test">
+            <h2>CAMERA TEST</h2>
+            <div class="video-container">
+                <video #videoPreview autoplay playsinline muted></video>
+            </div>
+        </div>
+    </div>
+</div>

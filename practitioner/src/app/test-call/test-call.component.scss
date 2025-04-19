@@ -1,0 +1,90 @@
+@use './variables' as *;
+
+.test-call {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: $color-background-card;
+
+    .test-sections {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        gap: 20px;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+    }
+
+    .test-section {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid $color-border;
+        border-radius: 4px;
+
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: $color-heading;
+        }
+    }
+
+    .micro-test {
+        .audio-meter-container {
+            width: 100%;
+            margin-bottom: 15px;
+
+            .audio-meter {
+                width: 100%;
+                height: 10px;
+                background-color: $color-surface;
+                border-radius: 5px;
+                overflow: hidden;
+                border: 1px solid $color-border-light;
+
+                .meter-fill {
+                    height: 100%;
+                    width: 0;
+                    background-color: $color-success;
+                    transition: width 0.1s linear;
+                }
+            }
+        }
+
+        .help-text {
+            color: $color-primary;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .device-selection {
+            margin-top: 15px;
+
+            select {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ccc; 
+                border-radius: 4px;
+                font-size: 14px;
+            }
+        }
+    }
+
+    .camera-test {
+        .video-container {
+            width: 100%;
+
+            video {
+                width: 100%;
+                border: 1px solid $color-border-light;
+                border-radius: 4px;
+                background-color: $color-empty-state-bg;
+                min-height: 240px;
+            }
+        }
+    }
+}

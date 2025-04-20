@@ -15,6 +15,29 @@ enum ConsultationStatus {
   CANCELLED
 }
 
+model Terms {
+  id          Int   @id @default(autoincrement())
+  language    String
+  country     String
+  content     String   @db.Text
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)  
+  @@unique([language, country, version])
+  acceptances TermsAcceptance[]
+}
+
+model TermsAcceptance {
+  id        Int   @id @default(autoincrement())
+  userId    Int
+  termsId   Int
+  acceptedAt DateTime @default(now())
+  terms     Terms    @relation(fields: [termsId], references: [id])
+  user      User     @relation(fields: [userId], references: [id]) 
+  @@unique([userId, termsId])
+}
+
 model User {
   id               Int           @id @default(autoincrement())
   role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
@@ -28,6 +51,7 @@ model User {
   sex              Sex // Enum: male, female, other
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
+  termsAcceptances TermsAcceptance[]
 }
 
 enum Role {

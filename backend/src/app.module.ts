@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ConsultationModule } from './consultation/consultation.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ConsultationModule } from './consultation/consultation.module';
     AuthModule,
     UserModule,
     ConsultationModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

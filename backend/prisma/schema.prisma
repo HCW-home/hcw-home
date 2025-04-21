@@ -15,21 +15,6 @@ enum ConsultationStatus {
   CANCELLED
 }
 
-model User {
-  id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
-  firstName        String
-  lastName         String
-  password         String
-  temporaryAccount Boolean
-  phoneNumber      String        @unique()
-  country          String
-  language         String
-  sex              Sex // Enum: male, female, other
-  status           Status        @default(not_approved) // Enum: approved, not_approved
-  Participant      Participant[]
-}
-
 enum Role {
   Patient
   Practitioner
@@ -47,13 +32,27 @@ enum Status {
   not_approved
 }
 
-//  Add the new models/enums that is necessary for consultation remainders
-
+// Add the new enum if necessary for message services
 enum MessageService {
   SMS
   EMAIL
   WHATSAPP
   MANUALLY
+}
+
+model User {
+  id               Int           @id @default(autoincrement())
+  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+  firstName        String
+  lastName         String
+  password         String
+  temporaryAccount Boolean
+  phoneNumber      String        @unique()
+  country          String
+  language         String
+  sex              Sex // Enum: male, female, other
+  status           Status        @default(not_approved) // Enum: approved, not_approved
+  Participant      Participant[]
 }
 
 model Consultation {
@@ -69,6 +68,7 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  messages           Message[]          
 }
 
 model Participant {
@@ -111,4 +111,26 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+model Message {
+  id                Int           @id @default(autoincrement())
+  provider          String
+  providerMessageId String        @unique
+  consultationId    Int
+  status            String
+  sentAt            DateTime?
+
+  consultation      Consultation  @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  auditLogs         AuditLog[]
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  messageId  Int
+  oldStatus  String
+  newStatus  String
+  changedAt  DateTime @default(now())
+
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 }

@@ -12,7 +12,7 @@ export class WebhooksService {
   }) {
     const { MessageSid, MessageStatus } = payload;
 
-    // Check if the message already exists
+
     let message = await this.db.message.findUnique({
       where: { providerMessageId: MessageSid },
     });
@@ -24,26 +24,26 @@ export class WebhooksService {
 
       const consultation = await this.db.consultation.create({
         data: {
-          status: 'SCHEDULED',  // Default status
-          scheduledDate: new Date(),  // Or set an appropriate value
+          status: 'SCHEDULED', 
+          scheduledDate: new Date(), 
         },
       });
 
       message = await this.db.message.create({
         data: {
           providerMessageId: MessageSid,
-          status: MessageStatus, // Initialize with the current status
+          status: MessageStatus, 
           sentAt: new Date(),
-          provider: 'SMS',  // Adjust this as per your requirement
+          provider: 'SMS', 
           consultation: {
-            connect: { id: consultation.id },  // Link the newly created consultation
+            connect: { id: consultation.id },  
           },
         },
       });
 
     }
 
-    // Create an audit log for status change
+
     await this.db.auditLog.create({
       data: {
         messageId: message.id,
@@ -52,7 +52,7 @@ export class WebhooksService {
       },
     });
 
-    // Update the message status in the database
+
     await this.db.message.update({
       where: { id: message.id },
       data: { status: MessageStatus },

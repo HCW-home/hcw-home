@@ -124,4 +124,49 @@ export class ConsultationService {
             orderBy: { scheduledDate: 'asc' },
         });
     }
+
+    /**
+     * Get messages for a consultation with pagination
+     * @param consultationId The ID of the consultation
+     * @param limit Maximum number of messages to return
+     * @param before Message ID to fetch messages before (for pagination)
+     * @returns Array of messages with sender info and read receipts
+     */
+    async getConsultationMessages(consultationId: number, limit: number = 50, before?: number) {
+        const whereClause: any = { consultationId };
+        
+        // For pagination - get messages before a certain ID
+        if (before) {
+            whereClause.id = { lt: before };
+        }
+        
+        return this.db.message.findMany({
+            where: whereClause,
+            include: {
+                sender: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                role: true
+                            }
+                        }
+                    }
+                },
+                readReceipts: {
+                    include: {
+                        participant: {
+                            select: {
+                                userId: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: limit
+        });
+    }
 }

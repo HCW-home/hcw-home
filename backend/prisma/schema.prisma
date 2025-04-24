@@ -69,6 +69,7 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  messages           Message[]
 }
 
 model Participant {
@@ -79,6 +80,8 @@ model Participant {
   joinedAt       DateTime?
   consultation   Consultation @relation(fields: [consultationId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
+  messages       Message[]
+  readReceipts   ReadReceipt[]
 
   @@unique([consultationId, userId])
 }
@@ -111,4 +114,37 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+// Model for chat messages
+model Message {
+  id             Int          @id @default(autoincrement())
+  consultationId Int
+  senderId       Int
+  content        String
+  contentType    MessageContentType @default(TEXT)
+  fileUrl        String?            // For file/image attachments
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  consultation   Consultation  @relation(fields: [consultationId], references: [id])
+  sender         Participant   @relation(fields: [senderId], references: [id])
+  readReceipts   ReadReceipt[]
+}
+
+// Model for tracking read receipts
+model ReadReceipt {
+  id            Int         @id @default(autoincrement())
+  messageId     Int
+  participantId Int
+  readAt        DateTime    @default(now())
+  message       Message     @relation(fields: [messageId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  @@unique([messageId, participantId])
+}
+
+enum MessageContentType {
+  TEXT
+  IMAGE
+  FILE
 }

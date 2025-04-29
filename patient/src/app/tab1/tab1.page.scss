@@ -1,0 +1,133 @@
+.dashboard-toolbar {
+  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    
+    .logo-text {
+      font-weight: 800;
+      font-size: 22px;
+      margin-right: 8px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .page-title {
+      font-weight: 300;
+      opacity: 0.85;
+    }
+  }
+}
+
+.container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+}
+
+.section-header {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.section-subtitle {
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    opacity: 0.9;
+  }
+  
+  p {
+    margin-top: 16px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  color: var(--ion-color-medium);
+}
+
+.consultations-list {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+  
+  /* Responsive grid layout */
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.help-section {
+  margin-top: 40px;
+  padding: 24px;
+  background-color: rgba(var(--ion-color-light-rgb), 0.5);
+  border-radius: 16px;
+  position: relative;
+  border: 1px solid rgba(var(--ion-color-medium-rgb), 0.1);
+  
+  .help-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ion-color-dark);
+  }
+  
+  .help-text {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .help-button {
+    --padding-start: 12px;
+    margin-left: 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.support-button-container {
+  display: flex;
+  align-items: center;
+  margin-left: -12px; /* Match the padding-start to create proper alignment */
+}
+
+.subtitle {
+  color: var(--ion-color-medium);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.spacer {
+  flex-grow: 1;
+  min-height: 40vh;
+}

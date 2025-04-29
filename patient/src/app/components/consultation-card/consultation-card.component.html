@@ -1,0 +1,40 @@
+<ion-card class="consultation-card" [ngClass]="{'active-card': consultation.status === ConsultationStatus.ACTIVE}">
+  <ion-ripple-effect></ion-ripple-effect>
+  
+  <div class="card-content">
+    <div class="status-container">
+      <ion-badge class="status-badge" [ngClass]="consultation.status.toLowerCase()">
+        {{ consultation.status }}
+      </ion-badge>
+    </div>
+    
+    <div class="practitioner-info">
+      <div class="avatar">
+        <ion-icon name="person"></ion-icon>
+      </div>
+      <div class="details">
+        <h2 class="title">{{ getPractitionerName() }}</h2>
+        <p class="subtitle">
+          <ion-icon name="time-outline" class="icon"></ion-icon>
+          {{ getFormattedDate() }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="info-row">
+      <p class="info-text">
+        <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+        Your virtual consultation is {{ consultation.status === ConsultationStatus.ACTIVE ? 'in progress' : 'waiting' }}
+      </p>
+    </div>
+    
+    <div class="button-container">
+      <ion-button expand="block" 
+                  class="join-button" 
+                  (click)="onJoin()">
+        <ion-icon name="videocam-outline" slot="start"></ion-icon>
+        JOIN CONSULTATION
+      </ion-button>
+    </div>
+  </div>
+</ion-card> 

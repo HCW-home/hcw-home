@@ -16,7 +16,7 @@
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
+@import '@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
@@ -35,3 +35,128 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* Custom Global Styles */
+body {
+  font-family: var(--app-font-family);
+  color: var(--ion-color-dark);
+  background-color: #f9fafb;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: var(--app-heading-line-height);
+  margin-bottom: 0.5em;
+}
+
+p {
+  line-height: var(--app-body-line-height);
+  margin-bottom: 1em;
+}
+
+.card-shadow {
+  box-shadow: var(--app-box-shadow-sm);
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--app-box-shadow-md);
+  }
+}
+
+.rounded-corners {
+  border-radius: var(--app-border-radius-md);
+  overflow: hidden;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #36D362, #2ECC71);
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #FFCA64, #FFB142);
+}
+
+.gradient-danger {
+  background: linear-gradient(135deg, #F56B77, #E74C3C);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.page-container {
+  padding: var(--app-padding-md);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--ion-color-dark);
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 1.5rem;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: var(--app-box-shadow-sm);
+}
+
+.badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.interactive-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--app-box-shadow-md);
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+  }
+}
+
+.notification-toast {
+  --background: rgba(0, 0, 0, 0.8);
+  --color: white;
+  --border-radius: 8px;
+  --min-height: 60px;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  
+  .toast-wrapper {
+    padding: 12px;
+  }
+  
+  .toast-message {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .toast-button {
+    font-weight: bold;
+    color: var(--ion-color-primary);
+  }
+}

@@ -124,4 +124,45 @@ export class ConsultationService {
             orderBy: { scheduledDate: 'asc' },
         });
     }
+
+    /**
+     * Fetches active or waiting consultations for a patient.
+     * This allows patients to rejoin ongoing consultations from their dashboard.
+     *
+     * @param patientId The ID of the patient
+     * @returns List of active or waiting consultations the patient is part of
+     */
+    async getActiveConsultationsForPatient(patientId: number) {
+        return this.db.consultation.findMany({
+            where: {
+                status: { in: [ConsultationStatus.ACTIVE, ConsultationStatus.WAITING] },
+                participants: {
+                    some: {
+                        userId: patientId,
+                        user: { role: 'Patient' }
+                    },
+                },
+            },
+            select: {
+                id: true,
+                status: true,
+                scheduledDate: true,
+                startedAt: true,
+                participants: {
+                    where: {
+                        user: { role: 'Practitioner' },
+                    },
+                    select: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: { scheduledDate: 'asc' },
+        });
+    }
 }

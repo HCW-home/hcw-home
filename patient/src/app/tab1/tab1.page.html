@@ -1,17 +1,61 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary" class="dashboard-toolbar">
     <ion-title>
-      Tab 1
+      <div class="header-content">
+        <span class="logo-text">HCW</span>
+        <span class="page-title">Dashboard</span>
+      </div>
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="ion-padding">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
+      <ion-title size="large">Dashboard</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)" pullFactor="0.8">
+    <ion-refresher-content pullingIcon="chevron-down" refreshingSpinner="circles"></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Your Active Consultations</h2>
+      <span class="section-subtitle">Join or resume your video consultations</span>
+    </div>
+    
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="circles" color="primary"></ion-spinner>
+      <p>Loading consultations...</p>
+    </div>
+
+    <div *ngIf="!isLoading && activeConsultations.length === 0" class="empty-state">
+      <ion-icon name="videocam-off-outline" class="empty-icon"></ion-icon>
+      <h3>No active consultations</h3>
+      <p>You don't have any active consultations at this time.</p>
+    </div>
+    
+    <div *ngIf="!isLoading && activeConsultations.length > 0" class="consultations-list">
+      <app-consultation-card 
+        *ngFor="let consultation of activeConsultations" 
+        [consultation]="consultation"
+        (joinConsultation)="joinConsultation($event)">
+      </app-consultation-card>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="help-section">
+      <h3 class="help-title">Need assistance?</h3>
+      <p class="help-text">Our support team is available for any questions or technical issues you may have.</p>
+      <div class="support-button-container">
+        <ion-button fill="clear" color="medium" size="small" class="help-button">
+          <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+          CONTACT SUPPORT
+        </ion-button>
+      </div>
+    </div>
+  </div>
 </ion-content>

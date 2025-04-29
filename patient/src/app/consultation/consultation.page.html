@@ -1,0 +1,132 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button icon="arrow-back" defaultHref="/tabs/tab1"></ion-back-button>
+      <div class="title">Virtual Consultation</div>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <div class="call-timer">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>{{ callDuration }}</span>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="video-wrapper">
+    <div class="encryption-badge">
+      <ion-icon name="lock-closed"></ion-icon>
+      <span>Encrypted</span>
+    </div>
+    
+    <div class="signal-quality">
+      <div class="signal-bar"></div>
+      <div class="signal-bar"></div>
+      <div class="signal-bar"></div>
+      <div class="signal-bar"></div>
+    </div>
+    
+    <div class="video-container">
+      <div class="video-placeholder">
+        <ion-icon name="videocam-outline" class="pulse-icon"></ion-icon>
+      </div>
+      
+      <div class="name-tag">
+        <span>{{ doctorName }}</span>
+      </div>
+      
+      <div class="participant-video">
+        <div class="avatar">ME</div>
+        <div class="name">You</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-panel">
+    <div class="info-row">
+      <div class="room-info">
+        <h1 class="room-title">Consultation Room #{{ consultationId }}</h1>
+        <div class="connection-status">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          <span>Connected successfully</span>
+        </div>
+      </div>
+      
+      <div class="connection-details">
+        <div class="detail-item">
+          <ion-icon name="wifi"></ion-icon>
+          <span>Connection: Excellent</span>
+        </div>
+        <div class="detail-item">
+          <ion-icon name="people"></ion-icon>
+          <span>Participants: 2</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="controls-container">
+      <button class="control-button" (click)="toggleMute()">
+        <div class="icon-wrapper">
+          <ion-icon [name]="audioMuted ? 'mic-off' : 'mic'"></ion-icon>
+        </div>
+        <span>Mute</span>
+      </button>
+      
+      <button class="control-button" (click)="toggleVideo()">
+        <div class="icon-wrapper">
+          <ion-icon [name]="videoOff ? 'videocam-off' : 'videocam'"></ion-icon>
+        </div>
+        <span>Stop Video</span>
+      </button>
+      
+      <button class="control-button" (click)="shareScreen()">
+        <div class="icon-wrapper">
+          <ion-icon name="share"></ion-icon>
+        </div>
+        <span>Share</span>
+      </button>
+      
+      <button class="control-button" (click)="openChat()">
+        <div class="icon-wrapper">
+          <ion-icon name="chatbubble"></ion-icon>
+        </div>
+        <span>Chat</span>
+      </button>
+      
+      <button class="control-button end" (click)="endCall()">
+        <div class="icon-wrapper">
+          <ion-icon name="call"></ion-icon>
+        </div>
+        <span>End</span>
+      </button>
+    </div>
+    
+    <div class="secondary-controls">
+      <button class="secondary-button" (click)="openSettings()">
+        <div class="icon-wrapper">
+          <ion-icon name="settings-outline"></ion-icon>
+        </div>
+        <span>Settings</span>
+      </button>
+      
+      <button class="secondary-button">
+        <div class="icon-wrapper">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </div>
+        <span>Documents</span>
+      </button>
+      
+      <button class="secondary-button">
+        <div class="icon-wrapper">
+          <ion-icon name="help-circle-outline"></ion-icon>
+        </div>
+        <span>Support</span>
+      </button>
+    </div>
+    
+    <div class="info-message">
+      <p>In a real application, this is where the video consultation interface would be displayed.</p>
+    </div>
+  </div>
+</ion-content> 

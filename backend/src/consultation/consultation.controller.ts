@@ -26,4 +26,9 @@ export class ConsultationController {
         return {success: true, consultations};
     }
 
+    @Get('/patient/:patientId/active')
+    async getActiveConsultationsForPatient(@Param('patientId', ParseIntPipe) patientId: number) {
+        const consultations = await this.consultationService.getActiveConsultationsForPatient(patientId);
+        return {success: true, consultations};
+    }
 }

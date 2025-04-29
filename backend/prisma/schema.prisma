@@ -69,6 +69,7 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  magicLink          String?            @unique
 }
 
 model Participant {

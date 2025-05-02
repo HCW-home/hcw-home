@@ -4,9 +4,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from '../prisma/auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ConsultationModule } from './consultation/consultation.module';
+import { ExampleModule } from './common/example/example.module';
+import { LoggerModule } from './common/logger';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ConsultationModule } from './consultation/consultation.module';
     AuthModule,
     UserModule,
     ConsultationModule,
+    LoggerModule,
+    ExampleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

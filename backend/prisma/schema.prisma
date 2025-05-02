@@ -16,18 +16,21 @@ enum ConsultationStatus {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
-  firstName        String
-  lastName         String
-  password         String
-  temporaryAccount Boolean
-  phoneNumber      String        @unique()
-  country          String
-  language         String
-  sex              Sex // Enum: male, female, other
-  status           Status        @default(not_approved) // Enum: approved, not_approved
-  Participant      Participant[]
+  id                     Int           @id @default(autoincrement())
+  role                   Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+  firstName              String
+  lastName               String
+  password               String
+  temporaryAccount       Boolean
+  phoneNumber            String        @unique()
+  country                String
+  language               String
+  sex                    Sex // Enum: male, female, other
+  status                 Status        @default(not_approved) // Enum: approved, not_approved
+  notificationsEnabled   Boolean       @default(false)
+  notificationPhoneNumber String?
+  preferredNotificationChannel MessageService?
+  Participant            Participant[]
 }
 
 enum Role {
@@ -56,6 +59,13 @@ enum MessageService {
   MANUALLY
 }
 
+enum ParticipantRole {
+  PATIENT
+  PRACTITIONER
+  EXPERT
+  GUEST
+}
+
 model Consultation {
   id                 Int                @id @default(autoincrement())
   scheduledDate      DateTime?
@@ -72,13 +82,16 @@ model Consultation {
 }
 
 model Participant {
-  id             Int          @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   consultationId Int
   userId         Int
-  isActive       Boolean      @default(false)
+  role           ParticipantRole @default(PATIENT)
+  isActive       Boolean         @default(false)
   joinedAt       DateTime?
-  consultation   Consultation @relation(fields: [consultationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  notes          String?
+  magicLink      String?
+  consultation   Consultation    @relation(fields: [consultationId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
 
   @@unique([consultationId, userId])
 }

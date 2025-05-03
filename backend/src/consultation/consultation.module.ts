@@ -5,6 +5,7 @@ import { ConsultationGateway } from './consultation.gateway';
 
 @Module({
   providers: [ConsultationService, ConsultationGateway],
-  controllers: [ConsultationController]
+  controllers: [ConsultationController],
+  exports: [ConsultationService]
 })
 export class ConsultationModule {}

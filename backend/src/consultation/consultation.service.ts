@@ -2,12 +2,15 @@ import {
     ForbiddenException,
     Injectable,
     NotFoundException,
+    Logger,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { ConsultationStatus } from '@prisma/client';
+import { RecoverConsultationDto } from './dto/recover-consultation.dto';
 
 @Injectable()
 export class ConsultationService {
+    private readonly logger = new Logger(ConsultationService.name);
     constructor(private readonly db: DatabaseService) { }
 
     /**
@@ -123,5 +126,88 @@ export class ConsultationService {
             },
             orderBy: { scheduledDate: 'asc' },
         });
+    }
+
+    /**
+     * Recover a consultation by sending a new magic link to the patient.
+     * This is used when a patient has lost their invite link.
+     * 
+     * @param recoverData The email or phone number of the patient
+     * @returns A generic success message regardless of outcome
+     */
+    async recoverConsultation(recoverData: RecoverConsultationDto) {
+        try {
+            // Find the user by phone number only (email isn't in the model)
+            const user = await this.db.user.findFirst({
+                where: {
+                    phoneNumber: recoverData.phoneNumber || recoverData.email, // Try both values
+                    role: 'Patient',
+                },
+                select: {
+                    id: true,
+                    phoneNumber: true,
+                },
+            });
+
+            if (!user) {
+                this.logger.debug('No patient found with the provided contact information');
+                return { success: true, message: "If an active consultation exists, you'll receive a link shortly via SMS or email." };
+            }
+
+            // Find active consultations for this patient
+            const activeConsultation = await this.db.consultation.findFirst({
+                where: {
+                    status: { in: [ConsultationStatus.SCHEDULED, ConsultationStatus.WAITING, ConsultationStatus.ACTIVE] },
+                    participants: {
+                        some: {
+                            userId: user.id,
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    messageService: true,
+                },
+            });
+
+            if (!activeConsultation) {
+                this.logger.debug(`No active consultation found for patient ${user.id}`);
+                return { success: true, message: "If an active consultation exists, you'll receive a link shortly via SMS or email." };
+            }
+
+            // Generate and send magic link
+            // This is a placeholder - actual implementation would depend on your notification system
+            const magicLink = `https://yourdomain.com/join/${activeConsultation.id}?userId=${user.id}`;
+            
+            // Log the recovery attempt
+            this.logger.log(`Consultation recovery requested for user ${user.id}, consultation ${activeConsultation.id}`);
+            
+            // In a real implementation, you would send the magic link via the preferred channel
+            if (activeConsultation.messageService === 'EMAIL') {
+                // Email option not available since User model doesn't have email
+                this.logger.warn(`Email messaging configured but user has no email`);
+                // Fall back to SMS or WhatsApp
+                if (user.phoneNumber) {
+                    this.logger.log(`Falling back to SMS for ${user.phoneNumber}`);
+                    // smsService.sendMagicLink(user.phoneNumber, magicLink);
+                }
+            } else if (user.phoneNumber) {
+                if (activeConsultation.messageService === 'WHATSAPP') {
+                    // Send WhatsApp message with magic link
+                    this.logger.log(`Sending recovery WhatsApp message to ${user.phoneNumber}`);
+                    // whatsappService.sendMagicLink(user.phoneNumber, magicLink);
+                } else {
+                    // Default to SMS
+                    this.logger.log(`Sending recovery SMS to ${user.phoneNumber}`);
+                    // smsService.sendMagicLink(user.phoneNumber, magicLink);
+                }
+            }
+
+            return { success: true, message: "If an active consultation exists, you'll receive a link shortly via SMS or email." };
+        } catch (error) {
+            // Log the error but still return generic success message
+            this.logger.error(`Error during consultation recovery: ${error.message}`, error.stack);
+            return { success: true, message: "If an active consultation exists, you'll receive a link shortly via SMS or email." };
+        }
     }
 }

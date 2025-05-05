@@ -9,6 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { DatabaseService } from 'src/database/database.service';
+import { ConsultationService } from './consultation.service';
+import { CreateInvitationDto, MessageServiceDto, InvitationRoleDto } from './dto/create-invitation.dto';
 
 interface SendMessageDto {
   content: string;
@@ -29,7 +31,10 @@ export class ConsultationGateway
   implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly consultationService: ConsultationService,
+  ) { }
 
   /**
    * When a socket connects, we expect the client to pass
@@ -219,5 +224,39 @@ export class ConsultationGateway
     });
 
     return { success: true };
+  }
+
+  /**
+   * Handle inviting a new participant during live consultation
+   */
+  @SubscribeMessage('invite-participant')
+  async handleInviteParticipant(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: CreateInvitationDto
+  ) {
+    const { consultationId } = client.data;
+    if (!consultationId) return { success: false, error: 'Invalid consultation' };
+
+    try {
+      // Create the invitation using consultation service
+      const invitation = await this.consultationService.createInvitation(consultationId, {
+        name: data.name,
+        contactValue: data.contactValue,
+        contactMethod: data.contactMethod,
+        role: data.role,
+        notes: data.notes
+      });
+
+      // Notify all participants about the new invited user
+      this.server.to(`consultation:${consultationId}`).emit('participant-invited', {
+        name: invitation.name,
+        role: invitation.role,
+        contactMethod: data.contactMethod
+      });
+
+      return { success: true, invitation };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 }

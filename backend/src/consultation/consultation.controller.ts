@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { CreateInvitationDto } from './dto/create-invitation.dto';
 
 // Define a file interface to avoid import errors
 interface FileUpload {
@@ -86,5 +87,20 @@ export class ConsultationController {
             originalName: file.originalname,
             size: file.size
         };
+    }
+
+    @Post(':id/invitations')
+    async createInvitations(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dtos: CreateInvitationDto[],
+    ) {
+        const invitations = await this.consultationService.createInvitations(id, dtos);
+        return { success: true, invitations };
+    }
+
+    @Get('join/invite')
+    async joinInvite(@Query('token') token: string) {
+        const result = await this.consultationService.joinInvited(token);
+        return { success: true, ...result };
     }
 }

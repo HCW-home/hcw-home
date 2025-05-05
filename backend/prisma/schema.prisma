@@ -17,12 +17,13 @@ enum ConsultationStatus {
 
 model User {
   id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin, Expert, Guest
   firstName        String
   lastName         String
+  email            String?       @unique
   password         String
   temporaryAccount Boolean
-  phoneNumber      String        @unique()
+  phoneNumber      String?       @unique
   country          String
   language         String
   sex              Sex // Enum: male, female, other
@@ -34,6 +35,8 @@ enum Role {
   Patient
   Practitioner
   Admin
+  Expert
+  Guest
 }
 
 enum Sex {
@@ -56,6 +59,11 @@ enum MessageService {
   MANUALLY
 }
 
+enum InvitationRole {
+  Expert
+  Guest
+}
+
 model Consultation {
   id                 Int                @id @default(autoincrement())
   scheduledDate      DateTime?
@@ -69,6 +77,7 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  invitations        Invitation[]
   messages           Message[]
 }
 
@@ -141,6 +150,19 @@ model ReadReceipt {
   participant   Participant @relation(fields: [participantId], references: [id])
 
   @@unique([messageId, participantId])
+}
+
+model Invitation {
+  id             Int             @id @default(autoincrement())
+  consultationId Int
+  name           String
+  contactValue   String
+  contactMethod  MessageService
+  role           InvitationRole
+  notes          String?
+  token          String          @unique
+  sentAt         DateTime?
+  consultation   Consultation    @relation(fields: [consultationId], references: [id])
 }
 
 enum MessageContentType {

@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
-import { DatabaseModule } from 'src/database/database.module';
 
+/**
+ * UserController manages user-related API endpoints.
+ * It handles creating, retrieving, and deleting user records.
+ */
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

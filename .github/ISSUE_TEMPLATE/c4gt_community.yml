@@ -1,3 +1,14 @@
+# This file defines the issue template for the C4GT Community project.
+# It specifies the structure and content of the issue creation form.
+# Each section in the 'body' array represents a field in the issue form.
+# The 'type' field determines the type of input (e.g., textarea, input, dropdown).
+# 'id' is a unique identifier for each field.
+# 'attributes' define the properties of each field, such as label, description, placeholder, and options.
+# 'validations' specify whether a field is required.
+# The template includes fields for describing the ticket, its goals, expected outcome, acceptance criteria,
+# implementation details, mockups, product name, organization, governance domain, technical skills required,
+# mentors, complexity, and category.
+# The dropdown options provide predefined choices for organization, technical skills, complexity, and category.
 name: C4GT Community Template
 description: Create a new Ticket for C4GT Community
 title: "[C4GT Community]: "

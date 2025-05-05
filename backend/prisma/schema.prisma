@@ -17,12 +17,13 @@ enum ConsultationStatus {
 
 model User {
   id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin, Expert, Guest
   firstName        String
   lastName         String
+  email            String?       @unique
   password         String
   temporaryAccount Boolean
-  phoneNumber      String        @unique()
+  phoneNumber      String?       @unique
   country          String
   language         String
   sex              Sex // Enum: male, female, other
@@ -34,6 +35,8 @@ enum Role {
   Patient
   Practitioner
   Admin
+  Expert
+  Guest
 }
 
 enum Sex {
@@ -56,6 +59,11 @@ enum MessageService {
   MANUALLY
 }
 
+enum InvitationRole {
+  Expert
+  Guest
+}
+
 model Consultation {
   id                 Int                @id @default(autoincrement())
   scheduledDate      DateTime?
@@ -69,6 +77,8 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  invitations        Invitation[]
+  messages           Message[]
 }
 
 model Participant {
@@ -79,6 +89,8 @@ model Participant {
   joinedAt       DateTime?
   consultation   Consultation @relation(fields: [consultationId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
+  messages       Message[]
+  readReceipts   ReadReceipt[]
 
   @@unique([consultationId, userId])
 }
@@ -111,4 +123,50 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+// Model for chat messages
+model Message {
+  id             Int          @id @default(autoincrement())
+  consultationId Int
+  senderId       Int
+  content        String
+  contentType    MessageContentType @default(TEXT)
+  fileUrl        String?            // For file/image attachments
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  consultation   Consultation  @relation(fields: [consultationId], references: [id])
+  sender         Participant   @relation(fields: [senderId], references: [id])
+  readReceipts   ReadReceipt[]
+}
+
+// Model for tracking read receipts
+model ReadReceipt {
+  id            Int         @id @default(autoincrement())
+  messageId     Int
+  participantId Int
+  readAt        DateTime    @default(now())
+  message       Message     @relation(fields: [messageId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  @@unique([messageId, participantId])
+}
+
+model Invitation {
+  id             Int             @id @default(autoincrement())
+  consultationId Int
+  name           String
+  contactValue   String
+  contactMethod  MessageService
+  role           InvitationRole
+  notes          String?
+  token          String          @unique
+  sentAt         DateTime?
+  consultation   Consultation    @relation(fields: [consultationId], references: [id])
+}
+
+enum MessageContentType {
+  TEXT
+  IMAGE
+  FILE
 }

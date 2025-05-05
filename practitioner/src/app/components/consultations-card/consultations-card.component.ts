@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { RoutePaths } from '../../constants/route-paths.enum';
 import { ButtonComponent } from '../ui/button/button.component';
 import { ButtonSize, ButtonVariant } from '../../constants/button.enums';
+import { ConsultationService } from '../../services/consultations/consultation.service';
 
 @Component({
   selector: 'app-consultation-card',
@@ -22,10 +23,9 @@ export class ConsultationCardComponent {
   readonly ButtonSize = ButtonSize;
   readonly ButtonVariant = ButtonVariant;
 
+  constructor(private consultationService: ConsultationService) {}
+
   formatTime(date: Date): string {
-    return new Date(date).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return this.consultationService.getFormattedTime(date);
   }
 }

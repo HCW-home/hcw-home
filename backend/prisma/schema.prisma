@@ -9,7 +9,7 @@ datasource db {
 
 enum ConsultationStatus {
   SCHEDULED
-  WAITING
+  WAITING_ROOM
   ACTIVE
   COMPLETED
   CANCELLED
@@ -17,7 +17,7 @@ enum ConsultationStatus {
 
 model User {
   id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient) // Enum: Patient, Practitioner, Admin
+  role             Role          @default(Patient)
   firstName        String
   lastName         String
   password         String
@@ -25,9 +25,10 @@ model User {
   phoneNumber      String        @unique()
   country          String
   language         String
-  sex              Sex // Enum: male, female, other
-  status           Status        @default(not_approved) // Enum: approved, not_approved
+  sex              Sex
+  status           Status        @default(not_approved)
   Participant      Participant[]
+  messages         Message[]
 }
 
 enum Role {
@@ -47,13 +48,12 @@ enum Status {
   not_approved
 }
 
-//  Add the new models/enums that is necessary for consultation remainders
-
 enum MessageService {
   SMS
   EMAIL
   WHATSAPP
   MANUALLY
+  IN_APP
 }
 
 model Consultation {
@@ -69,6 +69,7 @@ model Consultation {
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  messages           Message[]
 }
 
 model Participant {
@@ -111,4 +112,14 @@ model SMS_Providers {
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  senderId       Int
+  consultationId Int
+  content        String
+  timestamp      DateTime  @default(now())
+  user           User      @relation(fields: [senderId], references: [id])
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
 }

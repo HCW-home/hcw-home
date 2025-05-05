@@ -1,6 +1,14 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post} from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
 
+/**
+ * @Controller Consultation
+ *
+ * This controller manages consultation related operations, including joining a consultation as a patient or practitioner,
+ * and retrieving consultations in the waiting room for a specific user.
+ *
+ * @RequestMapping consultation
+ */
 @Controller('consultation')
 export class ConsultationController {
 

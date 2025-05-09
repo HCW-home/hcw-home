@@ -1,17 +1,206 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <div class="header-content">
+      <ion-title color="primary">My Dashboard</ion-title>
+      <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="searchConsultations($event)"
+        placeholder="Search consultations..." animated="true" showClearButton="always" class="compact-searchbar">
+      </ion-searchbar>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="dashboard-container">
+    <!-- Profile Section -->
+    <section class="profile-section">
+      <ion-card class="profile-card">
+        <ion-card-content>
+          <div class="profile-header">
+            <ion-avatar>
+              <img
+                [src]="userProfile.avatar || 'https://ui-avatars.com/api/?name=' + userProfile.name + '&background=0D8ABC&color=fff'"
+                [alt]="userProfile.name">
+            </ion-avatar>
+            <div class="profile-info">
+              <h1 class="profile-name">{{ userProfile.name }}</h1>
+              <div class="profile-meta">
+                <span><ion-icon name="calendar-outline"></ion-icon> {{ userProfile.age }} years</span>
+                <span><ion-icon name="water-outline"></ion-icon> {{ userProfile.bloodGroup }}</span>
+              </div>
+              <p class="last-visit">
+                <ion-icon name="time-outline"></ion-icon>
+                Last Visit: {{ userProfile.lastVisit | date:'mediumDate' }}
+              </p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+      <ion-button expand="block" routerLink="/book-consultation" class="main-button">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Book New Consultation
+      </ion-button>
+    </section>
+
+    <!-- Consultations Section -->
+    <section class="consultations-section">
+      <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged()" color="primary"
+        class="consultation-slider">
+        <ion-segment-button value="upcoming">
+          <ion-label>Upcoming</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="past">
+          <ion-label>Past</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <div class="consultation-grid">
+        <ng-container *ngIf="selectedSegment === 'upcoming'">
+          <ng-container
+            *ngIf="(searchTerm ? filteredConsultations : upcomingConsultations).length > 0; else noUpcoming">
+            <ion-card class="consultation-item"
+              *ngFor="let consultation of searchTerm ? filteredConsultations : upcomingConsultations">
+              <div class="consultation-status" [class]="consultation.status.toLowerCase()">
+                <ion-badge [color]="getBadgeColor(consultation.status)">
+                  <ion-icon [name]="getStatusIcon(consultation.status)"></ion-icon>
+                  {{ consultation.status }}
+                </ion-badge>
+                <span class="countdown" *ngIf="consultation.status === 'Confirmed'">
+                  <ion-icon name="time-outline"></ion-icon>
+                  {{ getRemainingTime(consultation.date) }}
+                </span>
+              </div>
+
+              <ion-card-content>
+                <div class="doctor-info">
+                  <ion-avatar>
+                    <img [src]="consultation.practitioner.avatar" [alt]="consultation.practitioner.name">
+                  </ion-avatar>
+                  <div class="doctor-details">
+                    <h2>{{ consultation.practitioner.name }}</h2>
+                    <p class="specialty">
+                      <ion-icon name="medical-outline"></ion-icon>
+                      {{ consultation.practitioner.specialty }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="consultation-meta">
+                  <p class="date">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ consultation.date | date: 'MMM d, y' }}
+                  </p>
+                  <p class="time">
+                    <ion-icon name="time-outline"></ion-icon>
+                    {{ consultation.date | date: 'shortTime' }}
+                  </p>
+                  <p class="location">
+                    <ion-icon [name]="getLocationIcon(consultation.location)"></ion-icon>
+                    {{ consultation.location }}
+                  </p>
+                  <p class="price">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    ${{ consultation.price }}
+                  </p>
+                </div>
+
+                <div class="symptoms" *ngIf="consultation.symptoms?.length">
+                  <ion-chip *ngFor="let symptom of consultation.symptoms" outline color="medium">
+                    <ion-icon name="fitness-outline"></ion-icon>
+                    <ion-label>{{ symptom }}</ion-label>
+                  </ion-chip>
+                </div>
+
+                <div class="consultation-actions" *ngIf="consultation.status === 'Confirmed'">
+                  <ion-button class="join-button" fill="solid" (click)="joinConsultation(consultation)">
+                    <ion-icon name="videocam-outline" slot="start"></ion-icon>
+                    Join Call
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="selectedSegment === 'past'">
+          <ng-container *ngIf="(searchTerm ? filteredConsultations : pastConsultations).length > 0; else noPast">
+            <ion-card class="consultation-item"
+              *ngFor="let consultation of searchTerm ? filteredConsultations : pastConsultations">
+              <div class="consultation-status" [class]="consultation.status.toLowerCase()">
+                <ion-badge [color]="getBadgeColor(consultation.status)">
+                  <ion-icon [name]="getStatusIcon(consultation.status)"></ion-icon>
+                  {{ consultation.status }}
+                </ion-badge>
+              </div>
+
+              <ion-card-content>
+                <div class="doctor-info">
+                  <ion-avatar>
+                    <img [src]="consultation.practitioner.avatar" [alt]="consultation.practitioner.name">
+                  </ion-avatar>
+                  <div class="doctor-details">
+                    <h2>{{ consultation.practitioner.name }}</h2>
+                    <p class="specialty">
+                      <ion-icon name="medical-outline"></ion-icon>
+                      {{ consultation.practitioner.specialty }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="consultation-meta">
+                  <p class="date">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ consultation.date | date: 'MMM d, y' }}
+                  </p>
+                  <p class="time">
+                    <ion-icon name="time-outline"></ion-icon>
+                    {{ consultation.date | date: 'shortTime' }}
+                  </p>
+                  <p class="location">
+                    <ion-icon [name]="getLocationIcon(consultation.location)"></ion-icon>
+                    {{ consultation.location }}
+                  </p>
+                  <p class="price">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    ${{ consultation.price }}
+                  </p>
+                </div>
+
+                <div class="consultation-actions">
+                  <ng-container *ngIf="!consultation.reviewed && consultation.status === 'Completed'">
+                    <ion-button class="review-button" fill="solid" (click)="openReviewModal(consultation)">
+                      <ion-icon name="star-outline" slot="start"></ion-icon>
+                      Add Review
+                    </ion-button>
+                  </ng-container>
+                  <div class="review-info" *ngIf="consultation.reviewed">
+                    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                    <span>Reviewed</span>
+                    <ion-badge class="rating-badge">{{ consultation.rating }}/5</ion-badge>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ng-container>
+        </ng-container>
+      </div>
+    </section>
+  </div>
+
+  <ng-template #noUpcoming>
+    <div class="empty-state">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <p>No upcoming consultations</p>
+      <ion-button expand="block" routerLink="/book-consultation" class="main-button">
+        Book Consultation
+      </ion-button>
+    </div>
+  </ng-template>
+
+  <ng-template #noPast>
+    <div class="empty-state">
+      <ion-icon name="time-outline"></ion-icon>
+      <p>No past consultations</p>
+    </div>
+  </ng-template>
 </ion-content>

@@ -1,0 +1,125 @@
+:host {
+  --page-margin: 12px;
+}
+
+ion-header {
+  ion-toolbar {
+    --background: #ffffff;
+    --border-color: transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
+    ion-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    ion-back-button {
+      --color: var(--ion-color-primary);
+      --icon-font-size: 18px;
+    }
+  }
+}
+
+ion-content {
+  --background: #f5f7fa;
+  font-family: 'Inter', sans-serif;
+}
+
+.container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding-top: var(--page-margin);
+}
+
+ion-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+  border: 1px solid #e0e6ed;
+  overflow: hidden;
+
+  ion-card-header {
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e6ed;
+
+    ion-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
+
+  ion-card-content {
+    padding: 12px;
+  }
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --border-color: transparent;
+    --inner-padding-end: 0;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    ion-label {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    ion-input {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --padding-top: 10px;
+      --padding-bottom: 10px;
+      --border-radius: 8px;
+      --background: #f8fafc;
+      margin-top: 4px;
+      font-size: 15px;
+    }
+
+    ion-datetime {
+      --background: #f8fafc;
+      border-radius: 8px;
+      margin-top: 4px;
+      padding: 8px 12px;
+      min-height: 44px;
+    }
+
+    ion-textarea {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --padding-top: 10px;
+      --padding-bottom: 10px;
+      --border-radius: 8px;
+      --background: #f8fafc;
+      margin-top: 4px;
+      min-height: 120px;
+    }
+  }
+}
+
+ion-button[type="submit"] {
+  margin: 16px 0;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 500;
+
+  ion-icon {
+    font-size: 18px;
+    margin-right: 6px;
+  }
+}

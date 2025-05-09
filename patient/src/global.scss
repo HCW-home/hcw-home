@@ -34,4 +34,37 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Commenting out dark mode related imports */
+// @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* Add light theme variables */
+:root {
+    --ion-background-color: #f4f5f8;
+    --ion-background-color-rgb: 244, 245, 248;
+
+    --ion-text-color: #333333;
+    --ion-text-color-rgb: 51, 51, 51;
+
+    --ion-color-primary: #3880ff;
+    --ion-color-primary-rgb: 56, 128, 255;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-shade: #3171e0;
+    --ion-color-primary-tint: #4c8dff;
+
+    --ion-color-secondary: #3dc2ff;
+    --ion-color-secondary-rgb: 61, 194, 255;
+    --ion-color-secondary-contrast: #ffffff;
+    --ion-color-secondary-shade: #36abe0;
+    --ion-color-secondary-tint: #50c8ff;
+
+    --ion-color-light: #f4f5f8;
+    --ion-color-light-rgb: 244, 245, 248;
+    --ion-color-light-contrast: #000000;
+    --ion-color-light-shade: #d7d8da;
+    --ion-color-light-tint: #f5f6f9;
+
+    --ion-toolbar-background: #ffffff;
+    --ion-item-background: #ffffff;
+    --ion-card-background: #ffffff;
+}
+

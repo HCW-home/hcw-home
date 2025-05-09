@@ -1,0 +1,116 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Book Consultation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="container">
+    <form (ngSubmit)="onSubmit()">
+      <!-- Contact Information -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Contact Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Contact Number</ion-label>
+            <ion-input type="tel" [(ngModel)]="consultation.contact" name="contact"
+              placeholder="Enter your contact number" required></ion-input>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Consultation Type -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Consultation Details</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Type of Consultation</ion-label>
+            <ion-select [(ngModel)]="consultation.type" name="type" placeholder="Select type" required>
+              <ion-select-option *ngFor="let type of consultationTypes" [value]="type">
+                {{type}}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Consultation Mode</ion-label>
+            <ion-select [(ngModel)]="consultation.location" name="location" placeholder="Select mode" required>
+              <ion-select-option *ngFor="let location of locationTypes" [value]="location">
+                {{location}}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Symptoms -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Symptoms</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Select Symptoms</ion-label>
+            <ion-select [(ngModel)]="consultation.symptoms" name="symptoms" multiple="true"
+              placeholder="Select symptoms" required>
+              <ion-select-option *ngFor="let symptom of commonSymptoms" [value]="symptom">
+                {{symptom}}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Date and Time -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Preferred Schedule</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <!-- Update the Date input section -->
+          <ion-item>
+            <ion-label position="stacked">Date</ion-label>
+            <ion-datetime [(ngModel)]="consultation.date" name="date" presentation="date" [min]="minDate"
+              [max]="maxDate" [firstDayOfWeek]="1" [preferWheel]="false" locale="en-IN" required>
+              <span slot="title">Select Date</span>
+            </ion-datetime>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Time</ion-label>
+            <ion-datetime [(ngModel)]="consultation.timeSlot" name="timeSlot" presentation="time" required>
+            </ion-datetime>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Additional Notes -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Additional Notes</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Notes</ion-label>
+            <ion-textarea [(ngModel)]="consultation.notes" name="notes"
+              placeholder="Enter any additional details (optional)" rows="4">
+            </ion-textarea>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Submit Button -->
+      <ion-button type="submit" expand="block" class="ion-margin-top">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Request Consultation
+      </ion-button>
+    </form>
+  </div>
+</ion-content>

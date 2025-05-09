@@ -1,0 +1,483 @@
+:host {
+    --page-margin: 12px;
+}
+
+ion-content {
+    --background: #f5f7fa;
+    font-family: 'Inter', sans-serif;
+}
+
+.dashboard-container {
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-section {
+    margin-bottom: 24px;
+}
+
+.container {
+    max-width: 768px;
+    margin: 0 auto;
+    padding-top: var(--page-margin);
+}
+
+.profile-card {
+    background: #ffffff; // Changed from gradient to white
+    border-radius: 16px;
+    margin: 0;
+    color: #1e293b; // Changed text color to dark for better visibility
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); // Added subtle shadow
+    border: 1px solid #e0e6ed; // Added subtle border
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 24px; // Added padding
+
+        ion-avatar {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--ion-color-primary); // Changed border color
+            box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.1);
+        }
+
+        .profile-info {
+            flex: 1;
+
+            .profile-name {
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+                color: #1e293b; // Added text color
+            }
+
+            .profile-meta {
+                display: flex;
+                gap: 16px;
+                font-size: 14px;
+                color: #64748b; // Changed color
+
+                span {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+
+                ion-icon {
+                    font-size: 16px;
+                    color: var(--ion-color-primary); // Changed icon color
+                }
+            }
+
+            .last-visit {
+                font-size: 12px;
+                color: #94a3b8; // Changed color
+                margin: 8px 0 0 0;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                ion-icon {
+                    color: var(--ion-color-primary); // Changed icon color
+                }
+            }
+        }
+    }
+}
+
+.consultation-slider {
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    ion-segment-button {
+        --background-checked: var(--ion-color-primary);
+        --color-checked: #ffffff;
+        --indicator-color: transparent;
+        min-height: 40px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}
+
+.consultation-card {
+    background: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e6ed;
+
+    ion-card-header {
+        background: #f8fafc;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e6ed;
+
+        ion-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            ion-icon {
+                font-size: 18px;
+                color: var(--ion-color-primary);
+            }
+        }
+    }
+
+    ion-item {
+        --background: #ffffff;
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --padding-top: 12px;
+        --padding-bottom: 12px;
+        --border-color: #e0e6ed;
+
+        .consultation-date {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .doctor-name {
+            font-size: 13px;
+            color: #64748b;
+            margin: 2px 0;
+        }
+
+        ion-badge {
+            margin-top: 4px;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+    }
+}
+
+.consultation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.consultation-item {
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    .consultation-status {
+        padding: 12px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e0e6ed;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &.confirmed {
+            background: rgba(var(--ion-color-success-rgb), 0.1);
+        }
+
+        &.pending {
+            background: rgba(var(--ion-color-warning-rgb), 0.1);
+        }
+
+        .countdown {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ion-color-primary);
+        }
+    }
+
+    .consultation-header {
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+        }
+
+        .date,
+        .time {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+    }
+
+    .consultation-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+}
+
+.consultation-item {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin: 16px;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .doctor-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        ion-avatar {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--ion-color-primary);
+        }
+
+        .doctor-details {
+            h2 {
+                font-size: 18px;
+                font-weight: 600;
+                color: #1a202c;
+                margin: 0;
+            }
+
+            .specialty {
+                color: var(--ion-color-primary);
+                font-size: 14px;
+                margin: 4px 0 0 0;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+        }
+    }
+
+    .consultation-meta {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+
+        p {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            font-size: 14px;
+            color: #4a5568;
+
+            ion-icon {
+                font-size: 16px;
+                color: var(--ion-color-primary);
+            }
+        }
+    }
+
+    .symptoms {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+
+        ion-chip {
+            --background: transparent;
+            --color: var(--ion-color-medium);
+            font-size: 12px;
+        }
+    }
+}
+
+.main-button {
+    margin: 16px 0;
+    --border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    height: 48px;
+
+    ion-icon {
+        font-size: 18px;
+        margin-right: 6px;
+    }
+}
+
+ion-badge[color="success"] {
+    --background: #10b981;
+}
+
+ion-badge[color="warning"] {
+    --background: #f59e0b;
+}
+
+ion-badge[color="danger"] {
+    --background: #ef4444;
+}
+
+ion-badge[color="medium"] {
+    --background: #64748b;
+}
+
+.countdown-timer {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ion-color-primary);
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+
+    ion-button {
+        --padding-start: 8px;
+        --padding-end: 8px;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 6px rgba(var(--ion-color-primary-rgb), 0.2);
+        font-size: 10px;
+        font-weight: 500;
+        height: 36px;
+
+        ion-icon {
+            font-size: 16px;
+            margin-right: 3px;
+        }
+
+        &:hover {
+            --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+        }
+    }
+
+    .join-button {
+        --background: var(--ion-color-primary);
+        --color: #ffffff;
+    }
+
+    .review-button {
+        --background: var(--ion-color-warning);
+        --color: #ffffff;
+    }
+}
+
+.review-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 8px;
+
+    ion-icon {
+        font-size: 16px;
+        color: var(--ion-color-success);
+    }
+
+    .rating-badge {
+        font-size: 11px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        margin-left: 4px;
+        background: var(--ion-color-success);
+        color: #ffffff;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: #64748b;
+
+    ion-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    p {
+        font-size: 16px;
+        margin: 0;
+    }
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    gap: 20px;
+
+    ion-title {
+        flex: 0 0 auto;
+        padding: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .compact-searchbar {
+        flex: 1;
+        max-width: 300px;
+        margin: 0 8px;
+        padding: 0;
+        --box-shadow: none;
+        --background: #f4f5f8;
+        --border-radius: 8px;
+        --placeholder-opacity: 0.8;
+        --padding-start: 8px;
+        --padding-end: 8px;
+        height: 40px;
+
+        .searchbar-input {
+            font-size: 14px;
+        }
+
+        .searchbar-input-container {
+            height: 40px;
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px;
+
+        ion-title {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .compact-searchbar {
+            max-width: 100%;
+            margin: 0;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 12px;
+    }
+
+    .consultation-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -7,10 +7,16 @@ import {
   Post,
 } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
+import { ConsultationGateway } from './consultation.gateway';
+import { DatabaseService } from '../database/database.service';
 
 @Controller('consultation')
 export class ConsultationController {
-  constructor(private readonly consultationService: ConsultationService) {}
+  constructor(
+    private readonly consultationService: ConsultationService,
+    private readonly consultationGateway: ConsultationGateway, // Inject gateway
+    private readonly databaseService: DatabaseService, // Optional: used to fetch user info
+  ) {}
 
   @Post(':id/join/patient')
   async joinPatient(
@@ -18,6 +24,20 @@ export class ConsultationController {
     @Body() body: { userId: number },
   ) {
     const res = await this.consultationService.joinAsPatient(id, body.userId);
+
+    // Fetch user details for name
+    const user = await this.databaseService.findUserById(body.userId);
+    const joinedAt = res.participant?.joinedAt?.toISOString() ?? new Date().toISOString();
+
+    // Notify via WebSocket if needed
+    if (user?.role === 'Patient') {
+      this.consultationGateway.notifyPractitioner({
+        consultationId: id,
+        patientName: user.firstName || 'Patient',
+        joinedAt,
+      });
+    }
+
     return { message: 'Patient joined consultation.', ...res };
   }
 
@@ -26,17 +46,13 @@ export class ConsultationController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { userId: number },
   ) {
-    const res = await this.consultationService.joinAsPractitioner(
-      id,
-      body.userId,
-    );
+    const res = await this.consultationService.joinAsPractitioner(id, body.userId);
     return { message: 'Practitioner joined consultation.', ...res };
   }
 
   @Get('/waiting-room/:userId')
   async getWaitingRoom(@Param('userId', ParseIntPipe) userId: number) {
-    const consultations =
-      await this.consultationService.getWaitingRoomConsultations(userId);
+    const consultations = await this.consultationService.getWaitingRoomConsultations(userId);
     return { success: true, consultations };
   }
 }

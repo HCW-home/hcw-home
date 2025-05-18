@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, Prisma, MessageType } from '@prisma/client';
+import { PrismaClient, Prisma, MessageType, User } from '@prisma/client';
 
 @Injectable()
 export class DatabaseService extends PrismaClient {
@@ -10,6 +10,7 @@ export class DatabaseService extends PrismaClient {
   public set messageRead(value: any) {
     this._messageRead = value;
   }
+
   private _message: any;
   public get message(): any {
     return this._message;
@@ -17,6 +18,20 @@ export class DatabaseService extends PrismaClient {
   public set message(value: any) {
     this._message = value;
   }
+
+  // ✅ Implemented to fetch user details like role and first name
+  async findUserById(userId: number): Promise<{ id: number; role: User['role']; firstName: string } | null> {
+    return this.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        firstName: true,
+      },
+    });
+  }
+
+  // ✅ Upserts the participant (used when user connects/disconnects)
   async upsertParticipant(consultationId: number, userId: number, isActive: boolean) {
     return this.participant.upsert({
       where: {
@@ -35,7 +50,7 @@ export class DatabaseService extends PrismaClient {
     });
   }
 
-  // Get currently active patients in a consultation
+  // ✅ Finds currently active patients in a consultation
   async findActivePatients(consultationId: number) {
     return this.participant.findMany({
       where: {
@@ -48,14 +63,14 @@ export class DatabaseService extends PrismaClient {
     });
   }
 
-  // Find a consultation by ID
+  // ✅ Find a consultation by ID
   async findConsultationById(consultationId: number) {
     return this.consultation.findUniqueOrThrow({
       where: { id: consultationId },
     });
   }
 
-  // Update consultation status (e.g., to SCHEDULED when all leave)
+  // ✅ Update consultation status (e.g., when all leave)
   async updateConsultationStatus(consultationId: number, status: Prisma.ConsultationUpdateInput['status']) {
     return this.consultation.update({
       where: { id: consultationId },
@@ -63,7 +78,7 @@ export class DatabaseService extends PrismaClient {
     });
   }
 
-  // Save a message (text, file, image)
+  // ✅ Save a message (text, image, or file)
   async saveMessage(input: {
     consultationId: number;
     userId: number;
@@ -82,7 +97,7 @@ export class DatabaseService extends PrismaClient {
     });
   }
 
-  // Mark a message as read by a user
+  // ✅ Mark message as read by a user
   async markMessageAsRead(messageId: number, userId: number) {
     return this.messageRead.upsert({
       where: {

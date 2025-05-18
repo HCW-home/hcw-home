@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service'; // adjust the path as needed
+import { DatabaseService } from '../database/database.service';
 import { ConsultationStatus } from '@prisma/client';
 
 @Injectable()
@@ -21,14 +21,10 @@ export class ConsultationService {
       where: {
         status: ConsultationStatus.WAITING,
         participants: {
-          some: {
-            userId,
-          },
+          some: { userId },
         },
       },
-      include: {
-        participants: true,
-      },
+      include: { participants: true },
     });
 
     return consultations;

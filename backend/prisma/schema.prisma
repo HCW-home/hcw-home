@@ -15,24 +15,6 @@ enum ConsultationStatus {
   CANCELLED
 }
 
-model User {
-  id               Int           @id @default(autoincrement())
-  role             Role          @default(Patient)
-  firstName        String
-  lastName         String
-  password         String
-  temporaryAccount Boolean
-  phoneNumber      String        @unique()
-  country          String
-  language         String
-  sex              Sex
-  status           Status        @default(not_approved)
-  Participant      Participant[]
-
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-}
-
 enum Role {
   Patient
   Practitioner
@@ -50,13 +32,38 @@ enum Status {
   not_approved
 }
 
-//  Add the new models/enums that is necessary for consultation remainders
-
 enum MessageService {
   SMS
   EMAIL
   WHATSAPP
   MANUALLY
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+model User {
+  id               Int           @id @default(autoincrement())
+  role             Role          @default(Patient)
+  firstName        String
+  lastName         String
+  password         String
+  temporaryAccount Boolean
+  phoneNumber      String        @unique()
+  country          String
+  language         String
+  sex              Sex
+  status           Status        @default(not_approved)
+
+  Participant      Participant[]
+  messages         Message[]          @relation("UserMessages")
+  messageReads     MessageRead[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model Consultation {
@@ -71,7 +78,9 @@ model Consultation {
   messageService     MessageService?
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
+
   participants       Participant[]
+  messages           Message[]
 }
 
 model Participant {
@@ -80,10 +89,37 @@ model Participant {
   userId         Int
   isActive       Boolean      @default(false)
   joinedAt       DateTime?
+
   consultation   Consultation @relation(fields: [consultationId], references: [id])
   user           User         @relation(fields: [userId], references: [id])
 
   @@unique([consultationId, userId])
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  content        String?
+  type           MessageType   @default(TEXT)
+  mediaUrl       String?
+  createdAt      DateTime      @default(now())
+
+  consultation   Consultation  @relation(fields: [consultationId], references: [id])
+  user           User          @relation("UserMessages", fields: [userId], references: [id])
+  reads          MessageRead[]
+}
+
+model MessageRead {
+  id         Int      @id @default(autoincrement())
+  messageId  Int
+  userId     Int
+  readAt     DateTime @default(now())
+
+  message    Message  @relation(fields: [messageId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId])
 }
 
 model Whatsapp_Template {

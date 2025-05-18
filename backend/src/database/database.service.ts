@@ -1,27 +1,116 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { PrismaClient, Prisma, MessageType, User } from '@prisma/client';
 
 @Injectable()
-export class DatabaseService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
-  constructor() {
-    super({
-      log:
-        process.env.NODE_ENV === 'development'
-          ? ['query', 'error', 'warn']
-          : ['error'],
+export class DatabaseService extends PrismaClient {
+  private _messageRead: any;
+  public get messageRead(): any {
+    return this._messageRead;
+  }
+  public set messageRead(value: any) {
+    this._messageRead = value;
+  }
+
+  private _message: any;
+  public get message(): any {
+    return this._message;
+  }
+  public set message(value: any) {
+    this._message = value;
+  }
+
+  // ✅ Implemented to fetch user details like role and first name
+  async findUserById(userId: number): Promise<{ id: number; role: User['role']; firstName: string } | null> {
+    return this.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        firstName: true,
+      },
     });
   }
 
-  async onModuleInit() {
-    await this.$connect();
-    console.log('Database connection established');
+  // ✅ Upserts the participant (used when user connects/disconnects)
+  async upsertParticipant(consultationId: number, userId: number, isActive: boolean) {
+    return this.participant.upsert({
+      where: {
+        consultationId_userId: { consultationId, userId },
+      },
+      update: {
+        isActive,
+        joinedAt: isActive ? new Date() : undefined,
+      },
+      create: {
+        consultationId,
+        userId,
+        isActive,
+        joinedAt: new Date(),
+      },
+    });
   }
 
-  async onModuleDestroy() {
-    await this.$disconnect();
-    console.log('Database connection closed');
+  // ✅ Finds currently active patients in a consultation
+  async findActivePatients(consultationId: number) {
+    return this.participant.findMany({
+      where: {
+        consultationId,
+        isActive: true,
+        user: {
+          role: 'Patient',
+        },
+      },
+    });
+  }
+
+  // ✅ Find a consultation by ID
+  async findConsultationById(consultationId: number) {
+    return this.consultation.findUniqueOrThrow({
+      where: { id: consultationId },
+    });
+  }
+
+  // ✅ Update consultation status (e.g., when all leave)
+  async updateConsultationStatus(consultationId: number, status: Prisma.ConsultationUpdateInput['status']) {
+    return this.consultation.update({
+      where: { id: consultationId },
+      data: { status },
+    });
+  }
+
+  // ✅ Save a message (text, image, or file)
+  async saveMessage(input: {
+    consultationId: number;
+    userId: number;
+    content?: string;
+    mediaUrl?: string;
+    type: MessageType;
+  }) {
+    return this.message.create({
+      data: {
+        consultationId: input.consultationId,
+        userId: input.userId,
+        content: input.content,
+        mediaUrl: input.mediaUrl,
+        type: input.type,
+      },
+    });
+  }
+
+  // ✅ Mark message as read by a user
+  async markMessageAsRead(messageId: number, userId: number) {
+    return this.messageRead.upsert({
+      where: {
+        messageId_userId: { messageId, userId },
+      },
+      update: {
+        readAt: new Date(),
+      },
+      create: {
+        messageId,
+        userId,
+        readAt: new Date(),
+      },
+    });
   }
 }

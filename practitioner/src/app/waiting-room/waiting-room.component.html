@@ -1,0 +1,22 @@
+<div class="waiting-room">
+  <h2>Waiting Room</h2>
+
+  <div *ngIf="consultations.length === 0" class="empty-message">
+    No patients waiting right now.
+  </div>
+
+  <ul *ngIf="consultations.length > 0" class="consultation-list">
+    <li *ngFor="let consultation of consultations" class="consultation-item">
+      <div class="patient-name">{{ consultation.patientName }}</div>
+      <div class="scheduled-time">
+        Scheduled at: {{ consultation.scheduledDate | date: 'short' }}
+      </div>
+      <div class="join-time">
+        Joined at: {{ consultation.joinTime | date: 'shortTime' }}
+      </div>
+      <div class="status">
+        Status: {{ consultation.status }}
+      </div>
+    </li>
+  </ul>
+</div>

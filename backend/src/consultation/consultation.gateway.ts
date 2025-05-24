@@ -5,14 +5,15 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../../src/database/database.service';
 
 @WebSocketGateway({ namespace: '/consultation', cors: true })
 export class ConsultationGateway
-  implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer() server: Server | undefined;
 
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(private readonly databaseService: DatabaseService) {}
 
   /**
    * When a socket connects, we expect the client to pass
@@ -30,9 +31,16 @@ export class ConsultationGateway
 
     await this.databaseService.participant.upsert({
       where: { consultationId_userId: { consultationId: cId, userId: uId } },
-      create: { consultationId: cId, userId: uId, isActive: true, joinedAt: new Date() },
+      create: {
+        consultationId: cId,
+        userId: uId,
+        isActive: true,
+        joinedAt: new Date(),
+      },
       update: { isActive: true },
     });
+
+    this.emitPatientJoined(cId, uId);
   }
 
   /**
@@ -57,7 +65,7 @@ export class ConsultationGateway
 
     const consultation = await this.databaseService.consultation.findUnique({
       where: { id: consultationId },
-    });    
+    });
 
     if (activePatients.length === 0 && consultation?.status == 'WAITING') {
       await this.databaseService.consultation.update({
@@ -65,6 +73,17 @@ export class ConsultationGateway
         data: { status: 'SCHEDULED' },
       });
     }
+  }
 
+  /**
+   * Emit event when a patient joins the waiting room
+   */
+  emitPatientJoined(consultationId: number, patientId: number) {
+    if (!this.server) return;
+    this.server.to(`consultation:${consultationId}`).emit('patient:joined', {
+      consultationId,
+      patientId,
+      timestamp: new Date(),
+    });
   }
 }

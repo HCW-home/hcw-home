@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 enum ConsultationStatus {
   SCHEDULED
   WAITING
@@ -26,6 +27,7 @@ model User {
   country          String
   language         String
   sex              Sex // Enum: male, female, other
+  email            String? @unique
   status           Status        @default(not_approved) // Enum: approved, not_approved
   Participant      Participant[]
 }
@@ -47,7 +49,6 @@ enum Status {
   not_approved
 }
 
-//  Add the new models/enums that is necessary for consultation remainders
 
 enum MessageService {
   SMS
@@ -59,16 +60,37 @@ enum MessageService {
 model Consultation {
   id                 Int                @id @default(autoincrement())
   scheduledDate      DateTime?
-  createdAt          DateTime?
+  createdAt          DateTime?         @default(now())
   startedAt          DateTime?
   closedAt           DateTime?
   createdBy          Int?
   groupId            Int?
   owner              Int?
   messageService     MessageService?
-  whatsappTemplateId Int?
+  whatsappTemplateId String?           
   status             ConsultationStatus @default(SCHEDULED)
   participants       Participant[]
+  whatsappTemplate   Whatsapp_Template? @relation(fields: [whatsappTemplateId], references: [id])
+}
+
+model Whatsapp_Template {
+  id              String   @id
+  key             String
+  friendlyName    String
+  body            String
+  language        String
+  category        String
+  contentType     String
+  variables       Json
+  actions         Json
+  approvalStatus  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  sid             String
+  types           Json
+  url             String
+  rejectionReason String
+  consultations   Consultation[] 
 }
 
 model Participant {
@@ -83,32 +105,24 @@ model Participant {
   @@unique([consultationId, userId])
 }
 
-model Whatsapp_Template {
-  id              String @id
-  key             String
-  friendlyName    String
-  body            String
-  language        String
-  category        String
-  contentType     String
-  variables       Json
-  actions         Json
-  approvalStatus  String
-  createdAt       BigInt
-  updatedAt       BigInt
-  sid             String
-  types           Json
-  url             String
-  rejectionReason String
-}
 
 model SMS_Providers {
-  id         String  @id
-  createdAt  BigInt
-  updatedAt  BigInt
+  id         String   @id
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   order      Int
   provider   String
   prefix     String
   isWhatsapp Boolean
   isDisabled Boolean
+}
+
+model EmailTemplate {
+  id            String   @id
+  subject       String
+  htmlBody      String
+  plainTextBody String
+  language      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

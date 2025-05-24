@@ -1,11 +1,11 @@
 :host {
   display: block;
   padding: 2rem;
-  background: #e9f5f2; 
+  background: #e9f5f2;  
   min-height: 100vh;
 }
 
-.dashboard-title {
+.waiting-room-title {
   font-size: 2.25rem;
   font-weight: 700;
   text-align: center;
@@ -13,14 +13,14 @@
   color: #2c3e50; 
 }
 
-.dashboard-subtitle {
+.waiting-room-subtitle {
   font-size: 1.125rem;
   text-align: center;
-  color: #5c7080; 
-  margin-bottom: 2.5rem;
+  color: #5c7080;  
+  margin-bottom: 2rem;
 }
 
-.dashboard-content {
+.waiting-room-content {
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;

@@ -2,8 +2,8 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConsultationCardComponent } from '../components/consultations-card/consultations-card.component';
 import { RoutePaths } from '../constants/route-paths.enum';
-import { ConsultationService } from '../services//consultations/consultation.service';
-import { type Consultation } from '../models/consultations/consultation.model';
+import { ConsultationService } from '../services/consultations/consultation.service';
+import type { Consultation } from '../models/consultations/consultation.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,10 +15,27 @@ import { type Consultation } from '../models/consultations/consultation.model';
 export class DashboardComponent implements OnInit {
   readonly RoutePaths = RoutePaths;
 
-  waitingConsultations = signal<Consultation[]>([]);
-  openConsultations = signal<Consultation[]>([]);
+  readonly waitingConsultations = signal<Consultation[]>([]);
+  readonly openConsultations = signal<Consultation[]>([]);
 
-  constructor(private consultationService: ConsultationService) {}
+  readonly cards = computed(() => [
+    {
+      title: 'WAITING ROOM',
+      description: 'Consultations waiting to be attended',
+      consultations: this.waitingConsultations(),
+      routerLink: RoutePaths.WaitingRoom,
+      icon: 'users',
+    },
+    {
+      title: 'OPEN CONSULTATIONS',
+      description: 'Consultations in progress',
+      consultations: this.openConsultations(),
+      routerLink: RoutePaths.OpenConsultations,
+      icon: 'stethoscope',
+    },
+  ]);
+
+  constructor(private readonly consultationService: ConsultationService) {}
 
   ngOnInit(): void {
     this.consultationService.getWaitingConsultations().subscribe((data) => {
@@ -30,18 +47,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  cards = computed(() => [
-    {
-      title: 'WAITING ROOM',
-      description: 'Consultations waiting to be attended',
-      consultations: this.waitingConsultations(),
-      routerLink: RoutePaths.WaitingRoom,
-    },
-    {
-      title: 'OPEN CONSULTATIONS',
-      description: 'Consultations in progress',
-      consultations: this.openConsultations(),
-      routerLink: RoutePaths.OpenConsultations,
-    },
-  ]);
+  trackByTitle(index: number, card: { title: string }): string {
+    return card.title;
+  }
 }

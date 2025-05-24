@@ -1,36 +1,52 @@
 <div class="card consultation-card">
-  <h2>{{ title }}</h2>
-  <p class="card-description">{{ description }}</p>
+  <div class="card-header">
+    <div class="icon">
+      <i class="fas fa-{{ icon }}"></i>  <!-- Use icon input here -->
+    </div>
+    <div class="text">
+      <h2>{{ title }}</h2>
+      <p class="card-description">{{ description }}</p>
+    </div>
+  </div>
 
-  @if (consultations.length === 0) {
-  <div class="empty-state">
+  <div *ngIf="consultations.length === 0" class="empty-state">
     <p>No consultations</p>
   </div>
-  }
 
-  @if (consultations.length > 0) {
-  <div class="consultation-list">
-    @for (consultation of consultations; track consultation.id) {
-    <div class="consultation-item">
+  <div *ngIf="consultations.length > 0" class="consultation-list">
+    <div *ngFor="let consultation of consultations; trackBy: trackById" class="consultation-item">
       <div class="patient-info">
         <div class="label">Patient</div>
-        <div class="value">{{ consultation.patientName }}</div>
+        <div class="value">{{ getPatientName(consultation) }}</div>
       </div>
+
       <div class="time-info">
-        <div class="label">Time</div>
-        <div class="value">{{ formatTime(consultation.joinTime) }}</div>
+        <div class="label">Join Time</div>
+        <div class="value">{{ getJoinTime(consultation) }}</div>
       </div>
+
+      <div class="date-info">
+        <div class="label">Scheduled</div>
+        <div class="value">{{ getScheduledDate(consultation) }}</div>
+      </div>
+
+      <div class="country-info">
+        <div class="label">Country</div>
+        <div class="value">{{ getCountry(consultation) }}</div>
+      </div>
+
       <div class="action">
         <i class="fas fa-chevron-right"></i>
       </div>
     </div>
-    }
   </div>
-  }
 
-  @if (consultations.length > 3) {
-  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink" [size]="ButtonSize.Medium">
+  <app-button
+    *ngIf="consultations.length > 3"
+    [variant]="ButtonVariant.Outline"
+    [routerLink]="routerLink"
+    [size]="ButtonSize.Medium"
+  >
     View all
   </app-button>
-  }
 </div>

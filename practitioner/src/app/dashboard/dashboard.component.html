@@ -1,6 +1,19 @@
-<div class="dashboard-content">
-    @for (card of cards(); track card.title) {
-    <app-consultation-card [title]="card.title" [description]="card.description" [consultations]="card.consultations"
-        [routerLink]="card.routerLink"></app-consultation-card>
-    }
+<div class="dashboard-wrapper">
+  <h1 class="dashboard-title">Welcome to Your Dashboard</h1>
+  <p class="dashboard-subtitle">
+    Manage your consultations efficiently and stay on top of your tasks
+  </p>
+
+  <div class="dashboard-content">
+    <ng-container *ngFor="let card of cards(); trackBy: trackByTitle">
+      <app-consultation-card
+        class="dashboard-card"
+        [title]="card.title"
+        [description]="card.description"
+        [consultations]="card.consultations"
+        [routerLink]="card.routerLink"
+        [icon]="card.icon"
+      ></app-consultation-card>
+    </ng-container>
+  </div>
 </div>

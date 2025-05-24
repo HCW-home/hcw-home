@@ -18,14 +18,37 @@ export class ConsultationCardComponent {
   @Input() description = 'List of consultations';
   @Input() consultations: Consultation[] = [];
   @Input() routerLink: RoutePaths = RoutePaths.OpenConsultations;
+  
+  @Input() icon: string = '';  
 
   readonly ButtonSize = ButtonSize;
   readonly ButtonVariant = ButtonVariant;
 
+  getPatientName(consultation: Consultation): string {
+    const participant = consultation.participants?.[0];
+    return participant ? `${participant.user.firstName} ${participant.user.lastName}` : 'Unknown';
+  }
+
+  getCountry(consultation: Consultation): string {
+    return consultation.participants?.[0]?.user.country || 'Unknown';
+  }
+
+  getJoinTime(consultation: Consultation): string {
+    const joinedAt = consultation.participants?.[0]?.joinedAt;
+    return joinedAt ? this.formatTime(new Date(joinedAt)) : 'N/A';
+  }
+
+  getScheduledDate(consultation: Consultation): string {
+    return consultation.scheduledDate
+      ? new Date(consultation.scheduledDate).toLocaleDateString()
+      : 'N/A';
+  }
+
   formatTime(date: Date): string {
-    return new Date(date).toLocaleTimeString([], {
+    return date.toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
     });
   }
 }
+

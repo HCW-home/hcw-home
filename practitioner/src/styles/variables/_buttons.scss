@@ -1,19 +1,21 @@
-$color-primary: #4169e1;
-$color-primary-hover: #3a5fcd;
-$color-secondary-bg: #eeeeee;
-$color-secondary-hover: #dddddd;
-$color-outline-border: #cccccc;
-$color-button-border: #dddddd;
-$color-button-hover: #f5f5f5;
-$color-action-icon: #999999;
+$color-primary: #2a8d8f;          
+$color-primary-hover: #257c7e;
+$color-secondary-bg: #e6f2f2;      
+$color-secondary-hover: #cce6e6;
+$color-outline-border: #a3c2c2;    
+$color-button-border: #b3d1d1;
+$color-button-hover: #d9efef;      
+$color-action-icon: #6c7a7a;       
 
 $button-font-size-sm: 12px;
 $button-font-size-md: 14px;
 $button-font-size-lg: 16px;
 
-$button-padding-sm: 6px 12px;
-$button-padding-md: 8px 20px;
-$button-padding-lg: 10px 24px;
+$button-padding-sm: 6px 14px;
+$button-padding-md: 8px 22px;
+$button-padding-lg: 10px 26px;
 
-$button-border-radius: 20px;
-$button-transition: background 0.2s ease;
+$button-border-radius: 24px;       
+$button-transition: background 0.3s ease, color 0.3s ease;
+
+$button-focus-outline: 2px solid lighten($color-primary, 30%);

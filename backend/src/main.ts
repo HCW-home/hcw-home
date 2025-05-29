@@ -13,7 +13,7 @@ async function bootstrap() {
   // Only enable Swagger in development mode
   if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
     const config = new DocumentBuilder()
-      .setTitle('Backend API')
+      .setTitle('Hcw-Home Backend API')
       .setDescription('The NestJS API documentation')
       .setVersion('1.0')
       .addTag('api')

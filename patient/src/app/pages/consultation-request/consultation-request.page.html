@@ -1,0 +1,56 @@
+<app-header [title]="'Consultation Request'"></app-header>
+
+<ion-content class="custom-content" fullscreen>
+  <div class="form-card">
+    <h2 class="form-title">New Consultation</h2>
+    <form (ngSubmit)="submitRequest()">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12">
+            <ion-item lines="none" class="input-item">
+              <ion-label position="stacked">Patient Name</ion-label>
+              <ion-input [(ngModel)]="consultation.patientName" name="patientName" placeholder="Enter patient's full name" required></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item lines="none" class="input-item">
+              <ion-label position="stacked">Age</ion-label>
+              <ion-input type="number" [(ngModel)]="consultation.age" name="age" placeholder="Enter age" required></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-item lines="none" class="input-item">
+              <ion-label position="stacked">Medical Group / Specialty</ion-label>
+              <ion-select [(ngModel)]="consultation.groupOrSpecialty" name="groupOrSpecialty" interface="popover" placeholder="Select specialty" required>
+                <ion-select-option *ngFor="let group of groupsOrSpecialties" [value]="group">
+                  {{ group }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12">
+            <ion-item lines="none" class="input-item textarea-item">
+              <ion-label position="stacked">Symptoms</ion-label>
+              <ion-textarea [(ngModel)]="consultation.symptoms" name="symptoms" rows="4" placeholder="Describe the symptoms in detail..."></ion-textarea>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12">
+            <ion-button expand="block" type="submit" class="submit-button" color="success">
+              <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+              Submit Request
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </form>
+  </div>
+</ion-content>

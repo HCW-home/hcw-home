@@ -1,0 +1,43 @@
+<app-header [title]="'Thank you for your consultation!'"></app-header>
+
+<ion-content class="feedback-page" fullscreen>
+  <div class="feedback-container">
+    <ion-card class="feedback-card">
+      <ion-card-header class="feedback-header">
+        <div class="header-row">
+          <div>
+            <h2 class="title">Send us your feedback!</h2>
+          </div>
+          <ion-icon name="close" (click)="close()" class="close-icon"></ion-icon>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="feedbackForm" (ngSubmit)="submit()">
+          <div class="section">
+            <label class="label">How was your experience?</label>
+            <div class="emoji-rating">
+              <span (click)="selectMood('happy')" [class.active]="mood === 'happy'">😊</span>
+              <span (click)="selectMood('neutral')" [class.active]="mood === 'neutral'">😐</span>
+              <span (click)="selectMood('sad')" [class.active]="mood === 'sad'">😞</span>
+            </div>
+          </div>
+
+          <ion-textarea
+            formControlName="comment"
+            class="textarea large-textarea"
+            placeholder="Describe your experience here..."
+            autoGrow="true"
+          ></ion-textarea>
+
+          <ion-button color="success" expand="block" type="submit" class="submit-button">
+            Send Feedback
+          </ion-button>
+          <ion-button expand="block" fill="clear" color="medium" class="skip-button" (click)="skipFeedback()">
+            Skip
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -179,14 +179,31 @@ model Participant {
 }
 
 model Message {
-  id      Int    @id @default(autoincrement())
-  userId  Int
-  content String @db.Text
+  id             Int             @id @default(autoincrement())
+  userId         Int
+  consultationId Int?
+  content        String          @db.Text
+  status         String?         @db.VarChar(50)
+  provider       MessageService?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  uuid           String?         @unique @db.VarChar(100)
 
   // Relations
-  user           User          @relation(fields: [userId], references: [id])
-  consultation   Consultation? @relation(fields: [consultationId], references: [id])
-  consultationId Int?
+  user         User          @relation(fields: [userId], references: [id])
+  consultation Consultation? @relation(fields: [consultationId], references: [id])
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  oldStatus String?
+  newStatus String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id])
 }
 
 model Whatsapp_Template {

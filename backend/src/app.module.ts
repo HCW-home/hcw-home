@@ -11,6 +11,8 @@ import { OrganizationModule } from './organization/organization.module';
 import { GroupModule } from './group/group.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
+import { WebhooksController } from './webhooks/webhooks.controller';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 
 @Module({
@@ -23,9 +25,10 @@ import { MediasoupModule } from './mediasoup/mediasoup.module';
     UserModule,
     OrganizationModule,
     GroupModule,
-    MediasoupModule
+    MediasoupModule,
+    WebhooksModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, WebhooksController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

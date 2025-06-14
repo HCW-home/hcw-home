@@ -76,7 +76,7 @@ export class UserController {
       },
     );
   }
-  @Roles(Role.ADMIN, Role.PRACTITIONER)
+  // @Roles(Role.ADMIN, Role.PRACTITIONER)
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })

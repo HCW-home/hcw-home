@@ -8,8 +8,8 @@ export class CustomHttpException extends HttpException {
     message: string,
     statusCode: number,
     error?: any,
-    requestId?: string,
-    path?: string,
+    public requestId?: string,
+    public path?: string,
   ) {
     super(
       {
@@ -19,8 +19,6 @@ export class CustomHttpException extends HttpException {
         message,
         error,
         timestamp: new Date().toISOString(),
-        requestId,
-        path,
       },
       statusCode,
     );

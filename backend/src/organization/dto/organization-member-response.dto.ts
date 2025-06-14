@@ -11,7 +11,11 @@ export class UserBasicDto {
   @ApiProperty({ description: 'User email', example: 'john@example.com' })
   email: string;
 
-  @ApiProperty({ description: 'User avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+  @ApiProperty({
+    description: 'User avatar URL',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
   avatar?: string;
 }
 

@@ -1,5 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsUrl, IsOptional, IsBoolean, IsInt, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsUrl,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class UpdateMediasoupServerDto {
   @ApiPropertyOptional({

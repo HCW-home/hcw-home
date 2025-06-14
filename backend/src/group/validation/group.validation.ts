@@ -7,7 +7,11 @@ export const createGroupSchema = z.object({
 });
 
 export const updateGroupSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255, 'Name too long').optional(),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(255, 'Name too long')
+    .optional(),
   description: z.string().optional(),
   sharedOnlyIncomingConsultation: z.boolean().optional(),
 });
@@ -16,7 +20,10 @@ export const queryGroupSchema = z.object({
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(10),
   search: z.string().optional(),
-  sortBy: z.enum(['id', 'name', 'createdAt', 'updatedAt']).optional().default('createdAt'),
+  sortBy: z
+    .enum(['id', 'name', 'createdAt', 'updatedAt'])
+    .optional()
+    .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 

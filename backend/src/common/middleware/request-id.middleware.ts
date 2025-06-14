@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    req['id'] = uuidv4(); 
+    req['id'] = uuidv4();
     next();
   }
 }

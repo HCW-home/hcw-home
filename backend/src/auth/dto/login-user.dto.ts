@@ -6,6 +6,10 @@ export class LoginUserDto {
 
   @ApiProperty({ description: 'Password', minLength: 8, maxLength: 100 })
   password: string;
+
+  constructor(partial: Partial<LoginUserDto>) {
+    Object.assign(this, partial);
+  }
 }
 
 export class LoginResponseDto {

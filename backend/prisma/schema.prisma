@@ -208,13 +208,15 @@ model Whatsapp_Template {
   rejectionReason String
 }
 
-model SMS_Providers {
-  id         String  @id
-  createdAt  BigInt
-  updatedAt  BigInt
-  order      Int
-  provider   String
-  prefix     String
-  isWhatsapp Boolean
-  isDisabled Boolean
+model SmsProvider {
+  id          Int     @id @default(autoincrement())
+  order       Int     @unique
+  provider    String?
+  prefix      String?
+  isWhatsapp  Boolean @default(false) 
+  isDisabled  Boolean @default(true)
+  createdAt   DateTime @default(now()) 
+  updatedAt   DateTime @updatedAt
+
+  @@map("sms_providers")
 }

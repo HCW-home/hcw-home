@@ -11,6 +11,7 @@ import { OrganizationModule } from './organization/organization.module';
 import { GroupModule } from './group/group.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
+import { SmsProviderModule } from './sms_provider/sms_provider.module';
 
 
 @Module({
@@ -23,7 +24,8 @@ import { MediasoupModule } from './mediasoup/mediasoup.module';
     UserModule,
     OrganizationModule,
     GroupModule,
-    MediasoupModule
+    MediasoupModule,
+    SmsProviderModule
   ],
   controllers: [AppController],
   providers: [AppService],

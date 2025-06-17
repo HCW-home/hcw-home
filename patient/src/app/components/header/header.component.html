@@ -1,0 +1,15 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary" class="custom-toolbar">
+    <ion-title class="custom-title">
+     {{title}}
+    </ion-title>
+    <ion-buttons slot="end" *ngIf="showConsultationRequest">
+      <ion-button class="consultation-btn" (click)="goToConsultationRequest()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Consultation
+        <br />
+        Request
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>

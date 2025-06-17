@@ -1,0 +1,99 @@
+.feedback-page {
+  --background: #f2f2f2;
+
+  .feedback-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 16px;
+  }
+
+  .thank-you-message {
+    min-width: 500px;
+    background-color: #007bff;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 500;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 1px;
+  }
+
+  .feedback-card {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .feedback-header {
+    background-color: #007bff;
+    color: white;
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .close-icon {
+      font-size: 24px;
+      cursor: pointer;
+    }
+  }
+
+  .section {
+    margin: 16px 0;
+  }
+
+  .label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .emoji-rating {
+    display: flex;
+    justify-content: space-around;
+    font-size: 24px;
+
+    span {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: transform 0.2s ease;
+    }
+
+    span.active {
+      transform: scale(1.3);
+      opacity: 1;
+    }
+  }
+
+  .textarea {
+    margin: 12px 0;
+  }
+
+  .large-textarea {
+    min-height: 140px;
+  }
+
+  .submit-button {
+    background-color: #2dd36f;
+    color: white;
+    margin-top: 12px;
+  }
+
+  .skip-button {
+    margin-top: 8px;
+  }
+}

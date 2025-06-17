@@ -1,0 +1,167 @@
+.consultation-card {
+  background-color: #f9f9f9;
+  color: #222;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+}
+
+.active-card {
+  border-top: 4px solid #10dc60;
+}
+
+.completed-card {
+  border-top: 4px solid #0090ff;
+}
+
+.upcoming-card {
+  border-top: 4px solid #ff4961;
+}
+
+.consultation-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --background: #ffffff;
+  color: #222;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.doctor-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.specialty {
+  font-weight: 500;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.time-until {
+  color: #cc0000;
+  font-weight: 500;
+  font-size: 13px;
+  margin: 0;
+}
+
+.section-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: 8px;
+}
+
+.action-button {
+  margin: 8px;
+  padding: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 8px;
+  font-size: 13px;
+  height: 32px;
+}
+
+.status-chip {
+  margin: 0;
+}
+
+.empty-list-item ion-icon {
+  display: block;
+  margin: 16px auto 8px;
+  color: #999;
+}
+
+.empty-list-item p {
+  color: #666;
+}
+
+ion-item {
+  --background: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+  border-radius: 8px;
+}
+
+/* Updated Container Width */
+.dashboard-container {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 8px;
+}
+
+.dashboard-bg {
+  --background: white;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.consultation-header {
+  background-color: #f4f5f8;
+  padding: 12px 16px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.consultation-title {
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.consultation-list {
+  background-color: #f9f9f9;
+}
+
+.consultation-end {
+  width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.join-button {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 8px;
+  font-size: 13px;
+  height: 32px;
+}
+
+.waiting-chip,
+.rated-chip {
+  font-size: 13px;
+  height: 32px;
+  justify-content: center;
+  width: 150px;
+}
+
+.empty-label {
+  width: 100%;
+  padding: 16px;
+}
+
+.consultation-date,
+.consultation-status,
+.consultation-duration {
+  font-size: 13px;
+  margin: 0;
+}

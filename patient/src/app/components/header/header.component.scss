@@ -1,0 +1,32 @@
+.custom-toolbar {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-title {
+  width: 100%;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.consultation-btn {
+  --background: #2dd36f;
+  --color: #f5f6fa;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-right: 32px;
+  padding-right: 56px;
+
+  ion-icon {
+    font-size: 1.8rem;
+    margin-right: 6px;
+  }
+}
+
+.consultation-btn::part(native) {
+  border-radius: 8px !important;
+  box-shadow: 0px 20px 40px rgba(102, 92, 100, 0.3);
+  padding: 10px 20px;
+}

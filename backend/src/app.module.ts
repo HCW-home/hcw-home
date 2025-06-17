@@ -13,6 +13,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
 import { WebhooksController } from './webhooks/webhooks.controller';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { SmsProviderModule } from './sms_provider/sms_provider.module';
 
 
 @Module({
@@ -27,6 +28,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     GroupModule,
     MediasoupModule,
     WebhooksModule
+    SmsProviderModule
   ],
   controllers: [AppController, WebhooksController],
   providers: [AppService],

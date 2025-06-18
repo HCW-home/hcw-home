@@ -78,4 +78,18 @@ export class HttpExceptionHelper {
       path,
     );
   }
+  static confilct(
+    message = 'conflict ocure',
+    requestId?: string,
+    path?: string,
+    error?: any,
+  ) {
+    return new CustomHttpException(
+      message,
+      HttpStatus.CONFLICT,
+      error,
+      requestId,
+      path,
+    );
+  }
 }

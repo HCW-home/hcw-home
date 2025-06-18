@@ -6,11 +6,7 @@ export const createOrganizationSchema = z.object({
     .min(2, 'Organization name must be at least 2 characters')
     .max(100, 'Organization name cannot exceed 100 characters')
     .trim(),
-  logo: z
-    .string()
-    .url('Logo must be a valid URL')
-    .optional()
-    .or(z.literal('')),
+  logo: z.string().url('Logo must be a valid URL').optional().or(z.literal('')),
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Primary color must be a valid hex color code')
@@ -30,11 +26,7 @@ export const updateOrganizationSchema = z.object({
     .max(100, 'Organization name cannot exceed 100 characters')
     .trim()
     .optional(),
-  logo: z
-    .string()
-    .url('Logo must be a valid URL')
-    .optional()
-    .or(z.literal('')),
+  logo: z.string().url('Logo must be a valid URL').optional().or(z.literal('')),
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Primary color must be a valid hex color code')
@@ -51,27 +43,23 @@ export const queryOrganizationSchema = z.object({
   page: z
     .string()
     .optional()
-    .transform(val => val ? parseInt(val, 10) : 1)
-    .refine(val => val > 0, 'Page must be greater than 0'),
+    .transform((val) => (val ? parseInt(val, 10) : 1))
+    .refine((val) => val > 0, 'Page must be greater than 0'),
   limit: z
     .string()
     .optional()
-    .transform(val => val ? parseInt(val, 10) : 10)
-    .refine(val => val > 0 && val <= 100, 'Limit must be between 1 and 100'),
+    .transform((val) => (val ? parseInt(val, 10) : 10))
+    .refine((val) => val > 0 && val <= 100, 'Limit must be between 1 and 100'),
   search: z
     .string()
     .optional()
-    .transform(val => val?.trim() || undefined),
+    .transform((val) => val?.trim() || undefined),
   sortBy: z
     .enum(['id', 'name', 'createdAt', 'updatedAt'])
     .optional()
     .default('createdAt'),
-  sortOrder: z
-    .enum(['asc', 'desc'])
-    .optional()
-    .default('desc'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
-
 
 export const addMemberSchema = z.object({
   userId: z.number().int().positive('User ID must be a positive integer'),

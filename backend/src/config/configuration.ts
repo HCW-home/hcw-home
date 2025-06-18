@@ -5,8 +5,10 @@ export default () => ({
     url: process.env.DATABASE_URL,
   },
   jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+    accessSecret: process.env.APP_SECRET || 'default_secret',
+    accessExpiresIn: process.env.ACCESS_TOKEN_LIFE || '24h',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
+    refreshExpiresIn: process.env.REFRESH_TOKEN_LIFE || '7d',
   },
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',

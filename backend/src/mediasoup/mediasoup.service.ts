@@ -18,18 +18,25 @@ import * as bcrypt from 'bcrypt';
 export class MediasoupServerService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(createMediasoupServerDto: CreateMediasoupServerDto): Promise<MediasoupServerResponseDto> {
+  async create(
+    createMediasoupServerDto: CreateMediasoupServerDto,
+  ): Promise<MediasoupServerResponseDto> {
     // Check if server URL already exists
-    const existingServer = await this.databaseService.mediasoupServer.findFirst({
-      where: { url: createMediasoupServerDto.url },
-    });
+    const existingServer = await this.databaseService.mediasoupServer.findFirst(
+      {
+        where: { url: createMediasoupServerDto.url },
+      },
+    );
 
     if (existingServer) {
       throw new ConflictException('Mediasoup server URL already exists');
     }
 
     // Hash password
-    const hashedPassword :string = await bcrypt.hash(createMediasoupServerDto.password, 10);
+    const hashedPassword: string = await bcrypt.hash(
+      createMediasoupServerDto.password,
+      10,
+    );
 
     // Create server
     const serverData = {
@@ -40,7 +47,7 @@ export class MediasoupServerService {
     };
 
     const server = await this.databaseService.mediasoupServer.create({
-      data: serverData
+      data: serverData,
     });
 
     return plainToInstance(MediasoupServerResponseDto, server, {
@@ -132,17 +139,21 @@ export class MediasoupServerService {
     updateMediasoupServerDto: UpdateMediasoupServerDto,
   ): Promise<MediasoupServerResponseDto> {
     // Check if server exists
-    const existingServer = await this.databaseService.mediasoupServer.findUnique({
-      where: { id },
-      select: { id: true, url: true },
-    });
+    const existingServer =
+      await this.databaseService.mediasoupServer.findUnique({
+        where: { id },
+        select: { id: true, url: true },
+      });
 
     if (!existingServer) {
       throw new NotFoundException('Mediasoup server not found');
     }
 
     // Check URL uniqueness if URL is being updated
-    if (updateMediasoupServerDto.url && updateMediasoupServerDto.url !== existingServer.url) {
+    if (
+      updateMediasoupServerDto.url &&
+      updateMediasoupServerDto.url !== existingServer.url
+    ) {
       const urlExists = await this.databaseService.mediasoupServer.findFirst({
         where: {
           url: updateMediasoupServerDto.url,
@@ -168,10 +179,11 @@ export class MediasoupServerService {
 
   async toggleActive(id: string): Promise<MediasoupServerResponseDto> {
     // Check if server exists
-    const existingServer = await this.databaseService.mediasoupServer.findUnique({
-      where: { id },
-      select: { id: true, active: true },
-    });
+    const existingServer =
+      await this.databaseService.mediasoupServer.findUnique({
+        where: { id },
+        select: { id: true, active: true },
+      });
 
     if (!existingServer) {
       throw new NotFoundException('Mediasoup server not found');
@@ -190,10 +202,11 @@ export class MediasoupServerService {
 
   async remove(id: string): Promise<MediasoupServerResponseDto> {
     // Check if server exists
-    const existingServer = await this.databaseService.mediasoupServer.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const existingServer =
+      await this.databaseService.mediasoupServer.findUnique({
+        where: { id },
+        select: { id: true },
+      });
 
     if (!existingServer) {
       throw new NotFoundException('Mediasoup server not found');
@@ -207,5 +220,4 @@ export class MediasoupServerService {
       excludeExtraneousValues: true,
     });
   }
-
 }

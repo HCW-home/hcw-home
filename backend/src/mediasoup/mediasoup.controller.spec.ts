@@ -11,7 +11,9 @@ describe('MediasoupController', () => {
       providers: [MediasoupServerService],
     }).compile();
 
-    controller = module.get<MediasoupServerController>(MediasoupServerController);
+    controller = module.get<MediasoupServerController>(
+      MediasoupServerController,
+    );
   });
 
   it('should be defined', () => {

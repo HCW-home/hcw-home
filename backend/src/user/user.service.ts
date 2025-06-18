@@ -135,10 +135,9 @@ export class UserService {
       return null;
     }
 
-    // return plainToInstance(UserResponseDto, user, {
-    //   excludeExtraneousValues: false,
-    // });
-    return user; // Return the user object directly for authentication purposes
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: false,
+    });
   }
 
   async update(

@@ -1,4 +1,4 @@
-import { Module, NestModule,MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from './config/config.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +13,9 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
 import { WebhooksController } from './webhooks/webhooks.controller';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SmsProviderModule } from './sms_provider/sms_provider.module';
 
 
@@ -30,11 +33,21 @@ import { SmsProviderModule } from './sms_provider/sms_provider.module';
     WebhooksModule
     SmsProviderModule
   ],
-  controllers: [AppController, WebhooksController],
-  providers: [AppService],
+  controllers: [AppController,  WebhooksController],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RequestIdMiddleware).forRoutes('*');
-}
+  }
 }

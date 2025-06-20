@@ -83,6 +83,19 @@ export class ConfigService {
     return this.isProduction;
   }
 
+  // WhatsApp Configuration
+  get whatsappTemplatesPath(): string {
+    return this.configService.get<string>(
+      'whatsapp.templatesPath',
+      'src/json/whatsapp-templates.json',
+    );
+  }
+
+  // Alternative method to get the raw WHATSAPP_TEMPLATES_PATH env variable
+  get whatsappTemplatesPathFromEnv(): string | undefined {
+    return this.configService.get<string>('WHATSAPP_TEMPLATES_PATH');
+  }
+
   // Additional helper methods for getting optional values
   getOptional<T = string>(key: string): T | undefined {
     return this.configService.get<T>(key);

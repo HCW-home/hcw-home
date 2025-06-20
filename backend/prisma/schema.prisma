@@ -189,23 +189,39 @@ model Message {
   consultationId Int?
 }
 
+enum Category {
+  UTILITY
+  MARKETING
+  AUTHENTICATION
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DRAFT
+  UNKNOWN
+  RECEIVED
+}
+
 model Whatsapp_Template {
-  id              String @id
-  key             String
-  friendlyName    String
-  body            String
-  language        String
-  category        String
-  contentType     String
-  variables       Json
-  actions         Json
-  approvalStatus  String
-  createdAt       BigInt
-  updatedAt       BigInt
-  sid             String
-  types           Json
-  url             String
-  rejectionReason String
+id             Int      @id @default(autoincrement())
+  sid            String?
+  friendlyName   String
+  language       String
+  key            String?
+  category       Category?
+  contentType    String?
+  variables      Json?    @default("{}")
+  types          Json?
+  url            String?
+  actions        Json?
+  approvalStatus ApprovalStatus @default(DRAFT)
+  rejectionReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("whatsapp_templates")
 }
 
 model SmsProvider {

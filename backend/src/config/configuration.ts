@@ -21,4 +21,7 @@ export default () => ({
     version: '1.0.0',
     path: 'api/docs',
   },
+  whatsapp: {
+    templatesPath: process.env.WHATSAPP_TEMPLATES_PATH || 'src/json/whatsapp-templates.json',
+  },
 });

@@ -1,0 +1,78 @@
+<div class="consultation-history-page">
+    <div class="page-header">
+        <div class="header-content">
+            <h2>CONSULTATIONS HISTORY</h2>
+        </div>
+
+    </div>
+
+
+    <div class="main-content">
+        <div class="consultation-list" [class.with-panel]="isDetailPanelOpen">
+            <div class="loading-state" *ngIf="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading consultation history...</p>
+            </div>
+
+            <div class="error-state" *ngIf="error">
+                <div class="error-message">
+                    <h3>Unable to Load Consultations</h3>
+                    <p>{{ error }}</p>
+                    <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium"
+                        (click)="loadConsultations()">
+                        Try Again
+                    </app-button>
+                </div>
+            </div>
+            <div class="empty-state" *ngIf="!loading && !error && consultations.length === 0">
+                <div class="empty-message">
+
+                    <h3>No Consultation History</h3>
+                    <p>
+                        Your completed consultations will appear here once you finish your first session.
+                    </p>
+                </div>
+            </div>
+            <div class="consultations-grid" *ngIf="!loading && !error && paginatedConsultations.length > 0">
+                <app-consultation-history-card *ngFor="let consultation of paginatedConsultations"
+                    [consultation]="consultation" [isSelected]="consultation.consultation.id === selectedConsultationId"
+                    (cardClick)="onCardClick($event)"
+                    (downloadPDF)="onDownloadPDF($event)"></app-consultation-history-card>
+            </div>
+
+            <div class="pagination" *ngIf="totalPages > 1">
+                <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" [disabled]="currentPage === 1"
+                    (click)="previousPage()">
+                    Previous
+                </app-button>
+
+                <div class="page-numbers">
+                    <button *ngFor="let page of [].constructor(totalPages); let i = index" class="page-number"
+                        [class.active]="i + 1 === currentPage" (click)="goToPage(i + 1)">
+                        {{ i + 1 }}
+                    </button>
+                </div>
+
+                <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small"
+                    [disabled]="currentPage === totalPages" (click)="nextPage()">
+                    Next
+                </app-button>
+            </div>
+        </div>
+
+        <app-consultation-detail-panel [consultationId]="selectedConsultationId" [isOpen]="isDetailPanelOpen"
+            (close)="onDetailPanelClose()" (downloadPDF)="onDownloadPDF($event)"></app-consultation-detail-panel>
+    </div>
+    <div class="results-summary" *ngIf="!loading">
+        <button class="page-button" [disabled]="currentPage === 1" (click)="previousPage()" aria-label="Previous page">
+            ‹
+        </button>
+
+        <span class="page-indicator">{{ currentPage }}</span>
+
+        <button class="page-button" [disabled]="currentPage === totalPages" (click)="nextPage()" aria-label="Next page">
+            ›
+        </button>
+    </div>
+
+</div>

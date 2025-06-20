@@ -4,8 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-invites',
   imports: [],
   templateUrl: './invites.component.html',
-  styleUrl: './invites.component.scss'
+  styleUrl: './invites.component.scss',
 })
-export class InvitesComponent {
-
-}
+export class InvitesComponent {}

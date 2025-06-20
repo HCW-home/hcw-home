@@ -2,35 +2,46 @@
   <h2>{{ title }}</h2>
   <p class="card-description">{{ description }}</p>
 
-  @if (consultations.length === 0) {
-  <div class="empty-state">
+  <div *ngIf="consultations.length === 0" class="empty-state">
     <p>No consultations</p>
   </div>
-  }
 
-  @if (consultations.length > 0) {
-  <div class="consultation-list">
-    @for (consultation of consultations; track consultation.id) {
-    <div class="consultation-item">
+  <app-button *ngIf="showInvite" (click)="onInviteClick()" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium">
+    Send new invite
+  </app-button>
+
+  <div *ngIf="consultations.length > 0" class="consultation-list">
+    <div class="consultation-item" *ngFor="
+        let history of consultations;
+        trackBy: trackByConsultationId
+      ">
       <div class="patient-info">
         <div class="label">Patient</div>
-        <div class="value">{{ consultation.patientName }}</div>
+        <div class="value">
+          {{ history.patient.firstName }} {{ history.patient.lastName }}
+        </div>
       </div>
+
       <div class="time-info">
         <div class="label">Time</div>
-        <div class="value">{{ formatTime(consultation.joinTime) }}</div>
+        <div class="value">
+          {{
+          history.consultation.startedAt
+          ? formatTime(history.consultation.startedAt)
+          : '—'
+          }}
+        </div>
       </div>
+
       <div class="action">
         <i class="fas fa-chevron-right"></i>
       </div>
     </div>
-    }
   </div>
-  }
 
-  @if (consultations.length > 3) {
-  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink" [size]="ButtonSize.Medium">
+  <!-- View all -->
+  <app-button *ngIf="consultations.length > 3" [variant]="ButtonVariant.Outline" [routerLink]="routerLink"
+    [size]="ButtonSize.Medium">
     View all
   </app-button>
-  }
 </div>

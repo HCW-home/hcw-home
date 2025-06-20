@@ -15,9 +15,9 @@ import {
   styleUrls: ['./button.component.scss'],
 })
 export class ButtonComponent {
-  @Input() variant: ButtonVariant = ButtonVariant.Primary;
-  @Input() size: ButtonSize = ButtonSize.Medium;
-  @Input() type: ButtonType = ButtonType.Button;
+  @Input() variant: ButtonVariant | string = ButtonVariant.Primary;
+  @Input() size: ButtonSize | string = ButtonSize.Medium;
+  @Input() type: ButtonType | string = ButtonType.Button;
   @Input() disabled = false;
   @Input() routerLink?: string;
 

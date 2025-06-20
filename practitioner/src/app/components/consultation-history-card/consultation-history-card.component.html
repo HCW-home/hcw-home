@@ -1,0 +1,52 @@
+<div class="consultation-row" [class.selected]="isSelected" (click)="onCardClick()">
+
+    <div class="consultation-cell patient-cell">
+        <div class="cell-header">Patient</div>
+        <span class="patient-name">{{ getPatientDisplayName() }}</span>
+    </div>
+
+    <div class="consultation-cell requested-by-cell">
+        <div class="cell-header">Requested by</div>
+        <span class="requested-by">{{'-' }}</span>
+    </div>
+
+    <div class="consultation-cell waiting-queue-cell">
+        <div class="cell-header">Waiting queue</div>
+        <span class="waiting-queue">{{'-' }}</span>
+    </div>
+
+    <div class="consultation-cell datetime-cell">
+        <div class="cell-header">Start date/time</div>
+        <span class="start-datetime">
+            {{ consultation.consultation.startedAt
+            ? formatDateTime(consultation.consultation.startedAt) : '—' }}
+        </span>
+    </div>
+
+    <div class="consultation-cell duration-cell">
+        <div class="cell-header">Duration</div>
+        <span class="duration">{{ consultation.duration }}</span>
+    </div>
+
+    <div class="consultation-cell">
+        <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small"
+            (click)="onSendInvitationClick($event)">
+            Send again a new invitation
+        </app-button>
+    </div>
+
+    <div class="consultation-cell">
+        <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Small" class=""
+            (click)="onExportClick($event)">
+            <span class="">⬇</span>
+            Export
+        </app-button>
+    </div>
+
+    <div class="consultation-cell more-actions-cell">
+        <button class="more-actions-btn" (click)="onMoreActionsClick($event)">
+            <span class="more-icon">›</span>
+        </button>
+    </div>
+
+</div>

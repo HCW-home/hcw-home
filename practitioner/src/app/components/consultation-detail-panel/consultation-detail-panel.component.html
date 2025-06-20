@@ -1,0 +1,89 @@
+<div class="detail-panel" [class.open]="isOpen">
+    <div class="panel-header">
+        <h2>Consultation Details</h2>
+        <button class="close-button" (click)="onClose()" aria-label="Close panel">
+            <span class="close-icon">✕</span>
+        </button>
+    </div>
+
+    <div class="panel-content" *ngIf="!loading && !error && consultationDetail">
+        <section class="detail-section">
+            <h3>General Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Patient:</span>
+                    <span class="value">{{ consultationDetail.patient.firstName }} {{
+                        consultationDetail.patient.lastName }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Sex:</span>
+                    <span class="value">{{ consultationDetail.patient.sex | titlecase }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Country:</span>
+                    <span class="value">{{ consultationDetail.patient.country }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Phone:</span>
+                    <span class="value">{{ consultationDetail.patient.phoneNumber }}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h3>Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Consultation Scheduled</div>
+                        <div class="timeline-time">
+                            {{ consultationDetail.consultation.scheduledDate
+                            ? formatDate(consultationDetail.consultation.scheduledDate)
+                            : '—' }} </div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Session Started</div>
+                        <div class="timeline-time">
+                            {{ consultationDetail.consultation.startedAt
+                            ? formatDate(consultationDetail.consultation.startedAt)
+                            : '—' }} </div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Session Ended</div>
+                        <div class="timeline-time">
+                            {{ consultationDetail.consultation.closedAt
+                            ? formatDate(consultationDetail.consultation.closedAt)
+                            : '—' }} </div>
+                    </div>
+                </div>
+            </div>
+            <div class="duration-summary">
+                <strong>Total Duration: {{ consultationDetail.duration }}</strong>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="panel-content loading-state" *ngIf="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading consultation details...</p>
+    </div>
+
+    <div class="panel-content error-state" *ngIf="error">
+        <div class="error-message">
+            <span class="error-icon">⚠️</span>
+            <p>{{ error }}</p>
+            <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small"
+                (click)="loadConsultationDetail()">
+                Retry
+            </app-button>
+        </div>
+    </div>
+</div>

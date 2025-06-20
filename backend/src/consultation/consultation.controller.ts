@@ -2,11 +2,14 @@ import {
   Body,
   Controller,
   Get,
+  Header,
+  HttpStatus,
   Param,
   Post,
   Query,
+  Res,
   UsePipes,
-  ValidationPipe
+  ValidationPipe,
 } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
 import {
@@ -29,6 +32,10 @@ import {
   ApiQuery,
   ApiOkResponse,
 } from '@nestjs/swagger';
+import { HistoryQueryDto } from './dto/history-query.dto';
+import { ConsultationHistoryItemDto } from './dto/consultation-history-item.dto';
+import { ConsultationDetailDto } from './dto/consultation-detail.dto';
+import { Response } from 'express';
 
 @ApiTags('consultation')
 @Controller('consultation')
@@ -96,5 +103,50 @@ export class ConsultationController {
     @Query('userId', UserIdParamPipe) userId: number,
   ): Promise<ApiResponseDto<WaitingRoomPreviewResponseDto>> {
     return this.consultationService.getWaitingRoomConsultations(userId);
+  }
+  @Get('/history')
+  @ApiOperation({ summary: 'Fetch closed consultations for a practitioner' })
+  @ApiQuery({
+    name: 'practitionerId',
+    type: Number,
+    description: 'Practitioner ID',
+  })
+  @ApiQuery({
+    name: 'status',
+    enum: ['COMPLETED', 'CANCELLED'],
+    required: false,
+  })
+  @ApiOkResponse({ type: ConsultationHistoryItemDto, isArray: true })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async getHistory(
+    @Query() query: HistoryQueryDto,
+  ): Promise<ConsultationHistoryItemDto[]> {
+    return this.consultationService.getConsultationHistory(
+      query.practitionerId,
+      query.status,
+    );
+  }
+
+  @Get(':id/details')
+  @ApiOperation({ summary: 'Fetch full details of one consultation' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiOkResponse({ type: ConsultationDetailDto })
+  async getDetails(@Param('id') id: number): Promise<ConsultationDetailDto> {
+    return this.consultationService.getConsultationDetails(id);
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Download consultation PDF' })
+  @ApiParam({ name: 'id', type: Number })
+  @Header('Content-Type', 'application/pdf')
+  async downloadPdf(@Param('id') id: number, @Res() res: Response) {
+    const pdfBuffer =
+      await this.consultationService.downloadConsultationPdf(id);
+    res
+      .status(HttpStatus.OK)
+      .set({
+        'Content-Disposition': `attachment; filename="consultation_${id}.pdf"`,
+      })
+      .send(pdfBuffer);
   }
 }

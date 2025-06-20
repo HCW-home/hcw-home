@@ -1,5 +1,7 @@
 export enum ConsultationStatus {
-  Waiting = 'waiting',
-  Active = 'active',
-  Completed = 'completed',
+  SCHEDULED = 'SCHEDULED',
+  WAITING = 'WAITING',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }

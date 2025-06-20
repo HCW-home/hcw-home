@@ -1,0 +1,97 @@
+<div class="invite-overlay" (click)="onCancel()">
+    <div class="invite-modal" (click)="$event.stopPropagation()">
+
+        <header class="invite-modal__header">
+            <button (click)="onCancel()" class="invite-modal__close">×</button>
+        </header>
+
+        <form class="invite-modal__body" [formGroup]="form" (ngSubmit)="onSubmit()">
+
+            <div class="form-section left">
+                <h3 class="section-title">
+                    {{ type === 'remote' ? 'PATIENT INVITATION' : 'PATIENT INFORMATION' }}
+                </h3>
+
+                <ng-container *ngIf="type === 'remote'; else inPersonIntro">
+                    <div class="row">
+                        <div class="field">
+                            <label>Firstname *</label>
+                            <input formControlName="firstName" />
+                        </div>
+                        <div class="field">
+                            <label>Lastname *</label>
+                            <input formControlName="lastName" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="field">
+                            <label>Gender *</label>
+                            <select formControlName="gender">
+                                <option value="" disabled>Choose…</option>
+                                <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Language *</label>
+                            <select formControlName="language">
+                                <option value="" disabled>Choose…</option>
+                                <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="field full">
+                            <label>
+                                Please enter only email or mobile number (+41 or +33) *
+                            </label>
+                            <input formControlName="contact" placeholder="+41…" />
+                        </div>
+                    </div>
+
+                    <div class="row checkbox-row">
+                        <label>
+                            <input type="checkbox" formControlName="manualSend" />
+                            I want to send the link manually
+                        </label>
+                    </div>
+                </ng-container>
+
+                <ng-template #inPersonIntro>
+                    <p class="in-person-msg">
+                        The consultation will be carried out with the patient
+                        <strong>in person</strong>.
+                    </p>
+                </ng-template>
+
+                <div class="row checkbox-row">
+                    <label>
+                        <input type="checkbox" formControlName="planLater" />
+                        Plan later
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section right">
+                <h3>GUESTS</h3>
+                <hr />
+                <div formGroupName="guests" class="checkbox-list">
+                    <label *ngFor="let opt of guestOptions">
+                        <input type="checkbox" formControlName="{{ opt.key }}" />
+                        {{ opt.label }}
+                    </label>
+                </div>
+            </div>
+        </form>
+
+        <footer class="invite-modal__footer">
+            <app-button [variant]="ButtonVariant.Outline" [size]="ButtonSize.Medium" (click)="onCancel()">
+                Cancel
+            </app-button>
+            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit">
+                Send
+            </app-button>
+        </footer>
+    </div>
+</div>

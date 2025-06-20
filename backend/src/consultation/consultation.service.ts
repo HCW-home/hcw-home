@@ -1,4 +1,9 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { ConsultationStatus, UserRole } from '@prisma/client';
 import { Server } from 'socket.io';
@@ -10,6 +15,8 @@ import {
   AdmitPatientDto,
   AdmitPatientResponseDto,
 } from './dto/admit-patient.dto';
+import { ConsultationHistoryItemDto } from './dto/consultation-history-item.dto';
+import { ConsultationDetailDto } from './dto/consultation-detail.dto';
 
 @Injectable()
 export class ConsultationService {
@@ -281,5 +288,104 @@ export class ConsultationService {
       responsePayload.message,
       responsePayload.statusCode,
     );
+  }
+
+  async getConsultationHistory(
+    practitionerId: number,
+    status?: ConsultationStatus,
+  ): Promise<ConsultationHistoryItemDto[]> {
+    const whereClause: any = { owner: practitionerId };
+    if (status) {
+      whereClause.status = status;
+    } else {
+      whereClause.status = ConsultationStatus.COMPLETED;
+    }
+
+    const consults = await this.db.consultation.findMany({
+      where: whereClause,
+      include: {
+        participants: {
+          include: { user: true },
+        },
+      },
+      orderBy: { closedAt: 'desc' },
+    });
+
+    return consults.map((c) => this.mapToHistoryItem(c));
+  }
+
+  async getConsultationDetails(id: number): Promise<ConsultationDetailDto> {
+    const c = await this.db.consultation.findUnique({
+      where: { id },
+      include: {
+        participants: { include: { user: true } },
+        messages: true,
+      },
+    });
+    if (!c) throw new NotFoundException('Consultation not found');
+    const base = this.mapToHistoryItem(c);
+    return {
+      ...base,
+      messages: c.messages.map((m) => ({
+        id: m.id,
+        userId: m.userId,
+        content: m.content,
+        consultationId: m.consultationId,
+      })),
+    };
+  }
+
+  async downloadConsultationPdf(id: number): Promise<Buffer> {
+    const c = await this.db.consultation.findUnique({ where: { id } });
+    if (!c) throw new NotFoundException('Consultation not found');
+    const dummyPdf = Buffer.from('%PDF-1.4\n%…', 'utf8');
+    return dummyPdf;
+  }
+
+  private mapToHistoryItem(c: any): ConsultationHistoryItemDto {
+    const start = c.startedAt || c.createdAt;
+    const end = c.closedAt || new Date();
+    const diffMs = end.getTime() - new Date(start).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    const secs = Math.floor((diffMs % 60000) / 1000);
+    const duration = mins ? `${mins}m ${secs}s` : `${secs}s`;
+
+    const feedbacks = c.participants
+      .map((p) => p.feedbackRate)
+      .filter((r) => typeof r === 'number');
+    const avgFeedback =
+      feedbacks.length > 0
+        ? feedbacks.reduce((a, b) => a + b, 0) / feedbacks.length
+        : undefined;
+
+    const patientPart = c.participants.find((p) => p.user.role === 'PATIENT');
+    return {
+      consultation: {
+        id: c.id,
+        scheduledDate: c.scheduledDate,
+        createdAt: c.createdAt,
+        startedAt: c.startedAt,
+        closedAt: c.closedAt,
+        createdBy: c.createdBy,
+        groupId: c.groupId,
+        owner: c.owner,
+        messageService: c.messageService,
+        whatsappTemplateId: c.whatsappTemplateId,
+        status: c.status,
+      },
+      patient: patientPart
+        ? {
+            id: patientPart.user.id,
+            role: patientPart.user.role,
+            firstName: patientPart.user.firstName,
+            lastName: patientPart.user.lastName,
+            phoneNumber: patientPart.user.phoneNumber,
+            country: patientPart.user.country,
+            sex: patientPart.user.sex,
+            status: patientPart.user.status,
+          }
+        : ({} as any),
+      duration,
+    };
   }
 }

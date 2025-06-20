@@ -1,0 +1,24 @@
+<div class="invite-overlay" (click)="close.emit()">
+    <div class="invite-modal" (click)="$event.stopPropagation()">
+        <header class="invite-modal__header">
+            <h2>SEND AN INVITATION</h2>
+            <button class="invite-modal__close" (click)="close.emit()">×</button>
+        </header>
+        <div class="invite-modal__cards">
+            <div class="invite-card">
+                <h3>Remote patient</h3>
+                <p>Send an invitation link to a patient to conduct a teleconsultation. You can also send an invitation
+                    to an Interpreter, Family member or Other caregiver.</p>
+                <app-button [size]="ButtonSize.Medium" [variant]="ButtonVariant.Primary"
+                    (click)="onRemote()">Invite</app-button>
+            </div>
+            <div class="invite-card">
+                <h3>Patient in person – Invitation to a third party</h3>
+                <p>The patient is in a face-to-face consultation. Send an invitation link to an Interpreter, Family
+                    member or Other caregiver.</p>
+                <app-button [size]="ButtonSize.Medium" [variant]="ButtonVariant.Primary"
+                    (click)="onInPerson()">Invite</app-button>
+            </div>
+        </div>
+    </div>
+</div>

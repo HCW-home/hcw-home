@@ -1,0 +1,67 @@
+@use './variables' as *;
+
+.invite-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: $color-overlay-bg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.invite-modal {
+    background: $color-modal-bg;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 16px $color-modal-shadow;
+    overflow: hidden;
+    /* clip rounded corners */
+
+    &__header {
+        position: relative;
+        padding: 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid $color-modal-border;
+
+        .invite-modal__close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: $color-text-light;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: $color-text;
+            }
+        }
+    }
+
+    &__cards {
+        display: flex;
+        background: $color-cards-bg;
+    }
+
+    .invite-card {
+        flex: 1;
+        background: $color-card-bg;
+        padding: 2rem;
+        text-align: center;
+
+        h3 {
+            margin-bottom: 0.5rem;
+            color: $color-heading;
+        }
+
+        p {
+            margin: 1rem 0 1.5rem;
+            line-height: 1.4;
+            color: $color-text;
+        }
+    }
+}

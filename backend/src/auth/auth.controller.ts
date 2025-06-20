@@ -7,8 +7,14 @@ import {
   HttpStatus,
   Get,
   Body,
+  Query,
+  Res,
   Logger,
+  Next,
+  Param,
+  HttpException
 } from '@nestjs/common';
+import * as passport from 'passport';
 import { AuthService } from './auth.service';
 import { PassportLocalGuard } from './guards/passport-local.guard';
 import { LoginResponseDto, LoginUserDto } from './dto/login-user.dto';
@@ -21,11 +27,14 @@ import { Role } from './enums/role.enum';
 import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
-import { ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiResponse, ApiOperation,ApiQuery } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { RefreshTokenDto, TokenDto } from './dto/token.dto';
 import { registerUserSchema } from './validation/auth.validation';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
+import { Request, Response } from 'express';
+import { AuthenticatedGuard } from './guards/authenticated.guard';
+
 
 @Controller('auth')
 export class AuthController {
@@ -42,15 +51,127 @@ export class AuthController {
   })
   @UseGuards(PassportLocalGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('login')
+  @Post('login-local')   
   async login(
     @Req() req: ExtendedRequest,
     @Body() LoginDto: LoginUserDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
+    this.logger.log(`user attached to the request: ${req.user}`)
     const user = req.user as any;
     const result = await this.authService.loginUser(user);
     return ApiResponseDto.success(result, 'User logged-in successfully', 200);
   }
+
+  @Get('session')
+  @UseGuards(AuthenticatedGuard) 
+  getSession(@Req() req: Request) {
+    if (req.user) {
+      return {
+        success: true,
+        message: 'Session user data',
+        user: req.user,
+      };
+    } else {
+      return {
+        success: false,
+        message: 'No session user found',
+      };
+    }
+  }
+
+  @Get('openid/login') // example: api/v1/auth/oidc/login?role=admin
+  @ApiOperation({ summary: 'Initiate OpenID login via a provider (e.g., Google, openidconnect)' })
+  @ApiQuery({ name: 'provider', required: true, type: String, example: 'google' })
+  @ApiQuery({ name: 'role', required: false, type: String, example: 'admin' })
+  loginOidc(@Req() req: Request, @Res() res: Response) {
+    const { role } = req.query;
+    const Reqrole = (role as string)?.toUpperCase() as Role;
+    if (!Reqrole){
+
+    this.logger.log(`role missing in the request url`);
+    throw HttpExceptionHelper.badRequest('role missing in the request query ')
+
+    }
+    this.logger.log(`Incoming login request  for ${Reqrole}`);
+
+  
+     switch (Reqrole){
+     case Role.ADMIN :{
+      try {        
+        return passport.authenticate("openidconnect_admin", {
+          scope: ['openid', 'profile', 'email'],
+        })(req, res, (err) => {
+          if (err) {
+            this.logger.error('Authentication middleware error', err);
+            throw HttpExceptionHelper.internalServerError("Passport middleware failed");
+          }
+        });
+      } catch (error) {
+        this.logger.error("Authentication setup error", error);
+        throw HttpExceptionHelper.internalServerError("Passport setup failed");
+      }
+     }
+     case Role.PRACTITIONER: {      
+      try {
+        return passport.authenticate("openidconnect_practitioner", {
+          scope: ['openid', 'profile', 'email'],
+        })(req, res, (err) => {
+          if (err) {
+            this.logger.error('Authentication middleware error', err);
+            throw HttpExceptionHelper.internalServerError("Passport middleware failed");
+          }
+        });
+      } catch (error) {
+        this.logger.error("Authentication setup error", error);
+        throw HttpExceptionHelper.internalServerError("Passport setup failed");
+      }
+
+     }
+    }
+  }
+  
+
+@Get('callback/:provider') // Example: /api/v1/auth/callback/:{}?role
+async oidcCallback(
+  @Req() req: Request,
+  @Param('provider') provider: string,
+): Promise<any> {
+  const user = req.user;
+  console.log(user);
+  
+  const { role } = req.query;
+  return new Promise((resolve) => {
+    passport.authenticate(provider, async (err, user, info) => {
+      if (err) {
+        return resolve({
+          success: false,
+          message: 'Authentication failed',
+          error: err.message || err,
+        });
+      }
+
+      if (!user) {
+        return resolve({
+          success: false,
+          message: 'No user info returned',
+        });
+      }
+
+      // redirect urls (AdminUI, PractitionerUI) 
+      return resolve(user);
+    })(req, null as any, (authErr) => {
+      if (authErr) {
+        return resolve({
+          success: false,
+          message: 'Internal error during authentication',
+          error: authErr.message || authErr,
+        });
+      }
+    });
+  });
+}
+
+  
 
   // register pateint
   @ApiOperation({ summary: 'Register a user' })
@@ -87,16 +208,11 @@ export class AuthController {
   async getMe(
     @Req() req: ExtendedRequest,
   ): Promise<ApiResponseDto<UserResponseDto>> {
-    const requestId = req.id as string;
-    const userEmail = req.user?.email as string;
-    const user = await this.authService.findByEmail(userEmail);
-    this.logger.log(`user ${user.id} started retrieving`);
-    if (!user) {
-      this.logger.warn(`${user.id}:User not found`);
-      throw HttpExceptionHelper.notFound('user not found', requestId, req.url);
+    if(!req.user){
+      throw HttpExceptionHelper.unauthorized("user not logged id/token experied")
     }
-    this.logger.log(`user ${user.id} retrieved successfully`);
-    this.logger.log(`user ${user.id} role is ${user.role}`);
+    const user = req.user;
+    this.logger.log(`user with email: ${user.email} retrieved successfully`);
     return ApiResponseDto.success(user, 'User retrieved successfully', 200);
   }
 

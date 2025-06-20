@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserResponseDto } from 'src/user/dto/user-response.dto';
+import { TokenDto } from './token.dto';
 
 export class LoginUserDto {
   @ApiProperty({ description: 'Email address', format: 'email' })
@@ -13,17 +15,11 @@ export class LoginUserDto {
 }
 
 export class LoginResponseDto {
-  @ApiProperty({ description: 'Access token for authenticated user' })
-  accessToken: string;
+  @ApiProperty({ description: 'tokens for authenticated user' })
+   tokens:TokenDto
 
-  @ApiProperty({ description: 'Refresh  token for authenticated user ' })
-  refreshToken?: string;
-
-  @ApiProperty({ description: 'User ID' })
-  userId: number;
-
-  @ApiProperty({ description: 'User email' })
-  email: string;
+  @ApiProperty({ description: 'User data' })
+  user:UserResponseDto
 
   constructor(partial: Partial<LoginResponseDto>) {
     Object.assign(this, partial);

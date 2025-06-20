@@ -7,8 +7,10 @@ export interface AppConfig {
     url: string;
   };
   jwt: {
-    secret: string;
-    expiresIn: string;
+    accessSecret: string,
+    accessExpiresIn: string,
+    refreshSecret: string,
+    refreshExpiresIn: string,
   };
   cors: {
     origin: string;

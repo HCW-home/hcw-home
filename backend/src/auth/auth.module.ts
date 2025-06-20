@@ -7,11 +7,24 @@ import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthGuard } from './guards/auth.guard';
-
+// import { GoogleStrategy } from './strategies/google.strategy';
+// import { OpenIdStrategy } from './strategies/oidc.strategy';
+import { SessionSerializer } from './strategies/serialize';
+import { AdminStrategy } from './strategies/admin.strategy';
+import { PractitionerStrategy } from './strategies/practitionner.stretegy';
 @Module({
-  imports: [ConfigModule, JwtModule, PassportModule],
+  imports: [ConfigModule, JwtModule, PassportModule.register({session:true})],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, AuthGuard],
+  providers: [
+    AuthService,
+    LocalStrategy, 
+    AuthGuard,
+    // GoogleStrategy,
+    // OpenIdStrategy,
+    SessionSerializer,
+    AdminStrategy,
+    PractitionerStrategy
+  ],
   exports: [AuthService, AuthGuard, JwtModule],
 })
 export class AuthModule {}

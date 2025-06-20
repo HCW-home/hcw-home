@@ -5,13 +5,20 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { Role } from './enums/role.enum';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
-import { TokenDto } from './dto/token.dto';
+import { RefreshTokenDto, TokenDto } from './dto/token.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { plainToInstance } from 'class-transformer';
+import { OidcUserDto } from './dto/oidc-user.dto';
+
+
+function generateStrongPassword(length = 12): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
 
 @Injectable()
 export class AuthService {
@@ -21,19 +28,32 @@ export class AuthService {
     private readonly JwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly databaseService: DatabaseService,
-  ) {}
+  ) { }
+
+  async canLoginLocal(user: { id: number, email: string, role: string }): Promise<boolean> {
+    if (process.env.LOGIN_METHOD === 'password') {
+      return true;
+    }
+    if (user && user.role === Role.PRACTITIONER) {
+      return false;
+    } else if (user.email) {
+      const isPractitioner = await this.findByEmailRole(
+        user.email,
+        UserRole.PRACTITIONER,
+      );
+      return !isPractitioner;
+    }
+    return false;
+  }
 
   async validateUser(
     loginUserDto: LoginUserDto,
-    requestId: string,
-    path: string,
-  ): Promise<{ userId: number; userEmail: string }> {
+  ): Promise<{ userId: number; userEmail: string, userRole: string }> {
     const user = await this.findByEmail(loginUserDto.email);
 
+
     if (!user || user.temporaryAccount) {
-      this.logger.warn(
-        `LocalStrategy: No valid user found for email ${user.email}`,
-      );
+      this.logger.warn(`No valid user found for email ${user.email}`);
       throw HttpExceptionHelper.notFound('user not found/user not valid');
     }
     if (user.status !== UserStatus.APPROVED) {
@@ -49,18 +69,22 @@ export class AuthService {
       this.logger.warn(`LocalStrategy: Incorrect password for user ${user.id}`);
       throw HttpExceptionHelper.unauthorized('password or email is incorrect');
     }
+    this.logger.log(`validateUser: ${user.email} validate successfully`)
     return {
       userId: user.id,
       userEmail: user.email,
+      userRole: user.role
     };
   }
 
-  async loginUser(UserResponseDto: UserResponseDto): Promise<LoginResponseDto> {
-    const result = await this.generateToken(UserResponseDto);
-    return result;
+  async loginUser(userDto: { id: string, email: string }): Promise<LoginResponseDto> {
+    const userEntity = await this.findByEmail(userDto.email)
+    const user = new UserResponseDto(userEntity);
+    const tokens = await this.generateToken(user);
+    return { user, tokens };
   }
 
-  async generateToken(user: UserResponseDto): Promise<LoginResponseDto> {
+  async generateToken(user: UserResponseDto): Promise<TokenDto> {
     this.logger.log(`Generating JWT tokens for user ${user.id}`);
     const accessToken = this.JwtService.sign(
       { userId: user.id, userEmail: user.email },
@@ -72,7 +96,6 @@ export class AuthService {
       },
     );
     this.logger.log(`Access token generated successfully for user ${user.id}`);
-
     const refreshToken = this.JwtService.sign(
       { userId: user.id, userEmail: user.email },
       {
@@ -85,18 +108,17 @@ export class AuthService {
 
     this.logger.log(`Refresh token generated successfully for user ${user.id}`);
 
-    return { accessToken, refreshToken, userId: user.id, email: user.email };
+    return { accessToken, refreshToken };
   }
 
   async verifyToken(
-    tokenDto: TokenDto,
+    token: string,
     isRefreshToken = false,
   ): Promise<{ userId: number; userEmail: string }> {
     const secret = isRefreshToken
       ? this.configService.get<string>('jwt.refreshSecret')
       : this.configService.get<string>('jwt.accessSecret');
 
-    const token = isRefreshToken ? tokenDto.refreshToken : tokenDto.accessToken;
 
     if (!token) {
       this.logger.warn('Token not provided');
@@ -115,14 +137,13 @@ export class AuthService {
     }
   }
 
-  async refreshToken(tokenDto: TokenDto): Promise<LoginResponseDto> {
-    if (!tokenDto?.refreshToken) {
+  async refreshToken(refreshToken: RefreshTokenDto): Promise<TokenDto> {
+    if (!refreshToken) {
       this.logger.warn('Refresh token is required for token refresh');
       throw HttpExceptionHelper.badRequest('Refresh token is required');
     }
-
     try {
-      const { userEmail } = await this.verifyRefreshToken(tokenDto);
+      const { userEmail } = await this.verifyRefreshToken(refreshToken);
 
       const user = await this.findByEmail(userEmail);
 
@@ -139,14 +160,14 @@ export class AuthService {
   }
 
   async verifyRefreshToken(
-    tokenDto: TokenDto,
+    refreshToken: RefreshTokenDto,
   ): Promise<{ userId: number; userEmail: string }> {
-    if (!tokenDto.refreshToken) {
+    if (refreshToken) {
       throw HttpExceptionHelper.badRequest('Refresh token is required');
     }
 
     try {
-      return await this.verifyToken(tokenDto, true);
+      return await this.verifyToken(refreshToken, true);
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw HttpExceptionHelper.unauthorized('Token expired');
@@ -177,10 +198,17 @@ export class AuthService {
       );
       throw HttpExceptionHelper.confilct('Email is already in use');
     }
+    // Hash password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(
+      registerDto.password,
+      saltRounds,
+    );
 
     // Create new user
     const createUserData = {
       ...registerDto,
+      password: hashedPassword,
       role: Role.PATIENT,
       status: UserStatus.NOT_APPROVED,
       temporaryAccount: false,
@@ -205,10 +233,125 @@ export class AuthService {
 
     if (!user) {
       this.logger.log(`user not found with email:${email}`);
-      throw HttpExceptionHelper.notFound('user not found');
     }
     this.logger.log(`user found with email:${email}`);
-
     return user;
+  }
+
+  async findByEmailRole(
+    email: string,
+    role: UserRole)
+    : Promise<any | null> {
+    const user = await this.databaseService.user.findUnique({
+      where: { email, role },
+    });
+    if (!user) {
+      this.logger.log(`user not found with email:${email} and role:${role}`);
+    }
+    this.logger.log(`user found with email:${email}`);
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: false,
+    });
+  }
+
+
+  // oidc user validation
+
+  async validateAdmin(  //validate admin
+    user: OidcUserDto,
+  ): Promise<LoginResponseDto> {
+    this.logger.log(`oidc admin validation called`);
+
+    if (!user.email) {
+      this.logger.error('Email is missing in user object');
+      throw HttpExceptionHelper.badRequest('Email is required');
+    }
+    const existingUser = await this.findByEmailRole(user.email, UserRole.ADMIN);
+    if (existingUser && existingUser.role === Role.ADMIN) {
+      if (existingUser.status !== UserStatus.APPROVED) {
+        this.logger.log(`Admin with ${existingUser.email} not approved`);
+        throw HttpExceptionHelper.unauthorized(`Admin with ${existingUser.email} not approved`);
+      }
+    }
+    if (!existingUser) {
+      this.logger.error(`user not found with role: ${UserRole.ADMIN}`);
+      throw HttpExceptionHelper.notFound(`user not found with email: ${user.email} and role: ${UserRole.ADMIN}`);
+    }
+    const { accessToken, refreshToken } = await this.generateToken(existingUser);
+    const userDto = new UserResponseDto(existingUser);
+    return {
+      user: userDto,
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    };
+  }
+
+
+  async validatePractitioner(  // validate practitioner , if role is admin then give access else create new practitioner 
+    user: OidcUserDto,
+  ): Promise<LoginResponseDto> {
+    this.logger.log(`oidc practitioner validation called`);
+
+    if (!user.email) {
+      this.logger.error('Email is missing in user object');
+      throw HttpExceptionHelper.badRequest('Email is required');
+    }
+
+    let existingUser = await this.findByEmailRole(user.email, UserRole.PRACTITIONER).catch(() => null);
+    if (existingUser && existingUser.role === Role.PRACTITIONER) {
+      if (existingUser.status !== UserStatus.APPROVED) {
+        this.logger.log(`Practitioner with ${existingUser.email} not approved`);
+        throw HttpExceptionHelper.unauthorized(`Practitioner with ${existingUser.email} not approved`);
+      }
+    }
+    if (!existingUser) {
+      this.logger.log(` practitioner user not found with email: ${user.email}`);
+      existingUser = await this.findByEmailRole(user.email, UserRole.ADMIN).catch(() => null);
+    }
+    if (!existingUser) {
+      this.logger.log(`Creating new practitioner user with email: ${user.email}`);
+      // Create new Practitioner
+      const createUserData = {
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        email: user.email!,
+        role: Role.PRACTITIONER,
+        status: process.env.OPENID_AUTOCREATE_USER === 'true' ? UserStatus.APPROVED : UserStatus.NOT_APPROVED,
+        temporaryAccount: false,
+        phoneNumber: null,
+        country: null,
+        sex: null,
+        password: generateStrongPassword(),
+      };
+      existingUser = await this.databaseService.user.create({
+        data: createUserData,
+      });
+    }
+    const { accessToken, refreshToken } = await this.generateToken(existingUser);
+    const userDto = new UserResponseDto(existingUser);
+    this.logger.log(`Successfully logged in as Practitioner with ${existingUser.email}`);
+    return {
+      user: userDto,
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    };
+  }
+
+
+  async loginUserValidate(
+    user: OidcUserDto) {
+    const role = (user.role as string)?.toUpperCase() as Role;
+    switch (role) {
+      case Role.ADMIN:
+        return this.validateAdmin(user);
+      case Role.PRACTITIONER:
+        return this.validatePractitioner(user);
+      default:
+        throw HttpExceptionHelper.badRequest(`Invalid role for OIDC login: ${role}`);
+    }
   }
 }

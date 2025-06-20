@@ -5,6 +5,8 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
 import { Environment } from './config/environment.enum';
+import * as passport from 'passport';
+import * as session from 'express-session';
 
 class ApplicationBootstrap {
   private readonly logger = new Logger('Bootstrap');
@@ -23,6 +25,20 @@ class ApplicationBootstrap {
       this.configureCors(app, configService);
       this.configureSwagger(app, configService);
       this.configureGlobalPrefix(app);
+      app.use(
+        session({
+          secret: 'your-secret',
+          resave: false,
+          saveUninitialized: true,
+          cookie: {
+            maxAge:6000000,
+          },
+        }),
+      );
+      
+      // initialize passpport
+      app.use(passport.initialize());
+      app.use(passport.session()); 
 
       // Start application
       await this.startApplication(app, configService);

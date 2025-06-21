@@ -16,6 +16,7 @@ import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SmsProviderModule } from './sms_provider/sms_provider.module';
+import { ExportModule } from './export/export.module';
 
 
 @Module({
@@ -29,7 +30,8 @@ import { SmsProviderModule } from './sms_provider/sms_provider.module';
     OrganizationModule,
     GroupModule,
     MediasoupModule,
-    SmsProviderModule
+    SmsProviderModule,
+    ExportModule
   ],
   controllers: [AppController],
   providers: [

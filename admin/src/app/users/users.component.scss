@@ -1,0 +1,36 @@
+.users-container {
+  padding: 16px;
+  font-family: "Helvetica Neue", sans-serif;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.table-container {
+  max-width: 600px;
+  margin: 0 auto;
+  overflow-x: auto;
+  padding-bottom: 24px;
+}
+
+.full-width-table {
+  width: 100%;
+  min-width: 500px;
+}
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0;
+}

@@ -1,0 +1,67 @@
+.form-wrapper {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  font-family: "Helvetica Neue", sans-serif;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+
+  .back-button {
+    font-size: 1rem;
+    color: #666;
+  }
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+::ng-deep .snackbar-success {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+::ng-deep .snackbar-error {
+  background-color: #f44336;
+  color: #fff;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .temporary-checkbox {
+    align-self: center;
+    margin-top: 1rem;
+  }
+}
+
+.multi-selects {
+  margin-top: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  button {
+    min-width: 120px;
+  }
+}

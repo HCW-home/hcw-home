@@ -1,0 +1,132 @@
+<div class="form-wrapper">
+  <h2 class="form-header">
+    @if (isEditMode) {
+      Edit User
+    } @else {
+      Add User
+    }
+    <button (click)="cancel()" mat-icon-button class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+  </h2>
+
+  @if (loading) {
+    <div class="spinner-container">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  }
+
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <mat-form-field appearance="fill">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName" />
+        <mat-error *ngIf="hasError('firstName', 'required')">First name is required.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName" />
+        <mat-error *ngIf="hasError('lastName', 'required')">Last name is required.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+        <mat-error *ngIf="hasError('email', 'required')">Email is required.</mat-error>
+        <mat-error *ngIf="hasError('email', 'email')">Invalid email format.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="phoneNumber" />
+        <mat-error *ngIf="hasError('phoneNumber', 'pattern')">Invalid phone format.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Country</mat-label>
+        <input matInput formControlName="country" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Sex</mat-label>
+        <mat-select formControlName="sex">
+          @for (sex of userSexes; track sex) {
+            <mat-option [value]="sex">{{ sex }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          @for (role of userRoles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of userStatuses; track status) {
+            <mat-option [value]="status">{{ status }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-checkbox formControlName="temporaryAccount" class="temporary-checkbox">
+        Temporary Account
+      </mat-checkbox>
+    </div>
+
+    <div class="form-grid multi-selects">
+      <mat-form-field appearance="fill">
+        <mat-label>Organizations</mat-label>
+        <mat-select formControlName="organisationIds" multiple>
+          @for (org of organizations; track org.id) {
+            <mat-option [value]="org.id">{{ org.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Groups</mat-label>
+        <mat-select formControlName="groupIds" multiple>
+          @for (group of groups; track group.id) {
+            <mat-option [value]="group.id">{{ group.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Languages</mat-label>
+        <mat-select formControlName="languageIds" multiple>
+          @for (lang of languages; track lang.id) {
+            <mat-option [value]="lang.id">{{ lang.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Specialities</mat-label>
+        <mat-select formControlName="specialityIds" multiple>
+          @for (spec of specialities; track spec.id) {
+            <mat-option [value]="spec.id">{{ spec.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" mat-stroked-button color="warn" (click)="cancel()">Cancel</button>
+      <button type="submit" mat-raised-button color="primary" [disabled]="userForm.invalid || loading">
+        @if (isEditMode) {
+          Update
+        } @else {
+          Create
+        }
+      </button>
+    </div>
+  </form>
+</div>

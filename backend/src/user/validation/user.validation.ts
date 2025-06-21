@@ -41,6 +41,10 @@ export const createUserSchema = z.object({
     .optional(),
   sex: z.nativeEnum(UserSex).optional(),
   status: z.nativeEnum(UserStatus).optional().default(UserStatus.NOT_APPROVED),
+  organisationIds: z.array(z.number().int().positive()),
+  groupIds: z.array(z.number().int().positive()).optional(),
+  languageIds: z.array(z.number().int().positive()).optional(),
+  specialityIds: z.array(z.number().int().positive()).optional(),
 });
 
 export const updateUserSchema = createUserSchema

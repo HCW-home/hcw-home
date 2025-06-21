@@ -40,4 +40,16 @@ export class CreateUserDto {
     default: UserStatus.NOT_APPROVED,
   })
   status?: UserStatus;
+
+  @ApiProperty({ type: [Number], description: 'Organisation IDs the user belongs to' })
+  organisationIds: number[];
+
+  @ApiProperty({ type: [Number], description: 'Optional Group IDs', required: false })
+  groupIds?: number[];
+
+  @ApiProperty({ type: [Number], description: 'Language IDs', required: false })
+  languageIds?: number[];
+
+  @ApiProperty({ type: [Number], description: 'Speciality IDs', required: false })
+  specialityIds?: number[];
 }

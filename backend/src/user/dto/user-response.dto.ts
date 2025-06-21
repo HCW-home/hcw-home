@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { UserRole, UserSex, UserStatus } from '@prisma/client';
 
 export class UserResponseDto {
@@ -41,7 +41,23 @@ export class UserResponseDto {
 
   @ApiProperty({ description: 'Last update date' })
   updatedAt: Date;
+  
+  @ApiProperty({ type: [Number], description: 'Organisation IDs' })
+  @Expose()
+  organisationIds: number[];
 
+  @ApiProperty({ type: [Number], description: 'Group IDs', required: false })
+  @Expose()
+  groupIds?: number[];
+
+  @ApiProperty({ type: [Number], description: 'Language IDs', required: false })
+  @Expose()
+  languageIds?: number[];
+
+  @ApiProperty({ type: [Number], description: 'Speciality IDs', required: false })
+  @Expose()
+  specialityIds?: number[];
+  
   constructor(partial: Partial<UserResponseDto>) {
     Object.assign(this, partial);
   }

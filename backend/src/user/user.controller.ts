@@ -38,7 +38,7 @@ import { Role } from 'src/auth/enums/role.enum';
 @UseGuards(AuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
@@ -89,7 +89,7 @@ export class UserController {
       path: req.path,
     });
   }
-  // add who can access this
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({ summary: 'Update user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
@@ -133,7 +133,7 @@ export class UserController {
       path: req.path,
     });
   }
-
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })

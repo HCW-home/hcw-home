@@ -20,9 +20,19 @@ export class UserService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const {
+      email,
+      password,
+      organisationIds = [],
+      groupIds = [],
+      languageIds = [],
+      specialityIds = [],
+      ...rest
+    } = createUserDto;
+    
     // Check if email already exists
     const existingUser = await this.databaseService.user.findUnique({
-      where: { email: createUserDto.email },
+      where: { email },
     });
 
     if (existingUser) {
@@ -32,18 +42,72 @@ export class UserService {
     // Hash password
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
+      password,
       saltRounds,
     );
 
     // Create user
-    const userData = {
-      ...createUserDto,
-      password: hashedPassword,
-    };
+    let user;
+    await this.databaseService.$transaction(async (tx) => {
+      user = await tx.user.create({
+        data: {
+          ...rest,
+          email,
+          password: hashedPassword,
+        },
+      });
 
-    const user = await this.databaseService.user.create({
-      data: userData,
+      const userId = user.id;
+
+      if (organisationIds.length > 0) {
+        await tx.organizationMember.createMany({
+          data: organisationIds.map((orgId) => ({
+            userId,
+            organizationId: orgId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (groupIds.length > 0) {
+        await tx.groupMember.createMany({
+          data: groupIds.map((groupId) => ({
+            userId,
+            groupId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (languageIds.length > 0) {
+        await tx.userLanguage.createMany({
+          data: languageIds.map((languageId) => ({
+            userId,
+            languageId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (specialityIds.length > 0) {
+        await tx.userSpeciality.createMany({
+          data: specialityIds.map((specialityId) => ({
+            userId,
+            specialityId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      user = await tx.user.findUnique({
+        where: { id: userId },
+        include: {
+          OrganizationMember: { include: { organization: true } },
+          GroupMember: { include: { group: true } },
+          languages: { include: { language: true } },
+          specialities: { include: { speciality: true } },
+        },
+      });
     });
 
     return plainToInstance(UserResponseDto, user, {
@@ -115,6 +179,12 @@ export class UserService {
   async findOne(id: number): Promise<UserResponseDto> {
     const user = await this.databaseService.user.findUnique({
       where: { id },
+      include: {
+        OrganizationMember: { include: { organization: true } },
+        GroupMember: { include: { group: true } },
+        languages: { include: { language: true } },
+        specialities: { include: { speciality: true } },
+      },
     });
 
     if (!user) {
@@ -144,6 +214,15 @@ export class UserService {
     id: number,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
+    const {
+      email,
+      organisationIds,
+      groupIds,
+      languageIds,
+      specialityIds,
+      ...rest
+    } = updateUserDto;
+
     // Check if user exists
     const existingUser = await this.databaseService.user.findUnique({
       where: { id },
@@ -155,10 +234,10 @@ export class UserService {
     }
 
     // Check email uniqueness if email is being updated
-    if (updateUserDto.email) {
+    if (email) {
       const emailExists = await this.databaseService.user.findFirst({
         where: {
-          email: updateUserDto.email,
+          email,
           id: { not: id },
         },
         select: { id: true },
@@ -168,10 +247,60 @@ export class UserService {
         throw new ConflictException('Email already exists');
       }
     }
+    let user;
+    await this.databaseService.$transaction(async (tx) => {
+      user = await tx.user.update({
+        where: { id },
+        data: { ...rest, email },
+      });
 
-    const user = await this.databaseService.user.update({
-      where: { id },
-      data: updateUserDto,
+      if (organisationIds) {
+        await tx.organizationMember.deleteMany({ where: { userId: id } });
+        if (organisationIds.length > 0) {
+          await tx.organizationMember.createMany({
+            data: organisationIds.map((orgId) => ({
+              userId: id,
+              organizationId: orgId,
+            })),
+          });
+        }
+      }
+
+      if (groupIds) {
+        await tx.groupMember.deleteMany({ where: { userId: id } });
+        if (groupIds.length > 0) {
+          await tx.groupMember.createMany({
+            data: groupIds.map((groupId) => ({
+              userId: id,
+              groupId,
+            })),
+          });
+        }
+      }
+
+      if (languageIds) {
+        await tx.userLanguage.deleteMany({ where: { userId: id } });
+        if (languageIds.length > 0) {
+          await tx.userLanguage.createMany({
+            data: languageIds.map((languageId) => ({
+              userId: id,
+              languageId,
+            })),
+          });
+        }
+      }
+
+      if (specialityIds) {
+        await tx.userSpeciality.deleteMany({ where: { userId: id } });
+        if (specialityIds.length > 0) {
+          await tx.userSpeciality.createMany({
+            data: specialityIds.map((specialityId) => ({
+              userId: id,
+              specialityId,
+            })),
+          });
+        }
+      }
     });
 
     return plainToInstance(UserResponseDto, user, {

@@ -33,6 +33,8 @@ model User {
   OrganizationMember OrganizationMember[]
   GroupMember        GroupMember[]
   Message            Message[]
+  languages          UserLanguage[]
+  specialities       UserSpeciality[]
 
   @@map("users")
 }
@@ -120,6 +122,44 @@ model GroupMember {
   @@unique([groupId, userId])
   @@map("group_members")
 }
+
+model Language {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  users UserLanguage[]
+}
+
+model UserLanguage {
+  id         Int  @id @default(autoincrement())
+  userId     Int
+  languageId Int
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, languageId])
+}
+
+model Speciality {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  users UserSpeciality[]
+}
+
+model UserSpeciality {
+  id           Int  @id @default(autoincrement())
+  userId       Int
+  specialityId Int
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  speciality Speciality @relation(fields: [specialityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, specialityId])
+}
+
+
 
 //  Add the new models/enums that is necessary for consultation remainders
 

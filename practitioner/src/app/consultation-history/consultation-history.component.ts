@@ -7,6 +7,8 @@ import { ConsultationDetailPanelComponent } from '../components/consultation-det
 import { ButtonComponent } from '../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { HttpClientModule } from '@angular/common/http';
+import { OverlayComponent } from '../components/overlay/overlay.component';
+
 @Component({
   selector: 'app-consultation-history',
   standalone: true,
@@ -14,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     ConsultationHistoryCardComponent,
     ConsultationDetailPanelComponent,
+    OverlayComponent,
     ButtonComponent,
     HttpClientModule,
   ],

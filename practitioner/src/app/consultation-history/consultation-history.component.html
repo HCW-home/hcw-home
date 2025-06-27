@@ -73,9 +73,11 @@
             </div>
             }
         </div>
-
-        <app-consultation-detail-panel [consultationId]="selectedConsultationId" [isOpen]="isDetailPanelOpen"
-            (close)="onDetailPanelClose()" (downloadPDF)="onDownloadPDF($event)"></app-consultation-detail-panel>
+        <app-overlay [isOpen]="isDetailPanelOpen" (closed)="onDetailPanelClose()">
+            <app-consultation-detail-panel [consultationId]="selectedConsultationId" [isOpen]="isDetailPanelOpen"
+                (close)="onDetailPanelClose()" (downloadPDF)="onDownloadPDF($event)">
+            </app-consultation-detail-panel>
+        </app-overlay>
     </div>
 
     @if (!loading) {

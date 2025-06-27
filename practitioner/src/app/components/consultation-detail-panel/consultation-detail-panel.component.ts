@@ -12,11 +12,12 @@ import { ConsultationDetail } from '../../models/consultations/consultation.mode
 import { ConsultationHistoryService } from '../../services/consultations/consultation-history.service';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize } from '../../constants/button.enums';
+import { SvgIconComponent } from '../../shared/components/svg-icon.component';
 
 @Component({
   selector: 'app-consultation-detail-panel',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, SvgIconComponent],
   templateUrl: './consultation-detail-panel.component.html',
   styleUrls: ['./consultation-detail-panel.component.scss'],
 })

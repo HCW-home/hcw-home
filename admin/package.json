@@ -22,6 +22,7 @@
     "@angular/router": "^19.0.0",
     "angular-svg-icon": "^19.1.1",
     "file-saver": "^2.0.5",
+    "ngx-editor": "^19.0.0-beta.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

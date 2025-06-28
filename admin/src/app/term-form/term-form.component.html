@@ -2,7 +2,7 @@
     <h2 class="form-header">
       {{ isEditMode ? 'Edit Term' : 'Add Term' }}
       <button (click)="cancel()" mat-icon-button class="back-button">
-        <mat-icon>arrow_back</mat-icon>
+        <svg-icon src="assets/svg/arrow_back.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
       </button>
     </h2>
   
@@ -15,7 +15,7 @@
         <!-- Organization -->
         <mat-form-field appearance="fill">
           <mat-label>Organization</mat-label>
-          <mat-select formControlName="organisationId" [disabled]="isEditMode">
+          <mat-select formControlName="organisationId">
             <mat-option *ngFor="let org of organizations" [value]="org.id">
               {{ org.name }}
             </mat-option>

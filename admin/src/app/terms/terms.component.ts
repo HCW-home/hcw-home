@@ -20,7 +20,8 @@ import { Term,TermQuery } from '../models/term.model';
 import { TermsService } from '../services/term.service';
 import { OrganizationService } from '../services/organization.service';
 import { Organization } from "../models/user.model"
-
+import { AngularSvgIconModule } from 'angular-svg-icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-terms',
   standalone: true,
@@ -36,7 +37,9 @@ import { Organization } from "../models/user.model"
     MatTableModule,
     MatPaginatorModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    AngularSvgIconModule,
+    MatTooltipModule
   ],
   templateUrl: './terms.component.html',
   styleUrls: ['./terms.component.scss']

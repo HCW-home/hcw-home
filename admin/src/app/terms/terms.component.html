@@ -70,10 +70,23 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let term">
-              <div class="action-buttons">
-                <button mat-stroked-button color="primary" (click)="editTerm(term.id)">Edit</button>
-                <button mat-stroked-button color="warn" (click)="deleteTerm(term)">Delete</button>
-              </div>
+              <button
+                mat-icon-button
+                color="accent"
+                (click)="editTerm(term.id)"
+                matTooltip="Edit"
+              >
+                <svg-icon src="assets/svg/edit.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+              </button>
+          
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteTerm(term)"
+                matTooltip="Delete"
+              >
+                <svg-icon src="assets/svg/delete.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+              </button>
             </td>
           </ng-container>
           

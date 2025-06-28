@@ -18,6 +18,8 @@ import { SnackbarService } from '../services/snackbar.service';
 import { Country, Language, Organization } from '../models/user.model';
 import { TermsService } from '../services/term.service';
 import { Term } from "../models/term.model"
+import { AngularSvgIconModule } from 'angular-svg-icon';
+
 
 @Component({
   selector: 'app-term-form',
@@ -31,7 +33,8 @@ import { Term } from "../models/term.model"
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MdEditorComponent
+    MdEditorComponent,
+    AngularSvgIconModule
   ],
   templateUrl: './term-form.component.html',
   styleUrl: './term-form.component.scss'
@@ -83,6 +86,7 @@ export class TermFormComponent implements OnInit, OnDestroy {
 
     if (this.isEditMode && this.termId !== null) {
       observables.push(this.termService.getById(this.termId)); // Use dynamic org ID if needed
+      this.termForm.get('organisationId')?.disable()
     }
 
     this.subscriptions.add(
@@ -169,7 +173,7 @@ export class TermFormComponent implements OnInit, OnDestroy {
   }
 
   cancel(): void {
-    this.router.navigate(['/terms']);
+    this.router.navigate(['/term']);
   }
 
   hasError(controlName: string, errorType: string): boolean | undefined {

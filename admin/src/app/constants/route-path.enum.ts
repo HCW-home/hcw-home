@@ -3,6 +3,6 @@ export enum RoutePaths {
   NewUser = 'user/new',
   ResourceManager = 'resources',
   Dashboard = 'dashboard',
-  Terms='terms',
+  Terms='term',
   newTerm='term/new'
 }

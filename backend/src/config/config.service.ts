@@ -86,7 +86,7 @@ export class ConfigService {
   get frontendConfig() {
     return this.configService.get('frontend');
   }
-  
+
   // Additional helper methods for getting optional values
   getOptional<T = string>(key: string): T | undefined {
     return this.configService.get<T>(key);
@@ -100,5 +100,21 @@ export class ConfigService {
       );
     }
     return value;
+  }
+
+  get consultationRetentionHours(): number {
+    return this.getNumber('CONSULTATION_RETENTION_HOURS', 24);
+  }
+
+  get consultationDeletionBufferHours(): number {
+    return this.getNumber('CONSULTATION_DELETION_BUFFER_HOURS', 1);
+  }
+
+  private getNumber(key: string, defaultValue: number): number {
+    const value = this.configService.get<string>(key);
+    if (!value) return defaultValue;
+
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
   }
 }

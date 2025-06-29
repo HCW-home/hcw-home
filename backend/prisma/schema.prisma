@@ -13,6 +13,7 @@ enum ConsultationStatus {
   ACTIVE
   COMPLETED
   CANCELLED
+  TERMINATED_OPEN
 }
 
 model User {
@@ -184,7 +185,9 @@ model Consultation {
   messageService     MessageService?
   whatsappTemplateId Int?
   status             ConsultationStatus @default(SCHEDULED)
+  deletionScheduledAt DateTime? 
   version            Int    @default(1)
+  isDeleted          Boolean  @default(false)
 
   participants    Participant[]
   group           Group?        @relation(fields: [groupId], references: [id])
@@ -194,6 +197,7 @@ model Consultation {
 
   @@index([status])
   @@index([ownerId])
+  DeletedConsultationLog DeletedConsultationLog[]
 }
 
 
@@ -235,6 +239,7 @@ model Participant {
   token          String?   @db.VarChar(255)
   joinedAt       DateTime?
   language       String?   @db.VarChar(50)
+  lastActiveAt   DateTime?
 
   // Relations
   consultation Consultation @relation(fields: [consultationId], references: [id])
@@ -301,4 +306,15 @@ model Terms {
 
 
   @@map("terms")
+}
+
+model DeletedConsultationLog {
+  id               Int      @id @default(autoincrement())
+  consultationId   Int
+  deletedAt        DateTime @default(now())
+  reason           String?
+
+  consultation     Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([consultationId])
 }

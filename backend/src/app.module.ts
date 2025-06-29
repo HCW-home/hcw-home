@@ -37,7 +37,7 @@ import { TermModule } from './term/term.module';
     LanguageModule,
     SpecialityModule,
     ExportModule,
-    TermModule,
+    TermModule
   ],
   controllers: [AppController],
   providers: [

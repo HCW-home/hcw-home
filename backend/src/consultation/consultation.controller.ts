@@ -41,7 +41,11 @@ import { HistoryQueryDto } from './dto/history-query.dto';
 import { ConsultationHistoryItemDto } from './dto/consultation-history-item.dto';
 import { ConsultationDetailDto } from './dto/consultation-detail.dto';
 import { Response } from 'express';
-import { ResponseStatus } from 'src/common/helpers/response/response-status.enum'; 
+import { ResponseStatus } from 'src/common/helpers/response/response-status.enum';
+import {
+  EndConsultationDto,
+  EndConsultationResponseDto,
+} from './dto/end-consultation.dto';
 
 @ApiTags('consultation')
 @Controller('consultation')
@@ -114,9 +118,26 @@ export class ConsultationController {
     return this.consultationService.admitPatient(dto, userId);
   }
 
+  @Post('/end')
+  @ApiOperation({ summary: 'End a consultation (practitioner or admin only)' })
+  @ApiBody({ type: EndConsultationDto })
+  @ApiOkResponse({
+    description: 'Consultation ended',
+    type: ApiResponseDto,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async endConsultation(
+    @Body() endDto: EndConsultationDto,
+    @Query('userId', UserIdParamPipe) userId: number,
+  ): Promise<ApiResponseDto<EndConsultationResponseDto>> {
+    return this.consultationService.endConsultation(endDto, userId);
+  }
+
   @Get('/waiting-room')
-  @ApiOperation({ summary: 'Get waiting room consultations for a user' })
-  @ApiQuery({ name: 'userId', type: Number, description: 'User ID' })
+  @ApiOperation({
+    summary: 'Get waiting room consultations for a practitioner',
+  })
+  @ApiQuery({ name: 'userId', type: Number, description: 'Practitioner ID' })
   @ApiOkResponse({
     description: 'Waiting room consultations',
     type: ApiResponseDto,
@@ -128,7 +149,7 @@ export class ConsultationController {
   }
 
   @Get('/history')
-  @ApiOperation({ summary: 'Fetch closed consultations for a practitioner' })
+  @ApiOperation({ summary: 'Fetch consultation history for a practitioner' })
   @ApiQuery({
     name: 'practitionerId',
     type: Number,
@@ -136,7 +157,7 @@ export class ConsultationController {
   })
   @ApiQuery({
     name: 'status',
-    enum: ['COMPLETED', 'CANCELLED'],
+    enum: ['COMPLETED', 'TERMINATED_OPEN'],
     required: false,
   })
   @ApiOkResponse({ type: ApiResponseDto })

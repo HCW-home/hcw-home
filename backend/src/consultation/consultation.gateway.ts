@@ -9,6 +9,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { DatabaseService } from 'src/database/database.service';
+import { ConsultationService } from './consultation.service';
+import { EndConsultationDto } from './dto/end-consultation.dto';
+import { ConsultationStatus, UserRole } from '@prisma/client';
 
 @WebSocketGateway({ namespace: '/consultation', cors: true })
 export class ConsultationGateway
@@ -16,22 +19,22 @@ export class ConsultationGateway
 {
   @WebSocketServer() server: Server;
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly consultationService: ConsultationService,
+  ) {}
 
-  /**
-   * On socket connection:
-   * - Expects ?consultationId=123&userId=456&role=PRACTITIONER|PATIENT in the query.
-   * - Joins user to the consultation room.
-   * - If practitioner, also joins their practitioner notification room.
-   * - Marks participant as active in the DB.
-   */
   async handleConnection(client: Socket) {
     try {
       const cId = Number(client.handshake.query.consultationId);
       const uId = Number(client.handshake.query.userId);
-      const role = client.handshake.query.role as string | undefined;
+      const role = client.handshake.query.role as UserRole | undefined;
 
-      if (!cId || !uId || !['PRACTITIONER', 'PATIENT'].includes(role || '')) {
+      if (
+        !cId ||
+        !uId ||
+        (role !== UserRole.PRACTITIONER && role !== UserRole.PATIENT)
+      ) {
         console.error(
           `[ConsultationGateway][handleConnection] Invalid connection params: consultationId=${cId}, userId=${uId}, role=${role}`,
         );
@@ -39,12 +42,30 @@ export class ConsultationGateway
         return;
       }
 
-      client.join(`consultation:${cId}`);
-      client.data.consultationId = cId;
-      client.data.userId = uId;
-      client.data.role = role;
+      // Enforce one-to-one: only one active user per role per consultation
+      const existing = await this.databaseService.participant.findMany({
+        where: {
+          consultationId: cId,
+          isActive: true,
+          user: { role },
+        },
+      });
 
-      if (role === 'PRACTITIONER') {
+      if (existing.length > 0 && !existing.some((p) => p.userId === uId)) {
+        console.warn(
+          `[ConsultationGateway][handleConnection] Another ${role} is already active in consultation ${cId}`,
+        );
+        client.emit('error', {
+          message: `A ${role.toLowerCase()} is already connected to this consultation.`,
+        });
+        client.disconnect();
+        return;
+      }
+
+      client.join(`consultation:${cId}`);
+      client.data = { consultationId: cId, userId: uId, role };
+
+      if (role === UserRole.PRACTITIONER) {
         client.join(`practitioner:${uId}`);
       }
 
@@ -55,8 +76,13 @@ export class ConsultationGateway
           userId: uId,
           isActive: true,
           joinedAt: new Date(),
+          lastActiveAt: new Date(),
         },
-        update: { isActive: true, joinedAt: new Date() },
+        update: {
+          isActive: true,
+          joinedAt: new Date(),
+          lastActiveAt: new Date(),
+        },
       });
 
       console.log(
@@ -68,51 +94,83 @@ export class ConsultationGateway
     }
   }
 
-  /**
-   * On disconnect:
-   * - Marks participant as inactive.
-   * - If all patients have left and status is WAITING, reverts consultation to SCHEDULED.
-   */
   async handleDisconnect(client: Socket) {
     try {
-      const { consultationId, userId } = client.data;
-      if (!consultationId || !userId) return;
+      const { consultationId, userId, role } = client.data;
+      if (!consultationId || !userId || !role) return;
 
       await this.databaseService.participant.updateMany({
         where: { consultationId, userId },
-        data: { isActive: false },
-      });
-
-      const activePatients = await this.databaseService.participant.findMany({
-        where: {
-          consultationId,
-          isActive: true,
-          user: { role: 'PATIENT' },
-        },
+        data: { isActive: false, lastActiveAt: new Date() },
       });
 
       const consultation = await this.databaseService.consultation.findUnique({
         where: { id: consultationId },
       });
 
-      if (activePatients.length === 0 && consultation?.status === 'WAITING') {
+      if (
+        !consultation ||
+        consultation.status === ConsultationStatus.TERMINATED_OPEN ||
+        consultation.status === ConsultationStatus.COMPLETED
+      ) {
+        return;
+      }
+
+      if (role === UserRole.PRACTITIONER) {
         await this.databaseService.consultation.update({
           where: { id: consultationId },
-          data: { status: 'SCHEDULED' },
+          data: { status: ConsultationStatus.TERMINATED_OPEN },
         });
+
+        this.server
+          .to(`consultation:${consultationId}`)
+          .emit('consultation_status', {
+            status: ConsultationStatus.TERMINATED_OPEN,
+            terminatedBy: 'PRACTITIONER',
+          });
+
+        console.log(
+          `[ConsultationGateway][handleDisconnect] Practitioner ${userId} disconnected — consultation ${consultationId} auto-terminated.`,
+        );
+      } else if (role === UserRole.PATIENT) {
+        const activePatients = await this.databaseService.participant.findMany({
+          where: {
+            consultationId,
+            isActive: true,
+            user: { role: UserRole.PATIENT },
+          },
+        });
+
+        if (
+          activePatients.length === 0 &&
+          consultation.status === ConsultationStatus.WAITING
+        ) {
+          await this.databaseService.consultation.update({
+            where: { id: consultationId },
+            data: { status: ConsultationStatus.SCHEDULED },
+          });
+
+          this.server
+            .to(`consultation:${consultationId}`)
+            .emit('consultation_status', {
+              status: ConsultationStatus.SCHEDULED,
+              triggeredBy: 'PATIENT_LEFT',
+            });
+
+          console.log(
+            `[ConsultationGateway][handleDisconnect] All patients left — consultation ${consultationId} reverted to SCHEDULED.`,
+          );
+        }
       }
 
       console.log(
-        `[ConsultationGateway][handleDisconnect] User ${userId} disconnected from consultation ${consultationId}`,
+        `[ConsultationGateway][handleDisconnect] ${role} ${userId} disconnected from consultation ${consultationId}`,
       );
     } catch (error) {
       console.error(`[ConsultationGateway][handleDisconnect] Error:`, error);
     }
   }
 
-  /**
-   * Practitioner can explicitly admit a patient (optional real-time event).
-   */
   @SubscribeMessage('admit_patient')
   async handleAdmitPatient(
     @ConnectedSocket() client: Socket,
@@ -120,29 +178,83 @@ export class ConsultationGateway
   ) {
     try {
       const { consultationId } = data;
+      const { role } = client.data;
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new Error('Only practitioners can admit patients');
+      }
+
       await this.databaseService.consultation.update({
         where: { id: consultationId },
-        data: { status: 'ACTIVE' },
+        data: { status: ConsultationStatus.ACTIVE },
       });
+
       this.server
         .to(`consultation:${consultationId}`)
         .emit('consultation_status', {
-          status: 'ACTIVE',
+          status: ConsultationStatus.ACTIVE,
           initiatedBy: 'PRACTITIONER',
         });
 
       console.log(
         `[ConsultationGateway][handleAdmitPatient] Consultation ${consultationId} set to ACTIVE by practitioner`,
       );
-      // Optionally, trigger mediasoup session setup here
     } catch (error) {
       console.error(`[ConsultationGateway][handleAdmitPatient] Error:`, error);
+      client.emit('error', {
+        message: 'Failed to admit patient',
+        details: error?.message ?? error,
+      });
     }
   }
 
-  /**
-   * Real-time messaging between patient and practitioner.
-   */
+  @SubscribeMessage('end_consultation')
+  async handleEndConsultation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() endDto: EndConsultationDto,
+  ) {
+    try {
+      const { consultationId, action } = endDto;
+      const { userId, role } = client.data;
+
+      if (role !== UserRole.PRACTITIONER && role !== UserRole.ADMIN) {
+        throw new Error('Only practitioners or admins can end consultations');
+      }
+
+      const result = await this.consultationService.endConsultation(
+        endDto,
+        userId,
+      );
+
+      if (result.data) {
+        this.server
+          .to(`consultation:${consultationId}`)
+          .emit('consultation_ended', {
+            status: result.data.status,
+            action,
+            terminatedBy: userId,
+            ...(result.data.deletionScheduledAt && {
+              deletionTime: result.data.deletionScheduledAt,
+            }),
+          });
+
+        console.log(
+          `[ConsultationGateway][end_consultation] Consultation ${consultationId} ended by ${userId} with action ${action}`,
+        );
+      } else {
+        client.emit('error', {
+          message: 'Failed to end consultation: No data returned',
+        });
+      }
+    } catch (error) {
+      console.error(`[ConsultationGateway][end_consultation] Error:`, error);
+      client.emit('error', {
+        message: 'Failed to end consultation',
+        details: error?.message ?? error,
+      });
+    }
+  }
+
   @SubscribeMessage('send_message')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
@@ -162,7 +274,7 @@ export class ConsultationGateway
         return;
       }
 
-      await this.databaseService.message.create({
+      const message = await this.databaseService.message.create({
         data: {
           consultationId: data.consultationId,
           userId: data.userId,
@@ -173,6 +285,7 @@ export class ConsultationGateway
       this.server
         .to(`consultation:${data.consultationId}`)
         .emit('new_message', {
+          id: message.id,
           userId: data.userId,
           content: data.content,
           timestamp: new Date().toISOString(),
@@ -188,6 +301,48 @@ export class ConsultationGateway
         message: 'Failed to send message',
         details: error?.message ?? error,
       });
+    }
+  }
+
+  @SubscribeMessage('consultation_keep_alive')
+  async handleKeepAlive(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { consultationId: number },
+  ) {
+    try {
+      const { consultationId } = data;
+      const { userId } = client.data;
+
+      const participant = await this.databaseService.participant.findUnique({
+        where: {
+          consultationId_userId: {
+            consultationId,
+            userId,
+          },
+        },
+      });
+
+      if (!participant) {
+        throw new Error('Participant not found');
+      }
+
+      await this.databaseService.participant.update({
+        where: {
+          consultationId_userId: {
+            consultationId,
+            userId,
+          },
+        },
+        data: {
+          lastActiveAt: new Date(),
+        },
+      });
+
+      console.log(
+        `[ConsultationGateway][keep_alive] User ${userId} kept consultation ${consultationId} alive`,
+      );
+    } catch (error) {
+      console.error(`[ConsultationGateway][keep_alive] Error:`, error);
     }
   }
 }

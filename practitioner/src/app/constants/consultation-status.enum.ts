@@ -4,4 +4,5 @@ export enum ConsultationStatus {
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+  TERMINATED_OPEN = 'TERMINATED_OPEN',
 }

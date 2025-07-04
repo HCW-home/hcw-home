@@ -46,6 +46,9 @@ import {
   EndConsultationDto,
   EndConsultationResponseDto,
 } from './dto/end-consultation.dto';
+import { CloseConsultationDto, CloseConsultationResponseDto } from './dto/close-consultation.dto';
+import { JoinOpenConsultationDto, JoinOpenConsultationResponseDto } from './dto/join-open-consultation.dto';
+import { OpenConsultationResponseDto, OpenConsultationQueryDto } from './dto/open-consultation.dto';
 
 @ApiTags('consultation')
 @Controller('consultation')
@@ -213,5 +216,115 @@ export class ConsultationController {
         'Content-Disposition': `attachment; filename="consultation_${id}.pdf"`,
       })
       .send(pdfBuffer);
+  }
+  @Get('/open')
+  @ApiOperation({
+    summary: 'Get all open (ongoing) consultations for a practitioner',
+  })
+  @ApiQuery({
+    name: 'practitionerId',
+    type: Number,
+    description: 'Practitioner ID',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiOkResponse({
+    description: 'Open consultations fetched successfully',
+    type: ApiResponseDto<OpenConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async getOpenConsultations(
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+    @Query() query: OpenConsultationQueryDto,
+  ): Promise<ApiResponseDto<OpenConsultationResponseDto>> {
+    return this.consultationService.getOpenConsultations(
+      practitionerId,
+      query.page,
+      query.limit,
+    );
+  }
+
+  @Post('/open/join')
+  @ApiOperation({
+    summary: 'Join an open consultation (rejoins existing session)',
+  })
+  @ApiBody({ type: JoinOpenConsultationDto })
+  @ApiOkResponse({
+    description: 'Successfully rejoined consultation',
+    type: ApiResponseDto<JoinOpenConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async joinOpenConsultation(
+    @Body() dto: JoinOpenConsultationDto,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<JoinOpenConsultationResponseDto>> {
+    return this.consultationService.joinOpenConsultation(
+      dto.consultationId,
+      practitionerId,
+    );
+  }
+
+  @Post('/open/close')
+  @ApiOperation({
+    summary: 'Close an open consultation',
+  })
+  @ApiBody({ type: CloseConsultationDto })
+  @ApiOkResponse({
+    description: 'Consultation closed successfully',
+    type: ApiResponseDto<CloseConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async closeConsultation(
+    @Body() dto: CloseConsultationDto,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<CloseConsultationResponseDto>> {
+    return this.consultationService.closeConsultation(
+      dto.consultationId,
+      practitionerId,
+      dto.reason,
+    );
+  }
+
+  @Get('/open/:id/details')
+  @ApiOperation({
+    summary: 'Get detailed information about an open consultation',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'Consultation ID',
+  })
+  @ApiOkResponse({
+    description: 'Open consultation details fetched successfully',
+    type: ApiResponseDto<ConsultationDetailDto>,
+  })
+  async getOpenConsultationDetails(
+    @Param('id', ConsultationIdParamPipe) id: number,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<ConsultationDetailDto>> {
+    // Use the service method to verify access and get details
+    const data = await this.consultationService.getOpenConsultationDetails(
+      id,
+      practitionerId,
+    );
+
+    return {
+      success: true,
+      status: ResponseStatus.SUCCESS,
+      statusCode: HttpStatus.OK,
+      message: 'Open consultation details fetched successfully',
+      timestamp: new Date().toISOString(),
+      data,
+    };
   }
 }

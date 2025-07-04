@@ -1,0 +1,47 @@
+<div class="consultation-row" [class.selected]="isSelected" (click)="onCardClick()">
+    <div class="consultation-cell patient-cell">
+        <div class="cell-header">Patient</div>
+        <div class="patient-info">
+            <span class="patient-name">{{ getPatientName() }}</span>
+            <span class="offline-badge" *ngIf="consultation.patient.isOffline">Offline</span>
+        </div>
+    </div>
+
+    <div class="consultation-cell requested-by-cell">
+        <div class="cell-header">Requested by</div>
+        <span class="cell-value">{{ '-' }}</span>
+    </div>
+
+    <div class="consultation-cell waiting-queue-cell">
+        <div class="cell-header">Waiting queue</div>
+        <span class="cell-value">{{ '-' }}</span>
+    </div>
+
+    <div class="consultation-cell message-cell">
+        <div class="cell-header">Message</div>
+        <span class="cell-value">{{ consultation.lastMessage }}</span>
+    </div>
+
+    <div class="consultation-cell datetime-cell">
+        <div class="cell-header">Time</div>
+        <span class="cell-value">{{ getFormattedDate() }}</span>
+    </div>
+
+    <div class="consultation-cell duration-cell">
+        <div class="cell-header">Participant</div>
+        <span class="cell-value">{{ consultation.participantCount || '-' }}</span>
+    </div>
+
+    <div class="consultation-cell">
+        <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" (click)="onSendInvitation($event)">
+            Send again the invitation
+        </app-button>
+    </div>
+
+    <div class="consultation-cell more-actions-cell">
+        <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" (click)="onCardClick()">
+            <app-svg-icon src="chevron-right" [svgStyle]="{ 'width.px': 16, 'height.px': 16 }" ariaLabel="More actions">
+            </app-svg-icon>
+        </app-button>
+    </div>
+</div>

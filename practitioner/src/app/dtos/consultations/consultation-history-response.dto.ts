@@ -3,6 +3,7 @@ import { UserResponseDto } from '../users/user-response.dto';
 import { ParticipantResponseDto } from './participant-response.dto';
 
 export interface ConsultationHistoryResponseDto {
+  ownerId: number | null | undefined;
   id: number;
   scheduledDate?: string | null;
   createdAt?: string | null;
@@ -10,7 +11,6 @@ export interface ConsultationHistoryResponseDto {
   closedAt?: string | null;
   createdBy?: number | null;
   groupId?: number | null;
-  owner?: number | null;
   whatsappTemplateId?: number | null;
   status: ConsultationStatus;
   patient: UserResponseDto;

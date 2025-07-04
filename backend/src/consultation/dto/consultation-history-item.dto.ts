@@ -8,7 +8,7 @@ export class ConsultationHistoryItemDto {
     startedAt?: Date;
     closedAt?: Date;
     createdBy?: number;
-    owner?: number;
+    ownerId?: number;
     groupId?: number;
     messageService?: MessageService;
     whatsappTemplateId?: number;

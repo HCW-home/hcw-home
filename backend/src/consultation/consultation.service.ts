@@ -649,7 +649,7 @@ export class ConsultationService {
         closedAt: c.closedAt,
         createdBy: c.createdBy,
         groupId: c.groupId,
-        owner: c.ownerId,
+        ownerId: c.ownerId,
         messageService: c.messageService,
         whatsappTemplateId: c.whatsappTemplateId,
         status: c.status,
@@ -666,5 +666,322 @@ export class ConsultationService {
       },
       duration,
     };
+  }
+
+  async getOpenConsultations(
+    practitionerId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<ApiResponseDto<OpenConsultationResponseDto>> {
+    const practitioner = await this.db.user.findUnique({
+      where: { id: practitionerId },
+    });
+    if (!practitioner) {
+      throw HttpExceptionHelper.notFound('Practitioner not found');
+    }
+    if (practitioner.role !== UserRole.PRACTITIONER) {
+      throw HttpExceptionHelper.forbidden('User is not a practitioner');
+    }
+
+    const skip = (page - 1) * limit;
+
+    const total = await this.db.consultation.count({
+      where: {
+        ownerId: practitionerId,
+        closedAt: null,
+        startedAt: { not: null },
+      },
+    });
+
+    const consultations = await this.db.consultation.findMany({
+      where: {
+        ownerId: practitionerId,
+        closedAt: null,
+        startedAt: { not: null },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                sex: true,
+                role: true,
+              },
+            },
+          },
+        },
+        group: {
+          select: {
+            name: true,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: { id: 'desc' },
+          select: {
+            content: true,
+          },
+        },
+      },
+      orderBy: { startedAt: 'desc' },
+      skip,
+      take: limit,
+    });
+
+    const consultationItems: OpenConsultationItemDto[] = consultations.map(
+      (consultation) => {
+        const patientParticipant = consultation.participants.find(
+          (p) => p.user.role === UserRole.PATIENT,
+        );
+
+        const patient = patientParticipant?.user;
+        const activeParticipants = consultation.participants.filter(
+          (p) => p.isActive,
+        ).length;
+
+        const patientDto: OpenConsultationPatientDto = {
+          id: patient?.id || 0,
+          firstName: patient?.firstName || null,
+          lastName: patient?.lastName || null,
+          initials: patient
+            ? `${patient.firstName?.[0] || ''}${patient.lastName?.[0] || ''}`
+            : 'N/A',
+          sex: patient?.sex || null,
+          isOffline: patientParticipant ? !patientParticipant.isActive : true,
+        };
+
+        const timeSinceStart = this.calculateTimeSinceStart(
+          consultation.startedAt!,
+        );
+
+        return {
+          id: consultation.id,
+          patient: patientDto,
+          timeSinceStart,
+          participantCount: activeParticipants,
+          lastMessage: consultation.messages[0]?.content || null,
+          status: consultation.status,
+          startedAt: consultation.startedAt!,
+          groupName: consultation.group?.name || null,
+        };
+      },
+    );
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    const responseData: OpenConsultationResponseDto = {
+      consultations: consultationItems,
+      total,
+      currentPage: page,
+      totalPages,
+      limit,
+      hasNextPage,
+      hasPreviousPage,
+    };
+
+    return ApiResponseDto.success(
+      responseData,
+      'Open consultations fetched successfully',
+      200,
+    );
+  }
+
+  async joinOpenConsultation(
+    consultationId: number,
+    practitionerId: number,
+  ): Promise<ApiResponseDto<JoinOpenConsultationResponseDto>> {
+    const consultation = await this.db.consultation.findUnique({
+      where: { id: consultationId },
+      include: {
+        participants: {
+          where: { userId: practitionerId },
+        },
+      },
+    });
+
+    if (!consultation) {
+      throw HttpExceptionHelper.notFound('Consultation not found');
+    }
+
+    if (consultation.ownerId !== practitionerId) {
+      throw HttpExceptionHelper.forbidden(
+        'Not authorized to join this consultation',
+      );
+    }
+
+    if (consultation.closedAt) {
+      throw HttpExceptionHelper.badRequest('Cannot join a closed consultation');
+    }
+
+    if (!consultation.startedAt) {
+      throw HttpExceptionHelper.badRequest('Consultation has not started yet');
+    }
+
+    await this.db.participant.upsert({
+      where: {
+        consultationId_userId: { consultationId, userId: practitionerId },
+      },
+      create: {
+        consultationId,
+        userId: practitionerId,
+        isActive: true,
+        joinedAt: new Date(),
+      },
+      update: {
+        isActive: true,
+        joinedAt: new Date(),
+      },
+    });
+
+    if (this.wsServer) {
+      this.wsServer
+        .to(`consultation:${consultationId}`)
+        .emit('practitioner_rejoined', {
+          consultationId,
+          practitionerId,
+          timestamp: new Date(),
+        });
+    }
+
+    const responseData: JoinOpenConsultationResponseDto = {
+      success: true,
+      statusCode: 200,
+      message: 'Successfully rejoined consultation',
+      consultationId,
+      sessionUrl: `/consultation/session/${consultationId}`,
+    };
+
+    return ApiResponseDto.success(
+      responseData,
+      responseData.message,
+      responseData.statusCode,
+    );
+  }
+
+  async closeConsultation(
+    consultationId: number,
+    practitionerId: number,
+    reason?: string,
+  ): Promise<ApiResponseDto<CloseConsultationResponseDto>> {
+    const consultation = await this.db.consultation.findUnique({
+      where: { id: consultationId },
+      include: {
+        participants: true,
+      },
+    });
+
+    if (!consultation) {
+      throw HttpExceptionHelper.notFound('Consultation not found');
+    }
+
+    if (consultation.ownerId !== practitionerId) {
+      throw HttpExceptionHelper.forbidden(
+        'Not authorized to close this consultation',
+      );
+    }
+
+    if (consultation.closedAt) {
+      throw HttpExceptionHelper.badRequest('Consultation is already closed');
+    }
+
+    const closedAt = new Date();
+
+    const updatedConsultation = await this.db.consultation.update({
+      where: { id: consultationId },
+      data: {
+        status: ConsultationStatus.COMPLETED,
+        closedAt,
+      },
+    });
+
+    await this.db.participant.updateMany({
+      where: { consultationId },
+      data: { isActive: false },
+    });
+
+    if (this.wsServer) {
+      this.wsServer
+        .to(`consultation:${consultationId}`)
+        .emit('consultation_closed', {
+          consultationId,
+          closedBy: practitionerId,
+          reason: reason || 'Consultation ended by practitioner',
+          closedAt,
+        });
+
+      consultation.participants.forEach((participant) => {
+        this.wsServer
+          .to(`user:${participant.userId}`)
+          .emit('consultation_ended', {
+            consultationId,
+            message: 'The consultation has been ended by the practitioner',
+          });
+      });
+    }
+
+    const responseData: CloseConsultationResponseDto = {
+      success: true,
+      statusCode: 200,
+      message: 'Consultation closed successfully',
+      consultationId,
+      closedAt,
+    };
+
+    return ApiResponseDto.success(
+      responseData,
+      responseData.message,
+      responseData.statusCode,
+    );
+  }
+
+  private calculateTimeSinceStart(startedAt: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - new Date(startedAt).getTime();
+
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) {
+      return `${days}d ${hours % 24}h ago`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes % 60}m ago`;
+    } else if (minutes > 0) {
+      return `${minutes}m ago`;
+    } else {
+      return 'Just started';
+    }
+  }
+
+  async getOpenConsultationDetails(
+    consultationId: number,
+    practitionerId: number,
+  ): Promise<ConsultationDetailDto> {
+    // Verify practitioner has access to this consultation
+    const consultation = await this.db.consultation.findUnique({
+      where: { id: consultationId },
+      select: { ownerId: true, closedAt: true },
+    });
+
+    if (!consultation) {
+      throw HttpExceptionHelper.notFound('Consultation not found');
+    }
+
+    if (consultation.ownerId !== practitionerId) {
+      throw HttpExceptionHelper.forbidden(
+        'Not authorized to view this consultation',
+      );
+    }
+
+    if (consultation.closedAt) {
+      throw HttpExceptionHelper.badRequest('Consultation is already closed');
+    }
+
+    return this.getConsultationDetails(consultationId);
   }
 }

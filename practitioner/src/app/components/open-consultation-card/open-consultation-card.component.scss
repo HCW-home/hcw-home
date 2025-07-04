@@ -1,0 +1,177 @@
+@use 'sass:color';
+@use './variables' as *;
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$border-radius-sm: 4px;
+$border-radius-md: 6px;
+$grid-gap: 12px;
+$grid-gap-sm: 8px;
+$grid-gap-xs: 4px;
+
+.consultation-row {
+    display: grid;
+    grid-template-columns:
+        1fr 1fr 1fr 1fr 150px 150px auto auto;
+    align-items: center;
+    padding: $spacing-lg $spacing-xl;
+    background: $color-background-card;
+    border: 1px solid $color-border-light;
+    border-radius: $border-radius-md;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    gap: $grid-gap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 60px;
+
+    &:hover {
+        background-color: $color-background;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.selected {
+        background-color: $color-selected-bg;
+        border-left: 3px solid $color-primary;
+        border-color: $color-primary;
+    }
+}
+
+.consultation-cell {
+    display: flex;
+    flex-direction: column;
+    padding: $spacing-sm;
+}
+
+.cell-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-description;
+    margin-bottom: $spacing-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.cell-value {
+    font-size: 14px;
+    color: $color-text;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .patient-name {
+        font-size: 14px;
+        color: $color-text;
+        font-weight: 500;
+    }
+
+    .offline-badge {
+        background-color: color.adjust($color-warning, $lightness: 40%);
+        color: color.adjust($color-warning, $lightness: -20%);
+        padding: 2px $spacing-sm;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+}
+
+.message-cell {
+    .cell-value {
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.4;
+        max-height: 2.8em;
+    }
+}
+
+.more-actions-cell {
+    justify-content: center;
+
+    app-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .consultation-row {
+        grid-template-columns: 1fr 1fr 1fr 180px 120px 300px;
+
+        .requested-by-cell,
+        .waiting-queue-cell {
+            display: none;
+        }
+    }
+}
+
+@media (max-width: 968px) {
+    .consultation-row {
+        grid-template-columns: 1fr 1fr 150px 250px;
+        gap: $grid-gap-sm;
+
+        .requested-by-cell,
+        .waiting-queue-cell,
+        .datetime-cell {
+            display: none;
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .consultation-row {
+        grid-template-columns: 1fr 200px;
+        padding: $spacing-md $spacing-lg;
+
+        .duration-cell,
+        .message-cell {
+            display: none;
+        }
+    }
+
+    .consultation-cell {
+        padding: $spacing-xs;
+    }
+
+    .cell-header {
+        font-size: 11px;
+    }
+
+    .cell-value {
+        font-size: 13px;
+    }
+}
+
+.consultation-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    color: $color-description;
+}
+
+.consultation-empty {
+    text-align: center;
+    padding: 40px;
+    color: $color-empty-state-text;
+    background: $color-empty-state-bg;
+    border-radius: $border-radius-md;
+}

@@ -35,12 +35,17 @@ import { registerUserSchema } from './validation/auth.validation';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { Request, Response } from 'express';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
+import { CustomLoggerService } from 'src/logger/logger.service';
 
 @Controller('auth')
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+  private readonly authService: AuthService,
+   private readonly logger: CustomLoggerService
+  ) {
+  logger.setContext('Authcontroller')
+  }
 
   // login user
   @ApiOperation({ summary: 'Login a user' })
@@ -54,10 +59,9 @@ export class AuthController {
   @Post('login-local')   
   async login(
     @Req() req: ExtendedRequest,
-    @Body() LoginDto: LoginUserDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
-    this.logger.log(`user attached to the request: ${req.user}`)
     const user = req.user as any;
+    this.logger.log(`user attached to the request: ${user}`)    
     const result = await this.authService.loginUser(user);
     return ApiResponseDto.success(result, 'User logged-in successfully', 200);
   }

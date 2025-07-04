@@ -6,12 +6,14 @@ import { NIL } from 'uuid';
 import { User } from '@prisma/client';
 import { Role } from '../enums/role.enum';
 import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
+import { CustomLoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  private readonly logger = new Logger(LocalStrategy.name);
 
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger:CustomLoggerService ) {
     super({
       usernameField: 'email',
       passwordField: 'password',

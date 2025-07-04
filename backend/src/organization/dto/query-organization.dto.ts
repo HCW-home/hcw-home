@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { IsOptional, IsInt, Min, IsString, IsIn } from 'class-validator';
 
 export class QueryOrganizationDto {
   @ApiProperty({
@@ -8,7 +9,10 @@ export class QueryOrganizationDto {
     default: 1,
     required: false,
   })
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
   page?: number = 1;
 
   @ApiProperty({
@@ -19,7 +23,10 @@ export class QueryOrganizationDto {
     maximum: 100,
     required: false,
   })
+  @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
   limit?: number = 10;
 
   @ApiProperty({
@@ -27,6 +34,8 @@ export class QueryOrganizationDto {
     example: 'Healthcare',
     required: false,
   })
+  @IsOptional()
+  @IsString()
   search?: string;
 
   @ApiProperty({
@@ -36,6 +45,8 @@ export class QueryOrganizationDto {
     default: 'createdAt',
     required: false,
   })
+  @IsOptional()
+  @IsIn(['id', 'name', 'createdAt', 'updatedAt'])
   sortBy?: 'id' | 'name' | 'createdAt' | 'updatedAt' = 'createdAt';
 
   @ApiProperty({
@@ -45,5 +56,7 @@ export class QueryOrganizationDto {
     default: 'desc',
     required: false,
   })
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';
 }

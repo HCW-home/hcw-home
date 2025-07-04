@@ -26,12 +26,24 @@ export class CustomLoggerService extends ConsoleLogger implements LoggerService 
     message: string,
     context: LogContext = {},
   ): string {
-    const timestamp = new Date().toISOString();
-    const category = context.category || 'message';
-    const userId = context.userId || '';
-    
-    return `${timestamp};${level};${category};${userId};${message}`;
+    const { category = 'message', userId, ...extraContext } = context;
+
+    const logEntry: Record<string, any> = {
+      level,
+      category,
+      ts: new Date().toISOString(),
+      caller: this.getCallerLocation(),
+      message,
+      ...extraContext,
+    };
+
+    if (userId) {
+      logEntry.userId = userId;
+    }
+
+    return JSON.stringify(logEntry);
   }
+  
 
   private shouldUseSplunkFormat(): boolean {
     return this.logFormat === 'splunk';
@@ -50,13 +62,12 @@ export class CustomLoggerService extends ConsoleLogger implements LoggerService 
       );
       console.log(formattedMessage);
     } else {
-      // Use the parent ConsoleLogger methods directly to avoid circular calls
       const contextString = this.context || context.category || 'Application';
       super[level](message, contextString);
     }
   }
 
-  // Override base Logger methods
+  // Standard Logger overrides
   log(message: string, context?: LogContext | string) {
     if (typeof context === 'string') {
       this.logWithContext('log', message, { category: 'message' });
@@ -98,7 +109,7 @@ export class CustomLoggerService extends ConsoleLogger implements LoggerService 
     }
   }
 
-  // Custom methods for specific categories
+  // Custom log methods
   logServerAction(message: string, additionalContext: Omit<LogContext, 'category'> = {}) {
     this.logWithContext('log', message, { 
       ...additionalContext, 
@@ -129,5 +140,30 @@ export class CustomLoggerService extends ConsoleLogger implements LoggerService 
       category: 'user-action',
       userId 
     });
+  }
+
+  private getCallerLocation(): string {
+    const originalPrepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = (_, stack) => stack;
+  
+    const err = new Error();
+    const stack = err.stack as unknown as NodeJS.CallSite[];
+  
+    Error.prepareStackTrace = originalPrepareStackTrace;
+  
+    if (!stack) return 'unknown';
+  
+    const caller = stack.find((s) => {
+      const file = s.getFileName();
+      return file && !file.includes('logger') && !file.includes('node_modules');
+    });
+  
+    if (!caller) return 'unknown';
+  
+    const fileName = caller.getFileName()?.split('/').slice(-2).join('/');
+    const line = caller.getLineNumber();
+    // const method = caller.getFunctionName() || 'anonymous';
+  
+    return `${fileName}:${line}`;
   }
 }

@@ -1,0 +1,118 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f0f4f8, #d9e4f5);
+  padding: 1rem;
+}
+
+.auth-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 420px;
+}
+
+.logo-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.logo-subtext {
+  margin: 16px;
+  font-size: 60px;
+  color: var(--primary-color);
+  font-weight: 800;
+}
+
+.logo-subtext > span {
+  // display: block;
+  font-size: 36px;
+}
+
+.openid-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.openid-button {
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.openid-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
+.spinner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; 
+}
+
+.forgot-link {
+  font-size: 0.85rem;
+  color: #1976d2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  color: #e53935;
+  text-align: center;
+  margin-top: 1rem;
+}

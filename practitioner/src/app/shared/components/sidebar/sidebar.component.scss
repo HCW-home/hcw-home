@@ -180,20 +180,6 @@
   button {
     margin-right: 8px;
   }
-
-  .toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .profile-button {
-      color: #2871bd;
-      
-      &:hover {
-        background-color: rgba(40, 113, 189, 0.1);
-      }
-    }
-  }
 }
 
 @media (max-width: 768px) {
@@ -220,4 +206,30 @@
     }
   }
 }
+
+
+
+.admin-logo-wrapper {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0 12px;
+
+  .admin-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+  }
+  
+}
+.logout{
+  font-weight: 600;
+  font-size: 14px;
+  color: red;
+    
+}
+
 

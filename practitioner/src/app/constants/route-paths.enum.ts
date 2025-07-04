@@ -6,4 +6,5 @@ export enum RoutePaths {
   Invitations = 'invites',
   Test = 'test',
   Profile = 'profile',
+  Login='login'
 }

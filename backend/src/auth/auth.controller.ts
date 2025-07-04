@@ -54,7 +54,6 @@ export class AuthController {
   @Post('login-local')   
   async login(
     @Req() req: ExtendedRequest,
-    @Body() LoginDto: LoginUserDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
     this.logger.log(`user attached to the request: ${req.user}`)
     const user = req.user as any;

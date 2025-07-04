@@ -8,16 +8,53 @@ import { InvitesComponent } from './invites/invites.component';
 import { TestCallComponent } from './test-call/test-call.component';
 import { ConsultationHistoryComponent } from './consultation-history/consultation-history.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './auth/guard/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: RoutePaths.Dashboard, pathMatch: 'full' },
-  { path: RoutePaths.Dashboard, component: DashboardComponent },
-  { path: RoutePaths.WaitingRoom, component: WaitingRoomComponent },
-  { path: RoutePaths.OpenConsultations, component: OpenConsultationsComponent },
-  { path: RoutePaths.ClosedConsultations, component: ConsultationHistoryComponent },
-  { path: RoutePaths.Invitations, component: InvitesComponent },
-  { path: RoutePaths.Test, component: TestCallComponent },
-  { path: RoutePaths.Profile, component: ProfileComponent },
+  {
+    path: '',
+    redirectTo: RoutePaths.Dashboard,
+    pathMatch: 'full',
+  },
+  {
+    path: '',
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: RoutePaths.Dashboard,
+        component: DashboardComponent,
+      },
+      {
+        path: RoutePaths.WaitingRoom,
+        component: WaitingRoomComponent,
+      },
+      {
+        path: RoutePaths.OpenConsultations,
+        component: OpenConsultationsComponent,
+      },
+      {
+        path: RoutePaths.ClosedConsultations,
+        component: ConsultationHistoryComponent,
+      },
+      {
+        path: RoutePaths.Invitations,
+        component: InvitesComponent,
+      },
+      {
+        path: RoutePaths.Test,
+        component: TestCallComponent,
+      },
+      {
+        path: RoutePaths.Profile,
+        component: ProfileComponent,
+      },
+    ],
+  },
+  // Public routes
+  {
+    path: RoutePaths.Login,
+    component: LoginComponent,
+  },
 ];
-
 

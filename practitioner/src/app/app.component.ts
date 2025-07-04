@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { AngularSvgIconModule, SvgIconRegistryService } from 'angular-svg-icon';
+import { AuthService } from './auth/auth.service';
+import { MatProgressSpinner, MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 
 @Component({
   selector: 'app-root',
@@ -12,8 +14,9 @@ import { AngularSvgIconModule, SvgIconRegistryService } from 'angular-svg-icon';
     CommonModule,
     RouterOutlet,
     SidebarComponent,
-    HttpClientModule,
     AngularSvgIconModule,
+    MatProgressSpinnerModule,
+    CommonModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -22,11 +25,15 @@ export class AppComponent implements OnInit {
   title = 'practitioner';
   pendingConsultations: number | undefined = 5;
   activeConsultations: number | undefined = 0;
-  isLoggedIn = true;
-
+  loginChecked = computed(() => this.authService.loginChecked());
+  isLoggedIn = computed(() => this.authService.isLoggedIn());
   private iconNames = ['warning', 'download', 'chevron-right', 'chevron-left'];
 
-  constructor(private iconRegistry: SvgIconRegistryService) {}
+  constructor(
+    private iconRegistry: SvgIconRegistryService,
+    private authService:AuthService
+
+  ) {}
 
   ngOnInit(): void {
     this.registerAllIcons();
@@ -46,3 +53,26 @@ export class AppComponent implements OnInit {
     });
   }
 }
+
+
+
+// import { Component, computed, inject } from '@angular/core';
+// import { RouterOutlet } from '@angular/router';
+// import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
+// import { AuthService } from './auth/auth.service';
+// import { MatProgressSpinner, MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+// import { CommonModule } from '@angular/common';
+
+
+// @Component({
+//   selector: 'app-root',
+//   imports: [RouterOutlet, SidebarComponent,MatProgressSpinnerModule,CommonModule],
+//   templateUrl: './app.component.html',
+//   styleUrl: './app.component.scss',
+// })
+// export class AppComponent {
+//   title = 'admin';
+//   private authService = inject(AuthService);
+//   loginChecked = computed(() => this.authService.loginChecked());
+//   isLoggedIn = computed(() => this.authService.isLoggedIn());
+// }

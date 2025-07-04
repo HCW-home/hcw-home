@@ -90,3 +90,20 @@ export interface ApiResponse<T> {
   data: T;
   statusCode: number;
 }
+
+export interface LoginUser {
+  id: number;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+  email: string;
+  temporaryAccount: boolean;
+  phoneNumber?: string | null;
+  country?: string | null;
+  sex?: UserSex | null;
+  status: UserStatus;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  accessToken :string;
+  refreshToken:string
+}

@@ -1,40 +1,23 @@
 <mat-drawer-container class="container">
-  <mat-drawer
-    #sidenav
-    class="sidenav"
-    [mode]="isMobile ? 'over' : 'side'"
-    [opened]="isMobile ? isSidebarOpen : isSidebarVisible"
-    [disableClose]="!isMobile"
-    (closedStart)="isSidebarOpen = false"
-  >
+  <mat-drawer #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'"
+    [opened]="isMobile ? isSidebarOpen : isSidebarVisible" [disableClose]="!isMobile"
+    (closedStart)="isSidebarOpen = false">
     <div class="sidebar">
       <div class="sidebar-item home">
         <a routerLink="/" (click)="closeSidebarOnMobile()">
-          <img
-        src="assets/svg/HCW-Home.svg"
-        alt="HCW@Home"
-        width="75"
-        height="50"
-        class="img img-fluid"
-        />
+          <img src="assets/svg/HCW-Home.svg" alt="HCW@Home" width="75" height="50" class="img img-fluid" />
         </a>
       </div>
 
       @for (item of sidebarItems; track item){
-        <a
-          class="sidebar-item"
-          routerLinkActive="active"
-          [routerLink]="item.route"
-          #rla="routerLinkActive"
-          [ngClass]="{ active: rla.isActive }"
-          (click)="closeSidebarOnMobile()"
-        >
-          <div class="icon">
-            <img [src]="'assets/svg/' + item.icon" [alt]="item.label + ' icon'" />
-            @if (item.badge) { <app-badge [value]="item.badge"></app-badge> }
-          </div>
-          <div class="label">{{ item.label }}</div>
-        </a>
+      <a class="sidebar-item" routerLinkActive="active" [routerLink]="item.route" #rla="routerLinkActive"
+        [ngClass]="{ active: rla.isActive }" (click)="closeSidebarOnMobile()">
+        <div class="icon">
+          <img [src]="'assets/svg/' + item.icon" [alt]="item.label + ' icon'" />
+          @if (item.badge) { <app-badge [value]="item.badge"></app-badge> }
+        </div>
+        <div class="label">{{ item.label }}</div>
+      </a>
       }
     </div>
   </mat-drawer>
@@ -46,18 +29,17 @@
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
       </button>
-      
-      <div class="toolbar-actions">
-        <button 
-          mat-icon-button 
-          routerLink="/profile" 
-          class="profile-button"
-          matTooltip="My Profile"
-          aria-label="Go to profile">
-          <mat-icon>account_circle</mat-icon>
-        </button>
+      <div class="admin-logo-wrapper" *ngIf="isLoggedIn" [matMenuTriggerFor]="menu">
+        <svg-icon src="assets/svg/icon-doctor.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+        <div class="admin-name">Hi,<span> {{ currentUser?.firstName || 'Doctor' }}</span></div>
       </div>
+
     </div>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item routerLink="/profile" aria-label="Go to profile">Profile
+      </button>
+      <button mat-menu-item class="logout" (click)="logout()">Logout</button>
+    </mat-menu>
 
     <div class="content">
       <ng-content></ng-content>

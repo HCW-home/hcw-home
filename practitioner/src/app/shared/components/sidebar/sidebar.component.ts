@@ -1,4 +1,4 @@
-import { Component, Input, HostListener, input } from '@angular/core';
+import { Component, Input, HostListener, input, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { SidebarItem } from '../../../models/sidebar';
 import { BadgeComponent } from '../../../badge/badge.component';
+import { AuthService } from '../../../auth/auth.service';
+import { LoginUser } from '../../../models/user.model';
+import { MatMenuModule } from '@angular/material/menu';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @Component({
   selector: 'app-sidebar',
@@ -25,12 +29,18 @@ import { BadgeComponent } from '../../../badge/badge.component';
     MatButtonModule,
     MatTooltipModule,
     BadgeComponent,
+    AngularSvgIconModule,
+    MatMenuModule
   ],
 })
 export class SidebarComponent {
   isLoggedIn = input<boolean>(true);
   pendingConsultations = input<number | undefined>(0);
   activeConsultations = input<number | undefined>(0);
+  private authService = inject(AuthService)
+  currentUser: LoginUser | null = null;
+  showDropdown=false
+
 
   isMobile = false;
   isSidebarOpen = true;
@@ -39,6 +49,7 @@ export class SidebarComponent {
 
   ngOnInit() {
     this.checkMobileView();
+    this.currentUser=this.authService.getCurrentUser()
 
     this.sidebarItems = [
       { icon: 'icon-dashboard.svg', label: 'Dashboard', route: '/dashboard' },
@@ -84,5 +95,10 @@ export class SidebarComponent {
     if (this.isMobile) {
       this.isSidebarOpen = false;
     }
+  }
+
+
+  logout(){
+    this.authService.logout()
   }
 }

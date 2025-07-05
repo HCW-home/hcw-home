@@ -7,6 +7,8 @@ import { CustomLoggerService } from './logger/logger.service';
 import { Environment } from './config/environment.enum';
 import * as passport from 'passport';
 import * as session from 'express-session';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 class ApplicationBootstrap {
   private logger: CustomLoggerService;
@@ -16,7 +18,7 @@ class ApplicationBootstrap {
       // Validate environment before creating app
       this.validateEnvironment();
 
-      const app = await NestFactory.create(AppModule);
+      const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
       // Get services after app is fully initialized
       const configService = app.get(ConfigService);
@@ -53,7 +55,10 @@ class ApplicationBootstrap {
           },
         }),
       );
-      
+      app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+        prefix: '/uploads/',
+      });
+      this.logger.log('Static files served from /uploads');
       // initialize passpport
       app.use(passport.initialize());
       app.use(passport.session()); 

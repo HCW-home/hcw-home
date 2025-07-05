@@ -35,4 +35,8 @@ export class OrganizationService {
     return this.http.delete<ApiResponse<any>>(`${environment.apiUrl}/v1/organization/${id}`);
   }
 
+  uploadLogo(formData: FormData): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`${environment.apiUrl}/v1/organization/upload-logo`, formData)
+    .pipe(map((res: any) => res.data)); 
+  }
 }

@@ -2,33 +2,96 @@
   @for (tab of tabs; track tab.label; let i = $index) {
     <mat-tab [label]="tab.label">
       <div class="tab-content">
-        @if (tab.type === 'group') {
-          <div class="org-select">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Select Organization</mat-label>
-              <mat-select [(ngModel)]="selectedOrganizationId" name="organizationSelect" (selectionChange)="onOrganizationChange()" required>
-                @for (org of organizations; track org.id) {
-                  <mat-option [value]="org.id">{{ org.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-        }
-
         <form [formGroup]="resourceForm" (ngSubmit)="onSubmit()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>{{ tab.label }} Name</mat-label>
-            <input matInput formControlName="name" [placeholder]="'Enter ' + tab.label + ' Name'" />
-          </mat-form-field>
-          <button mat-raised-button color="primary" type="submit">
-            {{ isEditMode ? 'Update' : 'Add' }}
-          </button>
-          @if (isEditMode) {
-            <button mat-button type="button" (click)="resetForm()">Cancel</button>
+          @if (tab.type !== 'group') {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ tab.label }} Name</mat-label>
+              <input matInput formControlName="name" [placeholder]="'Enter ' + tab.label + ' Name'" />
+            </mat-form-field>
           }
+
+          @if (tab.type === 'organization') {
+            <div class="org-fields">
+              <div class="file-upload-container half-width">
+                <label> Upload Logo:</label>
+                @if(selectedLogoFileName){<label class="selected-file">
+                  {{ selectedLogoFileName }}
+                </label>}
+                <button mat-raised-button color="primary" type="button" (click)="fileInput.click()">Select File</button>
+                <input type="file" hidden #fileInput (change)="onLogoSelected($event)" />
+              </div>
+              <div class="color-field-container half-width" (document:click)="hideColorPicker()">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Primary Color</mat-label>
+                  <input matInput formControlName="primaryColor" readonly/>
+                  <span matSuffix class="color-preview" [ngStyle]="{ backgroundColor: resourceForm.value.primaryColor || '#ccc' }"></span>
+                  <button mat-icon-button matSuffix (click)="toggleColorPicker($event)" type="button">
+                    <svg-icon src="assets/svg/palette.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+                  </button>
+                </mat-form-field>
+                @if (showColorPicker) {
+                  <div class="color-picker-popup" (click)="$event.stopPropagation()">
+                    <color-sketch [color]="resourceForm.value.primaryColor" (onChangeComplete)="onColorChange($event)"></color-sketch>
+                  </div>
+                }
+              </div>
+              <mat-tab-group class="full-width">
+                <mat-tab label="Write">
+                  <div class="form-grid full-width">
+                    <div class="editor-container">
+                      <app-md-editor formControlName="footerMarkdown"></app-md-editor>
+                    </div>
+                  </div>
+                </mat-tab>
+                <mat-tab label="Preview">
+                  <div class="markdown-preview">
+                    <markdown [data]="resourceForm.value.footerMarkdown || 'Nothing to preview'"></markdown>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+          </div>
+          }
+
+          @if (tab.type === 'group') {
+            <div class="group-fields">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Select Organization</mat-label>
+                <mat-select
+                  [(ngModel)]="selectedOrganizationId"
+                  [ngModelOptions]="{ standalone: true }"
+                  name="organizationSelect"
+                  (selectionChange)="onOrganizationChange()"
+                  required
+                >
+                  @for (org of organizations; track org.id) {
+                    <mat-option [value]="org.id">{{ org.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Group Name</mat-label>
+                <input matInput formControlName="name" placeholder="Enter Group Name" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" placeholder="Enter group description"></textarea>
+            </mat-form-field>
+          }
+
+          <div class="button-group">
+            <button mat-raised-button color="primary" type="submit">
+              {{ isEditMode ? 'Update' : 'Add' }}
+            </button>
+            @if (isEditMode) {
+              <button mat-button type="button" (click)="resetForm()">Cancel</button>
+            }
+          </div>
         </form>
 
-        <table mat-table [dataSource]="resources" class="mat-elevation-z8">
+        <table mat-table [dataSource]="resources" class="mat-elevation-z8 full-width-table">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>{{ tab.label }}</th>
             <td mat-cell *matCellDef="let element">{{ element.name }}</td>

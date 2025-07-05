@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-
+import { Transform } from 'class-transformer';
+import { IsOptional, IsInt, Min, IsString, IsIn } from 'class-validator';
 export class QueryGroupDto {
   @ApiProperty({
     description: 'Page number for pagination',
@@ -9,6 +10,10 @@ export class QueryGroupDto {
     minimum: 1,
     default: 1,
   })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @ApiProperty({
@@ -20,6 +25,10 @@ export class QueryGroupDto {
     maximum: 100,
     default: 10,
   })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
   limit?: number;
 
   @ApiProperty({
@@ -28,6 +37,8 @@ export class QueryGroupDto {
     required: false,
     maxLength: 100,
   })
+  @IsOptional()
+  @IsString()
   search?: string;
 
   @ApiProperty({
@@ -37,6 +48,8 @@ export class QueryGroupDto {
     enum: ['id', 'name', 'createdAt', 'updatedAt'],
     default: 'createdAt',
   })
+  @IsOptional()
+  @IsIn(['id', 'name', 'createdAt', 'updatedAt'])
   sortBy?: 'id' | 'name' | 'createdAt' | 'updatedAt';
 
   @ApiProperty({
@@ -46,5 +59,7 @@ export class QueryGroupDto {
     enum: ['asc', 'desc'],
     default: 'desc',
   })
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
 }

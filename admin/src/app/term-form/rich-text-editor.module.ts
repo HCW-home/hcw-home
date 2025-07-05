@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, forwardRef } from '@angular/core';
 import { NgxEditorComponent as NgxEditorView, NgxEditorMenuComponent, Editor } from 'ngx-editor';
-import { FormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 @Component({
     selector: 'app-md-editor',
     standalone: true,
@@ -26,26 +26,50 @@ import { FormsModule } from '@angular/forms';
         padding: 8px;
         background-color: #fff;
       }
-    `]
+    `],
+    providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => MdEditorComponent),
+      multi: true
+    }
+  ]
   })
-  export class MdEditorComponent implements OnInit, OnDestroy {
+  export class MdEditorComponent implements OnInit, OnDestroy, ControlValueAccessor {
     @Input() initialContent = '';
     @Output() contentChange = new EventEmitter<string>();
   
     html = '';
     editor!: Editor;
-  
+
+    private onChange = (value: any) => {};
+    private onTouched = () => {};
+
     ngOnInit(): void {
       this.editor = new Editor();
       this.html = this.initialContent;
     }
   
     onContentChange(value: string) {
-      this.contentChange.emit(value);
+      this.html = value;
+      this.onChange(value);
     }
   
     ngOnDestroy(): void {
       this.editor.destroy();
     }
+
+    writeValue(value: string): void {
+      this.html = value || '';
+    }
+
+    registerOnChange(fn: any): void {
+      this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+      this.onTouched = fn;
+    }
+
   }
   

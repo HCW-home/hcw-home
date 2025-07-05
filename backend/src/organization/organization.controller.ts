@@ -11,6 +11,8 @@ import {
   Req,
   HttpStatus,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -46,7 +48,9 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 
 
@@ -417,5 +421,21 @@ console.log(result);
       requestId: req['id'],
       path: req.path,
     });
+  }
+  @Post('upload-logo')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/logos',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async uploadLogo(@UploadedFile() file: Express.Multer.File) {
+    const fileUrl = `http://localhost:3000/uploads/logos/${file.filename}`;
+    return { url: fileUrl };
   }
 }

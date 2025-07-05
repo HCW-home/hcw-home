@@ -14,6 +14,9 @@ import { OrganizationService } from '../services/organization.service';
 import { GroupService } from '../services/group.service';
 import { SnackbarService } from '../services/snackbar.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { ColorSketchModule } from 'ngx-color/sketch';
+import { MarkdownModule } from 'ngx-markdown';
+import { MdEditorComponent } from '../term-form/rich-text-editor.module';
 
 @Component({
   selector: 'app-resource-manager',
@@ -30,6 +33,9 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
     MatButtonModule,
     MatSelectModule,
     AngularSvgIconModule,
+    ColorSketchModule,
+    MarkdownModule,
+    MdEditorComponent,
   ],
   templateUrl: './resource-manager.component.html',
   styleUrls: ['./resource-manager.component.scss']
@@ -42,6 +48,9 @@ export class ResourceManagerComponent {
   selectedOrganizationId: number | null = null;
   isEditMode = false;
   editResourceId: number | null = null;
+  selectedLogoFile: File | null = null;
+  existingLogoUrl: string = '';
+  selectedLogoFileName: string | null = null;
 
   displayedColumns: string[] = ['name', 'actions'];
 
@@ -61,7 +70,11 @@ export class ResourceManagerComponent {
     private fb: FormBuilder
   ) {
     this.resourceForm = this.fb.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
+      logo: [''],
+      primaryColor: [''],
+      footerMarkdown: [''],
+      description: ['']
     });
     this.loadResources();
     this.loadOrganizations();
@@ -69,8 +82,13 @@ export class ResourceManagerComponent {
 
   onTabChange(index: number) {
     this.selectedTabIndex = index;
+    if (this.tabs[index].type === 'group') {
+      this.selectedOrganizationId = null;
+      this.resources = [];
+    } else {
+      this.loadResources();
+    }
     this.resetForm();
-    this.loadResources();
   }
 
   loadOrganizations() {
@@ -108,19 +126,77 @@ export class ResourceManagerComponent {
 
   onOrganizationChange() {
     this.loadResources();
+    this.resetForm();
+  }
+  
+  showColorPicker = false;
+
+  toggleColorPicker(event: MouseEvent) {
+    event.stopPropagation();
+    this.showColorPicker = !this.showColorPicker;
+  }
+
+  onColorChange(event: any) {
+    this.resourceForm.patchValue({ primaryColor: event.color.hex });
+  }
+
+  hideColorPicker() {
+    this.showColorPicker = false;
   }
 
   onSubmit() {
     if (this.resourceForm.invalid) return;
 
     const type = this.tabs[this.selectedTabIndex].type;
-    const payload = { name: this.resourceForm.value.name };
+    const payload: any = { name: this.resourceForm.value.name };
 
+    if (type === 'organization') {
+      payload.primaryColor = this.resourceForm.value.primaryColor;
+      payload.footerMarkdown = this.resourceForm.value.footerMarkdown;
+
+      if (this.selectedLogoFile) {
+        this.uploadLogo(this.selectedLogoFile).subscribe({
+          next: (res) => {
+            console.log('Full upload response:', res);
+            console.log('Logo uploaded successfully with URL:', res.url);
+            payload.logo = res.url;
+            console.log('Final Payload:', payload);
+            this.saveResource(type, payload);
+          },
+          error: () => this.snackBarService.showError('Logo upload failed')
+        });
+      } else {
+        payload.logo = this.resourceForm.value.logo;
+        console.log('Final Payload:', payload);
+        this.saveResource(type, payload);
+      }
+    } else if (type === 'group') {
+      payload.description = this.resourceForm.value.description;
+      this.saveResource(type, payload);
+    } else {
+      this.saveResource(type, payload);
+    }
+  }
+
+  saveResource(type: string, payload: any) {
     if (this.isEditMode && this.editResourceId !== null) {
       this.updateResource(type, this.editResourceId, payload);
     } else {
       this.createResource(type, payload);
     }
+  }
+
+  onLogoSelected(event: any) {
+    event.preventDefault();
+    event.stopPropagation(); 
+    this.selectedLogoFile = event.target.files[0];
+    this.selectedLogoFileName = event.target.files[0] ? event.target.files[0].name : null;
+  }
+
+  uploadLogo(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.organizationService.uploadLogo(formData);
   }
 
   createResource(type: string, payload: any) {
@@ -232,17 +308,30 @@ export class ResourceManagerComponent {
       });
     }
   }
-
   editResource(resource: any) {
     this.isEditMode = true;
     this.editResourceId = resource.id;
-    this.resourceForm.patchValue({ name: resource.name });
+    const patchData: any = { name: resource.name };
+    this.existingLogoUrl = resource.logo || '';
+    this.selectedLogoFileName = resource.logo;
+
+    if (this.tabs[this.selectedTabIndex].type === 'organization') {
+      patchData.logo = resource.logo || '';
+      patchData.primaryColor = resource.primaryColor || '';
+      patchData.footerMarkdown = resource.footerMarkdown || '';
+    } else if (this.tabs[this.selectedTabIndex].type === 'group') {
+      patchData.description = resource.description || '';
+    }
+    this.resourceForm.patchValue(patchData);
   }
 
   resetForm() {
     this.resourceForm.reset();
     this.isEditMode = false;
     this.editResourceId = null;
+    this.selectedLogoFile = null;
+    this.existingLogoUrl = '';
+    this.selectedLogoFileName = null;
   }
 
   postSave() {

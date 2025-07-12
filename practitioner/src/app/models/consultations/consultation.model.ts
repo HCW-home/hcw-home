@@ -23,7 +23,7 @@ export interface Consultation {
   closedAt?: Date | null;
   createdBy?: number | null;
   groupId?: number | null;
-  owner?: number | null;
+  ownerId?: number | null;
   whatsappTemplateId?: number | null;
   status: ConsultationStatus;
 }

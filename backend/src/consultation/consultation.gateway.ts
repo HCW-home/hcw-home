@@ -13,7 +13,7 @@ import { ConsultationService } from './consultation.service';
 import { EndConsultationDto } from './dto/end-consultation.dto';
 import { RateConsultationDto } from './dto/rate-consultation.dto';
 import { ConsultationStatus, UserRole } from '@prisma/client';
-
+import { forwardRef, Inject } from '@nestjs/common';
 @WebSocketGateway({ namespace: '/consultation', cors: true })
 export class ConsultationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -22,6 +22,7 @@ export class ConsultationGateway
 
   constructor(
     private readonly databaseService: DatabaseService,
+    @Inject(forwardRef(() => ConsultationService))
     private readonly consultationService: ConsultationService,
   ) {}
 

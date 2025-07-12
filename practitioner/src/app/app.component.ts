@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
   activeConsultations: number | undefined = 0;
   loginChecked = computed(() => this.authService.loginChecked());
   isLoggedIn = computed(() => this.authService.isLoggedIn());
-  private iconNames = ['warning', 'download', 'chevron-right', 'chevron-left'];
+  private iconNames = ['warning', 'download', 'chevron-right','x'];
 
   constructor(
     private iconRegistry: SvgIconRegistryService,
@@ -45,7 +45,6 @@ export class AppComponent implements OnInit {
         this.iconRegistry
           .loadSvg(`assets/svg/${iconName}.svg`, iconName)
           ?.subscribe({
-            next: () => console.log(`Icon ${iconName} registered successfully`),
             error: (error) =>
               console.error(`Failed to register icon ${iconName}:`, error),
           });

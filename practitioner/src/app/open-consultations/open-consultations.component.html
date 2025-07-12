@@ -1,1 +1,90 @@
-<p>open-consultations works!</p>
+<div class="consultation-history-page">
+    <div class="page-header">
+        <div class="header-content">
+            <h2>OPENED CONSULTATIONS</h2>
+        </div>
+        <div class="header-actions">
+            <span class="consultation-count">{{ totalConsultations }} Open</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="consultation-list" [class.with-panel]="showRightPanel">
+            @if (isLoading) {
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading consultations...</p>
+            </div>
+            }
+
+            @if (!isLoading && consultations.length === 0) {
+            <div class="empty-state">
+                <div class="empty-message">
+                    <h3>No Open Consultations</h3>
+                    <p>
+                        No open consultations at the moment. New consultations will appear here when patients request
+                        them.
+                    </p>
+                </div>
+            </div>
+            }
+
+            @if (!isLoading && consultations.length > 0) {
+            <div class="consultations-grid">
+                @for (consultation of consultations; track consultation.id) {
+                <app-open-consultation-card [consultation]="consultation"
+                    [isSelected]="selectedConsultation?.id === consultation.id"
+                    (consultationClicked)="onConsultationClick($event)" (sendInvitation)="onSendInvitation($event)">
+                </app-open-consultation-card>
+                }
+            </div>
+            }
+
+            @if (totalPages > 1) {
+            <div class="pagination">
+                <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" [disabled]="currentPage === 1"
+                    (click)="onPageChange(currentPage - 1)">
+                    Previous
+                </app-button>
+
+                <div class="page-numbers">
+                    @for (page of getPaginationPages(); track page) {
+                    <button class="page-number" [class.active]="page === currentPage" (click)="onPageChange(page)">
+                        {{ page }}
+                    </button>
+                    }
+                </div>
+
+                <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small"
+                    [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+                    Next
+                </app-button>
+            </div>
+            }
+        </div>
+
+        <app-overlay [isOpen]="showRightPanel" (closed)="closeRightPanel()">
+            <app-open-consultation-panel *ngIf="showRightPanel && selectedConsultation"
+                [consultation]="selectedConsultation" (close)="closeRightPanel()"
+                (joinConsultation)="onJoinConsultation($event)" (closeConsultation)="onCloseConsultation($event)"
+                (inviteColleague)="onSendInvitation($event)" (sendInvitation)="onSendInvitation($event)">
+            </app-open-consultation-panel>
+        </app-overlay>
+    </div>
+
+    @if (!isLoading) {
+    <div class="results-summary">
+        <button class="page-button" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"
+            aria-label="Previous page">
+            ‹
+        </button>
+
+        <span class="page-indicator">{{ currentPage }}</span>
+
+        <button class="page-button" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"
+            aria-label="Next page">
+            ›
+        </button>
+    </div>
+    }
+</div>

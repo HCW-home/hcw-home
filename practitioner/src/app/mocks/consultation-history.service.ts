@@ -84,7 +84,7 @@ export const mockConsultations: Consultation[] = [
     closedAt: new Date('2024-02-15T10:45:00Z'),
     createdBy: 1,
     groupId: 201,
-    owner: 2,
+    ownerId: 2,
     whatsappTemplateId: 301,
     status: ConsultationStatus.COMPLETED,
   },
@@ -96,7 +96,7 @@ export const mockConsultations: Consultation[] = [
     closedAt: null,
     createdBy: 3,
     groupId: 202,
-    owner: 2,
+    ownerId: 2,
     whatsappTemplateId: null,
     status: ConsultationStatus.COMPLETED,
   },
@@ -108,7 +108,7 @@ export const mockConsultations: Consultation[] = [
     closedAt: null,
     createdBy: 1,
     groupId: null,
-    owner: 2,
+    ownerId: 2,
     whatsappTemplateId: 302,
     status: ConsultationStatus.SCHEDULED,
   },
@@ -120,13 +120,12 @@ export const mockConsultations: Consultation[] = [
     closedAt: null,
     createdBy: 5,
     groupId: null,
-    owner: null,
+    ownerId: 2,
     whatsappTemplateId: null,
     status: ConsultationStatus.CANCELLED,
   },
 ];
 
-// Mock Participants
 export const mockParticipants: Participant[] = [
   {
     id: 1001,
@@ -184,7 +183,6 @@ export const mockParticipants: Participant[] = [
   },
 ];
 
-// Mock Messages
 export const mockMessages: Message[] = [
   {
     id: 2001,
@@ -244,7 +242,6 @@ export const mockMessages: Message[] = [
   },
 ];
 
-// Mock Consultation History Items
 export const mockConsultationHistory: ConsultationHistoryItem[] = [
   {
     consultation: mockConsultations[0],
@@ -266,7 +263,6 @@ export const mockConsultationHistory: ConsultationHistoryItem[] = [
   },
 ];
 
-// Mock Consultation Details
 export const mockConsultationDetails: ConsultationDetail[] = [
   {
     consultation: mockConsultations[0],
@@ -284,7 +280,6 @@ export const mockConsultationDetails: ConsultationDetail[] = [
   },
 ];
 
-// Helper functions to get specific mock data
 export const getMockUserById = (id: number): User | undefined => {
   return mockUsers.find((user) => user.id === id);
 };

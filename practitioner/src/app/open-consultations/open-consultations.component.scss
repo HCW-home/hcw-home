@@ -1,0 +1,311 @@
+@use './variables' as *;
+
+.consultation-history-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: $color-page-bg;
+    padding: 24px;
+
+    .results-summary {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .page-button {
+        width: 32px;
+        height: 32px;
+        border: 1px solid $color-page-button-border;
+        border-radius: 50%;
+        background-color: $color-page-button-bg;
+        color: $color-text-light;
+        font-size: 16px;
+        line-height: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        &:not(:disabled):hover {
+            background-color: $color-page-button-hover;
+        }
+    }
+
+    .page-indicator {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: $color-page-indicator-bg;
+        color: $color-text-inverse;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid $color-page-border;
+
+        .header-content {
+            flex: 1;
+
+            h1 {
+                font-size: 32px;
+                font-weight: 700;
+                color: $color-page-title;
+                margin: 0 0 8px 0;
+                line-height: 1.2;
+            }
+
+            .header-description {
+                font-size: 16px;
+                color: $color-page-subtitle;
+                margin: 0;
+                line-height: 1.5;
+                max-width: 600px;
+            }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+
+            .consultation-count {
+                background-color: $color-error;
+                color: $color-text-inverse;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 60px;
+                text-align: center;
+                letter-spacing: 0.5px;
+            }
+        }
+    }
+
+    .main-content {
+        display: flex;
+        gap: 24px;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .consultation-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: $color-background-card;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px $color-card-shadow;
+        overflow: hidden;
+        transition: all 0.3s ease;
+
+        &.with-panel {
+            flex: 0 0 60%;
+        }
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: $color-text-light;
+
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid $color-loading-spinner-bg;
+                border-top: 3px solid $color-loading-spinner;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 16px;
+            }
+
+            p {
+                font-size: 16px;
+                margin: 0;
+            }
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center;
+
+            .empty-message {
+                max-width: 400px;
+
+                .empty-icon {
+                    font-size: 64px;
+                    margin-bottom: 24px;
+                    display: block;
+                    opacity: 0.5;
+                    color: $color-empty-state-text;
+                }
+
+                h3 {
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: $color-list-header-text;
+                    margin: 0 0 12px 0;
+                }
+
+                p {
+                    font-size: 14px;
+                    color: $color-text-light;
+                    margin: 0 0 24px 0;
+                    line-height: 1.6;
+                }
+            }
+        }
+
+        .consultations-grid {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            border-top: 1px solid $color-pagination-border;
+            background-color: $color-pagination-bg;
+
+            .page-numbers {
+                display: flex;
+                gap: 4px;
+
+                .page-number {
+                    padding: 8px 12px;
+                    border: 1px solid $color-pagination-button-border;
+                    background-color: $color-pagination-button-bg;
+                    color: $color-pagination-button;
+                    font-size: 14px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        background-color: $color-pagination-button-hover;
+                        border-color: $color-pagination-button-hover-border;
+                    }
+
+                    &.active {
+                        background-color: $color-pagination-active-bg;
+                        border-color: $color-pagination-active-bg;
+                        color: $color-pagination-active;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+    .consultation-history-page {
+        .main-content {
+            flex-direction: column;
+
+            .consultation-list {
+                &.with-panel {
+                    flex: 1;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .consultation-history-page {
+        padding: 16px;
+
+        .page-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+
+            .header-content {
+                h1 {
+                    font-size: 24px;
+                }
+
+                .header-description {
+                    font-size: 14px;
+                }
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        .main-content {
+            gap: 16px;
+        }
+
+        .consultation-list {
+            .consultations-grid {
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .pagination {
+                padding: 16px;
+
+                .page-numbers {
+                    .page-number {
+                        padding: 6px 10px;
+                        font-size: 12px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .consultation-history-page {
+        .pagination {
+            .page-numbers {
+                display: none;
+            }
+        }
+    }
+}

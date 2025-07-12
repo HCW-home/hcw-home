@@ -1,4 +1,10 @@
-import { IsIn, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export const END_CONSULTATION_ACTIONS = [
@@ -21,6 +27,10 @@ export class EndConsultationDto {
   })
   @IsIn(END_CONSULTATION_ACTIONS)
   action: EndConsultationAction;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }
 
 export class EndConsultationResponseDto {

@@ -49,6 +49,14 @@ import {
 } from './dto/end-consultation.dto';
 import { ConsultationPatientHistoryItemDto } from './dto/consultation-patient-history.dto';
 import { RateConsultationDto } from './dto/rate-consultation.dto';
+import { CloseConsultationDto } from './dto/close-consultation.dto';
+import { JoinOpenConsultationDto } from './dto/join-open-consultation.dto';
+import {
+  OpenConsultationResponseDto,
+  OpenConsultationQueryDto,
+} from './dto/open-consultation.dto';
+import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
+import { ResponseStatus } from 'src/common/helpers/response/response-status.enum';
 
 @ApiTags('consultation')
 @Controller('consultation')
@@ -347,6 +355,118 @@ export class ConsultationController {
     return {
       ...result,
       timestamp: new Date().toISOString(),
+    };
+  }
+  @Get('/open')
+  @ApiOperation({
+    summary: 'Get all open (ongoing) consultations for a practitioner',
+  })
+  @ApiQuery({
+    name: 'practitionerId',
+    type: Number,
+    description: 'Practitioner ID',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiOkResponse({
+    description: 'Open consultations fetched successfully',
+    type: ApiResponseDto<OpenConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async getOpenConsultations(
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+    @Query() query: OpenConsultationQueryDto,
+  ): Promise<ApiResponseDto<OpenConsultationResponseDto>> {
+    return this.consultationService.getOpenConsultations(
+      practitionerId,
+      query.page,
+      query.limit,
+    );
+  }
+
+  @Post('/open/join')
+  @ApiOperation({
+    summary: 'Join an open consultation (rejoins existing session)',
+  })
+  @ApiBody({ type: JoinOpenConsultationDto })
+  @ApiOkResponse({
+    description: 'Successfully rejoined consultation',
+    type: ApiResponseDto<JoinConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async joinOpenConsultation(
+    @Body() dto: JoinOpenConsultationDto,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<JoinConsultationResponseDto>> {
+    return this.consultationService.joinAsPractitioner(
+      dto.consultationId,
+      practitionerId,
+    );
+  }
+  @Post('/open/close')
+  @ApiOperation({
+    summary: 'Close an open consultation - Deprecated: Use /consultation/end',
+    deprecated: true,
+  })
+  @ApiBody({ type: CloseConsultationDto })
+  @ApiOkResponse({
+    description: 'Consultation closed successfully',
+    type: ApiResponseDto<EndConsultationResponseDto>,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async closeConsultation(
+    @Body() dto: CloseConsultationDto,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<EndConsultationResponseDto>> {
+    const endDto: EndConsultationDto = {
+      consultationId: dto.consultationId,
+      action: 'close',
+      reason: dto.reason,
+    };
+
+    return this.consultationService.endConsultation(endDto, practitionerId);
+  }
+
+  @Get('/open/:id/details')
+  @ApiOperation({
+    summary: 'Get detailed information about an open consultation',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'Consultation ID',
+  })
+  @ApiOkResponse({
+    description: 'Open consultation details fetched successfully',
+    type: ApiResponseDto<ConsultationDetailDto>,
+  })
+  async getOpenConsultationDetails(
+    @Param('id', ConsultationIdParamPipe) id: number,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<ApiResponseDto<ConsultationDetailDto>> {
+    // Use the service method to verify access and get details
+    const data = await this.consultationService.getOpenConsultationDetails(
+      id,
+      practitionerId,
+    );
+
+    return {
+      success: true,
+      status: ResponseStatus.SUCCESS,
+      statusCode: HttpStatus.OK,
+      message: 'Open consultation details fetched successfully',
+      timestamp: new Date().toISOString(),
+      data,
     };
   }
 }

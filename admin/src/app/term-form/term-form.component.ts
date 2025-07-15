@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable, Subscription, forkJoin, take } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -49,6 +49,8 @@ export class TermFormComponent implements OnInit, OnDestroy {
   languages: Language[] = [];
   countries: Country[] = [];
   private subscriptions = new Subscription();
+  private initialFormValue: any;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -75,6 +77,8 @@ export class TermFormComponent implements OnInit, OnDestroy {
       content: ['', Validators.required],
     });
   }
+  
+
 
   private parseRouteParams(): void {
     this.route.paramMap.pipe(take(1)).subscribe(params => {
@@ -129,6 +133,11 @@ export class TermFormComponent implements OnInit, OnDestroy {
       country: term.country,
       content: term.content
     });
+    this.initialFormValue = this.termForm.getRawValue();
+  }
+  get isFormChanged(): boolean {
+    const currentValue = this.termForm.getRawValue();
+    return JSON.stringify(currentValue) !== JSON.stringify(this.initialFormValue);
   }
 
   private updateQueryParamsFromForm(): void {
@@ -157,13 +166,17 @@ export class TermFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload = {
-      organizationId: this.termForm.get('organisationId')?.value,
+    let payload: any = {
       language: this.termForm.get('language')?.value,
       country: this.termForm.get('country')?.value,
-      content: this.termForm.get('content')?.value
+      content: this.termForm.get('content')?.value,
     };
-
+    if (!this.isEditMode) {
+      payload.organizationId = this.termForm.get('organisationId')?.value;
+    }
+    
+    console.log(payload);
+    
     this.loading = true;
     const operation = this.isEditMode && this.termId
       ? this.termService.update(payload.organizationId, this.termId, payload)
@@ -176,7 +189,9 @@ export class TermFormComponent implements OnInit, OnDestroy {
           this.router.navigate([RoutePaths.Terms]);
         },
         error: (error) => {
-          this.snackBarService.showError(`Failed: ${error.message || 'Unknown error'}`);
+          this.snackBarService.showError(`${error.error.message || 'Unknown error'}`);
+          console.log(error);
+          
           this.loading = false;
         }
       })

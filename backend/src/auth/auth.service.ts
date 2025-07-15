@@ -6,12 +6,13 @@ import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { Role } from './enums/role.enum';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { UserRole, UserStatus } from '@prisma/client';
+import { User, UserRole, UserStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto, TokenDto } from './dto/token.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { plainToInstance } from 'class-transformer';
 import { OidcUserDto } from './dto/oidc-user.dto';
+import { promises } from 'dns';
 
 
 function generateStrongPassword(length = 12): string {
@@ -364,4 +365,26 @@ export class AuthService {
         return null
     }
   }
+
+
+
+  async getcurrentuser(id: number): Promise<UserResponseDto> {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+      include: {
+        OrganizationMember: { include: { organization: true } },
+        GroupMember: { include: { group: true } },
+        languages: { include: { language: true } },
+        specialities: { include: { speciality: true } },
+      },
+    });
+  
+    if (!user) {
+      throw HttpExceptionHelper.notFound('User not found');
+    }
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
+  }
+  
 }

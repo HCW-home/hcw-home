@@ -9,42 +9,24 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { forkJoin, Subject, of } from 'rxjs';
-import { takeUntil, catchError, finalize } from 'rxjs/operators';
+import { takeUntil, catchError, finalize, single } from 'rxjs/operators';
 
 import { UserService } from '../../services/user.service';
 import { LanguageService } from '../../services/language.service';
 import { SpecialityService } from '../../services/speciality.service';
 import { ToastService } from '../../services/toast/toast.service';
-import { User, UserSex, Language, Speciality, UpdateUserProfileDto } from '../../models/user.model';
+import { User, UserSex, Language, Speciality, UpdateUserProfileDto,LoginUser } from '../../models/user.model';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
+import { ConfigService } from '../../services/config.service';
+import { AuthService } from '../../auth/auth.service';
+import { SnackbarService } from '../../services/snackbar/snackbar.service';
 
 const PHONE_NUMBER_REGEX = /^[+]?[1-9][\d\s\-\(\)]{7,15}$/;
 const MIN_NAME_LENGTH = 2;
 const MAX_NAME_LENGTH = 50;
 
-const COUNTRIES = [
-  { code: 'US', name: 'United States' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'FR', name: 'France' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'NL', name: 'Netherlands' },
-  { code: 'BE', name: 'Belgium' },
-  { code: 'CH', name: 'Switzerland' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'NZ', name: 'New Zealand' },
-  { code: 'JP', name: 'Japan' },
-  { code: 'KR', name: 'South Korea' },
-  { code: 'SG', name: 'Singapore' },
-  { code: 'IN', name: 'India' },
-  { code: 'BR', name: 'Brazil' },
-  { code: 'MX', name: 'Mexico' },
-  { code: 'AR', name: 'Argentina' },
-  { code: 'ZA', name: 'South Africa' }
-] as const;
+
 
 const GENDER_OPTIONS = [
   { value: UserSex.MALE, label: 'Male' },
@@ -84,6 +66,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly languageService = inject(LanguageService);
   private readonly specialityService = inject(SpecialityService);
+  private readonly configService= inject(ConfigService)
+  private readonly authservice= inject(AuthService)
+  private readonly snackBarService = inject(SnackbarService)
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
@@ -92,7 +77,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   readonly currentUser = signal<User | null>(null);
   readonly languages = signal<Language[]>([]);
   readonly specialities = signal<Speciality[]>([]);
-  readonly countries: readonly CountryOption[] = COUNTRIES;
+  readonly countries = signal<CountryOption[]>([]);
   readonly genderOptions: readonly GenderOption[] = GENDER_OPTIONS;
 
   readonly isLoading = signal<boolean>(true);
@@ -109,6 +94,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.profileForm = this.createProfileForm();
   }
 
+
+
   ngOnInit(): void {
     this.loadProfileData();
   }
@@ -121,20 +108,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private createProfileForm(): FormGroup {
     return this.fb.group({
       firstName: ['', [
-        Validators.required, 
-        Validators.minLength(MIN_NAME_LENGTH), 
+        Validators.required,
+        Validators.minLength(MIN_NAME_LENGTH),
         Validators.maxLength(MAX_NAME_LENGTH)
       ]],
       lastName: ['', [
-        Validators.required, 
-        Validators.minLength(MIN_NAME_LENGTH), 
+        Validators.required,
+        Validators.minLength(MIN_NAME_LENGTH),
         Validators.maxLength(MAX_NAME_LENGTH)
       ]],
       phoneNumber: ['', [Validators.pattern(PHONE_NUMBER_REGEX)]],
       country: [''],
       sex: [''],
-      languageIds: [[]],
-      specialityIds: [[]]
+      practitioner_languages: [[]],
+      practitioner_specialities: [[]]
     });
   }
 
@@ -162,16 +149,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.toastService.showError('Failed to load specialities');
           return of([]);
         })
+      ),
+      countries : this.configService.getCountries().pipe(
+        catchError(error=>{
+          console.error('Error loading specialities:', error);
+          this.toastService.showError('Failed to load countries');
+          return of([]);
+        })
       )
     }).pipe(
       takeUntil(this.destroy$),
       finalize(() => this.isLoading.set(false))
     ).subscribe({
-      next: ({ user, languages, specialities }) => {
+      next: ({ user, languages, specialities,countries }) => {
         this.currentUser.set(user);
         this.languages.set(languages);
         this.specialities.set(specialities);
-
+        this.countries.set(countries)
         if (user) {
           this.populateForm(user);
         }
@@ -190,8 +184,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       phoneNumber: user.phoneNumber || '',
       country: user.country || '',
       sex: user.sex || '',
-      languageIds: user.languageIds || [],
-      specialityIds: user.specialityIds || []
+      practitioner_languages: user.languages?.map(l => l.id) || [],
+      practitioner_specialities: user.specialities?.map(l => l.id) || []
     });
   }
 
@@ -202,8 +196,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving.set(true);
-    this.profileForm.disable(); 
-    
+    this.profileForm.disable();
+
     const formValue = this.profileForm.value;
     const user = this.currentUser()!;
 
@@ -213,25 +207,36 @@ export class ProfileComponent implements OnInit, OnDestroy {
       phoneNumber: formValue.phoneNumber?.trim() || null,
       country: formValue.country || null,
       sex: formValue.sex || null,
-      languageIds: formValue.languageIds || [],
-      specialityIds: formValue.specialityIds || []
+      languageIds: formValue.practitioner_languages || [],
+      specialityIds: formValue.practitioner_specialities || []
     };
 
     this.userService.updateUserProfile(user.id, updateData).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.isSaving.set(false);
-        this.profileForm.enable(); 
+        this.profileForm.enable();
       })
     ).subscribe({
       next: (updatedUser) => {
+        this.snackBarService.showSuccess('Profile updated successfully');
+        const existingUser = this.authservice.getCurrentUser()
+        console.log(updatedUser);
+        
+        if (existingUser) {
+          const loginUser: LoginUser = {
+            ...updatedUser,
+            accessToken: existingUser.accessToken,    
+            refreshToken: existingUser.refreshToken,   
+          };
+          this.authservice.storeCurrentUser(loginUser);
+        }    
         this.currentUser.set(updatedUser);
-        this.toastService.showSuccess('Profile updated successfully');
         this.profileForm.markAsPristine();
       },
       error: (error) => {
         console.error('Error updating profile:', error);
-        this.toastService.showError('Failed to update profile. Please try again.');
+        this.snackBarService.showError('Failed to update profile. Please try again.');
       }
     });
   }
@@ -263,6 +268,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get phoneNumber(): FormControl { return this.profileForm.get('phoneNumber') as FormControl; }
   get country(): FormControl { return this.profileForm.get('country') as FormControl; }
   get sex(): FormControl { return this.profileForm.get('sex') as FormControl; }
-  get languageIds(): FormControl { return this.profileForm.get('languageIds') as FormControl; }
-  get specialityIds(): FormControl { return this.profileForm.get('specialityIds') as FormControl; }
+  get practitioner_languages(): FormControl { return this.profileForm.get('practitioner_languages') as FormControl; }
+  get practitioner_specialities(): FormControl { return this.profileForm.get('practitioner_specialities') as FormControl; }
 }

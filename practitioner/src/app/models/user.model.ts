@@ -64,16 +64,27 @@ export interface User {
   status: UserStatus;
   createdAt: string | Date;
   updatedAt: string | Date;
-  organisationIds?: number[];
-  groupIds?: number[];
-  languageIds?: number[];
-  specialityIds?: number[];
-  organizations?: Organization[];
-  groups?: Group[];
-  languages?: Language[];
-  specialities?: Speciality[];
-}
 
+  organizations: {
+    id: number;
+    name: string;
+  }[];
+
+  groups: {
+    id: number;
+    name: string;
+  }[];
+
+  languages: {
+    id: number;
+    name: string;
+  }[];
+
+  specialities: {
+    id: number;
+    name: string;
+  }[];
+}
 export interface UpdateUserProfileDto {
   firstName?: string;
   lastName?: string;
@@ -104,6 +115,29 @@ export interface LoginUser {
   status: UserStatus;
   createdAt: string | Date;
   updatedAt: string | Date;
-  accessToken :string;
-  refreshToken:string
+
+  // Tokens
+  accessToken: string;
+  refreshToken: string;
+
+  // New fields for display
+  organizations: {
+    id: number;
+    name: string;
+  }[];
+
+  groups: {
+    id: number;
+    name: string;
+  }[];
+
+  languages: {
+    id: number;
+    name: string;
+  }[];
+
+  specialities: {
+    id: number;
+    name: string;
+  }[];
 }

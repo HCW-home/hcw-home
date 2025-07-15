@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ButtonComponent } from '../ui/button/button.component';
 
+
 @Component({
   selector: 'app-access-denied',
   templateUrl: './access-denied.component.html',

@@ -8,12 +8,12 @@ import { InvitesComponent } from './invites/invites.component';
 import { TestCallComponent } from './test-call/test-call.component';
 import { ConsultationHistoryComponent } from './consultation-history/consultation-history.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './auth/guard/auth.guard';
 
 import { AvailabilityComponent } from './pages/availability/availability.component';
 
 
-import { LoginComponent } from './login/login.component';
-import { AuthGuard } from './auth/guard/auth.guard';
 
 export const routes: Routes = [
   {
@@ -58,6 +58,7 @@ export const routes: Routes = [
         component: AvailabilityComponent 
       },
 
+
     ],
   },
   // Public routes
@@ -65,6 +66,5 @@ export const routes: Routes = [
     path: RoutePaths.Login,
     component: LoginComponent,
   },
-
 ];
 

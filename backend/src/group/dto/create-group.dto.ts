@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+
 
 export class CreateGroupDto {
   @ApiProperty({
@@ -7,6 +9,7 @@ export class CreateGroupDto {
     minLength: 2,
     maxLength: 100,
   })
+  @IsString()
   name: string;
 
   @ApiProperty({
@@ -16,6 +19,7 @@ export class CreateGroupDto {
     required: false,
     maxLength: 500,
   })
+  @IsOptional()
   description?: string;
 
   @ApiProperty({
@@ -25,5 +29,6 @@ export class CreateGroupDto {
     required: false,
     default: false,
   })
+  @IsOptional()
   sharedOnlyIncomingConsultation?: boolean;
 }

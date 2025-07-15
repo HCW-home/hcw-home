@@ -13,7 +13,7 @@
     <form [formGroup]="termForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
       <div class="form-grid multi-selects">
         <!-- Organization -->
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Organization</mat-label>
           <mat-select formControlName="organisationId" (selectionChange)="onFilterChange()">
             <mat-option *ngFor="let org of organizations" [value]="org.id">
@@ -23,17 +23,17 @@
         </mat-form-field>
   
         <!-- Country -->
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Country</mat-label>
           <mat-select formControlName="country" (selectionChange)="onFilterChange()">
-            <mat-option *ngFor="let c of countries" [value]="c.name">
+            <mat-option *ngFor="let c of countries" [value]="c.code">
               {{ c.name }}
             </mat-option>
           </mat-select>
         </mat-form-field>
   
         <!-- Language -->
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Language</mat-label>
           <mat-select formControlName="language" (selectionChange)="onFilterChange()">
             <mat-option *ngFor="let l of languages" [value]="l.name">
@@ -48,18 +48,24 @@
         <label class="editor-label">Content</label>
         <div class="editor-container">
           <app-md-editor
-            [initialContent]="termForm.get('content')?.value"
-            (contentChange)="termForm.get('content')?.setValue($event)">
-          </app-md-editor>
+          [initialContent]="termForm.get('content')?.value"
+          (contentChange)="termForm.get('content')?.setValue($event)">
+        </app-md-editor>
         </div>
       </div>
   
       <!-- Buttons -->
       <div class="form-actions">
         <button type="button" mat-stroked-button color="warn" (click)="cancel()">Cancel</button>
-        <button type="submit" mat-raised-button color="primary" [disabled]="termForm.invalid || loading">
-          {{ isEditMode ? 'Update' : 'Create' }}
-        </button>
+        <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        [disabled]="termForm.invalid || loading || (isEditMode && !isFormChanged)"
+      >
+        {{ isEditMode ? 'Update' : 'Create' }}
+      </button>
+      
       </div>
     </form>
   </div>

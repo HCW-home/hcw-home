@@ -25,3 +25,9 @@ export class LoginResponseDto {
     Object.assign(this, partial);
   }
 }
+
+
+
+
+
+

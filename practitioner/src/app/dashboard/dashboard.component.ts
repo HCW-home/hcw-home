@@ -5,6 +5,7 @@ import { InviteFormComponent } from '../components/invite-form/invite-form.compo
 import { RoutePaths } from '../constants/route-paths.enum';
 import { ConsultationService } from '../services/consultations/consultation.service';
 import type { Consultation } from '../models/consultations/consultation.model';
+import { GuidedTourService } from '../services/guided-tour.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,7 @@ export class DashboardComponent implements OnInit {
 
   isInviting = signal(false);
 
-  constructor(private consultationService: ConsultationService) {}
+  constructor(private consultationService: ConsultationService, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     this.consultationService

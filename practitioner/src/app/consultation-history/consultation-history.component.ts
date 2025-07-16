@@ -8,6 +8,7 @@ import { ButtonComponent } from '../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { HttpClientModule } from '@angular/common/http';
 import { OverlayComponent } from '../components/overlay/overlay.component';
+import { GuidedTourService } from 'ngx-guided-tour';
 
 @Component({
   selector: 'app-consultation-history',
@@ -40,7 +41,7 @@ export class ConsultationHistoryComponent implements OnInit {
 
   private practitionerId = 2;
 
-  constructor(private consultationService: ConsultationHistoryService) {}
+  constructor(private consultationService: ConsultationHistoryService, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     this.loadConsultations();

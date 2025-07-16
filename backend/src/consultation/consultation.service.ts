@@ -875,7 +875,7 @@ export class ConsultationService {
         closedAt: c.closedAt,
         createdBy: c.createdBy,
         groupId: c.groupId,
-        ownerId: c.ownerId,
+        owner: c.ownerId,
         messageService: c.messageService,
         whatsappTemplateId: c.whatsappTemplateId,
         status: c.status,

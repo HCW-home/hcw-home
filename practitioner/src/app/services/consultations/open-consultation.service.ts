@@ -10,7 +10,7 @@ import {
   OpenConsultationPatient,
   ApiResponse,
 } from '../../dtos/consultations/open-consultation.dto';
-import { months } from '../../constants/month.enum';
+import { monthNames } from '../../constants/month.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -156,7 +156,7 @@ export class OpenConsultationService {
 
   formatDate(date: Date | string): string {
     const d = new Date(date);
-    return `${months[d.getMonth() as unknown as keyof typeof months]} ${d.getDate()}`;
+    return `${monthNames[d.getMonth()]} ${d.getDate()}`;
   }
 
   formatTime(date: Date | string): string {

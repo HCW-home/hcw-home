@@ -1,7 +1,7 @@
 <div class="dashboard-content">
     @for (card of cards(); track card.title) {
     <app-consultation-card [title]="card.title" [description]="card.description" [routerLink]="card.routerLink"
-        [showInvite]="card.showInvite" (invite)="openInviteSelector()">
+        [showInvite]="card.showInvite" [consultations]="card.consultations" (invite)="openInviteSelector()">
     </app-consultation-card>
     }
 </div>

@@ -1,10 +1,10 @@
 import { Component, Input, Output, EventEmitter, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConsultationHistoryItem } from '../../models/consultations/consultation.model';
 import { RouterLink } from '@angular/router';
 import { RoutePaths } from '../../constants/route-paths.enum';
 import { ButtonComponent } from '../ui/button/button.component';
 import { ButtonSize, ButtonVariant } from '../../constants/button.enums';
+import { ConsultationWithPatient } from '../../dtos';
 
 @Component({
   selector: 'app-consultation-card',
@@ -16,7 +16,7 @@ import { ButtonSize, ButtonVariant } from '../../constants/button.enums';
 export class ConsultationCardComponent {
   title = input('CONSULTATIONS');
   description = input('List of consultations');
-  consultations = input<ConsultationHistoryItem[]>([]);
+  consultations = input<ConsultationWithPatient[]>([]); 
   routerLink = input(RoutePaths.OpenConsultations);
   showInvite = input(true);
   @Output() invite = new EventEmitter<void>();
@@ -33,7 +33,7 @@ export class ConsultationCardComponent {
 
   trackByConsultationId(
     _idx: number,
-    history: ConsultationHistoryItem
+    history: ConsultationWithPatient 
   ): number {
     return history.consultation.id;
   }

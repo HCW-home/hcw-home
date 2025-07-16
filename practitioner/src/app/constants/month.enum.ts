@@ -1,14 +1,4 @@
-export enum months {
-  Jan = 'Jan',
-  Feb = 'Feb',
-  Mar = 'Mar',
-  Apr = 'Apr',
-  May = 'May',
-  Jun = 'Jun',
-  Jul = 'Jul',
-  Aug = 'Aug',
-  Sep = 'Sep',
-  Oct = 'Oct',
-  Nov = 'Nov',
-  Dec = 'Dec',
-};
+export const monthNames = [
+  'Jan','Feb','Mar','Apr','May','Jun',
+  'Jul','Aug','Sep','Oct','Nov','Dec'
+] as const;

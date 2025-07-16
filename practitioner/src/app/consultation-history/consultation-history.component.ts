@@ -38,7 +38,7 @@ export class ConsultationHistoryComponent implements OnInit {
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
 
-  private practitionerId = 2;
+  private practitionerId = 3;
 
   constructor(private consultationService: ConsultationHistoryService) {}
 

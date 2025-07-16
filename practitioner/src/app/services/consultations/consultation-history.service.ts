@@ -3,7 +3,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { tap } from 'rxjs/operators';
-// Domain Models
 import {
   ConsultationHistoryItem,
   ConsultationDetail,
@@ -13,7 +12,6 @@ import {
   Message,
 } from '../../models/consultations/consultation.model';
 
-// DTOs
 import {
   ConsultationHistoryResponseDto,
   ConsultationDetailResponseDto,
@@ -22,7 +20,6 @@ import {
 } from '../../dtos/consultations';
 import { UserResponseDto } from '../../dtos/users';
 
-// Constants
 import { ConsultationStatus } from '../../constants/consultation-status.enum';
 
 @Injectable({
@@ -33,30 +30,46 @@ export class ConsultationHistoryService {
 
   constructor(private http: HttpClient) {}
 
-  getClosedConsultations(
-    practitionerId: number
-  ): Observable<ConsultationHistoryItem[]> {
-    const params = new HttpParams()
-      .set('practitionerId', practitionerId.toString())
-      .set('status', ConsultationStatus.COMPLETED);
+getClosedConsultations(
+  practitionerId: number
+): Observable<ConsultationHistoryItem[]> {
+  const params = new HttpParams()
+    .set('practitionerId', practitionerId.toString())
+    .set('status', ConsultationStatus.COMPLETED);
 
-    return this.http.get<unknown>(`${this.apiUrl}/history`, { params }).pipe(
-      map((res) => {
-        const rows = (res as any).rows ?? (res as any).data ?? res;
-        return Array.isArray(rows) ? rows.map(this.mapToHistoryItem) : [];
+  return this.http.get<any>(`${this.apiUrl}/history`, { params }).pipe(
+    map((response) => {
+      console.log('API Response:', response); 
+      
+      const data = response?.data?.data || response?.data || response;
+      
+      if (!Array.isArray(data)) {
+        console.error('Expected array but got:', data);
+        return [];
+      }
+      
+      return data.map(this.mapToHistoryItem);
+    }),
+    tap((result) => console.log('Mapped result:', result)) 
+  );
+}
+getConsultationDetail(
+  consultationId: number
+): Observable<ConsultationDetail> {
+  return this.http
+    .get<any>(`${this.apiUrl}/${consultationId}/details`)
+    .pipe(
+      map((response) => {
+        const payload =
+          response?.data?.data ||
+          response?.data ||
+          response;
+
+        return this.mapToDetailItem(payload as ConsultationDetailResponseDto);
       })
     );
-  }
+}
 
-  getConsultationDetail(
-    consultationId: number
-  ): Observable<ConsultationDetail> {
-    return this.http
-      .get<ConsultationDetailResponseDto>(
-        `${this.apiUrl}/${consultationId}/details`
-      )
-      .pipe(map(this.mapToDetailItem));
-  }
 
   downloadConsultationPDF(consultationId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${consultationId}/pdf`, {
@@ -64,47 +77,55 @@ export class ConsultationHistoryService {
     });
   }
 
-  private mapToHistoryItem = (
-    data: ConsultationHistoryResponseDto
-  ): ConsultationHistoryItem => {
-    const start = data.startedAt ? new Date(data.startedAt) : undefined;
-    const end = data.closedAt ? new Date(data.closedAt) : undefined;
-    const duration = start && end ? this.calculateDuration(start, end) : '';
+private mapToHistoryItem = (
+  data: any // Update this type to match your actual API response
+): ConsultationHistoryItem => {
+  // Handle the nested structure from your API
+  const consultationData = data.consultation;
+  const patientData = data.patient;
+  const duration = data.duration || '';
 
-    const participants: Participant[] = (data.participants || []).map(
-      (p: ParticipantResponseDto) => ({
-        id: p.id,
-        consultationId: p.consultationId,
-        userId: p.userId,
-        isActive: p.isActive,
-        isBeneficiary: p.isBeneficiary,
-        token: p.token,
-        joinedAt: p.joinedAt ? new Date(p.joinedAt) : null,
-      })
-    );
+  const start = consultationData.startedAt ? new Date(consultationData.startedAt) : undefined;
+  const end = consultationData.closedAt ? new Date(consultationData.closedAt) : undefined;
+  
+  // Use the duration from API if available, otherwise calculate it
+  const calculatedDuration = duration || (start && end ? this.calculateDuration(start, end) : '');
 
-    const consultation: Consultation = {
-      id: data.id,
-      scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
-      createdAt: data.createdAt ? new Date(data.createdAt) : null,
-      startedAt: start || null,
-      closedAt: end || null,
-      createdBy: data.createdBy,
-      groupId: data.groupId,
-      ownerId: data.ownerId,
-      whatsappTemplateId: data.whatsappTemplateId,
-      status: data.status,
-    };
+  // Handle participants - check if they exist in the response
+  const participants: Participant[] = (data.participants || []).map(
+    (p: ParticipantResponseDto) => ({
+      id: p.id,
+      consultationId: p.consultationId,
+      userId: p.userId,
+      isActive: p.isActive,
+      isBeneficiary: p.isBeneficiary,
+      token: p.token,
+      joinedAt: p.joinedAt ? new Date(p.joinedAt) : null,
+    })
+  );
 
-    const patient: User = this.mapUserResponseToUser(data.patient);
-
-    return {
-      consultation,
-      patient,
-      participants,
-      duration,
-    };
+  const consultation: Consultation = {
+    id: consultationData.id,
+    scheduledDate: consultationData.scheduledDate ? new Date(consultationData.scheduledDate) : null,
+    createdAt: consultationData.createdAt ? new Date(consultationData.createdAt) : null,
+    startedAt: start || null,
+    closedAt: end || null,
+    createdBy: consultationData.createdBy,
+    groupId: consultationData.groupId,
+    ownerId: consultationData.ownerId || consultationData.owner, // Handle both property names
+    whatsappTemplateId: consultationData.whatsappTemplateId,
+    status: consultationData.status,
   };
+
+  const patient: User = this.mapUserResponseToUser(patientData);
+
+  return {
+    consultation,
+    patient,
+    participants,
+    duration: calculatedDuration,
+  };
+};
 
   private mapToDetailItem = (
     data: ConsultationDetailResponseDto

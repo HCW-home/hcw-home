@@ -57,7 +57,7 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   loadConsultations(): void {
     this.isLoading = true;
     this.openConsultationService
-      .getOpenConsultations(3, this.currentPage)
+      .getOpenConsultations(7, this.currentPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -99,7 +99,7 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   }
 
   onJoinConsultation(consultationId: number): void {
-    const practitionerId = 1; 
+    const practitionerId = 7; 
     this.openConsultationService
       .joinConsultation(consultationId, practitionerId)
       .pipe(takeUntil(this.destroy$))

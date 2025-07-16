@@ -18,6 +18,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { User, UserSex, Language, Speciality, UpdateUserProfileDto } from '../../models/user.model';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
+import { GuidedTourService } from '../../services/guided-tour.service';
 
 const PHONE_NUMBER_REGEX = /^[+]?[1-9][\d\s\-\(\)]{7,15}$/;
 const MIN_NAME_LENGTH = 2;
@@ -86,6 +87,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly specialityService = inject(SpecialityService);
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
+  private readonly guidedTourService = inject(GuidedTourService);
   private readonly destroy$ = new Subject<void>();
 
   readonly profileForm: FormGroup;

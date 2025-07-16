@@ -11,6 +11,7 @@ import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { OpenConsultationCardComponent } from '../components/open-consultation-card/open-consultation-card.component';
 import { OpenConsultationPanelComponent } from '../components/open-consultation-panel/open-consultation-panel.component';
 import { OverlayComponent } from '../components/overlay/overlay.component';
+import { GuidedTourService } from 'ngx-guided-tour';
 
 @Component({
   selector: 'app-open-consultations',
@@ -42,7 +43,8 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   constructor(
     private openConsultationService: OpenConsultationService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private guidedTourService: GuidedTourService,
   ) {}
 
   ngOnInit(): void {

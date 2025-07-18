@@ -9,12 +9,14 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards, Inject, forwardRef } from '@nestjs/common';
 import * as mediasoup from 'mediasoup';
 import { Server, Socket } from 'socket.io';
 import { MediasoupSessionService } from './mediasoup-session.service';
 import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { sanitizePayload } from 'src/common/helpers/sanitize.helper';
+import { DatabaseService } from 'src/database/database.service';
+import { ConsultationService } from 'src/consultation/consultation.service';
 
 @WebSocketGateway({ namespace: '/mediasoup', cors: true })
 export class MediasoupGateway
@@ -26,10 +28,25 @@ export class MediasoupGateway
   private clientProducers: Map<string, Set<string>> = new Map();
   private clientConsumers: Map<string, Set<string>> = new Map();
 
-  constructor(private readonly mediasoupService: MediasoupSessionService) {}
+  constructor(
+    private readonly mediasoupService: MediasoupSessionService,
+    @Inject(forwardRef(() => ConsultationService))
+    private readonly consultationService: ConsultationService,
+    private readonly databaseService: DatabaseService,
+  ) {}
 
   afterInit() {
     this.logger.log('Mediasoup WebSocket Gateway initialized');
+  }
+
+  async isUserParticipant(
+    consultationId: number,
+    userId: number,
+  ): Promise<boolean> {
+    const participant = await this.databaseService.participant.findUnique({
+      where: { consultationId_userId: { consultationId, userId } },
+    });
+    return !!participant;
   }
 
   async handleConnection(client: Socket) {
@@ -83,7 +100,7 @@ export class MediasoupGateway
   @UseGuards(WsAuthGuard)
   @SubscribeMessage('getRouterCapabilities')
   async handleGetCapabilities(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket & { data: any },
     @MessageBody() data: { consultationId?: number },
   ) {
     try {
@@ -93,6 +110,15 @@ export class MediasoupGateway
           'consultationId is required and must be a number',
         );
       }
+
+      const isParticipant = await this.isUserParticipant(
+        consultationId,
+        client.data.user.id,
+      );
+      if (!isParticipant) {
+        throw new WsException('Not authorized for this consultation');
+      }
+
       this.logger.log(
         `getRouterCapabilities requested by client ${client.id} for consultation ${consultationId}`,
       );
@@ -117,7 +143,7 @@ export class MediasoupGateway
   @UseGuards(WsAuthGuard)
   @SubscribeMessage('createTransport')
   async handleCreateTransport(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket & { data: any },
     @MessageBody()
     data: { consultationId?: number; type: 'producer' | 'consumer' },
   ) {
@@ -131,6 +157,15 @@ export class MediasoupGateway
           'consultationId is required and must be a number',
         );
       }
+
+      const isParticipant = await this.isUserParticipant(
+        consultationId,
+        client.data.user.id,
+      );
+      if (!isParticipant) {
+        throw new WsException('Not authorized for this consultation');
+      }
+
       if (type !== 'producer' && type !== 'consumer') {
         throw new WsException(
           "type is required and must be either 'producer' or 'consumer'",
@@ -190,9 +225,10 @@ export class MediasoupGateway
   @UseGuards(WsAuthGuard)
   @SubscribeMessage('produce')
   async handleProduce(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket & { data: any },
     @MessageBody()
     data: {
+      consultationId?: number;
       transportId: string;
       kind: string;
       rtpParameters: any;
@@ -200,10 +236,28 @@ export class MediasoupGateway
     },
   ) {
     try {
-      const { transportId, kind, rtpParameters, appData } = sanitizePayload(
-        data,
-        ['transportId', 'kind', 'rtpParameters', 'appData'],
+      const { consultationId, transportId, kind, rtpParameters, appData } =
+        sanitizePayload(data, [
+          'consultationId',
+          'transportId',
+          'kind',
+          'rtpParameters',
+          'appData',
+        ]);
+
+      if (typeof consultationId !== 'number' || isNaN(consultationId)) {
+        throw new WsException(
+          'consultationId is required and must be a number',
+        );
+      }
+      const isParticipant = await this.isUserParticipant(
+        consultationId,
+        client.data.user.id,
       );
+      if (!isParticipant) {
+        throw new WsException('Not authorized for this consultation');
+      }
+
       if (!transportId || !kind || !rtpParameters) {
         throw new WsException(
           'transportId, kind and rtpParameters are required',
@@ -235,15 +289,37 @@ export class MediasoupGateway
   @UseGuards(WsAuthGuard)
   @SubscribeMessage('consume')
   async handleConsume(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket & { data: any },
     @MessageBody()
-    data: { transportId: string; producerId: string; rtpCapabilities: any },
+    data: {
+      consultationId?: number;
+      transportId: string;
+      producerId: string;
+      rtpCapabilities: any;
+    },
   ) {
     try {
-      const { transportId, producerId, rtpCapabilities } = sanitizePayload(
-        data,
-        ['transportId', 'producerId', 'rtpCapabilities'],
+      const { consultationId, transportId, producerId, rtpCapabilities } =
+        sanitizePayload(data, [
+          'consultationId',
+          'transportId',
+          'producerId',
+          'rtpCapabilities',
+        ]);
+
+      if (typeof consultationId !== 'number' || isNaN(consultationId)) {
+        throw new WsException(
+          'consultationId is required and must be a number',
+        );
+      }
+      const isParticipant = await this.isUserParticipant(
+        consultationId,
+        client.data.user.id,
       );
+      if (!isParticipant) {
+        throw new WsException('Not authorized for this consultation');
+      }
+
       if (!transportId || !producerId || !rtpCapabilities) {
         throw new WsException(
           'transportId, producerId and rtpCapabilities are required',

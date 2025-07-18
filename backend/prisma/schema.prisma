@@ -269,7 +269,7 @@ model Message {
   id      Int    @id @default(autoincrement())
   userId  Int
   content String @db.Text
-
+  createdAt     DateTime  @default(now())
   // Relations
   user           User          @relation(fields: [userId], references: [id])
   consultation   Consultation? @relation(fields: [consultationId], references: [id])

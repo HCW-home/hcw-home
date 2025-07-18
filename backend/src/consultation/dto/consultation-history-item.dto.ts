@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsObject, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 import { ConsultationStatus, MessageService } from '@prisma/client';
 
 class ConsultationDto {
@@ -35,7 +35,7 @@ class ConsultationDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsInt()
-  owner?: number;
+  ownerId?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()

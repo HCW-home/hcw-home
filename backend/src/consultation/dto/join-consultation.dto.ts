@@ -1,5 +1,6 @@
 import { IsInt, IsPositive } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ConsultationStatus, UserRole } from '@prisma/client';
 
 /**
  * DTO for joining a consultation as a patient or practitioner.
@@ -14,6 +15,43 @@ export class JoinConsultationDto {
   @IsInt({ message: 'userId must be an integer' })
   @IsPositive({ message: 'userId must be a positive integer' })
   userId: number;
+}
+
+/**
+ * Participant information within join response.
+ */
+export class JoinConsultationParticipantDto {
+  @ApiProperty({ example: 123, description: 'User ID of participant' })
+  id: number;
+
+  @ApiProperty({ example: 'Amir', description: 'First name' })
+  firstName: string;
+
+  @ApiProperty({ example: 'Shaikh', description: 'Last name' })
+  lastName: string;
+
+  @ApiProperty({ example: 'PATIENT', enum: UserRole, description: 'User role' })
+  role: UserRole;
+
+  @ApiProperty({ example: true, description: 'Is participant active' })
+  isActive: boolean;
+}
+
+export class JoinConsultationMessageDto {
+  @ApiProperty({ example: 1, description: 'Message ID' })
+  id: number;
+
+  @ApiProperty({ example: 123, description: 'User ID of sender' })
+  userId: number;
+
+  @ApiProperty({ example: 'Hello there!', description: 'Message content' })
+  content: string;
+
+  @ApiProperty({
+    example: new Date().toISOString(),
+    description: 'Message creation timestamp',
+  })
+  createdAt: Date;
 }
 
 /**
@@ -48,6 +86,41 @@ export class JoinConsultationResponseDto {
     type: String,
   })
   sessionUrl?: string;
+
+  @ApiPropertyOptional({
+    type: [JoinConsultationParticipantDto],
+    description: 'List of participants in the consultation',
+  })
+  participants?: JoinConsultationParticipantDto[];
+
+  @ApiProperty({
+    type: [JoinConsultationMessageDto],
+    required: false,
+    description: 'List of messages in the consultation on join',
+  })
+  messages?: JoinConsultationMessageDto[];
+
+  @ApiPropertyOptional({
+    description: 'Mediasoup session details for this consultation',
+    type: 'object',
+    properties: {
+      routerId: { type: 'number', example: 123 },
+      active: { type: 'boolean', example: true },
+    },
+    additionalProperties: false,
+    example: { routerId: 123, active: true },
+  })
+  mediasoup?: {
+    routerId: number;
+    active: boolean;
+  };
+
+  @ApiPropertyOptional({
+    description: 'Status of the consultation after join',
+    example: 'ACTIVE',
+    enum: ConsultationStatus,
+  })
+  status?: ConsultationStatus;
 
   constructor(partial: Partial<JoinConsultationResponseDto>) {
     Object.assign(this, partial);

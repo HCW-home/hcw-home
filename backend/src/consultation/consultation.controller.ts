@@ -55,7 +55,6 @@ import {
   OpenConsultationResponseDto,
   OpenConsultationQueryDto,
 } from './dto/open-consultation.dto';
-import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
 import { ResponseStatus } from 'src/common/helpers/response/response-status.enum';
 
 @ApiTags('consultation')
@@ -295,13 +294,21 @@ export class ConsultationController {
   @Get(':id/pdf')
   @ApiOperation({ summary: 'Download consultation PDF' })
   @ApiParam({ name: 'id', type: Number })
+  @ApiQuery({
+    name: 'requesterId',
+    type: Number,
+    description: 'ID of requesting user',
+  })
   @Header('Content-Type', 'application/pdf')
   async downloadPdf(
     @Param('id', ConsultationIdParamPipe) id: number,
+    @Query('requesterId', ParseIntPipe) requesterId: number,
     @Res() res: Response,
   ) {
-    const pdfBuffer =
-      await this.consultationService.downloadConsultationPdf(id);
+    const pdfBuffer = await this.consultationService.downloadConsultationPdf(
+      id,
+      requesterId,
+    );
     res
       .status(HttpStatus.OK)
       .set({

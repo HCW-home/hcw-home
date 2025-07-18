@@ -6,7 +6,7 @@ import { OrganizationService } from '../services/organization.service';
 import { GroupService } from '../services/group.service';
 import { LanguageService } from '../services/language.service';
 import { SpecialityService } from '../services/speciality.service';
-import { CreateUserDto, UpdateUserDto, User, UserRole, UserStatus, UserSex, Organization, Group, Language, Speciality } from '../models/user.model';
+import { CreateUserDto, UpdateUserDto, User, UserRole, UserStatus, UserSex, Organization, Group, Language, Speciality, Country, LoginUser } from '../models/user.model';
 import { Observable, Subscription, forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { CommonModule } from '@angular/common';
@@ -20,6 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SnackbarService } from '../services/snackbar.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { ConfigService } from '../services/config.service';
 
 @Component({
   selector: 'app-user-form',
@@ -50,6 +51,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
   groups: Group[] = [];
   languages: Language[] = [];
   specialities: Speciality[] = [];
+  countries :Country[]=[]
 
   userRoles = Object.values(UserRole);
   userStatuses = Object.values(UserStatus);
@@ -66,7 +68,8 @@ export class UserFormComponent implements OnInit, OnDestroy {
     private groupService: GroupService,
     private languageService: LanguageService,
     private specialityService: SpecialityService,
-    private snackBarService: SnackbarService
+    private snackBarService: SnackbarService,
+    private configService:ConfigService
   ) {}
 
   ngOnInit(): void {
@@ -124,7 +127,6 @@ export class UserFormComponent implements OnInit, OnDestroy {
           this.organizations = results[0];
           this.languages = results[1];
           this.specialities = results[2];
-
           if (this.isEditMode && this.userId !== null && results.length > 3 && results[3]) {
             const userData: User = results[3];
             this.userForm.patchValue({
@@ -137,13 +139,13 @@ export class UserFormComponent implements OnInit, OnDestroy {
               phoneNumber: userData.phoneNumber,
               country: userData.country,
               sex: userData.sex,
-              organisationIds: (userData.OrganizationMember ?? []).map(member => member.organization.id),
-              groupIds: (userData.GroupMember ?? []).map(member => member.group.id),
-              languageIds: (userData.languages ?? []).map(lang => lang.language.id),
-              specialityIds: (userData.specialities ?? []).map(spec => spec.speciality.id)
+              organisationIds: (userData.organizations ?? []).map(member => member.id),
+              groupIds: (userData.groups ?? []).map(member => member.id),
+              languageIds: (userData.languages ?? []).map(lang => lang.id),
+              specialityIds: (userData.specialities ?? []).map(spec => spec.id)
             });
 
-            const orgIds = userData.OrganizationMember.map(org => org.organization.id);
+            const orgIds = userData.organizations.map(org => org.id);
             this.loadGroupsForOrganizations(orgIds);
           }
 
@@ -159,6 +161,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         }
       })
     );
+    this.loadCountries()
   }
 
   loadGroupsForOrganizations(orgIds: number[]): void {
@@ -233,5 +236,11 @@ export class UserFormComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     this.router.navigate(['/user']);
+  }
+  loadCountries(): void {
+    this.configService.getCountries().subscribe({
+      next: res => this.countries = res,
+      error: err => console.error('Failed to load countries:', err)
+    });
   }
 }

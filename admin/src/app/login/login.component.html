@@ -62,4 +62,9 @@
     </div>
   </div>
 </div>
-<app-access-denied *ngIf="errorMessage" [errorMessage]="errorMessage" (close)="errorMessage = ''"></app-access-denied>
+@if(errorMessage){
+<app-access-denied
+  [errorMessage]="errorMessage"
+  (close)="errorMessage = ''"
+></app-access-denied>
+}

@@ -139,7 +139,6 @@ export class OrganizationController {
     @Req() req: Request,
   ) {
     const result = await this.organizationService.findAll(query);
-console.log(result);
 
     return PaginatedApiResponseDto.paginatedSuccess(
       result.organizations,

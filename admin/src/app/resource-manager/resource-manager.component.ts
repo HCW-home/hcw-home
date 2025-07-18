@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -128,7 +128,7 @@ export class ResourceManagerComponent {
     this.loadResources();
     this.resetForm();
   }
-  
+
   showColorPicker = false;
 
   toggleColorPicker(event: MouseEvent) {
@@ -188,7 +188,7 @@ export class ResourceManagerComponent {
 
   onLogoSelected(event: any) {
     event.preventDefault();
-    event.stopPropagation(); 
+    event.stopPropagation();
     this.selectedLogoFile = event.target.files[0];
     this.selectedLogoFileName = event.target.files[0] ? event.target.files[0].name : null;
   }
@@ -206,7 +206,17 @@ export class ResourceManagerComponent {
           this.snackBarService.showSuccess('Organization created successfully');
           this.postSave();
         },
-        error: () => this.snackBarService.showError('Failed to create organization')
+        error: (err) => {
+          const message = err?.error?.message;
+          if (Array.isArray(message)) {
+            this.snackBarService.showError(message[0]);
+          } else if (typeof message === 'string') {
+            this.snackBarService.showError(message);
+          } else {
+            this.snackBarService.showError('Failed to create organization');
+          }
+        }
+
       });
     } else if (type === 'group' && this.selectedOrganizationId) {
       this.groupService.createGroup(this.selectedOrganizationId, payload).subscribe({
@@ -214,7 +224,16 @@ export class ResourceManagerComponent {
           this.snackBarService.showSuccess('Group created successfully');
           this.postSave();
         },
-        error: () => this.snackBarService.showError('Failed to create group')
+        error: (err) => {
+          const message = err?.error?.message;
+          if (Array.isArray(message)) {
+            this.snackBarService.showError(message[0]);
+          } else if (typeof message === 'string') {
+            this.snackBarService.showError(message);
+          } else {
+            this.snackBarService.showError('Failed to create group');
+          }
+        }
       });
     } else if (type === 'language') {
       this.languageService.createLanguage(payload).subscribe({
@@ -222,7 +241,19 @@ export class ResourceManagerComponent {
           this.snackBarService.showSuccess('Language created successfully');
           this.postSave();
         },
-        error: () => this.snackBarService.showError('Failed to create language')
+        error: (err) => {
+          const message = err?.error?.message;
+          if (Array.isArray(message)) {
+            this.snackBarService.showError(message[0]);
+          } else if (typeof message === 'string') {
+            this.snackBarService.showError(message);
+          } else {
+            this.snackBarService.showError('Failed to create language')
+          }
+        }
+
+
+
       });
     } else if (type === 'speciality') {
       this.specialityService.createSpeciality(payload).subscribe({
@@ -230,7 +261,16 @@ export class ResourceManagerComponent {
           this.snackBarService.showSuccess('Speciality created successfully');
           this.postSave();
         },
-        error: () => this.snackBarService.showError('Failed to create speciality')
+        error: (err) => {
+          const message = err?.error?.message;
+          if (Array.isArray(message)) {
+            this.snackBarService.showError(message[0]);
+          } else if (typeof message === 'string') {
+            this.snackBarService.showError(message);
+          } else {
+            this.snackBarService.showError('Failed to create speciality')
+          }
+        }
       });
     }
   }

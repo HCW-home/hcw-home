@@ -17,19 +17,23 @@ enum ConsultationStatus {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
+  id                 Int                        @id @default(autoincrement())
   role               UserRole
-  firstName          String               @db.VarChar(100)
-  lastName           String               @db.VarChar(100)
-  email              String               @unique @db.VarChar(255)
-  password           String               @db.VarChar(255)
-  temporaryAccount   Boolean              @default(false)
-  phoneNumber        String?              @db.VarChar(20)
-  country            String?              @db.VarChar(100)
+  firstName          String                     @db.VarChar(100)
+  lastName           String                     @db.VarChar(100)
+  email              String                     @unique @db.VarChar(255)
+  password           String                     @db.VarChar(255)
+  temporaryAccount   Boolean                    @default(false)
+  phoneNumber        String?                    @db.VarChar(20)
+  country            String?                    @db.VarChar(100)
   sex                UserSex?
-  status             UserStatus           @default(NOT_APPROVED)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  status             UserStatus                 @default(NOT_APPROVED)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  acceptedAt         DateTime?
+  termId             Int?                       @default(0)
+  termVersion        Float                      @default(0.00)
+  term               Terms?                     @relation(fields: [termId], references: [id])
   Participant        Participant[]
   OrganizationMember OrganizationMember[]
   GroupMember        GroupMember[]
@@ -37,11 +41,11 @@ model User {
   languages          UserLanguage[]
   specialities       UserSpeciality[]
   availability       PractitionerAvailability[] @relation("PractitionerAvailability")
-  timeSlots          TimeSlot[] @relation("PractitionerTimeSlots")
+  timeSlots          TimeSlot[]                 @relation("PractitionerTimeSlots")
+  Consultation       Consultation[]
+  ConsultationRating ConsultationRating[]
 
   @@map("users")
-  Consultation Consultation[]
-  ConsultationRating ConsultationRating[]
 }
 
 enum UserRole {
@@ -73,7 +77,7 @@ model Organization {
   // Relations
   members OrganizationMember[]
   groups  Group[]
-  terms   Terms[] 
+  terms   Terms[]
 
   @@map("organizations")
 }
@@ -130,14 +134,14 @@ model GroupMember {
 }
 
 model Language {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
   users UserLanguage[]
 }
 
 model UserLanguage {
-  id         Int  @id @default(autoincrement())
+  id         Int @id @default(autoincrement())
   userId     Int
   languageId Int
 
@@ -155,7 +159,7 @@ model Speciality {
 }
 
 model UserSpeciality {
-  id           Int  @id @default(autoincrement())
+  id           Int @id @default(autoincrement())
   userId       Int
   specialityId Int
 
@@ -166,15 +170,15 @@ model UserSpeciality {
 }
 
 model ConsultationRating {
-  id              Int           @id @default(autoincrement())
-  consultationId  Int           @unique
-  patientId       Int
-  rating          Int          
-  comment         String?
-  createdAt       DateTime      @default(now())
+  id             Int      @id @default(autoincrement())
+  consultationId Int      @unique
+  patientId      Int
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
 
-  consultation    Consultation  @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  patient         User          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  patient      User         @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
 }
@@ -189,63 +193,61 @@ enum MessageService {
 }
 
 model Consultation {
-  id                 Int                @id @default(autoincrement())
-  scheduledDate      DateTime?
-  createdAt          DateTime?
-  startedAt          DateTime?
-  closedAt           DateTime?
-  createdBy          Int?
-  groupId            Int?
-  ownerId            Int?
-  messageService     MessageService?
-  whatsappTemplateId Int?
-  status             ConsultationStatus @default(SCHEDULED)
-  deletionScheduledAt DateTime? 
-  version            Int    @default(1)
-  isDeleted          Boolean  @default(false)
+  id                  Int                @id @default(autoincrement())
+  scheduledDate       DateTime?
+  createdAt           DateTime?
+  startedAt           DateTime?
+  closedAt            DateTime?
+  createdBy           Int?
+  groupId             Int?
+  ownerId             Int?
+  messageService      MessageService?
+  whatsappTemplateId  Int?
+  status              ConsultationStatus @default(SCHEDULED)
+  deletionScheduledAt DateTime?
+  version             Int                @default(1)
+  isDeleted           Boolean            @default(false)
 
-  participants    Participant[]
-  group           Group?        @relation(fields: [groupId], references: [id])
-  messages        Message[]
-  owner           User?         @relation(fields: [ownerId], references: [id])
-  MediasoupRouter MediasoupRouter[]
-  timeSlot        TimeSlot?
+  participants           Participant[]
+  group                  Group?                   @relation(fields: [groupId], references: [id])
+  messages               Message[]
+  owner                  User?                    @relation(fields: [ownerId], references: [id])
+  MediasoupRouter        MediasoupRouter[]
+  timeSlot               TimeSlot?
+  DeletedConsultationLog DeletedConsultationLog[]
+  rating                 ConsultationRating?
 
   @@index([status])
   @@index([ownerId])
-  DeletedConsultationLog DeletedConsultationLog[]
-  rating  ConsultationRating?
 }
 
-
 model MediasoupServer {
-  id                  String   @id @default(cuid())
-  url                 String   @unique
+  id                  String            @id @default(cuid())
+  url                 String            @unique
   username            String
   password            String
-  maxNumberOfSessions Int      @default(100)
-  active              Boolean  @default(false)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  maxNumberOfSessions Int               @default(100)
+  active              Boolean           @default(false)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  MediasoupRouter     MediasoupRouter[]
 
   @@map("mediasoup_servers")
-  MediasoupRouter MediasoupRouter[]
 }
 
 model MediasoupRouter {
-  id              String  @id @default(cuid())
-  consultationId  Int     @unique
-  routerId        String
-  serverId        String
-  
-  consultation Consultation @relation(fields: [consultationId], references: [id])
+  id             String @id @default(cuid())
+  consultationId Int    @unique
+  routerId       String
+  serverId       String
+
+  consultation Consultation    @relation(fields: [consultationId], references: [id])
   server       MediasoupServer @relation(fields: [serverId], references: [id])
 
   @@unique([consultationId, serverId])
   @@index([routerId])
   @@map("mediasoup_routers")
 }
-
 
 model Participant {
   id             Int       @id @default(autoincrement())
@@ -296,14 +298,14 @@ model Whatsapp_Template {
 }
 
 model SmsProvider {
-  id          Int     @id @default(autoincrement())
-  order       Int     @unique
-  provider    String?
-  prefix      String?
-  isWhatsapp  Boolean @default(false) 
-  isDisabled  Boolean @default(true)
-  createdAt   DateTime @default(now()) 
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  order      Int      @unique
+  provider   String?
+  prefix     String?
+  isWhatsapp Boolean  @default(false)
+  isDisabled Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("sms_providers")
 }
@@ -313,62 +315,62 @@ model Terms {
   language  String
   country   String
   content   String
-  version   Float     @default(1.00)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  version   Float    @default(1.00)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relation to Organization
-  organization  Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId Int
-
+  User           User[]
 
   @@map("terms")
 }
 
 model DeletedConsultationLog {
-  id               Int      @id @default(autoincrement())
-  consultationId   Int
-  deletedAt        DateTime @default(now())
-  reason           String?
+  id             Int      @id @default(autoincrement())
+  consultationId Int
+  deletedAt      DateTime @default(now())
+  reason         String?
 
-  consultation     Consultation @relation(fields: [consultationId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id])
 
   @@index([consultationId])
 }
 
 model PractitionerAvailability {
-  id              Int       @id @default(autoincrement())
-  practitionerId  Int
-  dayOfWeek       Int
-  startTime       String
-  endTime         String
-  slotDuration    Int       @default(30)
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  practitioner    User      @relation("PractitionerAvailability", fields: [practitionerId], references: [id], onDelete: Cascade)
-  
-  @@map("practitioner_availability")
+  id             Int      @id @default(autoincrement())
+  practitionerId Int
+  dayOfWeek      Int
+  startTime      String
+  endTime        String
+  slotDuration   Int      @default(30)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  practitioner User @relation("PractitionerAvailability", fields: [practitionerId], references: [id], onDelete: Cascade)
+
   @@index([practitionerId])
+  @@map("practitioner_availability")
 }
 
 model TimeSlot {
-  id              Int       @id @default(autoincrement())
-  practitionerId  Int
-  date            DateTime
-  startTime       String
-  endTime         String
-  status          TimeSlotStatus @default(AVAILABLE)
-  consultationId  Int?      @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  practitioner    User          @relation("PractitionerTimeSlots", fields: [practitionerId], references: [id], onDelete: Cascade)
-  consultation    Consultation? @relation(fields: [consultationId], references: [id], onDelete: SetNull)
-  
-  @@map("time_slots")
+  id             Int            @id @default(autoincrement())
+  practitionerId Int
+  date           DateTime
+  startTime      String
+  endTime        String
+  status         TimeSlotStatus @default(AVAILABLE)
+  consultationId Int?           @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  practitioner User          @relation("PractitionerTimeSlots", fields: [practitionerId], references: [id], onDelete: Cascade)
+  consultation Consultation? @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+
   @@index([practitionerId, date])
+  @@map("time_slots")
 }
 
 enum TimeSlotStatus {

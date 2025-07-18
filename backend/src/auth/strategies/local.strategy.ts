@@ -7,28 +7,38 @@ import { User } from '@prisma/client';
 import { Role } from '../enums/role.enum';
 import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
 import { CustomLoggerService } from 'src/logger/logger.service';
+import { log } from 'console';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly logger:CustomLoggerService ) {
+    private readonly logger: CustomLoggerService) {
     super({
       usernameField: 'email',
       passwordField: 'password',
+      passReqToCallback: true,
     });
   }
 
   async validate(
+    req: Request,
     email: string,
     password: string,
   ): Promise<{ id: number; email: string }> {
+    const role = (req.body as any)?.role;
+    if (typeof role !== 'string' || !role.trim()) {
+      throw HttpExceptionHelper.badRequest("Role is missing");
+    }
+  
+    
+
     this.logger.log(`Validating user with email: ${email}`);
-    const { userId, userEmail,userRole } = await this.authService.validateUser(
-      { email, password },
+    const { userId, userEmail, userRole } = await this.authService.validateUser(
+      { email, password,role },
     );
-    const user = { id: userId, email: userEmail,role:userRole };
+    const user = { id: userId, email: userEmail, role: userRole };
     const isLoginLocalAllowed = await this.authService.canLoginLocal(user);
     if (!isLoginLocalAllowed) {
       this.logger.warn('Password login is disabled.');

@@ -1,0 +1,23 @@
+<div class="box">
+    <div class="term-container">
+        <h2>Terms & Conditions</h2>
+        <p>Please read the following terms carefully and confirm your acceptance before proceeding.</p>
+      
+        <div class="markdown-box">
+          <markdown [data]="markdownContent"></markdown>
+        </div>
+      
+        <form [formGroup]="termsForm" (ngSubmit)="handleSubmit()">
+            <div class="ticks-wrapper">
+              <div class="tick" *ngFor="let term of termsList; let i = index">
+                <label>
+                  <input type="checkbox" [formControlName]="'term' + i" />
+                  {{ term }}
+                </label>
+              </div>
+            </div>
+            <button [disabled]="!termsForm.valid" >Accept</button>
+          </form>
+      </div>
+      
+</div>

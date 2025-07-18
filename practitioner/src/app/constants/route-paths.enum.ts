@@ -7,5 +7,6 @@ export enum RoutePaths {
   Test = 'test',
   Profile = 'profile',
   Availability = 'availability',
-  Login='login'
+  Login='login',
+  AcceptTerm='accept-term'
 }

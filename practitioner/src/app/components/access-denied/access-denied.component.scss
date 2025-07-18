@@ -1,35 +1,35 @@
 .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    backdrop-filter: blur(6px);
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 10000;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .access-denied-modal {
-    background-color: #fff;
-    padding: 2.5rem 3rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-  
-    h1 {
-      margin-bottom: 1rem;
-    }
-  
-    p {
-      margin-bottom: 2rem;
-      color: #555;
-    }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 10000;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.access-denied-modal {
+  background-color: #fff;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+
+  h1 {
+    margin-bottom: 1rem;
   }
-  
+
+  p {
+    margin-bottom: 2rem;
+    color: #555;
+  }
+
+
+}

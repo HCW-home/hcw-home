@@ -1,0 +1,124 @@
+.box {
+    height: 97vh;
+    width: 100%;
+    padding: 5vw 3vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  
+  .term-container {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    padding: 2rem;
+    background-color: white;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+  }
+  
+  .term-container h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+  }
+  
+  .term-container p {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.5;
+  }
+  
+  .markdown-box {
+    height: 50%;
+    max-height: 50vh;
+    width: 100%;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #f9f9f9;
+    margin: 1rem 0;
+  }
+  
+  .term-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .ticks-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #fff6f6;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e4bcbc;
+  }
+  
+  .tick label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 500;
+    gap: 0.8rem;
+    cursor: pointer;
+  }
+  
+  .tick input[type='checkbox'] {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    accent-color: #007bff;
+  }
+  
+  .term-container form button {
+    align-self: flex-end;
+    padding: 0.8rem 1.6rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .term-container form button:disabled {
+    background-color: #b3b3b3;
+    cursor: not-allowed;
+  }
+  
+  /* Responsive tweaks */
+  @media screen and (max-width: 768px) {
+    .term-container {
+      padding: 1rem;
+      height: 100%;
+    }
+  
+    .markdown-box {
+      height: 50%;
+    }
+  
+    .term-container form button {
+      align-self: stretch;
+      text-align: center;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .term-container h2 {
+      font-size: 1.5rem;
+    }
+  
+    .term-container p {
+      font-size: 0.9rem;
+    }
+  
+    .tick label {
+      font-size: 0.9rem;
+    }
+  }
+  

@@ -4,11 +4,14 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideAngularSvgIcon } from 'angular-svg-icon';
 import { authInterceptor } from './auth/auth.interceptor';
+import { provideMarkdown } from 'ngx-markdown';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAngularSvgIcon(),
+    provideMarkdown()
   ],
 };

@@ -72,7 +72,7 @@ export class GuidedTourService {
             this.router.navigate(['/dashboard']).then(() => {
               setTimeout(() => {
                 this.startTour(this.getDashboardTour());
-              }, 1500);
+              }, 5000);
             });
           }
         },
@@ -109,9 +109,9 @@ export class GuidedTourService {
                 inviteButton.click();
                 setTimeout(() => {
                   this.startTour(this.getInviteFormTour());
-                }, 500);
+                }, 2500);
               }
-            }, 2000);
+            }, 5000);
           }
         }
       ]
@@ -151,9 +151,9 @@ export class GuidedTourService {
               this.router.navigate(['/open-consultations']).then(() => {
                 setTimeout(() => {
                   this.startTour(this.getOpenConsultationsTour());
-                }, 1500);
+                }, 2000);
               });
-            }, 2000);
+            }, 3000);
           }
         }
       ]

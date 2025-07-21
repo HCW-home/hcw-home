@@ -1,5 +1,6 @@
-@use './variables/' as *;
-@use '../../node_modules/ngx-guided-tour/scss/guided-tour-base-theme.scss';
+@use './variables/guided-tour-theme';
+@use './variables/index.scss' as *;
+
 * {
     margin: 0;
     padding: 0;

@@ -18,6 +18,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { User, UserSex, Language, Speciality, UpdateUserProfileDto,LoginUser } from '../../models/user.model';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
+import { GuidedTourService } from '../../services/guided-tour.service';
 import { ConfigService } from '../../services/config.service';
 import { AuthService } from '../../auth/auth.service';
 import { SnackbarService } from '../../services/snackbar/snackbar.service';
@@ -71,6 +72,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly snackBarService = inject(SnackbarService)
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
+  private readonly guidedTourService = inject(GuidedTourService);
   private readonly destroy$ = new Subject<void>();
 
   readonly profileForm: FormGroup;

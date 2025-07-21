@@ -4,6 +4,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideAngularSvgIcon } from 'angular-svg-icon';
 import { authInterceptor } from './auth/auth.interceptor';
+import { GuidedTourService} from 'ngx-guided-tour';
+import { WindowRefService } from 'ngx-guided-tour';
 import { provideMarkdown } from 'ngx-markdown';
 
 export const appConfig: ApplicationConfig = {
@@ -12,6 +14,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAngularSvgIcon(),
-    provideMarkdown()
+    GuidedTourService,
+    WindowRefService,
+    provideMarkdown(),
   ],
 };

@@ -1,4 +1,5 @@
-@use './variables/' as *;
+@use './variables/guided-tour-theme';
+@use './variables/index.scss' as *;
 
 * {
     margin: 0;

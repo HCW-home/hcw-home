@@ -21,6 +21,7 @@ import {
 } from '../../constants/button.enums';
 import { ViewEncapsulation } from '@angular/core';
 import { InviteFormData } from '../../dtos/invites';
+import { GuidedTourService } from '../../services/guided-tour.service';
 
 @Component({
   selector: 'app-invite-form',
@@ -61,7 +62,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     return this.isEditMode ? 'Update' : 'Send';
   }
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     document.body.classList.add('modal-open');

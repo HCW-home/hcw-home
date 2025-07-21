@@ -11,7 +11,7 @@
 
       @for (item of sidebarItems; track item){
       <a class="sidebar-item" routerLinkActive="active" [routerLink]="item.route" #rla="routerLinkActive"
-        [ngClass]="{ active: rla.isActive }" (click)="closeSidebarOnMobile()">
+        [ngClass]="{ active: rla.isActive }" (click)="closeSidebarOnMobile()" [attr.data-tour-id]="item.tourId">
         <div class="icon">
           <img [src]="'assets/svg/' + item.icon" [alt]="item.label + ' icon'" />
           @if (item.badge) { <app-badge [value]="item.badge"></app-badge> }
@@ -29,14 +29,28 @@
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
       </button>
-      <div class="admin-logo-wrapper" *ngIf="isLoggedIn" [matMenuTriggerFor]="menu">
-        <svg-icon src="assets/svg/icon-doctor.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
-        <div class="admin-name">Hi,<span> {{ currentUser?.firstName || 'Doctor' }}</span></div>
+      <div class="help-wrapper">
+        <button 
+          class="help-button"
+          matTooltip="Take a Tour"
+          aria-label="Start guided tour"
+          (click)="startTour()">
+
+          <span class="help-icon">
+            <svg-icon src="assets/svg/help.svg"></svg-icon>
+          </span>
+
+          <span class="help-text">Help</span>
+        </button>
+        <div class="admin-logo-wrapper" *ngIf="isLoggedIn" [matMenuTriggerFor]="menu">
+          <svg-icon src="assets/svg/icon-doctor.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+          <div class="admin-name">Hi,<span> {{ currentUser?.firstName || 'Doctor' }}</span></div>
+        </div>
       </div>
 
     </div>
     <mat-menu #menu="matMenu">
-      <button mat-menu-item routerLink="/profile" aria-label="Go to profile">Profile
+      <button mat-menu-item routerLink="/profile" aria-label="Go to profile" class="profile-button">Profile
       </button>
       <button mat-menu-item class="logout" (click)="logout()">Logout</button>
     </mat-menu>

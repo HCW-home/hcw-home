@@ -182,6 +182,74 @@
   }
 }
 
+.help-wrapper {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0 12px;
+
+  .help-button {
+    border-radius: 100px;
+    padding: 8px 14px;
+    height: 38px;
+    min-height: 32px;
+    width: 85px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: none;
+    display: inline-flex !important;
+    align-items: center;
+    
+    gap: 6px;
+    cursor: pointer;
+
+    ::ng-deep svg-icon {
+      display: inline-flex;
+      align-items: center;
+      top: 10px;
+      
+      svg {
+        fill: #0066CC;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 16px;
+        margin-top: -1px;
+      }
+    }
+    
+    span {
+      color: #0066CC;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1;
+      padding-top: 1px;
+    }
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+.admin-logo-wrapper {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0 12px;
+
+  .admin-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+  }
+}
+
 @media (max-width: 768px) {
   .sidenav {
     width: 100%;
@@ -207,29 +275,8 @@
   }
 }
 
-
-
-.admin-logo-wrapper {
-  position: relative;
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 0 12px;
-
-  .admin-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-  }
-  
-}
-.logout{
+.logout {
   font-weight: 600;
   font-size: 14px;
   color: red;
-    
 }
-
-

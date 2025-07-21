@@ -192,7 +192,7 @@ export class UserService {
     }
 
     return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: false,
+      excludeExtraneousValues: true,
     });
   }
 
@@ -206,7 +206,7 @@ export class UserService {
     }
 
     return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: false,
+      excludeExtraneousValues: true,
     });
   }
 
@@ -302,10 +302,8 @@ export class UserService {
         }
       }
     });
-
-    return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: false,
-    });
+    // after update return the full user 
+    return await this.findOne(id)
   }
 
   async changePassword(

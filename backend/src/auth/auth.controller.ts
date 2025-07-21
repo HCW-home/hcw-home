@@ -18,7 +18,7 @@ import {
 import * as passport from 'passport';
 import { AuthService } from './auth.service';
 import { PassportLocalGuard } from './guards/passport-local.guard';
-import { LoginResponseDto, LoginUserDto } from './dto/login-user.dto';
+import {  LoginResponseDto, LoginUserDto } from './dto/login-user.dto';
 import { ExtendedRequest } from 'src/types/request';
 import { ApiResponseDto } from 'src/common/helpers/response/api-response.dto';
 import { AuthGuard } from './guards/auth.guard';
@@ -59,8 +59,9 @@ export class AuthController {
   @Post('login-local')   
   async login(
     @Req() req: ExtendedRequest,
-  ): Promise<ApiResponseDto<LoginResponseDto>> {
+  ): Promise<ApiResponseDto<TokenDto>> {
     const user = req.user as any;
+    console.log(user);
     this.logger.log(`user attached to the request: ${user}`)    
     const result = await this.authService.loginUser(user);
     return ApiResponseDto.success(result, 'User logged-in successfully', 200);
@@ -207,8 +208,9 @@ export class AuthController {
     if(!req.user){
       throw HttpExceptionHelper.unauthorized("user not logged id/token experied")
     }
-    const user = req.user;
-    this.logger.log(`user with email: ${user.email} retrieved successfully`);
+
+    const user = await this.authService.getcurrentuser(req.user?.id)
+    // this.logger.log(`user with email: ${user.email} retrieved successfully`);
     return ApiResponseDto.success(user, 'User retrieved successfully', 200);
   }
 

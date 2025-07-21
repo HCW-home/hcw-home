@@ -11,7 +11,6 @@ type RouterEntry = {
 export class MediasoupSessionService implements OnModuleDestroy {
   private readonly logger = new Logger(MediasoupSessionService.name);
   private workers: mediasoup.types.Worker[] = [];
-  // Store router and its workerPid together to avoid unsafe property access
   private routers: Map<number, RouterEntry> = new Map();
   private transports: Map<string, mediasoup.types.Transport> = new Map();
   private producers: Map<string, mediasoup.types.Producer> = new Map();
@@ -23,27 +22,9 @@ export class MediasoupSessionService implements OnModuleDestroy {
   }
 
   private async initializeWorkers() {
-    const numWorkers = 3;
+    const numWorkers = 3; 
     for (let i = 0; i < numWorkers; i++) {
-      try {
-        const worker = await mediasoup.createWorker({
-          logLevel: 'warn',
-          rtcMinPort: 40000,
-          rtcMaxPort: 49999,
-        });
-        worker.on('died', () => {
-          this.logger.error(
-            `Mediasoup worker ${worker.pid} died, restarting...`,
-          );
-          this.removeWorker(worker.pid);
-          this.addWorker();
-        });
-        this.workers.push(worker);
-        this.workerRouterCount.set(worker.pid, 0);
-        this.logger.log(`Mediasoup worker ${worker.pid} created`);
-      } catch (error) {
-        this.logger.error('Failed to create mediasoup worker', error);
-      }
+      await this.addWorker();
     }
   }
 
@@ -90,14 +71,16 @@ export class MediasoupSessionService implements OnModuleDestroy {
         minLoad = load;
       }
     }
+    this.logger.verbose(
+      `Selected least loaded worker ${leastLoadedWorker.pid} with ${minLoad} routers`,
+    );
     return leastLoadedWorker;
   }
 
   async createRouterForConsultation(consultationId: number) {
     const worker = this.getLeastLoadedWorker();
-    if (!worker) {
-      throw new Error('No available mediasoup worker found');
-    }
+    if (!worker) throw new Error('No available mediasoup worker found');
+
     const router = await worker.createRouter({
       mediaCodecs: [
         {
@@ -110,28 +93,31 @@ export class MediasoupSessionService implements OnModuleDestroy {
           kind: 'video',
           mimeType: 'video/VP8',
           clockRate: 90000,
-          parameters: {
-            'x-google-start-bitrate': 1000,
-          },
+          parameters: { 'x-google-start-bitrate': 1000 },
         },
       ],
     });
+
     const server = await this.getAvailableServer();
     if (!server) throw new Error('No available mediasoup server found');
-    const serverId = server.id;
+
     await this.databaseService.mediasoupRouter.create({
       data: {
         consultationId,
         routerId: router.id,
-        serverId: serverId,
+        serverId: server.id,
       },
     });
+
     this.routers.set(consultationId, { router, workerPid: worker.pid });
-    const currentCount = this.workerRouterCount.get(worker.pid) ?? 0;
-    this.workerRouterCount.set(worker.pid, currentCount + 1);
+    this.workerRouterCount.set(
+      worker.pid,
+      (this.workerRouterCount.get(worker.pid) ?? 0) + 1,
+    );
     this.logger.log(
       `Router created for consultation ${consultationId} on worker ${worker.pid}`,
     );
+
     return router;
   }
 
@@ -147,8 +133,10 @@ export class MediasoupSessionService implements OnModuleDestroy {
     try {
       await router.close();
       this.routers.delete(consultationId);
-      const currentCount = this.workerRouterCount.get(workerPid) ?? 1;
-      this.workerRouterCount.set(workerPid, Math.max(0, currentCount - 1));
+      this.workerRouterCount.set(
+        workerPid,
+        Math.max(0, (this.workerRouterCount.get(workerPid) ?? 1) - 1),
+      );
       await this.databaseService.mediasoupRouter.delete({
         where: { consultationId },
       });
@@ -171,22 +159,34 @@ export class MediasoupSessionService implements OnModuleDestroy {
     return this.routers.get(consultationId)?.router;
   }
 
-  // --- Resource Management ---
   async createTransport(consultationId: number, type: 'producer' | 'consumer') {
     const router = this.getRouter(consultationId);
     if (!router) throw new Error('Router not found');
+
+    const announcedIp = process.env.MEDIASOUP_ANNOUNCED_IP;
+    if (!announcedIp) {
+      throw new Error(
+        'MEDIASOUP_ANNOUNCED_IP environment variable not configured',
+      );
+    }
+
     const transport = await router.createWebRtcTransport({
-      listenIps: [
-        { ip: '0.0.0.0', announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP },
-      ],
+      listenIps: [{ ip: '0.0.0.0', announcedIp }],
       enableUdp: true,
       enableTcp: true,
       preferUdp: true,
     });
+
     this.transports.set(transport.id, transport);
+
+    transport.on('@close', () =>
+      this.logger.log(`Transport ${transport.id} closed by mediasoup`),
+    );
+
     this.logger.log(
       `Transport created with id ${transport.id} for consultation ${consultationId}`,
     );
+
     return {
       id: transport.id,
       iceParameters: transport.iceParameters,
@@ -213,8 +213,14 @@ export class MediasoupSessionService implements OnModuleDestroy {
   ) {
     const transport = this.transports.get(transportId);
     if (!transport) throw new Error('Transport not found');
+
     const producer = await transport.produce({ kind, rtpParameters, appData });
     this.producers.set(producer.id, producer);
+
+    producer.on('@close', () =>
+      this.logger.log(`Producer ${producer.id} closed by mediasoup`),
+    );
+
     this.logger.log(
       `Producer created with id ${producer.id} on transport ${transportId}`,
     );
@@ -228,12 +234,18 @@ export class MediasoupSessionService implements OnModuleDestroy {
   ) {
     const transport = this.transports.get(transportId);
     if (!transport) throw new Error('Transport not found');
+
     const consumer = await transport.consume({
       producerId,
       rtpCapabilities,
       paused: false,
     });
     this.consumers.set(consumer.id, consumer);
+
+    consumer.on('@close', () =>
+      this.logger.log(`Consumer ${consumer.id} closed by mediasoup`),
+    );
+
     this.logger.log(
       `Consumer created with id ${consumer.id} on transport ${transportId}`,
     );
@@ -274,7 +286,8 @@ export class MediasoupSessionService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    this.logger.log('Cleaning up mediasoup workers on module destroy');
+    this.logger.log('Cleaning up mediasoup resources on module destroy');
+
     for (const consumer of this.consumers.values()) {
       try {
         await consumer.close();
@@ -286,6 +299,7 @@ export class MediasoupSessionService implements OnModuleDestroy {
       }
     }
     this.consumers.clear();
+
     for (const producer of this.producers.values()) {
       try {
         await producer.close();
@@ -297,6 +311,7 @@ export class MediasoupSessionService implements OnModuleDestroy {
       }
     }
     this.producers.clear();
+
     for (const transport of this.transports.values()) {
       try {
         await transport.close();
@@ -308,6 +323,7 @@ export class MediasoupSessionService implements OnModuleDestroy {
       }
     }
     this.transports.clear();
+
     for (const entry of this.routers.values()) {
       try {
         await entry.router.close();
@@ -316,6 +332,7 @@ export class MediasoupSessionService implements OnModuleDestroy {
       }
     }
     this.routers.clear();
+
     for (const worker of this.workers) {
       try {
         await worker.close();

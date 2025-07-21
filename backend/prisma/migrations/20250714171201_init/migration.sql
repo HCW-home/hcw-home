@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ConsultationStatus" AS ENUM ('SCHEDULED', 'WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED');
+CREATE TYPE "ConsultationStatus" AS ENUM ('SCHEDULED', 'WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'TERMINATED_OPEN');
 
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('PATIENT', 'PRACTITIONER', 'ADMIN');
@@ -15,6 +15,9 @@ CREATE TYPE "OrgMemberRole" AS ENUM ('ADMIN', 'MEMBER');
 
 -- CreateEnum
 CREATE TYPE "MessageService" AS ENUM ('SMS', 'EMAIL', 'WHATSAPP', 'MANUALLY');
+
+-- CreateEnum
+CREATE TYPE "TimeSlotStatus" AS ENUM ('AVAILABLE', 'BOOKED', 'BLOCKED');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -117,6 +120,18 @@ CREATE TABLE "UserSpeciality" (
 );
 
 -- CreateTable
+CREATE TABLE "ConsultationRating" (
+    "id" SERIAL NOT NULL,
+    "consultationId" INTEGER NOT NULL,
+    "patientId" INTEGER NOT NULL,
+    "rating" INTEGER NOT NULL,
+    "comment" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ConsultationRating_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Consultation" (
     "id" SERIAL NOT NULL,
     "scheduledDate" TIMESTAMP(3),
@@ -129,7 +144,9 @@ CREATE TABLE "Consultation" (
     "messageService" "MessageService",
     "whatsappTemplateId" INTEGER,
     "status" "ConsultationStatus" NOT NULL DEFAULT 'SCHEDULED',
+    "deletionScheduledAt" TIMESTAMP(3),
     "version" INTEGER NOT NULL DEFAULT 1,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Consultation_pkey" PRIMARY KEY ("id")
 );
@@ -168,6 +185,7 @@ CREATE TABLE "Participant" (
     "token" VARCHAR(255),
     "joinedAt" TIMESTAMP(3),
     "language" VARCHAR(50),
+    "lastActiveAt" TIMESTAMP(3),
 
     CONSTRAINT "Participant_pkey" PRIMARY KEY ("id")
 );
@@ -224,11 +242,52 @@ CREATE TABLE "terms" (
     "language" TEXT NOT NULL,
     "country" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "isLatest" BOOLEAN NOT NULL DEFAULT true,
+    "version" DOUBLE PRECISION NOT NULL DEFAULT 1.00,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "organizationId" INTEGER NOT NULL,
+
+    CONSTRAINT "terms_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DeletedConsultationLog" (
+    "id" SERIAL NOT NULL,
+    "consultationId" INTEGER NOT NULL,
+    "deletedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reason" TEXT,
+
+    CONSTRAINT "DeletedConsultationLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "practitioner_availability" (
+    "id" SERIAL NOT NULL,
+    "practitionerId" INTEGER NOT NULL,
+    "dayOfWeek" INTEGER NOT NULL,
+    "startTime" TEXT NOT NULL,
+    "endTime" TEXT NOT NULL,
+    "slotDuration" INTEGER NOT NULL DEFAULT 30,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "terms_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "practitioner_availability_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "time_slots" (
+    "id" SERIAL NOT NULL,
+    "practitionerId" INTEGER NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "startTime" TEXT NOT NULL,
+    "endTime" TEXT NOT NULL,
+    "status" "TimeSlotStatus" NOT NULL DEFAULT 'AVAILABLE',
+    "consultationId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "time_slots_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -256,6 +315,12 @@ CREATE UNIQUE INDEX "Speciality_name_key" ON "Speciality"("name");
 CREATE UNIQUE INDEX "UserSpeciality_userId_specialityId_key" ON "UserSpeciality"("userId", "specialityId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ConsultationRating_consultationId_key" ON "ConsultationRating"("consultationId");
+
+-- CreateIndex
+CREATE INDEX "ConsultationRating_patientId_idx" ON "ConsultationRating"("patientId");
+
+-- CreateIndex
 CREATE INDEX "Consultation_status_idx" ON "Consultation"("status");
 
 -- CreateIndex
@@ -278,6 +343,18 @@ CREATE UNIQUE INDEX "Participant_consultationId_userId_key" ON "Participant"("co
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sms_providers_order_key" ON "sms_providers"("order");
+
+-- CreateIndex
+CREATE INDEX "DeletedConsultationLog_consultationId_idx" ON "DeletedConsultationLog"("consultationId");
+
+-- CreateIndex
+CREATE INDEX "practitioner_availability_practitionerId_idx" ON "practitioner_availability"("practitionerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "time_slots_consultationId_key" ON "time_slots"("consultationId");
+
+-- CreateIndex
+CREATE INDEX "time_slots_practitionerId_date_idx" ON "time_slots"("practitionerId", "date");
 
 -- AddForeignKey
 ALTER TABLE "organization_members" ADD CONSTRAINT "organization_members_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -307,6 +384,12 @@ ALTER TABLE "UserSpeciality" ADD CONSTRAINT "UserSpeciality_userId_fkey" FOREIGN
 ALTER TABLE "UserSpeciality" ADD CONSTRAINT "UserSpeciality_specialityId_fkey" FOREIGN KEY ("specialityId") REFERENCES "Speciality"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ConsultationRating" ADD CONSTRAINT "ConsultationRating_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ConsultationRating" ADD CONSTRAINT "ConsultationRating_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Consultation" ADD CONSTRAINT "Consultation_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -329,3 +412,18 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "terms" ADD CONSTRAINT "terms_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DeletedConsultationLog" ADD CONSTRAINT "DeletedConsultationLog_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "practitioner_availability" ADD CONSTRAINT "practitioner_availability_practitionerId_fkey" FOREIGN KEY ("practitionerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "time_slots" ADD CONSTRAINT "time_slots_practitionerId_fkey" FOREIGN KEY ("practitionerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "time_slots" ADD CONSTRAINT "time_slots_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;

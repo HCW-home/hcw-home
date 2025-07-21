@@ -1572,12 +1572,32 @@
   resolved "https://registry.yarnpkg.com/@lmdb/lmdb-win32-x64/-/lmdb-win32-x64-3.2.6.tgz#729f2035ddef1975279b3329532f5c1f86c91918"
   integrity sha512-XlqVtILonQnG+9fH2N3Aytria7P/1fwDgDhl29rde96uH2sLB8CHORIf2PfuLVzFQJ7Uqp8py9AYwr3ZUCFfWg==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 "@mermaid-js/parser@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@mermaid-js/parser/-/parser-0.6.1.tgz#0bdaadb48d220df798915315eae130867b8f6d6a"
   integrity sha512-lCQNpV8R4lgsGcjX5667UiuDLk2micCtjtxR1YKbBXvN5w2v+FeLYoHrTSSrjwXdMcDYvE4ZBPvKT31dfeSmmA==
   dependencies:
     langium "3.3.1"
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+
+>>>>>>> 690b1c7 (none)
+"@mixmark-io/domino@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@mixmark-io/domino/-/domino-2.2.0.tgz#4e8ec69bf1afeb7a14f0628b7e2c0f35bdb336c3"
+  integrity sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw==
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 
 "@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3":
   version "3.0.3"
@@ -2440,6 +2460,14 @@
   resolved "https://registry.npmjs.org/@types/qs/-/qs-6.9.18.tgz"
   integrity sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==
 
+"@types/quill@^2.0.14":
+  version "2.0.14"
+  resolved "https://registry.yarnpkg.com/@types/quill/-/quill-2.0.14.tgz#78309020cccd6d9569bbba5733f4329a4ae76b47"
+  integrity sha512-zvoXCRnc2Dl8g+7/9VSAmRWPN6oH+MVhTPizmCR+GJCITplZ5VRVzMs4+a/nOE3yzNwEZqylJJrMB07bwbM1/g==
+  dependencies:
+    parchment "^1.1.2"
+    quill-delta "^5.1.0"
+
 "@types/range-parser@*":
   version "1.2.7"
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.7.tgz"
@@ -2485,6 +2513,11 @@
   version "2.0.7"
   resolved "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz"
   integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
+
+"@types/turndown@^5.0.5":
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/@types/turndown/-/turndown-5.0.5.tgz#614de24fc9ace4d8c0d9483ba81dc8c1976dd26f"
+  integrity sha512-TL2IgGgc7B5j78rIccBtlYAnkuv8nUQqhQc+DSYV5j9Be9XOcm/SKOVRuA47xAVI3680Tk9B1d8flK2GWT2+4w==
 
 "@types/ws@^8.5.10":
   version "8.18.1"
@@ -3009,6 +3042,13 @@ chardet@^0.7.0:
   resolved "https://registry.npmjs.org/chardet/-/chardet-0.7.0.tgz"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 chevrotain-allstar@~0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/chevrotain-allstar/-/chevrotain-allstar-0.3.1.tgz#b7412755f5d83cc139ab65810cdb00d8db40e6ca"
@@ -3028,6 +3068,14 @@ chevrotain@~11.0.3:
     "@chevrotain/utils" "11.0.3"
     lodash-es "4.17.21"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 chokidar@^3.5.1, chokidar@^3.6.0:
   version "3.6.0"
   resolved "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz"
@@ -3677,11 +3725,26 @@ date-format@^4.0.14:
   resolved "https://registry.npmjs.org/date-format/-/date-format-4.0.14.tgz"
   integrity sha512-39BOQLs9ZjKh0/patS9nrT8wc3ioX3/eA/zgbKNopnF2wCqJEoxywwwElATYvRsXdnOxA/OQeQoFZ3rFjVajhg==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 dayjs@^1.11.13:
   version "1.11.13"
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.13.tgz#92430b0139055c3ebb60150aa13e860a4b5a366c"
   integrity sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 debug@2.6.9:
   version "2.6.9"
   resolved "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"
@@ -3696,6 +3759,13 @@ debug@4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, debug@^4.3.6:
   dependencies:
     ms "^2.1.3"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 debug@^4.4.0:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.1.tgz#e5a8bc6cbc4c6cd3e64308b0693a3d4fa550189b"
@@ -3703,6 +3773,14 @@ debug@^4.4.0:
   dependencies:
     ms "^2.1.3"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 debug@~4.3.1, debug@~4.3.2, debug@~4.3.4:
   version "4.3.7"
   resolved "https://registry.npmjs.org/debug/-/debug-4.3.7.tgz"
@@ -3735,6 +3813,10 @@ define-lazy-prop@^3.0.0:
   resolved "https://registry.npmjs.org/define-lazy-prop/-/define-lazy-prop-3.0.0.tgz"
   integrity sha512-N+MeXYoqr3pOgn8xfyRPREN7gHakLYjhsHhWGT3fWAiL4IkAt0iDw14QiiEm2bE30c5XX5q0FtAA3CK5f9/BUg==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 delaunator@5:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/delaunator/-/delaunator-5.0.1.tgz#39032b08053923e924d6094fe2cde1a99cc51278"
@@ -3747,6 +3829,11 @@ delegate@^3.1.2:
   resolved "https://registry.yarnpkg.com/delegate/-/delegate-3.2.0.tgz#b66b71c3158522e8ab5744f720d8ca0c2af59166"
   integrity sha512-IofjkYBZaZivn0V8nnsMJGBr4jVLxHDheKSW88PyxS5QC4Vo9ZbZVvhzlSxY87fVq3STR6r+4cGepyHkcWOQSw==
 
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 depd@2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz"
@@ -3849,6 +3936,11 @@ eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.npmjs.org/eastasianwidth/-/eastasianwidth-0.2.0.tgz"
   integrity sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==
+
+editor.md@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/editor.md/-/editor.md-1.5.0.tgz#6fe636a88a39b85613f53eee6ecb7b7348ab23bf"
+  integrity sha512-oQBKZdXTkGogGNXV5jomogXZ2v8FNPBDbTC0NOVkicypPGr+NLKeEBfAe/gujCivkDG4Tn5yAGHCr0tsp9o44Q==
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -4158,6 +4250,14 @@ fast-deep-equal@^3.1.3:
   resolved "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz"
   integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
 
+<<<<<<< HEAD
+=======
+fast-diff@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/fast-diff/-/fast-diff-1.3.0.tgz#ece407fa550a64d638536cd727e129c61616e0f0"
+  integrity sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==
+
+>>>>>>> 4690400 (add rich text editor with md output)
 fast-glob@3.3.3, fast-glob@^3.3.2, fast-glob@^3.3.3:
   version "3.3.3"
   resolved "https://registry.npmjs.org/fast-glob/-/fast-glob-3.3.3.tgz"
@@ -4606,9 +4706,24 @@ iconv-lite@0.4.24, iconv-lite@^0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 690b1c7 (none)
 iconv-lite@0.6, iconv-lite@^0.6.2, iconv-lite@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
+=======
+iconv-lite@^0.6.2, iconv-lite@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.6.3.tgz"
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+iconv-lite@0.6, iconv-lite@^0.6.2, iconv-lite@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
   integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
   dependencies:
     safer-buffer ">= 2.1.2 < 3.0.0"
@@ -5205,6 +5320,10 @@ loader-utils@^2.0.0:
     emojis-list "^3.0.0"
     json5 "^2.1.2"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 local-pkg@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/local-pkg/-/local-pkg-1.1.1.tgz#f5fe74a97a3bd3c165788ee08ca9fbe998dc58dd"
@@ -5214,6 +5333,11 @@ local-pkg@^1.0.0:
     pkg-types "^2.0.1"
     quansync "^0.2.8"
 
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 locate-path@^7.1.0:
   version "7.2.0"
   resolved "https://registry.npmjs.org/locate-path/-/locate-path-7.2.0.tgz"
@@ -5221,15 +5345,43 @@ locate-path@^7.1.0:
   dependencies:
     p-locate "^6.0.0"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 lodash-es@4.17.21, lodash-es@^4.17.21:
+=======
+lodash-es@^4.17.21:
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+lodash-es@4.17.21, lodash-es@^4.17.21:
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+lodash-es@4.17.21, lodash-es@^4.17.21:
+>>>>>>> 690b1c7 (none)
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.21.tgz#43e626c46e6591b7750beb2b50117390c609e3ee"
   integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
+
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.npmjs.org/lodash.debounce/-/lodash.debounce-4.0.8.tgz"
   integrity sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==
+
+lodash.isequal@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
+  integrity sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==
 
 lodash@^4.17.21:
   version "4.17.21"
@@ -5317,10 +5469,34 @@ make-fetch-happen@^14.0.0, make-fetch-happen@^14.0.1, make-fetch-happen@^14.0.2,
     promise-retry "^2.0.1"
     ssri "^12.0.0"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 marked@^15.0.7:
   version "15.0.12"
   resolved "https://registry.yarnpkg.com/marked/-/marked-15.0.12.tgz#30722c7346e12d0a2d0207ab9b0c4f0102d86c4e"
   integrity sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==
+
+<<<<<<< HEAD
+material-colors@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/material-colors/-/material-colors-1.2.6.tgz#6d1958871126992ceecc72f4bcc4d8f010865f46"
+  integrity sha512-6qE4B9deFBIa9YSpOc9O0Sgc43zTeVYbgDT5veRKSlB2+ZuHNoVVxA1L/ckMUayV9Ay9y7Z/SZCLcGteW9i7bg==
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 690b1c7 (none)
+marked@^16.0.0:
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-16.0.0.tgz#0c48e79782f26224f8ce34878644d8c320ad599f"
+  integrity sha512-MUKMXDjsD/eptB7GPzxo4xcnLS6oo7/RHimUMHEDRhUooPwmN9BEpMl7AEOJv3bmso169wHI2wUF9VQgL7zfmA==
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 
 material-colors@^1.2.6:
   version "1.2.6"
@@ -5677,6 +5853,13 @@ ngx-editor@^19.0.0-beta.1:
     prosemirror-view "^1.39.1"
     tslib "^2.3.0"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 ngx-markdown@^20.0.0:
   version "20.0.0"
   resolved "https://registry.yarnpkg.com/ngx-markdown/-/ngx-markdown-20.0.0.tgz#dbd7bda18b3e23e4cabeb71e9c419a1019509958"
@@ -5689,6 +5872,21 @@ ngx-markdown@^20.0.0:
     katex "^0.16.0"
     mermaid ">= 10.6.0 < 12.0.0"
     prismjs "^1.30.0"
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+
+>>>>>>> 690b1c7 (none)
+ngx-quill@^28.0.1:
+  version "28.0.1"
+  resolved "https://registry.yarnpkg.com/ngx-quill/-/ngx-quill-28.0.1.tgz#3cd20f07d5192451fbcad5c7dfb4b203d249206d"
+  integrity sha512-fbhPzAPkSSgTutkpXW46kVfP++m1yEAZUJ/kqLZ9DjkF50Ati8n7PJZw/pnxssQP4BRWAtoTypaHFzCkHNrzQw==
+  dependencies:
+    tslib "^2.3.0"
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 
 node-addon-api@^6.1.0:
   version "6.1.0"
@@ -5972,6 +6170,16 @@ pacote@20.0.0:
     sigstore "^3.0.0"
     ssri "^12.0.0"
     tar "^6.1.11"
+
+parchment@^1.1.2:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/parchment/-/parchment-1.1.4.tgz#aeded7ab938fe921d4c34bc339ce1168bc2ffde5"
+  integrity sha512-J5FBQt/pM2inLzg4hEWmzQx/8h8D0CiDxaG3vyp9rKrQRSDgBlhjdP5jQGgosEajXPSQouXGHOmVdgo7QmJuOg==
+
+parchment@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/parchment/-/parchment-3.0.0.tgz#2e3a4ada454e1206ae76ea7afcb50e9fb517e7d6"
+  integrity sha512-HUrJFQ/StvgmXRcQ1ftY6VEZUq3jA2t9ncFN4F84J/vN0/FPpQF+8FKXb3l6fLces6q0uOHj6NJn+2xvZnxO6A==
 
 parent-module@^1.0.0:
   version "1.0.1"
@@ -6348,6 +6556,25 @@ queue-microtask@^1.2.2:
   resolved "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
+quill-delta@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/quill-delta/-/quill-delta-5.1.0.tgz#1c4bc08f7c8e5cc4bdc88a15a1a70c1cc72d2b48"
+  integrity sha512-X74oCeRI4/p0ucjb5Ma8adTXd9Scumz367kkMK5V/IatcX6A0vlgLgKbzXWy5nZmCGeNJm2oQX0d2Eqj+ZIlCA==
+  dependencies:
+    fast-diff "^1.3.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.isequal "^4.5.0"
+
+quill@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/quill/-/quill-2.0.3.tgz#752765a31d5a535cdc5717dc49d4e50099365eb1"
+  integrity sha512-xEYQBqfYx/sfb33VJiKnSJp8ehloavImQ2A6564GAbqG55PGw1dAWUn1MUbQB62t0azawUS2CZZhWCjO8gRvTw==
+  dependencies:
+    eventemitter3 "^5.0.1"
+    lodash-es "^4.17.21"
+    parchment "^3.0.0"
+    quill-delta "^5.1.0"
+
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz"
@@ -6545,11 +6772,26 @@ rimraf@^3.0.2:
   dependencies:
     glob "^7.1.3"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 robust-predicates@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/robust-predicates/-/robust-predicates-3.0.2.tgz#d5b28528c4824d20fc48df1928d41d9efa1ad771"
   integrity sha512-IXgzBWvWQwE6PrDI05OvmXUIruQTcoMDzRsOd5CDvHCVLcLHMTSYvOK5Cm46kWqlV3yAbuSpBZdJ5oP5OUoStg==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 rollup@4.34.8, rollup@^4.30.1:
   version "4.34.8"
   resolved "https://registry.npmjs.org/rollup/-/rollup-4.34.8.tgz"
@@ -6605,11 +6847,20 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 rw@1:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/rw/-/rw-1.3.3.tgz#3f862dfa91ab766b14885ef4d01124bfda074fb4"
   integrity sha512-PdhdWy89SiZogBLaw42zdeqtRJ//zFd2PgQavcICDUgJT5oW10QCRKbJ6bg4r0/UY2M6BWd5tkxuGFRvCkgfHQ==
 
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
 rxjs@7.8.1:
   version "7.8.1"
   resolved "https://registry.npmjs.org/rxjs/-/rxjs-7.8.1.tgz"
@@ -7121,6 +7372,14 @@ strip-ansi@^7.0.1, strip-ansi@^7.1.0:
   integrity sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==
   dependencies:
     ansi-regex "^6.0.1"
+<<<<<<< HEAD
+
+stylis@^4.3.6:
+  version "4.3.6"
+  resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.3.6.tgz#7c7b97191cb4f195f03ecab7d52f7902ed378320"
+  integrity sha512-yQ3rwFWRfwNUY7H5vpU0wfdkNSnvnJinhF9830Swlaxl03zsOjCfmX0ugac+3LtK0lYSgwL/KXc8oYL3mG4YFQ==
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
 
 stylis@^4.3.6:
   version "4.3.6"
@@ -7263,11 +7522,26 @@ tree-kill@1.2.2:
   resolved "https://registry.npmjs.org/tree-kill/-/tree-kill-1.2.2.tgz"
   integrity sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 ts-dedent@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ts-dedent/-/ts-dedent-2.2.0.tgz#39e4bd297cd036292ae2394eb3412be63f563bb5"
   integrity sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ==
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4690400 (add rich text editor with md output)
+=======
+>>>>>>> 506ddd8 (add practitioner login page  and access denied page)
+=======
+>>>>>>> 690b1c7 (none)
 tslib@2.8.1, tslib@^2.0.0, tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1:
   version "2.8.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
@@ -7281,6 +7555,13 @@ tuf-js@^3.0.1:
     "@tufjs/models" "3.0.1"
     debug "^4.3.6"
     make-fetch-happen "^14.0.1"
+
+turndown@^7.2.0:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/turndown/-/turndown-7.2.0.tgz#67d614fe8371fb511079a93345abfd156c0ffcf4"
+  integrity sha512-eCZGBN4nNNqM9Owkv9HAtWRYfLA4h909E/WGAWWBpmB275ehNhZyk87/Tpvjbp0jjNl9XwCsbe6bm6CqFsgD+A==
+  dependencies:
+    "@mixmark-io/domino" "^2.2.0"
 
 type-fest@^0.21.3:
   version "0.21.3"

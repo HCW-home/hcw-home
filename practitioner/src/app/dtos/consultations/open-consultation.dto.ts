@@ -1,4 +1,3 @@
-import { Cons } from "rxjs";
 import { ConsultationStatus } from "../../constants/consultation-status.enum";
 import { UserSex } from "../../constants/user-sex.enum";
 
@@ -38,6 +37,8 @@ export interface ApiResponse<T> {
   statusCode: number;
   message: string;
   timestamp: string;
+  requestId: string;
+  path: string;
   data: T;
 }
 

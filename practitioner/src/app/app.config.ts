@@ -6,6 +6,8 @@ import { provideAngularSvgIcon } from 'angular-svg-icon';
 import { authInterceptor } from './auth/auth.interceptor';
 import { GuidedTourService} from 'ngx-guided-tour';
 import { WindowRefService } from 'ngx-guided-tour';
+import { provideMarkdown } from 'ngx-markdown';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -14,5 +16,6 @@ export const appConfig: ApplicationConfig = {
     provideAngularSvgIcon(),
     GuidedTourService,
     WindowRefService,
+    provideMarkdown(),
   ],
 };

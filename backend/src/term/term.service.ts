@@ -3,12 +3,16 @@ import { DatabaseService } from 'src/database/database.service';
 import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
 import { Prisma, Terms } from '@prisma/client';
 import { CreatetermDto,QueryTermsDto, UpdateTermDto } from 'src/term/dto/terms.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class TermService {
   private readonly logger = new Logger(TermService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly userService:UserService
+  ) {}
 
   private bumpVersion(current: number, increment = 0.01): number {
     return parseFloat((current + increment).toFixed(2));
@@ -167,10 +171,16 @@ export class TermService {
   }
   
 
-  async getLatest( query: QueryTermsDto): Promise<Terms> {
+  async getLatest( userId:number): Promise<Terms> {
     this.logger.log('latest term called')
-
-    const { language, country,organizationId } = query;
+      
+    // Step 1: Get user
+    const user = await this.userService.findOne(userId);
+    console.log(user);
+    if (!user) throw HttpExceptionHelper.notFound('User not found');
+    const organizationId = user.organizations?.[0]?.id;
+    const country = user.country || 'US';
+    const language = user.languages?.[0]?.name || 'English';
 
     const term = await this.databaseService.terms.findFirst({
       where: {
@@ -186,11 +196,44 @@ export class TermService {
         `No latest terms found for ${language}-${country} in org ${organizationId}`,
       );
     }
-
     return term;
   }
 
 
-
-
+  async acceptTerms(dto: {userId:number, termId:number}): Promise<string> {
+    const { userId, termId } = dto;
+  
+    // Step 1: Get user
+    const user = await this.userService.findOne(userId);
+    console.log(user);
+    if (!user) throw HttpExceptionHelper.notFound('User not found');
+  
+    const organizationId = user.organizations?.[0]?.id;
+    if (!organizationId) {
+      throw HttpExceptionHelper.badRequest('Update your profile to include an organization before accepting terms.');
+    }
+    // Step 2: Find matching Terms
+    const term = await this.databaseService.terms.findFirst({
+      where: {
+        id:Number(termId)
+      },
+    });
+  
+    if (!term) throw HttpExceptionHelper.notFound('Terms not found for user context');
+  
+    if (term.organizationId !== organizationId) {
+      throw HttpExceptionHelper.badRequest('You cannot accept terms for a different organization.');
+    }
+    // Step 3: Compare and update user if needed
+    const currentVersion = user.termVersion || 0;
+  
+    if (currentVersion >= term.version) return 'No update needed';
+  
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: { termVersion:term.version, acceptedAt:new Date() },
+    });
+  
+    return 'Terms version updated';
+  }
 }

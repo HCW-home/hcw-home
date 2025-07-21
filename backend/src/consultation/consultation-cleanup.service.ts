@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { ConsultationStatus } from '@prisma/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from 'src/config/config.service';
+import { MediasoupSessionService } from 'src/mediasoup/mediasoup-session.service';
 
 @Injectable()
 export class ConsultationCleanupService {
+  private readonly logger = new Logger(ConsultationCleanupService.name);
+
   constructor(
     private readonly db: DatabaseService,
     private readonly configService: ConfigService,
+    private readonly mediasoupSessionService: MediasoupSessionService,
   ) {}
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -16,12 +20,11 @@ export class ConsultationCleanupService {
     const retentionHours = this.configService.consultationRetentionHours;
     const bufferHours = this.configService.consultationDeletionBufferHours;
 
-    // Calculate cutoff time (retention + buffer)
     const cutoffDate = new Date();
     cutoffDate.setHours(cutoffDate.getHours() - (retentionHours + bufferHours));
 
     try {
-      // Find consultations scheduled for deletion
+      // Find expired, not-yet-deleted consultations
       const consultationsToDelete = await this.db.consultation.findMany({
         where: {
           status: {
@@ -37,27 +40,36 @@ export class ConsultationCleanupService {
         },
       });
 
-      // Early return if nothing to delete
       if (consultationsToDelete.length === 0) {
-        console.log('No expired consultations found for cleanup.');
+        this.logger.log('No expired consultations found for cleanup.');
         return;
       }
 
       const consultationIds = consultationsToDelete.map((c) => c.id);
 
-      // Perform soft-delete
+      // --- Mediasoup router/session cleanup! (most important addition) ---
+      for (const consultId of consultationIds) {
+        try {
+          await this.mediasoupSessionService.cleanupRouterForConsultation(
+            consultId,
+          );
+          this.logger.log(
+            `Mediasoup router cleaned for expired consultation ${consultId}`,
+          );
+        } catch (err) {
+          this.logger.error(
+            `Failed Mediasoup router cleanup for consultation ${consultId}: ${err?.message || err}`,
+          );
+        }
+      }
+
+      // --- Perform soft-delete ---
       const updateResult = await this.db.consultation.updateMany({
-        where: {
-          id: {
-            in: consultationIds,
-          },
-        },
-        data: {
-          isDeleted: true,
-        },
+        where: { id: { in: consultationIds } },
+        data: { isDeleted: true },
       });
 
-      // Audit log the deletions
+      // --- Audit log the deletions ---
       await this.db.deletedConsultationLog.createMany({
         data: consultationsToDelete.map((c) => ({
           consultationId: c.id,
@@ -66,9 +78,11 @@ export class ConsultationCleanupService {
         })),
       });
 
-      console.log(`Soft-deleted ${updateResult.count} expired consultations`);
+      this.logger.log(
+        `Soft-deleted ${updateResult.count} expired consultations`,
+      );
     } catch (error) {
-      console.error('Failed to soft-delete expired consultations:', error);
+      this.logger.error('Failed to soft-delete expired consultations:', error);
     }
   }
 }

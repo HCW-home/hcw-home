@@ -53,10 +53,16 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Country</mat-label>
-        <input matInput formControlName="country" />
-      </mat-form-field>
+
+             <!-- Country -->
+             <mat-form-field appearance="fill">
+              <mat-label>Country</mat-label>
+              <mat-select formControlName="country">
+                @for (country of countries; track country.code) {
+                  <mat-option [value]="country.code">{{ country.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Sex</mat-label>

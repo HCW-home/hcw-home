@@ -22,6 +22,9 @@ import { SnackbarService } from '../services/snackbar/snackbar.service';
 import { AccessDeniedComponent } from '../components/access-denied/access-denied.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { ButtonComponent } from '../components/ui/button/button.component';
+import { TermService } from '../services/term.service';
+
+
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: NgForm | FormGroupDirective | null): boolean {
@@ -49,6 +52,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     AngularSvgIconModule,
     ButtonComponent
 
+
   ],
 })
 
@@ -57,6 +61,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   private snackBarService=inject(SnackbarService)
+  private termService= inject(TermService)
   errorMessage:string = '';
 
 
@@ -84,16 +89,16 @@ export class LoginComponent implements OnInit {
     const accessToken = queryParams['aT'];
     const refreshToken = queryParams['rT'];
     this.returnUrl = queryParams['returnUrl'] || '/dashboard';
-    const error = queryParams['error'];
-    console.log(accessToken,refreshToken);
-    
-  
+    const error = queryParams['error'];  
     if (accessToken && refreshToken) {
       this.authService.login(accessToken,refreshToken).subscribe({
         next: (user) => {
           if (user) {
             this.snackBarService.showSuccess('Logged In Successfull')
-            this.router.navigateByUrl(this.returnUrl);
+            this.termService.getLatestTermAndStore()
+            this.router.navigateByUrl(this.returnUrl).then(()=>{
+              this.termService.getLatestTermAndStore().subscribe();
+            });
           }
         },
         error: (err) => {
@@ -116,12 +121,7 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.loading.set(true);
       this.error = null;
-  
-      const { email, password } = this.loginForm.value!;
-      console.log('Logging in with:', email, password);
-      console.log(this.loginForm.value);
-      
-  
+      const { email, password } = this.loginForm.value!;  
       this.authService.loginLocal(email!, password!).subscribe({
         next: (res) => {
           this.loading.set(false);

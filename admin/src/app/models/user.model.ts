@@ -62,10 +62,26 @@ export interface User {
   status: UserStatus;
   createdAt: string | Date;
   updatedAt: string | Date;
-  OrganizationMember: { organization: { id: number } }[];
-  GroupMember: { group: { id: number } }[];
-  languages: { language: { id: number } }[];
-  specialities: { speciality: { id: number } }[];
+
+  organizations: {
+    id: number;
+    name: string;
+  }[];
+
+  groups: {
+    id: number;
+    name: string;
+  }[];
+
+  languages: {
+    id: number;
+    name: string;
+  }[];
+
+  specialities: {  
+    id: number;
+    name: string;
+  }[];
 }
 
 
@@ -84,6 +100,20 @@ export interface LoginUser {
   updatedAt: string | Date;
   accessToken :string;
   refreshToken:string
+  organizations: {
+    id: number;
+    name: string;
+  }[];
+
+  groups: {
+    id: number;
+    name: string;
+  }[];
+
+  languages: {
+    id: number;
+    name: string;
+  }[];
 }
 
 

@@ -1,4 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import {
+  IsString,
+  IsOptional,
+  IsUrl,
+  IsHexColor,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class CreateOrganizationDto {
   @ApiProperty({
@@ -7,6 +16,8 @@ export class CreateOrganizationDto {
     minLength: 2,
     maxLength: 100,
   })
+  @IsString()
+  @Length(2, 100)
   name: string;
 
   @ApiProperty({
@@ -14,6 +25,9 @@ export class CreateOrganizationDto {
     example: 'https://example.com/logo.png',
     required: false,
   })
+  @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  @IsUrl()
   logo?: string;
 
   @ApiProperty({
@@ -22,6 +36,7 @@ export class CreateOrganizationDto {
     pattern: '^#[0-9A-Fa-f]{6}$',
     required: false,
   })
+  @IsOptional()
   primaryColor?: string;
 
   @ApiProperty({
@@ -29,5 +44,7 @@ export class CreateOrganizationDto {
     example: '## Contact Us\n\nEmail: info@healthcareplus.com',
     required: false,
   })
+  @IsOptional()
+  @IsString()
   footerMarkdown?: string;
 }

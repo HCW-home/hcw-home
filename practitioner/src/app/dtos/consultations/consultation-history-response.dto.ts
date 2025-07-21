@@ -3,7 +3,7 @@ import { UserResponseDto } from '../users/user-response.dto';
 import { ParticipantResponseDto } from './participant-response.dto';
 
 export interface ConsultationHistoryResponseDto {
-  ownerId: number | null | undefined;
+  owner: number | null | undefined;
   id: number;
   scheduledDate?: string | null;
   createdAt?: string | null;

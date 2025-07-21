@@ -6,12 +6,13 @@ import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { Role } from './enums/role.enum';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { UserRole, UserStatus } from '@prisma/client';
+import { User, UserRole, UserStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto, TokenDto } from './dto/token.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { plainToInstance } from 'class-transformer';
 import { OidcUserDto } from './dto/oidc-user.dto';
+import { promises } from 'dns';
 
 
 function generateStrongPassword(length = 12): string {
@@ -49,7 +50,8 @@ export class AuthService {
   async validateUser(
     loginUserDto: LoginUserDto,
   ): Promise<{ userId: number; userEmail: string, userRole: string }> {
-    const user = await this.findByEmail(loginUserDto.email);       
+    const user = await this.findByEmail(loginUserDto.email);
+    const userRole= user.role
     if (!user || user.temporaryAccount) {
       this.logger.warn(`No valid user found for email ${loginUserDto.email}`);
       throw HttpExceptionHelper.notFound('user not found/user not valid');
@@ -58,14 +60,25 @@ export class AuthService {
       this.logger.warn(`LocalStrategy: User ${user.id} is not approved`);
       throw HttpExceptionHelper.badRequest('user is not approved');
     }
+    if (!user.password.startsWith('$2b$')) {
+      const hashed = await this.encryptPassword(user.password);
+      await this.databaseService.user.update({
+        where: { id: user.id },
+        data: { password: hashed },
+      });
+      user.password = hashed;
+    }
     const passwordMatch = await bcrypt.compare(
       loginUserDto.password,
       user.password,
     );
-
     if (!passwordMatch) {
       this.logger.warn(`LocalStrategy: Incorrect password for user ${user.id}`);
       throw HttpExceptionHelper.unauthorized('Incorrect Password');
+    }
+    if (!this.isRoleAuthorized(userRole, loginUserDto.role)) {
+      this.logger.warn(`Role mismatch: User has ${userRole}, tried to access ${loginUserDto.role}`);
+      throw HttpExceptionHelper.unauthorized(`Can't login as ${userRole.toLowerCase()}`);
     }
     this.logger.log(`validateUser: ${user.email} validate successfully`)
     return {
@@ -75,11 +88,11 @@ export class AuthService {
     };
   }
 
-  async loginUser(userDto: { id: string, email: string }): Promise<LoginResponseDto> {
+  async loginUser(userDto: { id: string, email: string }): Promise<TokenDto> {
     const userEntity = await this.findByEmail(userDto.email)
     const user = new UserResponseDto(userEntity);
     const tokens = await this.generateToken(user);
-    return { user, tokens };
+    return tokens;
   }
 
   async generateToken(user: UserResponseDto): Promise<TokenDto> {
@@ -198,11 +211,7 @@ export class AuthService {
       throw HttpExceptionHelper.conflict('Email is already in use');
     }
     // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(
-      registerDto.password,
-      saltRounds,
-    );
+    const hashedPassword = await this.encryptPassword(registerDto.password)
 
     // Create new user
     const createUserData = {
@@ -232,7 +241,7 @@ export class AuthService {
 
     if (!user) {
       this.logger.log(`user not found with email:${email}`);
-      return 
+      return
     }
     this.logger.log(`user found with email:${email}`);
     return user;
@@ -247,7 +256,7 @@ export class AuthService {
     });
     if (!user) {
       this.logger.log(`user not found with email:${email} and role:${role}`);
-      return 
+      return
     }
     this.logger.log(`user found with email:${email}`);
     return plainToInstance(UserResponseDto, user, {
@@ -316,7 +325,7 @@ export class AuthService {
       if (patientUser) {
         this.logger.warn(`User with email ${user.email} already exists as PATIENT`);
         throw HttpExceptionHelper.unauthorized(`Cannot register as PRACTITIONER. Email already exists as PATIENT.`);
-      }  
+      }
     }
     if (!existingUser) {
       this.logger.log(`Creating new practitioner user with email: ${user.email}`);
@@ -338,7 +347,7 @@ export class AuthService {
       });
     }
 
-    
+
     const { accessToken, refreshToken } = await this.generateToken(existingUser);
     const userDto = new UserResponseDto(existingUser);
     this.logger.log(`Successfully logged in as Practitioner with ${existingUser.email}`);
@@ -364,4 +373,45 @@ export class AuthService {
         return null
     }
   }
+
+
+
+  async getcurrentuser(id: number): Promise<UserResponseDto> {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+      include: {
+        OrganizationMember: { include: { organization: true } },
+        GroupMember: { include: { group: true } },
+        languages: { include: { language: true } },
+        specialities: { include: { speciality: true } },
+      },
+    });
+
+    if (!user) {
+      throw HttpExceptionHelper.notFound('User not found');
+    }
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+
+
+  encryptPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    return bcrypt.hash(password, saltRounds);
+  }
+  isRoleAuthorized(userRole: string, uiRole: string): boolean {
+    if (!userRole || !uiRole) return false;
+
+    const normalizedUserRole = userRole.toUpperCase() as Role;
+    const normalizedUiRole = uiRole.toUpperCase() as Role;
+
+    if (normalizedUserRole === Role.ADMIN.toUpperCase()) return true;
+    if (normalizedUserRole === Role.PRACTITIONER.toUpperCase()) return normalizedUiRole === Role.PRACTITIONER;
+    if (normalizedUserRole === Role.PATIENT.toUpperCase()) return normalizedUiRole === Role.PATIENT;
+    return false;
+  }
+
+
 }

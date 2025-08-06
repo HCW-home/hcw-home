@@ -13,8 +13,9 @@ import { AuthService } from '../../../auth/auth.service';
 import { LoginUser } from '../../../models/user.model';
 import { MatMenuModule } from '@angular/material/menu';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-import { GuidedTourModule } from 'ngx-guided-tour';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 import { GuidedTourService } from '../../../services/guided-tour.service';
+import { TourType } from '../../../models/tour';
 
 @Component({
   selector: 'app-sidebar',
@@ -33,10 +34,12 @@ import { GuidedTourService } from '../../../services/guided-tour.service';
     BadgeComponent,
     AngularSvgIconModule,
     MatMenuModule,
-    GuidedTourModule,
+    TourMatMenuModule,
   ],
 })
 export class SidebarComponent {
+  readonly TourType = TourType;
+  
   isLoggedIn = input<boolean>(true);
   pendingConsultations = input<number | undefined>(0);
   activeConsultations = input<number | undefined>(0);
@@ -58,29 +61,29 @@ export class SidebarComponent {
     this.currentUser=this.authService.getCurrentUser()
 
     this.sidebarItems = [
-      { icon: 'icon-dashboard.svg', label: 'Dashboard', route: '/dashboard', tourId: 'dashboard'},
+      { icon: 'icon-dashboard.svg', label: 'Dashboard', route: '/dashboard', tourId: TourType.DASHBOARD},
       {
         icon: 'icon-queue.svg',
         label: 'Waiting Room',
         route: '/waiting-room',
         badge: this.pendingConsultations(),
-        tourId: 'waiting-room'
+        tourId: TourType.WAITING_ROOM_MENU
       },
       {
         icon: 'icon-open.svg',
         label: 'Opened Consultations',
         route: '/open-consultations',
         badge: this.activeConsultations(),
-        tourId: 'open-consultations'
+        tourId: TourType.OPENED_CONSULTATIONS_MENU
       },
       {
         icon: 'icon-history.svg',
         label: 'Consultation history',
         route: '/closed-consultations',
-        tourId: 'closed-consultations'
+        tourId: TourType.CONSULTATION_HISTORY_MENU
       },
-      { icon: 'icon-invite.svg', label: 'Invites', route: '/invites', tourId: 'invites' },
-      { icon: 'icon-calendar.svg', label: 'Availability', route: '/availability', tourId: 'availability' },
+      { icon: 'icon-invite.svg', label: 'Invites', route: '/invites', tourId: TourType.INVITES_MENU },
+      { icon: 'icon-calendar.svg', label: 'Availability', route: '/availability', tourId: TourType.AVAILABILITY },
     ];
   }
 
@@ -110,7 +113,7 @@ export class SidebarComponent {
     const currentUrl = this.router.url;
     switch (currentUrl) {
       case '/dashboard':
-        return this.guidedTourService.getDashboardTour();
+        return this.guidedTourService.getPractitionerTour();
       case '/waiting-room':
         
       case '/profile':
@@ -119,7 +122,7 @@ export class SidebarComponent {
         
       case '/open-consultations':
       case '/consultation-detail':
-        return this.guidedTourService.getConsultationDetailTour();
+        return this.guidedTourService.getConsultationHistoryTour();
       default:
         return null;
     }
@@ -129,43 +132,10 @@ export class SidebarComponent {
     if (!this.isMobile) {
       this.isSidebarVisible = true;
     }
-    const sidebarTour = this.guidedTourService.getPractitionerTour();
-    const componentTour = this.getCurrentTour();
-
-    sidebarTour.completeCallback = () => {
-      if (componentTour) {
-        setTimeout(() => {
-          componentTour.skipCallback = () => {
-            if (this.isMobile) {
-              this.isSidebarVisible = false;
-            }
-          };
-          
-          componentTour.completeCallback = () => {
-            if (this.isMobile) {
-              this.isSidebarVisible = false;
-            }
-          };
-
-          this.guidedTourService.startTour(componentTour);
-        }, 500);
-      };
-    }
-
-    sidebarTour.steps[0].action = () => {
-      if (this.isMobile) {
-        this.isSidebarVisible = false;
-      }
-    };
-
-    sidebarTour.skipCallback = () => {
-      if (this.isMobile) {
-        this.isSidebarVisible = false;
-      }
-    };
-    setTimeout(() => {
+    
+      
+      const sidebarTour = this.guidedTourService.getPractitionerTour();
       this.guidedTourService.startTour(sidebarTour);
-    }, 100);
   }
 
   logout(){

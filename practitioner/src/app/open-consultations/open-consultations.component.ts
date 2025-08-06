@@ -11,7 +11,9 @@ import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { OpenConsultationCardComponent } from '../components/open-consultation-card/open-consultation-card.component';
 import { OpenConsultationPanelComponent } from '../components/open-consultation-panel/open-consultation-panel.component';
 import { OverlayComponent } from '../components/overlay/overlay.component';
-import { GuidedTourService } from 'ngx-guided-tour';
+import { GuidedTourService } from '../services/guided-tour.service';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
+import { TourType } from '../models/tour';
 
 @Component({
   selector: 'app-open-consultations',
@@ -22,6 +24,7 @@ import { GuidedTourService } from 'ngx-guided-tour';
     OpenConsultationCardComponent,
     OpenConsultationPanelComponent,
     OverlayComponent,
+    TourMatMenuModule,
   ],
   templateUrl: './open-consultations.component.html',
   styleUrls: ['./open-consultations.component.scss'],
@@ -37,6 +40,7 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
 
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
+  readonly TourType = TourType;
 
   private destroy$ = new Subject<void>();
 

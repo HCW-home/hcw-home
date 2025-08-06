@@ -3,7 +3,7 @@
     [opened]="isMobile ? isSidebarOpen : isSidebarVisible" [disableClose]="!isMobile"
     (closedStart)="isSidebarOpen = false">
     <div class="sidebar">
-      <div class="sidebar-item home">
+      <div class="sidebar-item home" tourAnchor="{{TourType.HOME}}">
         <a routerLink="/" (click)="closeSidebarOnMobile()">
           <img src="assets/svg/HCW-Home.svg" alt="HCW@Home" width="75" height="50" class="img img-fluid" />
         </a>
@@ -11,7 +11,7 @@
 
       @for (item of sidebarItems; track item){
       <a class="sidebar-item" routerLinkActive="active" [routerLink]="item.route" #rla="routerLinkActive"
-        [ngClass]="{ active: rla.isActive }" (click)="closeSidebarOnMobile()" [attr.data-tour-id]="item.tourId">
+        [ngClass]="{ active: rla.isActive }" (click)="closeSidebarOnMobile()" [tourAnchor]="item.tourId || ''">
         <div class="icon">
           <img [src]="'assets/svg/' + item.icon" [alt]="item.label + ' icon'" />
           @if (item.badge) { <app-badge [value]="item.badge"></app-badge> }
@@ -32,6 +32,7 @@
       <div class="help-wrapper">
         <button 
           class="help-button"
+          tourAnchor="{{TourType.HELP_BUTTON}}"
           matTooltip="Take a Tour"
           aria-label="Start guided tour"
           (click)="startTour()">
@@ -42,7 +43,7 @@
 
           <span class="help-text">Help</span>
         </button>
-        <div class="admin-logo-wrapper" *ngIf="isLoggedIn" [matMenuTriggerFor]="menu">
+        <div class="admin-logo-wrapper" tourAnchor="{{TourType.HEADER_PROFILE_MENU}}" *ngIf="isLoggedIn" [matMenuTriggerFor]="menu">
           <svg-icon src="assets/svg/icon-doctor.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
           <div class="admin-name">Hi,<span> {{ currentUser?.firstName || 'Doctor' }}</span></div>
         </div>

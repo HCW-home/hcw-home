@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AngularSvgIconModule, SvgIconRegistryService } from 'angular-svg-icon';
 import { AuthService } from './auth/auth.service';
 import { MatProgressSpinner, MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GuidedTourModule } from 'ngx-guided-tour';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +17,7 @@ import { GuidedTourModule } from 'ngx-guided-tour';
     AngularSvgIconModule,
     MatProgressSpinnerModule,
     CommonModule,
-    GuidedTourModule,
+    TourMatMenuModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

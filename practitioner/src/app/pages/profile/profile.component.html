@@ -15,7 +15,7 @@
   <div class="profile-content">
     <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="profile-form" novalidate>
 
-      <mat-card class="profile-card">
+      <mat-card class="profile-card"  tourAnchor="{{TourType.PROFILE_PERSONAL_INFO}}">
         <mat-card-header>
           <mat-card-title>Personal Information</mat-card-title>
           <mat-card-subtitle>Update your basic details</mat-card-subtitle>
@@ -104,7 +104,7 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="profile-card">
+      <mat-card class="profile-card" tourAnchor="{{TourType.PROFILE_PROFESSIONAL_INFO}}">
         <mat-card-header>
           <mat-card-title>Professional Information</mat-card-title>
           <mat-card-subtitle>Configure your languages and specialities</mat-card-subtitle>

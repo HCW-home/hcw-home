@@ -6,6 +6,7 @@ import { RoutePaths } from '../constants/route-paths.enum';
 import { ConsultationService } from '../services/consultations/consultation.service';
 import { GuidedTourService } from '../services/guided-tour.service';
 import { ConsultationWithPatient } from '../dtos';
+import { TourType } from '../models/tour';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,6 +17,7 @@ import { ConsultationWithPatient } from '../dtos';
 })
 export class DashboardComponent implements OnInit {
   readonly RoutePaths = RoutePaths;
+  readonly TourType = TourType;
 
   waitingConsultations = signal<ConsultationWithPatient[]>([]);
   openConsultations = signal<ConsultationWithPatient[]>([]);

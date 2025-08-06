@@ -22,11 +22,13 @@ import {
 import { ViewEncapsulation } from '@angular/core';
 import { InviteFormData } from '../../dtos/invites';
 import { GuidedTourService } from '../../services/guided-tour.service';
+import { TourType } from '../../models/tour';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 
 @Component({
   selector: 'app-invite-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TourMatMenuModule],
   templateUrl: './invite-form.component.html',
   styleUrls: ['./invite-form.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -40,6 +42,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
   readonly ButtonType = ButtonType;
+  readonly TourType = TourType;
 
   form!: FormGroup;
   genders = ['Male', 'Female', 'Other'];

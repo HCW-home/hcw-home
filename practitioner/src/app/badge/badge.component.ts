@@ -2,6 +2,7 @@ import { Component, input, Input } from '@angular/core';
 
 @Component({
   selector: 'app-badge',
+  standalone: true,
   templateUrl: './badge.component.html',
   styleUrls: ['./badge.component.scss'],
 })

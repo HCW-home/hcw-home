@@ -9,12 +9,12 @@
       <mat-tab-group [(selectedIndex)]="selectedTabIndex">
         <mat-tab label="Weekly Availability">
           <div class="tab-content">
-            <mat-card class="form-card">
+            <mat-card class="form-card" tourAnchor="{{TourType.AVAILABILITY_FORM_CARD}}">
               <mat-card-header>
                 <mat-card-title>Add New Availability</mat-card-title>
               </mat-card-header>
               <mat-card-content>
-                <form [formGroup]="availabilityForm" (ngSubmit)="createAvailability()" class="availability-form">
+                <form [formGroup]="availabilityForm" (ngSubmit)="createAvailability()" class="availability-form" tourAnchor="{{TourType.AVAILABILITY_FORM}}">
                   <div class="form-row">
                     <mat-form-field>
                       <mat-label>Day of Week</mat-label>
@@ -51,12 +51,12 @@
             </mat-card>
 
       
-            <mat-card class="table-card" *ngIf="availabilities && availabilities.length > 0">
+            <mat-card class="table-card" *ngIf="availabilities && availabilities.length > 0" tourAnchor="{{TourType.AVAILABILITY_TABLE_CARD}}">
               <mat-card-header>
                 <mat-card-title>Current Weekly Availability</mat-card-title>
               </mat-card-header>
               <mat-card-content>
-                <div class="table-container">
+                <div class="table-container" tourAnchor="{{TourType.AVAILABILITY_TABLE}}">
                   <table mat-table [dataSource]="availabilities" class="availability-table">
                     
                     <ng-container matColumnDef="day">

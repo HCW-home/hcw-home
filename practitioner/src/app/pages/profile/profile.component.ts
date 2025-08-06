@@ -22,6 +22,8 @@ import { GuidedTourService } from '../../services/guided-tour.service';
 import { ConfigService } from '../../services/config.service';
 import { AuthService } from '../../auth/auth.service';
 import { SnackbarService } from '../../services/snackbar/snackbar.service';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
+import { TourType } from '../../models/tour';
 
 const PHONE_NUMBER_REGEX = /^[+]?[1-9][\d\s\-\(\)]{7,15}$/;
 const MIN_NAME_LENGTH = 2;
@@ -58,7 +60,8 @@ interface GenderOption {
     MatProgressSpinnerModule,
     MatChipsModule,
     MatIconModule,
-    ButtonComponent
+    ButtonComponent,
+    TourMatMenuModule
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -91,6 +94,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
   readonly ButtonType = ButtonType;
+  readonly TourType = TourType;
 
   constructor() {
     this.profileForm = this.createProfileForm();

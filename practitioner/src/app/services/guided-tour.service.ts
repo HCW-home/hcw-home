@@ -33,9 +33,17 @@ export class GuidedTourService {
 
   startTour(steps: IExtendedStepOption[] | IExtendedTour) {
     if (Array.isArray(steps)) {
+      const stepsWithBackdrop = steps.map(step => ({
+        ...step,
+        enableBackdrop: true
+      }));
       this.tourService.initialize(steps);
       this.tourService.start();
     } else {
+      const stepsWithBackdrop = steps.steps.map(step => ({
+        ...step,
+        enableBackdrop: true
+      }));
       this.tourService.initialize(steps.steps);
       if (steps.completeCallback) {
         this.tourService.end$.subscribe(() => {
@@ -55,16 +63,19 @@ export class GuidedTourService {
       {
         title: 'Welcome to HCW@Home',
         anchorId: TourType.HOME,
+        enableBackdrop: true,
         content: `Welcome to the HCW@Home platform helps you connect with patients. This tour will help you understand the concept. You can skip the tour at any time by closing this help.`,
       },
       {
         title: 'Dashboard',
         anchorId: TourType.DASHBOARD,
+        enableBackdrop: true,
         content: 'Your dashboard provides an overview of your activities and key metrics.',
       },
       {
         title: 'Send New Invite',
         anchorId: TourType.DASHBOARD_INVITE_BUTTON,
+        enableBackdrop: true,
         content: 'Click here to open the form. Invites allow patients to join you on this application. Create or revoke invites at any time from this area.',
         action: () => {
           this.tourService.end();
@@ -84,21 +95,25 @@ export class GuidedTourService {
       {
         title: 'Patient Information',
         anchorId: TourType.INVITE_FORM_PATIENT_INFO,
+        enableBackdrop: true,
         content: `Fill in the patient\'s information to easily recognize which patient is waiting for a remote consultation. You can send the invite link via SMS, email, or WhatsApp, depending on the software configuration and the patient\'s country.`,
       },
       {
         title: 'Guest Options',
         anchorId: TourType.INVITE_FORM_GUEST_OPTIONS,
+        enableBackdrop: true,
         content: `Invite caregivers or additional participants.`,
       },
       {
         title: 'Manual Send Option',
         anchorId: TourType.INVITE_FORM_MANUAL_SEND,
+        enableBackdrop: true,
         content: `If you prefer to share the link with your patient manually, check this box. After sending, you will be able to copy the link and share it (e.g., in an email you write yourself). Be careful not to use the link yourself to test it, as the link is usable only once.`,
       },
       {
         title: 'Send Invite',
         anchorId: TourType.INVITE_FORM_SUBMIT,
+        enableBackdrop: true,
         content: `Click here to send the consultation invitation.`,
         action: () => {
           this.tourService.end();
@@ -119,6 +134,7 @@ export class GuidedTourService {
       {
         title: 'Active Consultations',
         anchorId: TourType.OPENED_CONSULTATIONS_MENU,
+        enableBackdrop: true,
         content: 'Once your patient has used the link and requested to join the consultation, you will be notified with a sound and see the incoming patient in this queue. Keep the application open to reduce the risk of missing a consultation.',
         action: () => {
           this.tourService.end();
@@ -139,6 +155,7 @@ export class GuidedTourService {
       {
         title: 'Consultation History',
         anchorId: TourType.CLOSED_CONSULTATIONS,
+        enableBackdrop: true,
         content: 'When you decide to close a consultation, your patient will no longer be able to exchange messages with you. The consultation will remain in this history for 24 hours before being deleted from the system for security reasons.',
         action: () => {
           this.tourService.end();
@@ -159,11 +176,13 @@ export class GuidedTourService {
       {
         title: 'Weekly Availability',
         anchorId: TourType.AVAILABILITY_FORM_CARD,
+        enableBackdrop: true,
         content: 'Set your weekly availability here.',
       },
       {
         title: 'Time Slots',
         anchorId: TourType.AVAILABILITY_FORM,
+        enableBackdrop: true,
         content: 'Generate slots based on your availability.',
          action: () => {
           this.tourService.end();
@@ -184,16 +203,19 @@ export class GuidedTourService {
       {
         title: 'Access to your profile',
         anchorId: TourType.HEADER_PROFILE_MENU,
+        enableBackdrop: true,
         content: 'You can manage some information from your profile page.',
       },
       {
         title: 'Personal Information',
         anchorId: TourType.PROFILE_PERSONAL_INFO,
+        enableBackdrop: true,
         content: 'You can change the language or enable SMS notifications in case something happens when you are not connected to this application.',
       },
       {
         title: 'Professional Information',
         anchorId: TourType.PROFILE_PROFESSIONAL_INFO,
+        enableBackdrop: true,
         content: 'You can change the language or enable SMS notifications in case something happens when you are not connected to this application.',
          action: () => {
           this.tourService.end();
@@ -214,6 +236,7 @@ export class GuidedTourService {
       {
         title: 'Tour Complete!',
         anchorId: TourType.HELP_BUTTON,
+        enableBackdrop: true,
         content: `You've completed the tour! You can restart it anytime via Help.`,
       },
     ];

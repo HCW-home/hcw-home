@@ -28,7 +28,7 @@ export class AppComponent implements OnInit {
   activeConsultations: number | undefined = 0;
   loginChecked = computed(() => this.authService.loginChecked());
   isLoggedIn = computed(() => this.authService.isLoggedIn());
-  private iconNames = ['warning', 'download', 'chevron-right','x'];
+  private iconNames = ['warning', 'download', 'chevron_right','x', 'chevron_left', 'close'];
 
   constructor(
     private iconRegistry: SvgIconRegistryService,
@@ -51,6 +51,49 @@ export class AppComponent implements OnInit {
           });
       }
     });
+    setTimeout(() => {
+      this.convertMatIcons();
+      this.observeForNewIcons();
+    }, 100);
+  }
+
+  private convertMatIcons(): void {
+    const matIcons = document.querySelectorAll('mat-icon');
+    matIcons.forEach((icon: Element) => {
+      const iconText = icon.textContent?.trim();
+      if (iconText && this.iconNames.includes(iconText)) {
+        icon.setAttribute('data-icon', iconText);
+      }
+    });
+  }
+
+  private observeForNewIcons(): void {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            if (element.tagName?.toLowerCase() === 'mat-icon') {
+              this.processIcon(element);
+            }
+            const matIcons = element.querySelectorAll?.('mat-icon');
+            matIcons?.forEach((icon) => this.processIcon(icon));
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  private processIcon(icon: Element): void {
+    const iconText = icon.textContent?.trim();
+    if (iconText && this.iconNames.includes(iconText)) {
+      icon.setAttribute('data-icon', iconText);
+    }
   }
 }
 

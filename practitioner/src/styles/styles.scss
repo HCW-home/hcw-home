@@ -1,5 +1,41 @@
-@use './variables/guided-tour-theme';
 @use './variables/index.scss' as *;
+
+mat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: 0;
+
+    &:before {
+        content: '';
+        display: block;
+        width: 22px;
+        height: 22px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+}
+
+mat-icon[data-icon="chevron_right"]:before {
+    background-image: url('/assets/svg/chevron-right.svg');
+}
+
+mat-icon[data-icon="chevron_left"]:before {
+    background-image: url('/assets/svg/chevron-left.svg');
+}
+
+mat-icon[data-icon="close"]:before {
+    background-image: url('/assets/svg/x.svg');
+}
+.tour-step-backdrop,
+.tour-step {
+    mat-icon {
+        filter: inherit;
+    }
+}
 
 * {
     margin: 0;

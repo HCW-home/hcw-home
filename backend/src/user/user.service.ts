@@ -184,6 +184,7 @@ export class UserService {
         GroupMember: { include: { group: true } },
         languages: { include: { language: true } },
         specialities: { include: { speciality: true } },
+        UserNotificationSetting: true
       },
     });
 

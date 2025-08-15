@@ -64,6 +64,7 @@ export interface User {
   status: UserStatus;
   createdAt: string | Date;
   updatedAt: string | Date;
+  UserNotificationSetting:NotificationSettings;
 
   //term data 
   termVersion: number;
@@ -98,6 +99,7 @@ export interface UpdateUserProfileDto {
   languageIds?: number[];
   specialityIds?: number[];
 }
+
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -150,7 +152,10 @@ export interface LoginUser {
     id: number;
     name: string;
   }[];
+  UserNotificationSetting:NotificationSettings| null
+
 }
+
 
 export interface Term {
   id: number;
@@ -162,4 +167,7 @@ export interface Term {
   updatedAt: string;
   organizationId: number;
 }
-
+export interface NotificationSettings {
+  enabled: boolean;
+  phone?: string;
+}

@@ -15,12 +15,15 @@ import { UserService } from '../../services/user.service';
 import { LanguageService } from '../../services/language.service';
 import { SpecialityService } from '../../services/speciality.service';
 import { ToastService } from '../../services/toast/toast.service';
-import { User, UserSex, Language, Speciality, UpdateUserProfileDto,LoginUser } from '../../models/user.model';
+import { User, UserSex, Language, Speciality, UpdateUserProfileDto, LoginUser } from '../../models/user.model';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
 import { ConfigService } from '../../services/config.service';
 import { AuthService } from '../../auth/auth.service';
 import { SnackbarService } from '../../services/snackbar/snackbar.service';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { NotificationService } from '../../services/notification.service';
+import { NotificationSettings } from '../../services/notification.service';
 
 const PHONE_NUMBER_REGEX = /^[+]?[1-9][\d\s\-\(\)]{7,15}$/;
 const MIN_NAME_LENGTH = 2;
@@ -57,17 +60,19 @@ interface GenderOption {
     MatProgressSpinnerModule,
     MatChipsModule,
     MatIconModule,
-    ButtonComponent
+    ButtonComponent,
+    MatSlideToggle
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  private readonly notificationService = inject(NotificationService);
   private readonly userService = inject(UserService);
   private readonly languageService = inject(LanguageService);
   private readonly specialityService = inject(SpecialityService);
-  private readonly configService= inject(ConfigService)
-  private readonly authservice= inject(AuthService)
+  private readonly configService = inject(ConfigService)
+  private readonly authservice = inject(AuthService)
   private readonly snackBarService = inject(SnackbarService)
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
@@ -120,6 +125,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       phoneNumber: ['', [Validators.pattern(PHONE_NUMBER_REGEX)]],
       country: [''],
       sex: [''],
+      notificationsEnabled: [true],
+      notificationPhoneNumber: ['', [Validators.pattern(PHONE_NUMBER_REGEX)]],
       practitioner_languages: [[]],
       practitioner_specialities: [[]]
     });
@@ -150,8 +157,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
           return of([]);
         })
       ),
-      countries : this.configService.getCountries().pipe(
-        catchError(error=>{
+      countries: this.configService.getCountries().pipe(
+        catchError(error => {
           console.error('Error loading specialities:', error);
           this.toastService.showError('Failed to load countries');
           return of([]);
@@ -161,7 +168,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$),
       finalize(() => this.isLoading.set(false))
     ).subscribe({
-      next: ({ user, languages, specialities,countries }) => {
+      next: ({ user, languages, specialities, countries }) => {
         this.currentUser.set(user);
         this.languages.set(languages);
         this.specialities.set(specialities);
@@ -185,22 +192,58 @@ export class ProfileComponent implements OnInit, OnDestroy {
       country: user.country || '',
       sex: user.sex || '',
       practitioner_languages: user.languages?.map(l => l.id) || [],
-      practitioner_specialities: user.specialities?.map(l => l.id) || []
+      practitioner_specialities: user.specialities?.map(l => l.id) || [],
+      notificationsEnabled: user.UserNotificationSetting?.enabled ?? true,
+      notificationPhoneNumber: user.UserNotificationSetting?.phone || '',
     });
+    this.setupNotificationValidation()
+    this.setDefaultPhone()
+  }
+  private setDefaultPhone(): void {
+    const notificationPhoneControl = this.profileForm.get('notificationPhoneNumber');
+    const phoneControl = this.profileForm.get('phoneNumber');
+
+    if (notificationPhoneControl && phoneControl) {
+      // If notificationPhoneNumber is empty or null, set it to phoneNumber
+      if (!notificationPhoneControl.value && phoneControl.value) {
+        notificationPhoneControl.setValue(phoneControl.value);
+      }
+    }
   }
 
+  private setupNotificationValidation(): void {
+    const notificationEnabledControl = this.profileForm.get('notificationsEnabled');
+    const notificationPhoneControl = this.profileForm.get('notificationPhoneNumber');
+
+    const applyValidators = (enabled: boolean) => {
+      if (enabled) {
+        notificationPhoneControl?.setValidators([
+          Validators.required,
+          Validators.pattern(PHONE_NUMBER_REGEX)
+        ]);
+      } else {
+        notificationPhoneControl?.clearValidators();
+      }
+      notificationPhoneControl?.updateValueAndValidity();
+    };
+
+    notificationEnabledControl?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(applyValidators);
+
+    applyValidators(notificationEnabledControl?.value);
+  }
+
+
+
   onSave(): void {
-    if (!this.isFormValid() || !this.currentUser()) {
+    if (!this.profileForm.valid || !this.currentUser()) {
       this.markFormGroupTouched();
       return;
     }
-
     this.isSaving.set(true);
-    this.profileForm.disable();
-
     const formValue = this.profileForm.value;
     const user = this.currentUser()!;
-
     const updateData: UpdateUserProfileDto = {
       firstName: formValue.firstName?.trim(),
       lastName: formValue.lastName?.trim(),
@@ -210,32 +253,41 @@ export class ProfileComponent implements OnInit, OnDestroy {
       languageIds: formValue.practitioner_languages || [],
       specialityIds: formValue.practitioner_specialities || []
     };
+    // Prepare notification settings
+    const notificationSettings: NotificationSettings = {
+      enabled: formValue.notificationsEnabled,
+      phone: formValue.notificationPhoneNumber?.trim() || null
+    };
 
-    this.userService.updateUserProfile(user.id, updateData).pipe(
+
+    forkJoin([
+      this.authservice.updateProfile(updateData),
+      this.notificationService.updateNotificationSettings(notificationSettings)
+    ]).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.isSaving.set(false);
         this.profileForm.enable();
       })
     ).subscribe({
-      next: (updatedUser) => {
+      next: ([updatedUser, updatedNotifications]) => {
         this.snackBarService.showSuccess('Profile updated successfully');
-        const existingUser = this.authservice.getCurrentUser()
-        console.log(updatedUser);
-        
+
+        const existingUser = this.authservice.getCurrentUser();
         if (existingUser) {
           const loginUser: LoginUser = {
             ...updatedUser,
-            accessToken: existingUser.accessToken,    
-            refreshToken: existingUser.refreshToken,   
+            accessToken: existingUser.accessToken,
+            refreshToken: existingUser.refreshToken,
           };
           this.authservice.storeCurrentUser(loginUser);
-        }    
+        }
+
         this.currentUser.set(updatedUser);
         this.profileForm.markAsPristine();
       },
       error: (error) => {
-        console.error('Error updating profile:', error);
+        console.error('Error updating profile', error);
         this.snackBarService.showError('Failed to update profile. Please try again.');
       }
     });
@@ -262,7 +314,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   trackBySpecialityId = (index: number, speciality: Speciality): number => speciality.id;
   trackByCountryCode = (index: number, country: CountryOption): string => country.code;
   trackByGenderValue = (index: number, gender: GenderOption): UserSex => gender.value;
-  
+
   get firstName(): FormControl { return this.profileForm.get('firstName') as FormControl; }
   get lastName(): FormControl { return this.profileForm.get('lastName') as FormControl; }
   get phoneNumber(): FormControl { return this.profileForm.get('phoneNumber') as FormControl; }
@@ -270,4 +322,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get sex(): FormControl { return this.profileForm.get('sex') as FormControl; }
   get practitioner_languages(): FormControl { return this.profileForm.get('practitioner_languages') as FormControl; }
   get practitioner_specialities(): FormControl { return this.profileForm.get('practitioner_specialities') as FormControl; }
+  get notificationsEnabled(): FormControl { return this.profileForm.get('notificationsEnabled') as FormControl; }
+  get notificationPhoneNumber(): FormControl { return this.profileForm.get('notificationPhoneNumber') as FormControl }
 }

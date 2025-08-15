@@ -45,11 +45,24 @@ model User {
   timeSlots          TimeSlot[]                 @relation("PractitionerTimeSlots")
   Consultation       Consultation[]
   ConsultationRating ConsultationRating[]
+  UserNotificationSetting UserNotificationSetting?
 
   @@map("users")
   MessageReadReceipt MessageReadReceipt[]
   MediaPermissionStatus MediaPermissionStatus[]
 }
+model UserNotificationSetting {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  enabled     Boolean  @default(true)   // toggle all notifications
+  phone       String?  @db.VarChar(20)  // preferred phone for notifications
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("user_notification_settings")
+}
+
 
 enum UserRole {
   PATIENT

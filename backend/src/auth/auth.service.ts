@@ -394,9 +394,9 @@ export class AuthService {
         GroupMember: { include: { group: true } },
         languages: { include: { language: true } },
         specialities: { include: { speciality: true } },
+        UserNotificationSetting: true,
       },
     });
-
     if (!user) {
       throw HttpExceptionHelper.notFound('User not found');
     }

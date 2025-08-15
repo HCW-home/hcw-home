@@ -4,8 +4,9 @@ import { map, switchMap } from "rxjs/operators";
 
 import { Router } from "@angular/router";
 import { environment } from "../../environments/environment";
-import { LoginUser } from "../models/user.model";
-import { throwError } from "rxjs";
+import { LoginUser,UpdateUserProfileDto,ApiResponse,User } from "../models/user.model";
+import { Observable, throwError } from "rxjs";
+
 @Injectable({ providedIn: "root" })
 export class AuthService {
   private baseurl = `${environment.apiUrl}/v1/auth`;
@@ -144,6 +145,10 @@ export class AuthService {
     return this.http.post<any>(`${this.baseurl}/update-password`,{password:password, username:username}).pipe(
       map(res=>{return res.data})
     )
+  }
+  updateProfile(updateData: UpdateUserProfileDto): Observable<User> {
+    return this.http.post<ApiResponse<User>>(`${this.baseurl}/update`, updateData)
+      .pipe(map((response: ApiResponse<User>) => response.data));
   }
 
 }

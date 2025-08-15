@@ -8,7 +8,7 @@
         <form class="invite-modal__body" [formGroup]="form" (ngSubmit)="onSubmit()">
 
             <div class="form-section left">
-                <h3 class="section-title">{{ modalTitle }}</h3>
+                <h3 class="section-title" tourAnchor="{{TourType.INVITE_FORM_PATIENT_INFO}}">{{ modalTitle }}</h3>
 
                 <div class="row">
                     <div class="field">
@@ -63,7 +63,7 @@
                     </div>
                 </div>
 
-                <div class="row checkbox-row">
+                <div class="row checkbox-row" tourAnchor="{{TourType.INVITE_FORM_MANUAL_SEND}}">
                     <label>
                         <input type="checkbox" formControlName="manualSend" />
                         I want to send the link manually
@@ -79,7 +79,7 @@
             </div>
 
             <div class="form-section right">
-                <h3>GUESTS</h3>
+                <h3 tourAnchor="{{TourType.INVITE_FORM_GUEST_OPTIONS}}">GUESTS</h3>
                 <hr />
                 <div formGroupName="guests" class="checkbox-list">
                     @for (opt of guestOptions; track opt.key) {
@@ -96,7 +96,7 @@
             <app-button [variant]="ButtonVariant.Outline" [size]="ButtonSize.Medium" (click)="onCancel()">
                 Cancel
             </app-button>
-            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit">
+            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit" tourAnchor="{{TourType.INVITE_FORM_SUBMIT}}">
                 {{ submitButtonText }}
             </app-button>
         </footer>

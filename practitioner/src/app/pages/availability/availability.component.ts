@@ -22,6 +22,8 @@ import {
   CreateAvailabilityRequest,
   UpdateAvailabilityRequest 
 } from '../../services/availability.service';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
+import { TourType } from '../../models/tour';
 
 @Component({
   selector: 'app-availability',
@@ -42,7 +44,8 @@ import {
     MatNativeDateModule,
     MatTabsModule,
     MatSnackBarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    TourMatMenuModule
   ],
   templateUrl: './availability.component.html',
   styleUrls: ['./availability.component.scss']
@@ -59,6 +62,7 @@ export class AvailabilityComponent implements OnInit {
   
   displayedColumns = ['day', 'time', 'duration', 'status', 'actions'];
   slotsDisplayedColumns = ['date', 'time', 'status', 'actions'];
+  readonly TourType = TourType;
   
   daysOfWeek = [
     { value: 0, label: 'Sunday' },

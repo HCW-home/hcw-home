@@ -1,4 +1,4 @@
-<div class="consultation-history-page">
+<div class="consultation-history-page" tourAnchor="{{TourType.CONSULTATION_HISTORY_PAGE}}">
     <div class="page-header">
         <div class="header-content">
             <h2>CONSULTATIONS HISTORY</h2>
@@ -41,7 +41,7 @@
             }
 
             @if (!loading && !error && paginatedConsultations.length > 0) {
-            <div class="consultations-grid">
+            <div class="consultations-grid" tourAnchor="{{TourType.CONSULTATION_HISTORY_GRID}}">
                 @for (consultation of paginatedConsultations; track consultation.consultation.id) {
                 <app-consultation-history-card [consultation]="consultation"
                     [isSelected]="consultation.consultation.id === selectedConsultationId"

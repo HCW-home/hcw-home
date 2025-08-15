@@ -1,4 +1,4 @@
-<div class="card consultation-card">
+<div class="card consultation-card" [attr.tourAnchor]="tourAnchor()">
   <h2>{{ title() }}</h2>
   <p class="card-description">{{ description() }}</p>
 
@@ -9,9 +9,14 @@
   }
 
   @if (showInvite()) {
-  <app-button (click)="onInviteClick()" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium">
-    Send new invite
-  </app-button>
+  <div tourAnchor="{{TourType.DASHBOARD_INVITE_BUTTON}}">
+    <app-button 
+      (click)="onInviteClick()" 
+      [variant]="ButtonVariant.Primary" 
+      [size]="ButtonSize.Medium">
+      Send new invite
+    </app-button>
+  </div>
   }
 
   @if (consultations().length > 0) {
@@ -46,7 +51,7 @@
 
   <!-- View all -->
   @if (consultations().length > 3) {
-  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink()" [size]="ButtonSize.Medium">
+  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink()" [size]="ButtonSize.Medium" [attr.tourAnchor]="TourType.VIEW_ALL_BUTTON">
     View all
   </app-button>
   }

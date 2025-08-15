@@ -8,6 +8,9 @@ import { ButtonComponent } from '../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { HttpClientModule } from '@angular/common/http';
 import { OverlayComponent } from '../components/overlay/overlay.component';
+import { GuidedTourService } from '../services/guided-tour.service';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
+import { TourType } from '../models/tour';
 
 @Component({
   selector: 'app-consultation-history',
@@ -19,6 +22,7 @@ import { OverlayComponent } from '../components/overlay/overlay.component';
     OverlayComponent,
     ButtonComponent,
     HttpClientModule,
+    TourMatMenuModule,
   ],
   templateUrl: './consultation-history.component.html',
   styleUrls: ['./consultation-history.component.scss'],
@@ -37,10 +41,11 @@ export class ConsultationHistoryComponent implements OnInit {
 
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
+  readonly TourType = TourType;
 
   private practitionerId = 3;
 
-  constructor(private consultationService: ConsultationHistoryService) {}
+  constructor(private consultationService: ConsultationHistoryService, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     this.loadConsultations();

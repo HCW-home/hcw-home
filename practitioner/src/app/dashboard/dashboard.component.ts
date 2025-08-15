@@ -4,7 +4,9 @@ import { ConsultationCardComponent } from '../components/consultations-card/cons
 import { InviteFormComponent } from '../components/invite-form/invite-form.component';
 import { RoutePaths } from '../constants/route-paths.enum';
 import { ConsultationService } from '../services/consultations/consultation.service';
+import { GuidedTourService } from '../services/guided-tour.service';
 import { ConsultationWithPatient } from '../dtos';
+import { TourType } from '../models/tour';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,13 +17,14 @@ import { ConsultationWithPatient } from '../dtos';
 })
 export class DashboardComponent implements OnInit {
   readonly RoutePaths = RoutePaths;
+  readonly TourType = TourType;
 
   waitingConsultations = signal<ConsultationWithPatient[]>([]);
   openConsultations = signal<ConsultationWithPatient[]>([]);
 
   isInviting = signal(false);
 
-  constructor(private consultationService: ConsultationService) {}
+  constructor(private consultationService: ConsultationService, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     this.consultationService

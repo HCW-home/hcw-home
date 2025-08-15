@@ -5,9 +5,11 @@ import {
   IsDate,
   IsString,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ConsultationStatus, UserRole } from '@prisma/client'; 
+import { ReminderConfigDto } from 'src/reminder/dto/reminder-config.dto';
 
 export class CreateConsultationDto {
   @ApiProperty({ description: 'Patient ID' })
@@ -43,6 +45,12 @@ export class CreateConsultationDto {
   @ApiPropertyOptional({ description: 'Create as draft (default false)' })
   @IsOptional()
   draft?: boolean;
+
+  @ApiPropertyOptional({ description: 'Reminder configuration' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ReminderConfigDto)
+  reminderConfig?: ReminderConfigDto;
 }
 
 export class CreateConsultationWithTimeSlotDto extends CreateConsultationDto {

@@ -222,6 +222,8 @@ model Consultation {
   deletionScheduledAt  DateTime?
   version              Int                @default(1)
   isDeleted            Boolean            @default(false)
+  reminderEnabled      Boolean            @default(true)
+  remindersSent        Json?              @default("{}")
 
   participants           Participant[]
   group                  Group?                   @relation(fields: [groupId], references: [id])
@@ -233,6 +235,7 @@ model Consultation {
   DeletedConsultationLog DeletedConsultationLog[]
   rating                 ConsultationRating?
   MediasoupTransport     MediasoupTransport[]
+  reminders              ConsultationReminder[]
 
   @@index([status])
   @@index([ownerId])
@@ -492,4 +495,27 @@ enum TokenType {
   password_reset
 }
 
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
 
+model ConsultationReminder {
+  id             Int            @id @default(autoincrement())
+  consultationId Int
+  type           String
+  scheduledFor   DateTime
+  status         ReminderStatus @default(PENDING)
+  sentAt         DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
+  @@index([consultationId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("consultation_reminder")
+}

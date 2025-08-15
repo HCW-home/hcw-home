@@ -22,6 +22,8 @@ import { ExportModule } from './export/export.module';
 import { TermModule } from './term/term.module';
 import { LoggerModule } from './logger/logger.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { ReminderModule } from './reminder/reminder.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { AvailabilityModule } from './availability/availability.module';
     ExportModule,
     TermModule,
     AvailabilityModule,
+    ScheduleModule.forRoot(),
+    ReminderModule,
   ],
   controllers: [AppController],
   providers: [

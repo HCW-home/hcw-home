@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { of, type Observable, map } from 'rxjs';
+import { of, type Observable, map, switchMap } from 'rxjs';
 import type { Consultation } from '../../models/consultations/consultation.model';
 import { ConsultationStatus } from '../../constants/consultation-status.enum';
 import { formatConsultationTime } from '../../utils/date-utils';
@@ -8,55 +8,133 @@ import type {
   ConsultationWithPatient,
   WaitingRoomItem,
 } from '../../dtos/consultations/consultation-dashboard-response.dto';
+import { UserService } from '../user.service';
 
+export interface CreatePatientConsultationRequest {
+  firstName: string;
+  lastName: string;
+  gender: string;
+  language: string;
+  contact: string;
+  group?: string;
+  scheduledDate?: Date;
+  specialityId?: number;
+  symptoms?: string;
+}
+
+export interface CreatePatientConsultationResponse {
+  success: boolean;
+  data: {
+    success: {
+      patient: {
+        id: number;
+        firstName: string;
+        lastName: string;
+        email?: string;
+        phoneNumber?: string;
+        isNewPatient: boolean;
+      }; consultation: {
+        id: number;
+        status: string;
+        ownerId: number;
+        scheduledDate?: Date;
+      };
+    };
+    data: { patient: any; consultation: any; };
+    patient: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email?: string;
+      phoneNumber?: string;
+      isNewPatient: boolean;
+    };
+    consultation: {
+      id: number;
+      status: string;
+      ownerId: number;
+      scheduledDate?: Date;
+    };
+  };
+  message: string;
+  statusCode: number;
+  timestamp: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConsultationService {
   private baseUrl = 'http://localhost:3000/api/v1/consultation';
-  private readonly practitionerId = 16;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private userService: UserService
+  ) {}
+
+  createPatientAndConsultation(
+    formData: CreatePatientConsultationRequest
+  ): Observable<CreatePatientConsultationResponse> {
+    return this.userService.getCurrentUser().pipe(
+      switchMap(user => {
+        const params = new HttpParams().set('practitionerId', user.id.toString());
+        
+        console.log('Creating patient and consultation with data:', formData);
+        console.log('Practitioner ID:', user.id);
+        
+        return this.http.post<CreatePatientConsultationResponse>(
+          `${this.baseUrl}/create-patient-consultation`,
+          formData,
+          { params }
+        );
+      })
+    );
+  }
 
   getWaitingConsultations(): Observable<ConsultationWithPatient[]> {
-    const params = new HttpParams().set(
-      'userId',
-      this.practitionerId.toString()
-    );
-
-    return this.http
-      .get<any>(`${this.baseUrl}/waiting-room`, { params })
-      .pipe(
-        map((response) => {
-          const waitingRooms = response?.data?.data?.waitingRooms || [];
-          return waitingRooms.map((item: WaitingRoomItem) =>
-            this.convertWaitingRoomToConsultationWithPatient(item)
+    return this.userService.getCurrentUser().pipe(
+      switchMap(user => {
+        const params = new HttpParams().set('userId', user.id.toString());
+        
+        return this.http
+          .get<any>(`${this.baseUrl}/waiting-room`, { params })
+          .pipe(
+            map((response) => {
+              const waitingRooms = response?.data?.data?.waitingRooms || [];
+              return waitingRooms.map((item: WaitingRoomItem) =>
+                this.convertWaitingRoomToConsultationWithPatient(item, user.id)
+              );
+            })
           );
-        })
-      );
+      })
+    );
   }
 
   getOpenConsultations(): Observable<ConsultationWithPatient[]> {
-    const params = new HttpParams()
-      .set('practitionerId', this.practitionerId.toString())
-      .set('page', '1')
-      .set('limit', '50'); 
+    return this.userService.getCurrentUser().pipe(
+      switchMap(user => {
+        const params = new HttpParams()
+          .set('practitionerId', user.id.toString())
+          .set('page', '1')
+          .set('limit', '50');
 
-    return this.http
-      .get<any>(`${this.baseUrl}/open`, { params })
-      .pipe(
-        map((response) => {
-          const consultations = response?.data?.consultations || [];
-          return consultations.map((item: any) =>
-            this.convertOpenConsultationToConsultationWithPatient(item)
+        return this.http
+          .get<any>(`${this.baseUrl}/open`, { params })
+          .pipe(
+            map((response) => {
+              const consultations = response?.data?.consultations || [];
+              return consultations.map((item: any) =>
+                this.convertOpenConsultationToConsultationWithPatient(item, user.id)
+              );
+            })
           );
-        })
-      );
+      })
+    );
   }
 
   private convertWaitingRoomToConsultationWithPatient(
-    item: WaitingRoomItem
+    item: WaitingRoomItem,
+    practitionerId: number
   ): ConsultationWithPatient {
     return {
       patient: {
@@ -73,8 +151,8 @@ export class ConsultationService {
         createdAt: new Date(),
         startedAt: item.joinTime ? new Date(item.joinTime) : new Date(),
         closedAt: undefined,
-        createdBy: this.practitionerId,
-        ownerId: this.practitionerId,
+        createdBy: practitionerId,
+        ownerId: practitionerId,
         groupId: undefined,
         whatsappTemplateId: undefined,
         status: ConsultationStatus.WAITING,
@@ -83,7 +161,8 @@ export class ConsultationService {
   }
 
   private convertOpenConsultationToConsultationWithPatient(
-    item: any
+    item: any,
+    practitionerId: number
   ): ConsultationWithPatient {
     const startedAtDate = typeof item.startedAt === 'string' 
       ? new Date(item.startedAt) 
@@ -119,8 +198,8 @@ export class ConsultationService {
         createdAt: startedAtDate,
         startedAt: startedAtDate,
         closedAt: undefined,
-        createdBy: this.practitionerId,
-        ownerId: this.practitionerId,
+        createdBy: practitionerId,
+        ownerId: practitionerId,
         groupId: undefined,
         whatsappTemplateId: undefined,
         status: status,

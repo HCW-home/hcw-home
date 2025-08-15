@@ -7,6 +7,15 @@
 </div>
 
 @if (isInviting()) {
-<app-invite-form type="remote" (close)="closeInvite()" (submit)="handleInvite($event)">
+<app-invite-form type="remote" (close)="closeInvite()" (submit)="onInviteSubmit($event)">
 </app-invite-form>
+}
+
+@if (isLoading()) {
+<div class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Creating patient and consultation...</p>
+    </div>
+</div>
 }

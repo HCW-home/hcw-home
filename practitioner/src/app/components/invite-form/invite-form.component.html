@@ -96,7 +96,8 @@
             <app-button [variant]="ButtonVariant.Outline" [size]="ButtonSize.Medium" (click)="onCancel()">
                 Cancel
             </app-button>
-            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit">
+            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit"
+                (click)="onSubmit()">
                 {{ submitButtonText }}
             </app-button>
         </footer>

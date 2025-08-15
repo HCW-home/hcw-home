@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, switchMap } from 'rxjs';
 import {
   OpenConsultationService,
 } from '../services/consultations/open-consultation.service';
@@ -11,6 +11,7 @@ import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { OpenConsultationCardComponent } from '../components/open-consultation-card/open-consultation-card.component';
 import { OpenConsultationPanelComponent } from '../components/open-consultation-panel/open-consultation-panel.component';
 import { OverlayComponent } from '../components/overlay/overlay.component';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-open-consultations',
@@ -38,11 +39,13 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   readonly ButtonSize = ButtonSize;
 
   private destroy$ = new Subject<void>();
+  private practitionerId: number | null = null;
 
   constructor(
     private openConsultationService: OpenConsultationService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -56,9 +59,15 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
 
   loadConsultations(): void {
     this.isLoading = true;
-    this.openConsultationService
-      .getOpenConsultations(7, this.currentPage)
-      .pipe(takeUntil(this.destroy$))
+    
+    this.userService.getCurrentUser()
+      .pipe(
+        switchMap(user => {
+          this.practitionerId = user.id;
+          return this.openConsultationService.getOpenConsultations(user.id, this.currentPage);
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: (response) => {
           this.consultations = response.consultations;
@@ -99,9 +108,13 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   }
 
   onJoinConsultation(consultationId: number): void {
-    const practitionerId = 7; 
+    if (!this.practitionerId) {
+      console.error('Practitioner ID not available');
+      return;
+    }
+
     this.openConsultationService
-      .joinConsultation(consultationId, practitionerId)
+      .joinConsultation(consultationId, this.practitionerId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -122,10 +135,14 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
   }
 
   onCloseConsultation(consultationId: number): void {
+    if (!this.practitionerId) {
+      console.error('Practitioner ID not available');
+      return;
+    }
+
     if (confirm('Are you sure you want to close this consultation?')) {
-      const practitionerId = 1; 
       this.openConsultationService
-        .closeConsultation(consultationId, practitionerId)
+        .closeConsultation(consultationId, this.practitionerId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {

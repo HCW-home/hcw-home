@@ -1,24 +1,27 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://hcwuser:hcwpasswd@localhost:5432/hcw?schema=public
+      DATABASE_URL: postgresql://hcwuser:hcwpasswd@db:5432/hcw?schema=public
+      REDIS_URL: redis://redis:6379
     depends_on:
       - db
+      - redis
     restart: always
+    ports:
+      - "3000:3000"  
+      - "5555:5555"
 
   patient:
     build:
       context: patient
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "4201:80"
     depends_on:
-      - db
+      - backend
     restart: always
 
   admin:
@@ -26,9 +29,9 @@ services:
       context: admin
       dockerfile: Dockerfile
     ports:
-      - "3001:80"
+      - "4200:80"
     depends_on:
-      - db
+      - backend
     restart: always
 
   practitioner:
@@ -36,9 +39,9 @@ services:
       context: practitioner
       dockerfile: Dockerfile
     ports:
-      - "3002:80"
+      - "4202:80"
     depends_on:
-      - db
+      - backend
     restart: always
 
   db:
@@ -51,5 +54,13 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 volumes:
   db_data:
+  redis_data:

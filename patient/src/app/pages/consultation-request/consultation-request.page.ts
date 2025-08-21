@@ -2,7 +2,6 @@ import { FormsModule } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { 
   ToastController,
@@ -23,31 +22,12 @@ import {
   trashOutline 
 } from 'ionicons/icons';
 
+import { 
+  createConsultationService, 
+  CreateConsultationDto 
+} from 'src/app/services/createConsultation.service';
+import { Speciality, SpecialityService } from 'src/app/services/getSpeciality.service';
 
-interface Consultation {
-  id: number;
-  patientName: string;
-  age: number;
-  groupOrSpecialty: string;
-  selectedSpecialtyId?: number;
-  selectedPractitionerId?: number;
-  symptoms: string;
-  status: 'draft' | 'assigned' | 'completed';
-  createdAt: Date;
-}
-
-interface Specialty {
-  id: number;
-  name: string;
-}
-
-interface Practitioner {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  specialities: any[];
-}
 @Component({
   selector: 'app-tab2',
   templateUrl: 'consultation-request.page.html',
@@ -71,24 +51,21 @@ interface Practitioner {
   ],
 })
 export class ConsultationRequestPage implements OnInit {
-  specialties: Specialty[] = [];
-  practitioners: Practitioner[] = [];
-  filteredPractitioners: Practitioner[] = [];
-  
-  consultation: Partial<Consultation> = {
-    status: 'draft'
-  };
+  specialities: Speciality[] = [];
 
-  draftConsultations: Consultation[] = [];
-  nextId = 1;
+  consultation: Partial<{
+    selectedSpecialtyId: number;
+    symptoms: string;
+  }> = {};
+
   loading = false;
 
   constructor(
     private router: Router, 
     private toastController: ToastController,
-    private http: HttpClient
+    private consultationRequestService: createConsultationService,
+    private specialityService: SpecialityService
   ) {
-    // Add Ionicons
     addIcons({
       'paper-plane-outline': paperPlaneOutline,
       'create-outline': createOutline,
@@ -97,56 +74,60 @@ export class ConsultationRequestPage implements OnInit {
   }
   
   ngOnInit() {
-    this.loadSpecialties();
-    this.loadPractitioners();
+    this.loadSpecialities();
+  }
+
+  getPatientId(): number {
+    return 2; // Replace with real logged-in patient ID
+  }
+
+  getCurrentUserId(): number {
+    return 1; // Replace with real admin ID
   }
 
   submitRequest() {
-    if (
-      !this.consultation.selectedSpecialtyId || 
-      !this.consultation.selectedPractitionerId
-    ) {
-      // Show validation error
-      this.showDetailsfillError("Please select specialty and practitioner");
+    if (!this.consultation.selectedSpecialtyId) {
+      this.showDetailsfillError("Please select a specialty");
       return;
     }
 
-    this.router.navigate(['/choose-consultation-timeslot', this.consultation.selectedPractitionerId]);
+    const dto: CreateConsultationDto = {
+      patientId: this.getPatientId(),
+      specialityId: this.consultation.selectedSpecialtyId,
+      symptoms: this.consultation.symptoms || '',
+    };
+    console.log("Dto: ", dto);
+    const UserId = this.getCurrentUserId();
+
+    this.consultationRequestService.createConsultation(dto, UserId).subscribe({
+      next: () => {
+        this.showSuccessToast('Consultation created');
+        this.router.navigate(['/consultation-list']);
+      },
+      error: (err) => {
+        console.error('API error:', err);
+        this.showDetailsfillError('Failed to create consultation');
+      }
+    });
   }
 
-  async loadSpecialties() {
-    try {
-      this.loading = true;
-      const response = await this.http.get<any>('http://localhost:3000/api/v1/speciality').toPromise();
-      this.specialties = response?.data || [];
-    } catch (error) {
-      console.error('Error loading specialties:', error);
-    } finally {
-      this.loading = false;
-    }
+  loadSpecialities() {
+    this.loading = true;
+
+    this.specialityService.getAllSpecialities().subscribe({
+      next: (data) => {
+        this.specialities = data;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading specialities:', error);
+        this.showDetailsfillError('Failed to load specialities');
+        this.loading = false;
+      }
+    });
   }
 
-  async loadPractitioners() {
-    try {
-      const response = await this.http.get<any>('http://localhost:3000/api/v1/user/practitioners').toPromise();
-      this.practitioners = response?.data || [];
-    } catch (error) {
-      console.error('Error loading practitioners:', error);
-    }
-  }
-
-  onSpecialtyChange() {
-    if (this.consultation.selectedSpecialtyId) {
-      this.filteredPractitioners = this.practitioners.filter(practitioner => {
-        return practitioner.specialities?.some(spec => spec.speciality?.id === this.consultation.selectedSpecialtyId);
-      });
-    } else {
-      this.filteredPractitioners = [];
-    }
-    this.consultation.selectedPractitionerId = undefined;
-  }
-
-  // Helper methods
+  // Toasts
   async showSuccessToast(message: string) {
     const toast = await this.toastController.create({
       message,
@@ -156,6 +137,7 @@ export class ConsultationRequestPage implements OnInit {
     });
     await toast.present();
   }
+
   async showDetailsfillError(message: string) {
     const toast = await this.toastController.create({
       message,
@@ -165,5 +147,4 @@ export class ConsultationRequestPage implements OnInit {
     });
     await toast.present();
   }
-   
 }

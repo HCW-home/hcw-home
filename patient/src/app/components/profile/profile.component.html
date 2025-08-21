@@ -1,0 +1,235 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1 class="profile-title">My Profile</h1>
+    <p class="profile-subtitle">Manage your personal information and preferences</p>
+  </div>
+
+  @if (isLoading()) {
+  <div class="loading-container">
+    <mat-spinner diameter="60" aria-label="Loading profile data"></mat-spinner>
+    <p class="loading-text">Loading profile...</p>
+  </div>
+  }
+
+  @if (!isLoading() && currentUser()) {
+  <div class="profile-content">
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()" class="profile-form" novalidate>
+
+      <mat-card class="profile-card">
+        <mat-card-header>
+          <mat-card-title>Personal Information</mat-card-title>
+          <mat-card-subtitle>Update your basic details</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" placeholder="Enter your first name" autocomplete="given-name"
+                required aria-describedby="firstName-error">
+              @if (firstName.invalid && firstName.touched) {
+              <mat-error id="firstName-error">
+                @if (firstName.errors?.['required']) {
+                <span>First name is required</span>
+                }
+                @if (firstName.errors?.['minlength']) {
+                <span>First name must be at least 2 characters</span>
+                }
+                @if (firstName.errors?.['maxlength']) {
+                <span>First name cannot exceed 50 characters</span>
+                }
+              </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" placeholder="Enter your last name" autocomplete="family-name"
+                required aria-describedby="lastName-error">
+              @if (lastName.invalid && lastName.touched) {
+              <mat-error id="lastName-error">
+                @if (lastName.errors?.['required']) {
+                <span>Last name is required</span>
+                }
+                @if (lastName.errors?.['minlength']) {
+                <span>Last name must be at least 2 characters</span>
+                }
+                @if (lastName.errors?.['maxlength']) {
+                <span>Last name cannot exceed 50 characters</span>
+                }
+              </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Phone Number</mat-label>
+              <input matInput formControlName="phoneNumber" placeholder="Enter your phone number" type="tel"
+                autocomplete="tel" aria-describedby="phoneNumber-error">
+              @if (phoneNumber.invalid && phoneNumber.touched) {
+              <mat-error id="phoneNumber-error">
+                @if (phoneNumber.errors?.['pattern']) {
+                <span>Please enter a valid phone number</span>
+                }
+              </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="form-field">
+              <mat-label>Country</mat-label>
+              <mat-select formControlName="country" placeholder="Select your country">
+                <mat-option value="">None</mat-option>
+                @for (country of countries(); track trackByCountryCode($index, country)) {
+                <mat-option [value]="country.code">
+                  {{ country.name }}
+                </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Gender</mat-label>
+              <mat-select formControlName="sex" placeholder="Select your gender">
+                <mat-option value="">Prefer not to say</mat-option>
+                @for (gender of genderOptions; track trackByGenderValue($index, gender)) {
+                <mat-option [value]="gender.value">
+                  {{ gender.label }}
+                </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          @if (showEmailField) {
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Add your email</mat-label>
+              <input matInput formControlName="email" placeholder="Enter your email" autocomplete="email" required
+                aria-describedby="firstName-error">
+
+            </mat-form-field>
+          </div>
+          }
+
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="profile-card">
+        <mat-card-header>
+          <mat-card-title>Professional Information</mat-card-title>
+          <mat-card-subtitle>Configure your languages and specialities</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Languages</mat-label>
+              <mat-select formControlName="practitioner_languages" multiple placeholder="Select languages you speak">
+                @for (language of languages(); track trackByLanguageId($index, language)) {
+                <mat-option [value]="language.id">
+                  {{ language.name }}
+                </mat-option>
+                }
+              </mat-select>
+              <mat-hint>Select all languages you can use for consultations</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Specialities</mat-label>
+              <mat-select formControlName="practitioner_specialities" multiple placeholder="Select your specialities">
+                @for (speciality of specialities(); track trackBySpecialityId($index, speciality)) {
+                <mat-option [value]="speciality.id">
+                  {{ speciality.name }}
+                </mat-option>
+                }
+              </mat-select>
+              <mat-hint>Select your areas of medical expertise</mat-hint>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      @if (currentUser(); as user) {
+      <mat-card class="profile-card readonly-card">
+        <mat-card-header>
+          <mat-card-title>Account Information</mat-card-title>
+          <mat-card-subtitle>Read-only information managed by administrators</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          @if (!showEmailField) {
+          <div class="readonly-field">
+            <label class="readonly-label">Email</label>
+            <span class="readonly-value">{{ user.email }}</span>
+          </div>
+        }
+
+          <div class="readonly-field">
+            <label class="readonly-label">Role</label>
+            <span class="readonly-value role-badge">{{ user.role }}</span>
+          </div>
+
+          <div class="readonly-field">
+            <label class="readonly-label">Account Status</label>
+            <span class="readonly-value status-badge" [class.approved]="user.status === 'APPROVED'">
+              {{ user.status }}
+            </span>
+          </div>
+
+          @if (user.organizations && user.organizations.length > 0) {
+          <div class="readonly-field">
+            <label class="readonly-label">Organizations</label>
+            <div class="chip-list">
+              @for (org of user.organizations; track org.id) {
+              <span class="info-chip">{{ org.name }}</span>
+              }
+            </div>
+          </div>
+          }
+
+          @if (user.groups && user.groups.length > 0) {
+          <div class="readonly-field">
+            <label class="readonly-label">Groups</label>
+            <div class="chip-list">
+              @for (group of user.groups; track group.id) {
+              <span class="info-chip">{{ group.name }}</span>
+              }
+            </div>
+          </div>
+          }
+        </mat-card-content>
+      </mat-card>
+      }
+
+      <div class="form-actions">
+        <app-button [type]="ButtonType.Button" [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Medium"
+          (click)="onReset()" [disabled]="isSaving()">
+          Reset Changes
+        </app-button>
+
+        <app-button [type]="ButtonType.Submit" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium"
+          [disabled]="!formValid() || isSaving()">
+          @if (isSaving()) {
+          <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
+          }
+          <span>{{ isSaving() ? 'Saving...' : 'Save Changes' }}</span>
+        </app-button>
+      </div>
+    </form>
+  </div>
+  }
+
+
+  @if (!isLoading() && !currentUser()) {
+  <div class="error-container">
+    <mat-icon class="error-icon" aria-hidden="true">error_outline</mat-icon>
+    <h2>Unable to load profile</h2>
+    <p>There was an error loading your profile information. Please try refreshing the page.</p>
+    <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" (click)="loadProfileData()">
+      Retry
+    </app-button>
+  </div>
+  }
+</div>

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { 
   IonCard, IonCardHeader, IonCardTitle, IonCardContent, 
   IonList, IonItem, IonLabel, IonButton, IonIcon, 
-  IonChip, IonText, AlertController, ToastController,
+  IonChip, IonText, ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -14,7 +14,7 @@ import {
 
 import { Router } from '@angular/router';
 import { Consultation } from 'src/app/services/consultation.service';
-
+import { JoinConsultationService } from 'src/app/services/joinConsultation.service';
 @Component({
   selector: 'card-component',
   templateUrl: './card-component.component.html',
@@ -40,8 +40,8 @@ export class CardComponentComponent {
 
   constructor(
     private router: Router,
-    private alertController: AlertController, 
-    private toastController: ToastController
+    private toastController: ToastController,
+    private joinConsultationService: JoinConsultationService
   ){
     addIcons({
       videocamOutline, 
@@ -54,16 +54,24 @@ export class CardComponentComponent {
     @Input() completedConsultations: Consultation[] = [];
     @Input() upcomingConsultations: Consultation[] = [];
 
-  // on clicking this button patient navigate
-  async joinConsultation(consultationId: number) {
-    const toast = await this.toastController.create({
-      message: 'Joining video consultation...',
-      duration: 2000,
-      color: 'success'
-    });
-    toast.present();
-    // In a real app, this would navigate to a video call page or launch a video SDK
-  }
+
+    async joinConsultation(consultationId: number) {
+      const userId = 123; // fetch
+      this.joinConsultationService.joinConsultation(consultationId, userId)
+      .subscribe({
+        next: (response: any) => {
+          if (response?.sessionUrl) {
+            this.router.navigate([response.sessionUrl]);
+          } else {
+            this.presentToast('Joined consultation, but no session URL provided.');
+          }
+        },
+        error: (err) => {
+          this.presentToast('Failed to join consultation.');
+          console.error('Join error:', err);
+        }
+      });
+    }
 
   // we have to provide it after consultation ends
 

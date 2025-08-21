@@ -148,4 +148,9 @@ export class AuthService {
     return user;
   }
 
+  updatePassword(password:string,username:string){
+    return this.http.post<any>(`${this.baseurl}/update-password`,{password:password, username:username}).pipe(
+      map(res=>{return res.data})
+    )
+  }
 }

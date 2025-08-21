@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { SpecialityService } from './speciality.service';
 import { CreateSpecialityDto } from './dto/create-speciality.dto';
 import { UpdateSpecialityDto } from './dto/update-speciality.dto';
-
+import { GetSpecialityDto } from './dto/get-speciality.dto';
 @Controller('speciality')
 export class SpecialityController {
   constructor(private readonly service: SpecialityService) {}
@@ -13,7 +13,7 @@ export class SpecialityController {
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<GetSpecialityDto[]> {
     return this.service.findAll();
   }
 

@@ -1,0 +1,61 @@
+@use '../../../styles/variables' as *;
+
+button,
+.button-link {
+    font-family: inherit;
+    border: none;
+    border-radius: $button-border-radius;
+    padding: $button-padding-md;
+    font-size: $button-font-size-md;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: $button-transition;
+    min-width: 5rem; // ensure it’s at least wide enough for “Invite”
+}
+
+.primary {
+    background-color: $button-primary-color;
+    color: white;
+
+    &:hover {
+        background-color: $color-primary-hover;
+    }
+}
+
+.secondary {
+    background-color: $color-secondary-bg;
+    color: $color-text;
+
+    &:hover {
+        background-color: $color-secondary-hover;
+    }
+}
+
+.outline {
+    border: 1px solid $color-outline-border;
+    background: none;
+    color: $color-text;
+
+    &:hover {
+        background-color: $color-button-hover;
+    }
+}
+
+.sm {
+    padding: $button-padding-sm;
+    font-size: $button-font-size-sm;
+}
+
+.md {
+    padding: $button-padding-md;
+    font-size: $button-font-size-md;
+}
+
+.lg {
+    padding: $button-padding-lg;
+    font-size: $button-font-size-lg;
+}

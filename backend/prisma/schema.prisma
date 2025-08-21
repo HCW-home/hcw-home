@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum ConsultationStatus {
+  DRAFT
   SCHEDULED
   WAITING
   ACTIVE
@@ -15,6 +16,14 @@ enum ConsultationStatus {
   CANCELLED
   TERMINATED_OPEN
 }
+
+enum InvitationStatus {
+  PENDING
+  USED
+  EXPIRED
+  REVOKED
+}
+
 
 model User {
   id                 Int                        @id @default(autoincrement())
@@ -31,7 +40,7 @@ model User {
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
   acceptedAt         DateTime?
-  termId             Int?                       @default(0)
+  termId             Int?
   termVersion        Float                      @default(0.00)
   term               Terms?                     @relation(fields: [termId], references: [id])
   Participant        Participant[]
@@ -44,14 +53,35 @@ model User {
   timeSlots          TimeSlot[]                 @relation("PractitionerTimeSlots")
   Consultation       Consultation[]
   ConsultationRating ConsultationRating[]
+  UserNotificationSetting UserNotificationSetting?
 
   @@map("users")
+  MessageReadReceipt MessageReadReceipt[]
+  MediaPermissionStatus MediaPermissionStatus[]
+  ConsultationInvitesCreated ConsultationInvitation[] @relation("InvitesCreatedBy")
+  ConsultationInvitesReceived ConsultationInvitation[] @relation("InvitedUser")
+  MediaEvent         MediaEvent[]
+  messagesRead       Message[]  @relation("MessageReadBy")
 }
+model UserNotificationSetting {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  enabled     Boolean  @default(true)   // toggle all notifications
+  phone       String?  @db.VarChar(20)  // preferred phone for notifications
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("user_notification_settings")
+}
+
 
 enum UserRole {
   PATIENT
   PRACTITIONER
   ADMIN
+  EXPERT
+  GUEST
 }
 
 enum UserSex {
@@ -138,6 +168,8 @@ model Language {
   name String @unique
 
   users UserLanguage[]
+
+  @@map("language")
 }
 
 model UserLanguage {
@@ -149,13 +181,17 @@ model UserLanguage {
   language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
 
   @@unique([userId, languageId])
+  @@map("user_language")
 }
 
 model Speciality {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  users UserSpeciality[]
+  users        UserSpeciality[]
+  Consultation Consultation[]
+
+  @@map("speciality")
 }
 
 model UserSpeciality {
@@ -167,6 +203,7 @@ model UserSpeciality {
   speciality Speciality @relation(fields: [specialityId], references: [id], onDelete: Cascade)
 
   @@unique([userId, specialityId])
+  @@map("user_speciality")
 }
 
 model ConsultationRating {
@@ -181,6 +218,7 @@ model ConsultationRating {
   patient      User         @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
+  @@map("consultation_rating")
 }
 
 //  Add the new models/enums that is necessary for consultation remainders
@@ -193,32 +231,70 @@ enum MessageService {
 }
 
 model Consultation {
-  id                  Int                @id @default(autoincrement())
-  scheduledDate       DateTime?
-  createdAt           DateTime?
-  startedAt           DateTime?
-  closedAt            DateTime?
-  createdBy           Int?
-  groupId             Int?
-  ownerId             Int?
-  messageService      MessageService?
-  whatsappTemplateId  Int?
-  status              ConsultationStatus @default(SCHEDULED)
-  deletionScheduledAt DateTime?
-  version             Int                @default(1)
-  isDeleted           Boolean            @default(false)
+  id                   Int                @id @default(autoincrement())
+  scheduledDate        DateTime?
+  createdAt            DateTime?
+  startedAt            DateTime?
+  closedAt             DateTime?
+  createdBy            Int?
+  groupId              Int?
+  ownerId              Int?
+  specialityId         Int?
+  symptoms             String?
+  messageService       MessageService?
+  waitingParticipants  Int                @default(0)
+  practitionerAdmitted Boolean            @default(false)
+  whatsappTemplateId   Int?
+  status               ConsultationStatus @default(DRAFT)
+  deletionScheduledAt  DateTime?
+  version              Int                @default(1)
+  isDeleted            Boolean            @default(false)
 
   participants           Participant[]
   group                  Group?                   @relation(fields: [groupId], references: [id])
   messages               Message[]
   owner                  User?                    @relation(fields: [ownerId], references: [id])
+  speciality             Speciality?              @relation(fields: [specialityId], references: [id])
   MediasoupRouter        MediasoupRouter[]
   timeSlot               TimeSlot?
   DeletedConsultationLog DeletedConsultationLog[]
   rating                 ConsultationRating?
+  MediasoupTransport     MediasoupTransport[]
 
   @@index([status])
   @@index([ownerId])
+  @@map("consultation")
+  MediaPermissionStatus MediaPermissionStatus[]
+  ConsultationInvitation ConsultationInvitation[]
+  MediaEvent             MediaEvent[]
+}
+
+model ConsultationInvitation {
+  id             String           @id @default(cuid())
+  consultationId Int
+  consultation   Consultation     @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
+  invitedUserId  Int?
+  invitedUser    User?            @relation("InvitedUser", fields: [invitedUserId], references: [id])
+
+  inviteEmail    String           @db.VarChar(255)  
+  name           String?          @db.VarChar(100)  
+  notes          String?          
+  role           UserRole
+  token          String           @unique
+  expiresAt      DateTime
+  usedAt         DateTime?
+  status         InvitationStatus @default(PENDING)
+
+  createdById    Int
+  createdBy      User             @relation("InvitesCreatedBy", fields: [createdById], references: [id])
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("consultation_invitations")
+  @@index([consultationId])
+  @@index([inviteEmail])
 }
 
 model MediasoupServer {
@@ -236,10 +312,12 @@ model MediasoupServer {
 }
 
 model MediasoupRouter {
-  id             String @id @default(cuid())
-  consultationId Int    @unique
+  id             String   @id @default(cuid())
+  consultationId Int      @unique
   routerId       String
   serverId       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   consultation Consultation    @relation(fields: [consultationId], references: [id])
   server       MediasoupServer @relation(fields: [serverId], references: [id])
@@ -249,36 +327,104 @@ model MediasoupRouter {
   @@map("mediasoup_routers")
 }
 
-model Participant {
-  id             Int       @id @default(autoincrement())
+model MediasoupTransport {
+  id             String   @id
   consultationId Int
-  userId         Int
-  isActive       Boolean   @default(false)
-  isBeneficiary  Boolean   @default(false)
-  token          String?   @db.VarChar(255)
-  joinedAt       DateTime?
-  language       String?   @db.VarChar(50)
-  lastActiveAt   DateTime?
+  type           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  // Relations
-  consultation Consultation @relation(fields: [consultationId], references: [id])
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
+  @@index([consultationId])
+  @@map("mediasoup_transports")
+}
+
+model MediasoupProducer {
+  id             String   @id
+  transportId    String
+  consultationId Int?
+  kind           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([consultationId])
+  @@map("mediasoup_producers")
+}
+
+model MediasoupConsumer {
+  id          String   @id
+  transportId String
+  producerId  String
+  kind        String
+  createdAt   DateTime @default(now())
+
+  @@map("mediasoup_consumers")
+}
+
+model Participant {
+  id           Int       @id @default(autoincrement())
+  consultationId Int
+  userId       Int
+  isActive     Boolean   @default(false)
+  isBeneficiary Boolean  @default(false)
+  token        String?   @db.VarChar(255)
+  joinedAt     DateTime?
+  lastSeenAt   DateTime? 
+  language     String?   @db.VarChar(50)
+  lastActiveAt DateTime?
+  inWaitingRoom Boolean  @default(true)
+  role         UserRole
+
+ consultation Consultation @relation(fields: [consultationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
 
   @@unique([consultationId, userId])
+  @@index([consultationId, isActive]) 
+  @@map("participant")
 }
 
 model Message {
-  id      Int    @id @default(autoincrement())
-  userId  Int
-  content String @db.Text
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  content       String    @db.Text
   createdAt     DateTime  @default(now())
-  // Relations
-  user           User          @relation(fields: [userId], references: [id])
-  consultation   Consultation? @relation(fields: [consultationId], references: [id])
-  consultationId Int?
+  editedAt      DateTime? 
+  isSystem      Boolean   @default(false)
+  senderRole    UserRole?
+  consultationId Int
+  clientUuid     String 
+  mediaUrl      String?   @db.VarChar(2048) 
+  mediaType     String?
+
+  readReceipts  MessageReadReceipt[]
+  user          User      @relation(fields: [userId], references: [id])
+  consultation  Consultation? @relation(fields: [consultationId], references: [id])
+
+  @@index([consultationId])
+  @@unique([clientUuid, consultationId, userId])  
+  @@map("message")
+  User User[] @relation("MessageReadBy")
 }
 
-model Whatsapp_Template {
+
+model MessageReadReceipt {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  userId    Int
+  readAt    DateTime @default(now())
+
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_read_receipt")
+}
+
+
+model WhatsappTemplate {
   id              String @id
   key             String
   friendlyName    String
@@ -295,6 +441,8 @@ model Whatsapp_Template {
   types           Json
   url             String
   rejectionReason String
+
+  @@map("whatsapp_template")
 }
 
 model SmsProvider {
@@ -336,6 +484,7 @@ model DeletedConsultationLog {
   consultation Consultation @relation(fields: [consultationId], references: [id])
 
   @@index([consultationId])
+  @@map("deleted_consultation_log")
 }
 
 model PractitionerAvailability {
@@ -373,8 +522,55 @@ model TimeSlot {
   @@map("time_slots")
 }
 
+model MediaPermissionStatus {
+  id             Int       @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  cameraStatus   String    // e.g., "enabled", "disabled", "blocked"
+  microphoneStatus String  // e.g., "enabled", "disabled", "blocked"
+  updatedAt      DateTime  @updatedAt
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([consultationId, userId])
+}
+
+
 enum TimeSlotStatus {
   AVAILABLE
   BOOKED
   BLOCKED
 }
+
+model MediaEvent {
+  id             Int          @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  type           MediaEventType
+  createdAt      DateTime     @default(now())
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([consultationId])
+  @@index([userId])
+}
+
+enum MediaEventType {
+  USER_JOINED
+  USER_LEFT
+  CAM_ON
+  CAM_OFF
+  MIC_ON
+  MIC_OFF
+}
+
+// tokens
+enum TokenType {
+  invite
+  login
+  password_reset
+}
+
+

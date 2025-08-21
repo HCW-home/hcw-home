@@ -1,0 +1,274 @@
+.profile-container {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+  overflow: scroll;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 32px;
+  
+  .profile-title {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #333;
+    margin: 0 0 8px 0;
+  }
+  
+  .profile-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  
+  .loading-text {
+    margin-top: 16px;
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+.profile-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  mat-card-header {
+    padding: 24px 24px 0 24px;
+    
+    mat-card-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    mat-card-subtitle {
+      color: #666;
+      margin-top: 4px;
+    }
+  }
+  
+  mat-card-content {
+    padding: 16px 24px 24px 24px;
+  }
+}
+
+.readonly-card {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  .form-field {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.form-field {
+  width: 100%;
+  
+  mat-label {
+    font-weight: 500;
+  }
+  
+  mat-error {
+    font-size: 0.875rem;
+  }
+  
+  mat-hint {
+    color: #666;
+    font-size: 0.875rem;
+  }
+}
+
+.readonly-field {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  .readonly-label {
+    font-weight: 500;
+    color: #333;
+    width: 150px;
+    flex-shrink: 0;
+  }
+  
+  .readonly-value {
+    color: #666;
+    flex: 1;
+    
+    &.role-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: inline-block;
+    }
+    
+    &.status-badge {
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: #ffebee;
+      color: #c62828;
+      display: inline-block;
+      
+      &.approved {
+        background: #e8f5e8;
+        color: #2e7d32;
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .readonly-label {
+      width: 100%;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  
+  .info-chip {
+    background: #f5f5f5;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    border: 1px solid #e0e0e0;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 24px 0;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    
+    app-button {
+      width: 100%;
+    }
+  }
+}
+
+.error-container {
+  text-align: center;
+  padding: 64px 24px;
+  
+  .error-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #f44336;
+    margin-bottom: 16px;
+  }
+  
+  h2 {
+    color: #333;
+    margin: 0 0 16px 0;
+  }
+  
+  p {
+    color: #666;
+    margin: 0 0 24px 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .profile-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-header {
+    .profile-title {
+      font-size: 2rem;
+    }
+  }
+  
+  .profile-card {
+    mat-card-header,
+    mat-card-content {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 12px;
+  }
+  
+  .profile-header {
+    .profile-title {
+      font-size: 1.75rem;
+    }
+    
+    .profile-subtitle {
+      font-size: 1rem;
+    }
+  }
+}

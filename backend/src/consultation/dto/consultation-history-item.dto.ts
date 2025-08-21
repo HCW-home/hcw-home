@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsInt, IsObject, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDate, IsEnum, IsInt, IsObject, IsOptional, IsPhoneNumber, IsString, IsArray } from 'class-validator';
 import { ConsultationStatus, MessageService } from '@prisma/client';
 
 class ConsultationDto {
@@ -26,6 +26,21 @@ class ConsultationDto {
   @IsOptional()
   @IsDate()
   closedAt?: Date;
+
+  @ApiPropertyOptional({ example: 'fever, cough' })
+  @IsOptional()
+  @IsString()
+  symptoms?: string;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsInt()
+  specialityId?: number;
+
+  @ApiPropertyOptional({ type: [Object], description: 'List of participants' })
+  @IsOptional()
+  @IsArray()
+  participants?: any[]; 
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -57,7 +72,7 @@ class ConsultationDto {
   status: ConsultationStatus;
 }
 
-class PatientDto {
+export class PatientDto {
   @ApiProperty()
   @IsInt()
   id: number;

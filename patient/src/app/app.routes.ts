@@ -1,30 +1,52 @@
 import { Routes } from '@angular/router';
+import { HomePage } from './pages/home/home.page';
+import { ConsultationRequestPage } from './pages/consultation-request/consultation-request.page';
+import { PatientDashboard } from './pages/patient-dashboard/patient-dashboard.page';
+import { PostConsultationFeedbackPage } from './pages/post-consultation-feedback/post-consultation-feedback.page';
+import { ChooseConsultationTimeslotPage } from './pages/choose-consultation-timeslot/choose-consultation-timeslot.page';
+import { LoginPage } from './pages/login/login.page';
+import { RoutePaths } from './constants/route-path.enum';
+import { AuthGuard } from './auth/guards/auth.guard';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
   {
-    path: 'home',
-    loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
+    path: RoutePaths.Home,
+    component: HomePage,
+    canActivate: [AuthGuard],
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: RoutePaths.Home,
     pathMatch: 'full',
   },
-  {
-    path: 'consultation-request',
-    loadComponent: () => import('./pages/consultation-request/consultation-request.page').then( m => m.ConsultationRequestPage)
+  {  
+    path: RoutePaths.ConsultationRequest,
+    component: ConsultationRequestPage,
+    canActivate: [AuthGuard],
   },
   {
-    path: 'patient-dashboard',
-    loadComponent: () => import('./pages/patient-dashboard/patient-dashboard.page').then( m => m.PatientDashboard)
+    path: RoutePaths.PatientDashboard,
+    component: PatientDashboard,
+    canActivate: [AuthGuard],
   },
   {
-    path: 'post-consultation-feedback',
-    loadComponent: () => import('./pages/post-consultation-feedback/post-consultation-feedback.page').then( m => m.PostConsultationFeedbackPage)
+    path: RoutePaths.PostConsultationFeedback,
+    component: PostConsultationFeedbackPage,
+    canActivate: [AuthGuard],
   },
   {
-    path: 'choose-consultation-timeslot/:practitionerId',
-    loadComponent: () => import('./pages/choose-consultation-timeslot/choose-consultation-timeslot.page').then( m => m.ChooseConsultationTimeslotPage)
+    path: RoutePaths.ChooseConsultationTimeslot,
+    component: ChooseConsultationTimeslotPage,
+    canActivate: [AuthGuard],
   },
-
+  {
+    path: RoutePaths.Profile,
+    component: ProfileComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: RoutePaths.Login,
+    component: LoginPage,
+  },
 ];

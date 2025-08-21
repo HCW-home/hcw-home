@@ -12,6 +12,16 @@ export class IdNameDto {
   @Expose()
   name: string;
 }
+export class NotificationSettingDto {
+  @ApiProperty({ description: 'Toggle all notifications' })
+  @Expose()
+  enabled: boolean;
+
+  @ApiProperty({ description: 'Preferred phone number for notifications', nullable: true })
+  @Expose()
+  phone?: string | null;
+}
+
 
 export class UserResponseDto {
   @ApiProperty({ description: 'User ID' })
@@ -115,7 +125,11 @@ export class UserResponseDto {
   )
   specialities?: IdNameDto[];
 
-
+  @ApiProperty({ description: 'Notification settings', type: () => NotificationSettingDto, required: false })
+  @Expose()
+  @Type(() => NotificationSettingDto)
+  UserNotificationSetting?: NotificationSettingDto | null;
+  
   constructor(partial: Partial<UserResponseDto>) {
     Object.assign(this, partial);
   }

@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
     try {
       const payload = await this.authService.verifyToken(token);
       // Check if the user exists in the database
-      const user = await this.authService.findByEmail(payload.userEmail);
+      const user = await this.authService.findById(payload.userId);
       if (!user) {
         throw HttpExceptionHelper.unauthorized(
           'no user found',

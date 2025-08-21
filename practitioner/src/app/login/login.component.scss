@@ -76,6 +76,12 @@
   right: 0;
 }
 
+.divider span {
+  background-color: #fff; 
+  padding: 0 0.5em;
+  position: relative;
+  z-index: 1;
+}
 .full-width {
   width: 100%;
 }

@@ -6,14 +6,14 @@ import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { Role } from './enums/role.enum';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { User, UserRole, UserStatus } from '@prisma/client';
+import { TokenType, User, UserRole, UserStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto, TokenDto } from './dto/token.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { plainToInstance } from 'class-transformer';
 import { OidcUserDto } from './dto/oidc-user.dto';
-import { promises } from 'dns';
-
+import { randomUUID } from 'crypto';
+import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 
 function generateStrongPassword(length = 12): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
@@ -29,9 +29,47 @@ export class AuthService {
     private readonly JwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly databaseService: DatabaseService,
-  ) { }
+  ) {}
 
-  async canLoginLocal(user: { id: number, email: string, role: string }): Promise<boolean> {
+  async loginWithMagicLink(token: string): Promise<TokenDto> {
+    const invitation =
+      await this.databaseService.consultationInvitation.findUnique({
+        where: { token },
+        include: { invitedUser: true },
+      });
+
+    if (!invitation) {
+      throw HttpExceptionHelper.notFound('Invalid or expired magic link');
+    }
+
+    if (invitation.status !== 'PENDING') {
+      throw HttpExceptionHelper.badRequest('Magic link has already been used');
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      throw HttpExceptionHelper.badRequest('Magic link has expired');
+    }
+
+    await this.databaseService.consultationInvitation.update({
+      where: { id: invitation.id },
+      data: { status: 'USED', usedAt: new Date() },
+    });
+
+    const user = invitation.invitedUser;
+    if (!user) {
+      throw HttpExceptionHelper.internalServerError(
+        'User not found for this invitation',
+      );
+    }
+
+    return this.generateToken(plainToInstance(UserResponseDto, user));
+  }
+
+  async canLoginLocal(user: {
+    id: number;
+    email: string;
+    role: string;
+  }): Promise<boolean> {
     if (process.env.LOGIN_METHOD === 'password') {
       return true;
     }
@@ -49,9 +87,9 @@ export class AuthService {
 
   async validateUser(
     loginUserDto: LoginUserDto,
-  ): Promise<{ userId: number; userEmail: string, userRole: string }> {
+  ): Promise<{ userId: number; userEmail: string; userRole: string }> {
     const user = await this.findByEmail(loginUserDto.email);
-    const userRole= user.role
+    const userRole = user.role;
     if (!user || user.temporaryAccount) {
       this.logger.warn(`No valid user found for email ${loginUserDto.email}`);
       throw HttpExceptionHelper.notFound('user not found/user not valid');
@@ -77,19 +115,23 @@ export class AuthService {
       throw HttpExceptionHelper.unauthorized('Incorrect Password');
     }
     if (!this.isRoleAuthorized(userRole, loginUserDto.role)) {
-      this.logger.warn(`Role mismatch: User has ${userRole}, tried to access ${loginUserDto.role}`);
-      throw HttpExceptionHelper.unauthorized(`Can't login as ${userRole.toLowerCase()}`);
+      this.logger.warn(
+        `Role mismatch: User has ${userRole}, tried to access ${loginUserDto.role}`,
+      );
+      throw HttpExceptionHelper.unauthorized(
+        `Can't login as ${userRole.toLowerCase()}`,
+      );
     }
-    this.logger.log(`validateUser: ${user.email} validate successfully`)
+    this.logger.log(`validateUser: ${user.email} validate successfully`);
     return {
       userId: user.id,
       userEmail: user.email,
-      userRole: user.role
+      userRole: user.role,
     };
   }
 
-  async loginUser(userDto: { id: string, email: string }): Promise<TokenDto> {
-    const userEntity = await this.findByEmail(userDto.email)
+  async loginUser(id: number): Promise<TokenDto> {
+    const userEntity = await this.findById(id);
     const user = new UserResponseDto(userEntity);
     const tokens = await this.generateToken(user);
     return tokens;
@@ -130,7 +172,6 @@ export class AuthService {
       ? this.configService.get<string>('jwt.refreshSecret')
       : this.configService.get<string>('jwt.accessSecret');
 
-
     if (!token) {
       this.logger.warn('Token not provided');
       throw HttpExceptionHelper.badRequest('Token is required');
@@ -154,9 +195,9 @@ export class AuthService {
       throw HttpExceptionHelper.badRequest('Refresh token is required');
     }
     try {
-      const { userEmail } = await this.verifyRefreshToken(refreshToken);
+      const { userEmail, userId } = await this.verifyRefreshToken(refreshToken);
 
-      const user = await this.findByEmail(userEmail);
+      const user = await this.findById(userId);
 
       if (!user || user.status !== 'APPROVED') {
         this.logger.warn(`User with ID ${user.id} not found or unapproved`);
@@ -211,7 +252,7 @@ export class AuthService {
       throw HttpExceptionHelper.conflict('Email is already in use');
     }
     // Hash password
-    const hashedPassword = await this.encryptPassword(registerDto.password)
+    const hashedPassword = await this.encryptPassword(registerDto.password);
 
     // Create new user
     const createUserData = {
@@ -241,22 +282,33 @@ export class AuthService {
 
     if (!user) {
       this.logger.log(`user not found with email:${email}`);
-      return
+      return;
     }
     this.logger.log(`user found with email:${email}`);
     return user;
   }
+  async findById(id: number): Promise<any | null> {
+    if (!id) {
+      throw new Error('User ID is required');
+    }
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+    });
 
-  async findByEmailRole(
-    email: string,
-    role: UserRole)
-    : Promise<any | null> {
+    if (!user) {
+      this.logger.log(`user not found with id:${id}`);
+      return;
+    }
+    this.logger.log(`user found with id:${id}`);
+    return user;
+  }
+  async findByEmailRole(email: string, role: UserRole): Promise<any | null> {
     const user = await this.databaseService.user.findUnique({
       where: { email, role },
     });
     if (!user) {
       this.logger.log(`user not found with email:${email} and role:${role}`);
-      return
+      return;
     }
     this.logger.log(`user found with email:${email}`);
     return plainToInstance(UserResponseDto, user, {
@@ -264,10 +316,9 @@ export class AuthService {
     });
   }
 
-
   // oidc user validation
-
-  async validateAdmin(  //validate admin
+  async validateAdmin(
+    //validate admin
     user: OidcUserDto,
   ): Promise<LoginResponseDto> {
     this.logger.log(`oidc admin validation called`);
@@ -280,14 +331,19 @@ export class AuthService {
     if (existingUser && existingUser.role === Role.ADMIN) {
       if (existingUser.status !== UserStatus.APPROVED) {
         this.logger.log(`Admin with ${existingUser.email} not approved`);
-        throw HttpExceptionHelper.unauthorized(`Admin with ${existingUser.email} not approved`);
+        throw HttpExceptionHelper.unauthorized(
+          `Admin with ${existingUser.email} not approved`,
+        );
       }
     }
     if (!existingUser) {
       this.logger.error(`user not found with role: ${UserRole.ADMIN}`);
-      throw HttpExceptionHelper.notFound(`user not found with email: ${user.email} and role: ${UserRole.ADMIN}`);
+      throw HttpExceptionHelper.notFound(
+        `user not found with email: ${user.email} and role: ${UserRole.ADMIN}`,
+      );
     }
-    const { accessToken, refreshToken } = await this.generateToken(existingUser);
+    const { accessToken, refreshToken } =
+      await this.generateToken(existingUser);
     const userDto = new UserResponseDto(existingUser);
     return {
       user: userDto,
@@ -298,8 +354,8 @@ export class AuthService {
     };
   }
 
-
-  async validatePractitioner(  // validate practitioner , if role is admin then give access else create new practitioner 
+  async validatePractitioner(
+    // validate practitioner , if role is admin then give access else create new practitioner
     user: OidcUserDto,
   ): Promise<LoginResponseDto> {
     this.logger.log(`oidc practitioner validation called`);
@@ -309,33 +365,53 @@ export class AuthService {
       throw HttpExceptionHelper.badRequest('Email is required');
     }
 
-    let existingUser = await this.findByEmailRole(user.email, UserRole.PRACTITIONER).catch(() => null);
+    let existingUser = await this.findByEmailRole(
+      user.email,
+      UserRole.PRACTITIONER,
+    ).catch(() => null);
     if (existingUser && existingUser.role === Role.PRACTITIONER) {
       if (existingUser.status !== UserStatus.APPROVED) {
         this.logger.log(`Practitioner with ${existingUser.email} not approved`);
-        throw HttpExceptionHelper.unauthorized(`Practitioner with ${existingUser.email} not approved`);
+        throw HttpExceptionHelper.unauthorized(
+          `Practitioner with ${existingUser.email} not approved`,
+        );
       }
     }
     if (!existingUser) {
       this.logger.log(` practitioner user not found with email: ${user.email}`);
-      existingUser = await this.findByEmailRole(user.email, UserRole.ADMIN).catch(() => null);
+      existingUser = await this.findByEmailRole(
+        user.email,
+        UserRole.ADMIN,
+      ).catch(() => null);
     }
     if (!existingUser) {
-      const patientUser = await this.findByEmailRole(user.email, UserRole.PATIENT).catch(() => null);
+      const patientUser = await this.findByEmailRole(
+        user.email,
+        UserRole.PATIENT,
+      ).catch(() => null);
       if (patientUser) {
-        this.logger.warn(`User with email ${user.email} already exists as PATIENT`);
-        throw HttpExceptionHelper.unauthorized(`Cannot register as PRACTITIONER. Email already exists as PATIENT.`);
+        this.logger.warn(
+          `User with email ${user.email} already exists as PATIENT`,
+        );
+        throw HttpExceptionHelper.unauthorized(
+          `Cannot register as PRACTITIONER. Email already exists as PATIENT.`,
+        );
       }
     }
     if (!existingUser) {
-      this.logger.log(`Creating new practitioner user with email: ${user.email}`);
+      this.logger.log(
+        `Creating new practitioner user with email: ${user.email}`,
+      );
       // Create new Practitioner
       const createUserData = {
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
         email: user.email!,
         role: Role.PRACTITIONER,
-        status: process.env.OPENID_AUTOCREATE_USER === 'true' ? UserStatus.APPROVED : UserStatus.NOT_APPROVED,
+        status:
+          process.env.OPENID_AUTOCREATE_USER === 'true'
+            ? UserStatus.APPROVED
+            : UserStatus.NOT_APPROVED,
         temporaryAccount: false,
         phoneNumber: null,
         country: null,
@@ -347,10 +423,12 @@ export class AuthService {
       });
     }
 
-
-    const { accessToken, refreshToken } = await this.generateToken(existingUser);
+    const { accessToken, refreshToken } =
+      await this.generateToken(existingUser);
     const userDto = new UserResponseDto(existingUser);
-    this.logger.log(`Successfully logged in as Practitioner with ${existingUser.email}`);
+    this.logger.log(
+      `Successfully logged in as Practitioner with ${existingUser.email}`,
+    );
     return {
       user: userDto,
       tokens: {
@@ -360,9 +438,7 @@ export class AuthService {
     };
   }
 
-
-  async loginUserValidate(
-    user: OidcUserDto) {
+  async loginUserValidate(user: OidcUserDto) {
     const role = (user.role as string)?.toUpperCase() as Role;
     switch (role) {
       case Role.ADMIN:
@@ -370,11 +446,9 @@ export class AuthService {
       case Role.PRACTITIONER:
         return this.validatePractitioner(user);
       default:
-        return null
+        return null;
     }
   }
-
-
 
   async getcurrentuser(id: number): Promise<UserResponseDto> {
     const user = await this.databaseService.user.findUnique({
@@ -384,9 +458,9 @@ export class AuthService {
         GroupMember: { include: { group: true } },
         languages: { include: { language: true } },
         specialities: { include: { speciality: true } },
+        UserNotificationSetting: true,
       },
     });
-
     if (!user) {
       throw HttpExceptionHelper.notFound('User not found');
     }
@@ -394,8 +468,6 @@ export class AuthService {
       excludeExtraneousValues: true,
     });
   }
-
-
 
   encryptPassword(password: string): Promise<string> {
     const saltRounds = 12;
@@ -408,10 +480,230 @@ export class AuthService {
     const normalizedUiRole = uiRole.toUpperCase() as Role;
 
     if (normalizedUserRole === Role.ADMIN.toUpperCase()) return true;
-    if (normalizedUserRole === Role.PRACTITIONER.toUpperCase()) return normalizedUiRole === Role.PRACTITIONER;
-    if (normalizedUserRole === Role.PATIENT.toUpperCase()) return normalizedUiRole === Role.PATIENT;
+    if (normalizedUserRole === Role.PRACTITIONER.toUpperCase())
+      return normalizedUiRole === Role.PRACTITIONER;
+    if (normalizedUserRole === Role.PATIENT.toUpperCase())
+      return normalizedUiRole === Role.PATIENT;
     return false;
   }
 
+  async updatePassword(email: string, password: string) {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw HttpExceptionHelper.notFound('User not found');
+    }
 
+    if (!password) {
+      throw HttpExceptionHelper.badRequest('Password is required');
+    }
+    const encryptedPassword = await this.encryptPassword(password);
+    await this.databaseService.user.update({
+      where: { email },
+      data: { password: encryptedPassword },
+    });
+    return { message: 'Password reset successful' };
+  }
+
+  async generateMagicToken(contact: string, type: TokenType) {
+    const isEmail = contact.includes('@');
+    let user;
+
+    if (isEmail) {
+      // Try to find existing PATIENT by email
+      user = await this.databaseService.user.findFirst({
+        where: {
+          email: contact,
+          role: UserRole.PATIENT,
+        },
+      });
+
+      // Check if the user is an ADMIN or PRACTITIONER
+      if (!user) {
+        user = await this.databaseService.user.findFirst({
+          where: {
+            email: contact,
+            role: {
+              in: [UserRole.ADMIN, UserRole.PRACTITIONER],
+            },
+          },
+        });
+
+        if (user) {
+          this.logger.warn(
+            `Cannot generate magic token for ADMIN or PRACTITIONER with email ${contact}`,
+          );
+          throw HttpExceptionHelper.unauthorized(
+            `Cannot generate magic token for ADMIN or PRACTITIONER`,
+          );
+        }
+      }
+    }
+
+    // If no user found, create temp user
+    if (!user) {
+      user = await this.databaseService.user.create({
+        data: {
+          email: isEmail ? contact : `temp-${randomUUID()}@example.com`,
+          phoneNumber: isEmail ? null : contact,
+          firstName: 'Guest',
+          lastName: 'User',
+          password: 'defaultpassword', // Placeholder password
+          role: UserRole.PATIENT,
+          status: UserStatus.NOT_APPROVED,
+          temporaryAccount: true,
+        },
+      });
+    }
+
+    const payload = {
+      contact,
+      type,
+      userId: user.id,
+    };
+
+    const magicToken = this.JwtService.sign(payload, {
+      secret: this.configService.get<string>('jwt.accessSecret'),
+      expiresIn: this.configService.get<string>('jwt.accessExpiresIn') || '24h',
+    });
+    this.logger.log(
+      `Magic token generated for user ${user.id} with contact ${contact}`,
+    );
+    return {
+      token: magicToken,
+      user,
+    };
+  }
+
+  async validateMagicToken(token: string): Promise<{ userId: number }> {
+    const secret = this.configService.get<string>('jwt.accessSecret');
+
+    // Step 1: Ensure token is provided
+    if (!token) {
+      this.logger.warn('Magic token not provided');
+      throw HttpExceptionHelper.badRequest('Magic token is required');
+    }
+
+    this.logger.log('Verifying magic token');
+
+    try {
+      // Step 2: Verify JWT token using the secret
+      const decoded = await this.JwtService.verify(token, { secret });
+      console.log(decoded);
+
+      // Optional: Check for required fields in decoded payload
+      if (!decoded?.userId || !decoded?.contact || !decoded?.type) {
+        this.logger.error('Decoded JWT token is missing required fields');
+        throw HttpExceptionHelper.unauthorized('Invalid token payload');
+      }
+      this.logger.log(`JWT token verified for user: ${decoded.userId}`);
+
+      return {
+        userId: decoded.userId,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Error validating magic token:',
+        error?.message || error,
+      );
+      throw HttpExceptionHelper.unauthorized('Invalid or expired magic token');
+    }
+  }
+
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    const {
+      email,
+      organisationIds,
+      groupIds,
+      languageIds,
+      specialityIds,
+      ...rest
+    } = updateUserDto;
+
+    // Check if user exists
+    const existingUser = await this.databaseService.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      throw HttpExceptionHelper.unauthorized('User not found');
+    }
+
+    // Check email uniqueness if email is being updated
+    if (email) {
+      const emailExists = await this.databaseService.user.findFirst({
+        where: {
+          email,
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+
+      if (emailExists) {
+        throw HttpExceptionHelper.conflict('Email already exists');
+      }
+    }
+    let user;
+    await this.databaseService.$transaction(async (tx) => {
+      user = await tx.user.update({
+        where: { id },
+        data: { ...rest, email, temporaryAccount: false },
+      });
+
+      if (organisationIds) {
+        await tx.organizationMember.deleteMany({ where: { userId: id } });
+        if (organisationIds.length > 0) {
+          await tx.organizationMember.createMany({
+            data: organisationIds.map((orgId) => ({
+              userId: id,
+              organizationId: orgId,
+            })),
+          });
+        }
+      }
+
+      if (groupIds) {
+        await tx.groupMember.deleteMany({ where: { userId: id } });
+        if (groupIds.length > 0) {
+          await tx.groupMember.createMany({
+            data: groupIds.map((groupId) => ({
+              userId: id,
+              groupId,
+            })),
+          });
+        }
+      }
+
+      if (languageIds) {
+        await tx.userLanguage.deleteMany({ where: { userId: id } });
+        if (languageIds.length > 0) {
+          await tx.userLanguage.createMany({
+            data: languageIds.map((languageId) => ({
+              userId: id,
+              languageId,
+            })),
+          });
+        }
+      }
+
+      if (specialityIds) {
+        await tx.userSpeciality.deleteMany({ where: { userId: id } });
+        if (specialityIds.length > 0) {
+          await tx.userSpeciality.createMany({
+            data: specialityIds.map((specialityId) => ({
+              userId: id,
+              specialityId,
+            })),
+          });
+        }
+      }
+    });
+    this.logger.log(`User with ID ${id} updated successfully`);
+    return await this.getcurrentuser(user.id);
+  }
 }
+
+

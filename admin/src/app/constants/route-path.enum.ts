@@ -6,5 +6,7 @@ export enum RoutePaths {
   Terms='term',
   newTerm='term/new',
   Login='login',
-  Availability='availability'
+  Availability='availability',
+  FogetPassword='forgot-password'
+
 }

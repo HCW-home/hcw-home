@@ -6,20 +6,23 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Query,
   Res,
   UsePipes,
   ValidationPipe,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   JoinConsultationDto,
   JoinConsultationResponseDto,
 } from './dto/join-consultation.dto';
 import { UserIdParamPipe } from './validation/user-id-param.pipe';
 import { ConsultationIdParamPipe } from './validation/consultation-id-param.pipe';
-import { ApiResponseDto } from 'src/common/helpers/response/api-response.dto';
+import { ApiResponseDto } from '../common/helpers/response/api-response.dto';
 import { WaitingRoomPreviewResponseDto } from './dto/waiting-room-preview.dto';
 import {
   AdmitPatientDto,
@@ -30,6 +33,7 @@ import {
   CreateConsultationWithTimeSlotDto,
   ConsultationResponseDto,
 } from './dto/create-consultation.dto';
+import { AssignPractitionerDto } from './dto/assign-practitioner.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -55,12 +59,36 @@ import {
   OpenConsultationResponseDto,
   OpenConsultationQueryDto,
 } from './dto/open-consultation.dto';
-import { ResponseStatus } from 'src/common/helpers/response/response-status.enum';
+import { ResponseStatus } from '../common/helpers/response/response-status.enum';
+import { AddParticipantDto } from './dto/add-participant.dto';
 
 @ApiTags('consultation')
 @Controller('consultation')
+@UseGuards(ThrottlerGuard)
 export class ConsultationController {
   constructor(private readonly consultationService: ConsultationService) {}
+
+  @Post('/add-participant')
+  @ApiOperation({ summary: 'Add a participant to a consultation in real-time' })
+  @ApiBody({ type: AddParticipantDto })
+  @ApiOkResponse({
+    description: 'Participant added successfully',
+    type: ApiResponseDto,
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async addParticipant(
+    @Body() addParticipantDto: AddParticipantDto,
+    @Query('userId', UserIdParamPipe) userId: number,
+  ): Promise<any> {
+    const result = await this.consultationService.addParticipantToConsultation(
+      addParticipantDto,
+      userId,
+    );
+    return {
+      ...result,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   @Post()
   @ApiOperation({
@@ -124,6 +152,7 @@ export class ConsultationController {
   }
 
   @Post(':id/join/patient')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Patient joins a consultation' })
   @ApiParam({ name: 'id', type: Number, description: 'Consultation ID' })
   @ApiBody({ type: JoinConsultationDto })
@@ -133,7 +162,7 @@ export class ConsultationController {
   })
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async joinPatient(
-    @Param('id', ConsultationIdParamPipe) id: number,
+    @Param('id') id: number,
     @Body() body: JoinConsultationDto,
   ): Promise<any> {
     const result = await this.consultationService.joinAsPatient(
@@ -147,6 +176,7 @@ export class ConsultationController {
   }
 
   @Post(':id/join/practitioner')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Practitioner joins a consultation' })
   @ApiParam({ name: 'id', type: Number, description: 'Consultation ID' })
   @ApiBody({ type: JoinConsultationDto })
@@ -170,6 +200,7 @@ export class ConsultationController {
   }
 
   @Post('/admit')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Admit a patient to a consultation (practitioner or admin only)',
   })
@@ -220,18 +251,44 @@ export class ConsultationController {
 
   @Get('/waiting-room')
   @ApiOperation({
-    summary: 'Get waiting room consultations for a practitioner',
+    summary:
+      'Get waiting room consultations for a practitioner with pagination',
   })
   @ApiQuery({ name: 'userId', type: Number, description: 'Practitioner ID' })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Page number (default 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: 'Items per page (default 10)',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    enum: ['asc', 'desc'],
+    required: false,
+    description: 'Sort order by scheduledDate',
+  })
   @ApiOkResponse({
     description: 'Waiting room consultations',
     type: ApiResponseDto<WaitingRoomPreviewResponseDto>,
   })
   async getWaitingRoom(
     @Query('userId', UserIdParamPipe) userId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'asc',
   ): Promise<any> {
-    const result =
-      await this.consultationService.getWaitingRoomConsultations(userId);
+    const result = await this.consultationService.getWaitingRoomConsultations(
+      userId,
+      page,
+      limit,
+      sortOrder,
+    );
     return {
       ...result,
       timestamp: new Date().toISOString(),
@@ -330,14 +387,11 @@ export class ConsultationController {
   ): Promise<any> {
     const consultations =
       await this.consultationService.getPatientConsultationHistory(patientId);
-    return {
-      ...ApiResponseDto.success(
-        consultations,
-        'Patient consultation history fetched successfully',
-        HttpStatus.OK,
-      ),
-      timestamp: new Date().toISOString(),
-    };
+    return ApiResponseDto.success(
+      consultations,
+      'Patient consultation history fetched successfully',
+      HttpStatus.OK,
+    );
   }
 
   @Post('/patient/rate')
@@ -461,7 +515,6 @@ export class ConsultationController {
     @Param('id', ConsultationIdParamPipe) id: number,
     @Query('practitionerId', UserIdParamPipe) practitionerId: number,
   ): Promise<ApiResponseDto<ConsultationDetailDto>> {
-    // Use the service method to verify access and get details
     const data = await this.consultationService.getOpenConsultationDetails(
       id,
       practitionerId,
@@ -474,6 +527,45 @@ export class ConsultationController {
       message: 'Open consultation details fetched successfully',
       timestamp: new Date().toISOString(),
       data,
+    };
+  }
+
+  @Patch(':id/assign-practitioner')
+  @ApiOperation({
+    summary: 'Assign a practitioner to a draft consultation (admin only)',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Draft consultation ID' })
+  @ApiBody({ type: AssignPractitionerDto })
+  @ApiOkResponse({
+    description: 'Practitioner assigned successfully',
+    type: ApiResponseDto<ConsultationResponseDto>,
+  })
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @Patch(':id/assign-practitioner')
+  async assignPractitioner(
+    @Param('id', ConsultationIdParamPipe) consultationId: number,
+    @Body() body: AssignPractitionerDto,
+    @Query('userId', UserIdParamPipe) userId: number,
+  ): Promise<any> {
+    const updatedConsultation =
+      await this.consultationService.assignPractitionerToConsultation(
+        consultationId,
+        body.practitionerId,
+        userId,
+      );
+
+    return {
+      ...ApiResponseDto.success(
+        updatedConsultation,
+        'Practitioner assigned successfully',
+      ),
+      timestamp: new Date().toISOString(),
     };
   }
 }

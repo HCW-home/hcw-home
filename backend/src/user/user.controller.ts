@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Req,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -89,7 +90,7 @@ export class UserController {
       path: req.path,
     });
   }
-  @Roles(Role.ADMIN)
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
@@ -106,11 +107,7 @@ export class UserController {
     @Req() req: Request,
   ) {
     const user = await this.userService.update(id, updateUserDto);
-    return ApiResponseDto.success(user, 'User updated successfully', 200, {
-      requestId: req['id'],
-      path: req.path,
-    });
-  }
+    return ApiResponseDto.success(user, 'User updated successfully', HttpStatus.OK) }
 
   @Patch(':id/change-password')
   @ApiOperation({ summary: 'Change user password' })

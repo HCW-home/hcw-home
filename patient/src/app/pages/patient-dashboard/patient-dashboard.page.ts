@@ -12,7 +12,7 @@ import {
   calendarOutline, checkmarkCircle 
 } from 'ionicons/icons';
 import { Consultation, ConsultationService } from 'src/app/services/consultation.service';
-
+import { AuthService } from 'src/app/services/auth.service';
 
 
 @Component({
@@ -35,7 +35,8 @@ export class PatientDashboard implements OnInit{
   upcomingConsultations: Consultation[] = [];
 
   constructor(
-    private consultationService: ConsultationService
+    private consultationService: ConsultationService,
+    private authService: AuthService
   ){
     addIcons({
       videocamOutline, 
@@ -45,8 +46,12 @@ export class PatientDashboard implements OnInit{
     });
   }
   ngOnInit() {
-    const patientId = 123; // Replace this with the actual logged-in patient's ID
-
+    const user = this.authService.getCurrentUser();
+    const patientId = user?.id; 
+    if (!patientId) {
+      console.error('No patient ID found for the current user');
+      return;
+    }
     this.consultationService.getPatientConsultationHistory(patientId).subscribe({
       next: (res: any) => {
         this.consultations = res.data;

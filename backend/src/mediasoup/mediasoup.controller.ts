@@ -23,20 +23,20 @@ import { CreateMediasoupServerDto } from './dto/create-mediasoup-server.dto';
 import { UpdateMediasoupServerDto } from './dto/update-mediasoup-server.dto';
 import { QueryMediasoupServerDto } from './dto/query-mediasoup-server.dto';
 import { MediasoupServerResponseDto } from './dto/mediasoup-server-response.dto';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   ApiResponseDto,
   PaginatedApiResponseDto,
-} from 'src/common/helpers/response/api-response.dto';
+} from '../common/helpers/response/api-response.dto';
 import {
   createMediasoupServerSchema,
   updateMediasoupServerSchema,
   queryMediasoupServerSchema,
 } from './validation/mediasoup.validation';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Role } from 'src/auth/enums/role.enum';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Role } from '../auth/enums/role.enum';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @ApiTags('Mediasoup Servers')
 @Controller('mediasoup-server')

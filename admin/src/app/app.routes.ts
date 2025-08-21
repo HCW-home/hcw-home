@@ -9,11 +9,15 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { AvailabilityComponent } from './availability/availability.component';
-
+import { ForgotPasswordComponent } from './shared/components/forget-password/forget-password.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: RoutePaths.Dashboard, pathMatch: 'full' },
     { path: RoutePaths.Login, component: LoginComponent },
+    {
+      path:RoutePaths.FogetPassword,
+      component:ForgotPasswordComponent
+    },
   
     // Protected routes
     { path: RoutePaths.Dashboard, component: DashboardComponent, canActivate: [AuthGuard] },

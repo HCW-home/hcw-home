@@ -18,6 +18,6 @@ import { ConfigController } from './config.controller';
   ],
   providers: [ConfigService],
   exports: [ConfigService],
-  controllers:[ConfigController]
+  controllers: [ConfigController],
 })
 export class ConfigModule {}

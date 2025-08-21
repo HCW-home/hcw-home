@@ -7,23 +7,19 @@ import { OidcUserDto } from '../dto/oidc-user.dto';
 import { AuthService } from '../auth.service';
 import { ApiResponseDto } from 'src/common/helpers/response/api-response.dto';
 import { Role } from '../enums/role.enum';
+import { ConfigService } from 'src/config/config.service';
 
 // admin oidc login
 
 @Injectable()
 export class AdminStrategy extends PassportStrategy(OpenIDConnectStrategy, 'openidconnect_admin') {
   constructor(
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService
   ) {
+    const data = configService.getAdminOidcConfig();
     super({
-      issuer: 'https://dev-1top0t1k87t4066s.us.auth0.com/',
-      authorizationURL: 'https://dev-1top0t1k87t4066s.us.auth0.com/authorize',
-      tokenURL: 'https://dev-1top0t1k87t4066s.us.auth0.com/oauth/token',
-      userInfoURL: 'https://dev-1top0t1k87t4066s.us.auth0.com/userinfo',
-      clientID: 'wQ9a6B0mMQqkzrtghGq1a7i5gTSvVslZ',
-      clientSecret: 'krqj5cj_xF3AGS6K86RyZmN1KoZobehJQQYMVZ9yOWBiSb9jgPcySDDFu0SH8gpL',
-      callbackURL: 'http://localhost:3000/api/v1/auth/callback/openidconnect_admin?role=admin',
-      scope: ['openid', 'profile', 'email'],
+      ...data,
       passReqToCallback: true,
     });
   }
@@ -42,11 +38,11 @@ export class AdminStrategy extends PassportStrategy(OpenIDConnectStrategy, 'open
         email: profile.emails?.[0]?.value,
         firstName,
         lastName,
-        role:Role.ADMIN,
-      };      
-       const data = await this.authService.loginUserValidate(user)
-       const response =ApiResponseDto.success(data, "user-registration successfull", 200)
-      return done (null ,response);
+        role: Role.ADMIN,
+      };
+      const data = await this.authService.loginUserValidate(user)
+      const response = ApiResponseDto.success(data, "user-registration successfull", 200)
+      return done(null, response);
     } catch (err) {
       return done(err, null);
     }
@@ -54,13 +50,3 @@ export class AdminStrategy extends PassportStrategy(OpenIDConnectStrategy, 'open
 }
 
 
-
-// issuer: "http://localhost:8080/realms/keyclock-2",
-// authorizationURL: "http://localhost:8080/realms/keyclock-2/protocol/openid-connect/auth",
-// tokenURL: "http://localhost:8080/realms/keyclock-2/protocol/openid-connect/token",
-// userInfoURL: "http://localhost:8080/realms/keyclock-2/protocol/openid-connect/userinfo",
-// clientID: "hcw-backend",
-// clientSecret: "DhjcVq6POXGKTDCeh3323az13218t6Ui",
-// callbackURL: "http://localhost:3000/api/v1/auth/callback/keycloak",
-// scope: ['openid', 'profile', 'email'],
-// passReqToCallback: true,

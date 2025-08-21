@@ -9,7 +9,7 @@ import {
   FormGroup,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -48,7 +48,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatButtonModule,
     MatProgressSpinnerModule,
     AccessDeniedComponent,
-    AngularSvgIconModule
+    AngularSvgIconModule,
+    RouterModule
   ],
 })
 

@@ -15,6 +15,7 @@ import { AvailabilityComponent } from './pages/availability/availability.compone
 import { Component } from '@angular/core';
 import { TermComponent } from './pages/term/term.component';
 import { TermGuard } from './auth/guard/terms.guard';
+import { ForgotPasswordComponent } from './components/forget-password/forget-password.component';
 
 
 
@@ -69,7 +70,10 @@ export const routes: Routes = [
     path: RoutePaths.Login,
     component: LoginComponent,
   },
-
+  {
+    path:RoutePaths.FogetPassword,
+    component:ForgotPasswordComponent
+  },
   {
     path:RoutePaths.AcceptTerm,
     component:TermComponent

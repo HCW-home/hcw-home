@@ -30,7 +30,7 @@ ion-content {
 .form-card {
   width: 100%;
   max-width: 650px;
-  margin: 0 auto 30px;
+  margin: 60px auto 30px;
   padding: 24px;
   border-radius: var(--border-radius);
   background-color: var(--card-bg);
@@ -135,3 +135,4 @@ ion-content {
 :root {
   --ion-background-color: var(--card-bg);
 }
+

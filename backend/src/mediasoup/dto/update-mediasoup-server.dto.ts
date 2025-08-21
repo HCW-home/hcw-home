@@ -48,4 +48,13 @@ export class UpdateMediasoupServerDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Password for server authentication',
+    example: 'supersecret',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

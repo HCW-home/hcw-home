@@ -5,8 +5,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
 import { CustomLoggerService } from './logger/logger.service';
 import { Environment } from './config/environment.enum';
-import * as passport from 'passport';
-import * as session from 'express-session';
+import passport from 'passport';
+import session from 'express-session';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -30,9 +30,9 @@ class ApplicationBootstrap {
       // Configure global validation pipe
       app.useGlobalPipes(
         new ValidationPipe({
-          // whitelist: true,
-          // forbidNonWhitelisted: true,
-          // transform: true,
+          whitelist: true,
+          forbidNonWhitelisted: true,
+          transform: true,
         }),
       );
 

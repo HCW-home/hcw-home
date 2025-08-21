@@ -8,23 +8,10 @@
         <ion-row>
           <ion-col size="12">
             <ion-item lines="none" class="input-item">
-              <ion-label position="stacked">Medical Group / Specialty</ion-label>
-              <ion-select [(ngModel)]="consultation.selectedSpecialtyId" name="selectedSpecialtyId" (ionChange)="onSpecialtyChange()" interface="popover" placeholder="Select specialty" required>
-                <ion-select-option *ngFor="let specialty of specialties" [value]="specialty.id">
-                  {{ specialty.name }}
-                </ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-
-        <ion-row *ngIf="filteredPractitioners.length > 0">
-          <ion-col size="12">
-            <ion-item lines="none" class="input-item">
-              <ion-label position="stacked">Select Practitioner</ion-label>
-              <ion-select [(ngModel)]="consultation.selectedPractitionerId" name="selectedPractitionerId" interface="popover" placeholder="Select practitioner" required>
-                <ion-select-option *ngFor="let practitioner of filteredPractitioners" [value]="practitioner.id">
-                  Dr. {{ practitioner.firstName }} {{ practitioner.lastName }}
+              <ion-label position="stacked">Medical Group / specialities</ion-label>
+              <ion-select [(ngModel)]="consultation.selectedSpecialtyId" name="selectedspecialitiesId" interface="popover" placeholder="Select specialities" required>
+                <ion-select-option *ngFor="let specialities of specialities" [value]="specialities.id">
+                  {{ specialities.name }}
                 </ion-select-option>
               </ion-select>
             </ion-item>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-
+import { Observable } from 'rxjs';
 
 export interface Consultation {
   consultationId: number;
@@ -25,8 +25,8 @@ export interface Consultation {
 export class ConsultationService {
   constructor(private http: HttpClient) {}
 
-  getPatientConsultationHistory(patientId: number) {
-    return this.http.get(`${environment.apiUrl}/consultation/patient/history`, { params: { patientId: patientId.toString() } } );
+  getPatientConsultationHistory(patientId: number): Observable<Consultation[]> {
+    return this.http.get<Consultation[]>(`${environment.apiUrl}/consultation/patient/history`, { params: { patientId: patientId.toString() } });
   }
 }
 

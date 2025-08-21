@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ConsultationStatus" AS ENUM ('SCHEDULED', 'WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'TERMINATED_OPEN');
+CREATE TYPE "ConsultationStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'TERMINATED_OPEN');
 
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('PATIENT', 'PRACTITIONER', 'ADMIN');
@@ -19,6 +19,9 @@ CREATE TYPE "MessageService" AS ENUM ('SMS', 'EMAIL', 'WHATSAPP', 'MANUALLY');
 -- CreateEnum
 CREATE TYPE "TimeSlotStatus" AS ENUM ('AVAILABLE', 'BOOKED', 'BLOCKED');
 
+-- CreateEnum
+CREATE TYPE "TokenType" AS ENUM ('invite', 'login', 'password_reset');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
@@ -34,6 +37,9 @@ CREATE TABLE "users" (
     "status" "UserStatus" NOT NULL DEFAULT 'NOT_APPROVED',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "acceptedAt" TIMESTAMP(3),
+    "termId" INTEGER,
+    "termVersion" DOUBLE PRECISION NOT NULL DEFAULT 0.00,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -86,41 +92,41 @@ CREATE TABLE "group_members" (
 );
 
 -- CreateTable
-CREATE TABLE "Language" (
+CREATE TABLE "language" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "Language_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "language_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "UserLanguage" (
+CREATE TABLE "user_language" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "languageId" INTEGER NOT NULL,
 
-    CONSTRAINT "UserLanguage_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_language_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Speciality" (
+CREATE TABLE "speciality" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "Speciality_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "speciality_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "UserSpeciality" (
+CREATE TABLE "user_speciality" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "specialityId" INTEGER NOT NULL,
 
-    CONSTRAINT "UserSpeciality_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_speciality_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ConsultationRating" (
+CREATE TABLE "consultation_rating" (
     "id" SERIAL NOT NULL,
     "consultationId" INTEGER NOT NULL,
     "patientId" INTEGER NOT NULL,
@@ -128,11 +134,11 @@ CREATE TABLE "ConsultationRating" (
     "comment" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ConsultationRating_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "consultation_rating_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Consultation" (
+CREATE TABLE "consultation" (
     "id" SERIAL NOT NULL,
     "scheduledDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3),
@@ -141,14 +147,18 @@ CREATE TABLE "Consultation" (
     "createdBy" INTEGER,
     "groupId" INTEGER,
     "ownerId" INTEGER,
+    "specialityId" INTEGER,
+    "symptoms" TEXT,
     "messageService" "MessageService",
+    "waitingParticipants" INTEGER NOT NULL DEFAULT 0,
+    "practitionerAdmitted" BOOLEAN NOT NULL DEFAULT false,
     "whatsappTemplateId" INTEGER,
-    "status" "ConsultationStatus" NOT NULL DEFAULT 'SCHEDULED',
+    "status" "ConsultationStatus" NOT NULL DEFAULT 'DRAFT',
     "deletionScheduledAt" TIMESTAMP(3),
     "version" INTEGER NOT NULL DEFAULT 1,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "Consultation_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "consultation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -171,12 +181,48 @@ CREATE TABLE "mediasoup_routers" (
     "consultationId" INTEGER NOT NULL,
     "routerId" TEXT NOT NULL,
     "serverId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "mediasoup_routers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Participant" (
+CREATE TABLE "mediasoup_transports" (
+    "id" TEXT NOT NULL,
+    "consultationId" INTEGER NOT NULL,
+    "type" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "mediasoup_transports_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "mediasoup_producers" (
+    "id" TEXT NOT NULL,
+    "transportId" TEXT NOT NULL,
+    "consultationId" INTEGER,
+    "kind" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "mediasoup_producers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "mediasoup_consumers" (
+    "id" TEXT NOT NULL,
+    "transportId" TEXT NOT NULL,
+    "producerId" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "mediasoup_consumers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "participant" (
     "id" SERIAL NOT NULL,
     "consultationId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
@@ -184,24 +230,44 @@ CREATE TABLE "Participant" (
     "isBeneficiary" BOOLEAN NOT NULL DEFAULT false,
     "token" VARCHAR(255),
     "joinedAt" TIMESTAMP(3),
+    "lastSeenAt" TIMESTAMP(3),
     "language" VARCHAR(50),
     "lastActiveAt" TIMESTAMP(3),
+    "inWaitingRoom" BOOLEAN NOT NULL DEFAULT true,
+    "role" "UserRole" NOT NULL,
 
-    CONSTRAINT "Participant_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "participant_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Message" (
+CREATE TABLE "message" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
-    "consultationId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "editedAt" TIMESTAMP(3),
+    "isSystem" BOOLEAN NOT NULL DEFAULT false,
+    "senderRole" "UserRole",
+    "consultationId" INTEGER NOT NULL,
+    "clientUuid" TEXT NOT NULL,
+    "mediaUrl" VARCHAR(2048),
+    "mediaType" TEXT,
 
-    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "message_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Whatsapp_Template" (
+CREATE TABLE "message_read_receipt" (
+    "id" SERIAL NOT NULL,
+    "messageId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "readAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "message_read_receipt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "whatsapp_template" (
     "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "friendlyName" TEXT NOT NULL,
@@ -219,7 +285,7 @@ CREATE TABLE "Whatsapp_Template" (
     "url" TEXT NOT NULL,
     "rejectionReason" TEXT NOT NULL,
 
-    CONSTRAINT "Whatsapp_Template_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "whatsapp_template_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -251,13 +317,13 @@ CREATE TABLE "terms" (
 );
 
 -- CreateTable
-CREATE TABLE "DeletedConsultationLog" (
+CREATE TABLE "deleted_consultation_log" (
     "id" SERIAL NOT NULL,
     "consultationId" INTEGER NOT NULL,
     "deletedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reason" TEXT,
 
-    CONSTRAINT "DeletedConsultationLog_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "deleted_consultation_log_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -290,6 +356,18 @@ CREATE TABLE "time_slots" (
     CONSTRAINT "time_slots_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "MediaPermissionStatus" (
+    "id" SERIAL NOT NULL,
+    "consultationId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "cameraStatus" TEXT NOT NULL,
+    "microphoneStatus" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MediaPermissionStatus_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -303,28 +381,28 @@ CREATE UNIQUE INDEX "organization_members_organizationId_userId_key" ON "organiz
 CREATE UNIQUE INDEX "group_members_groupId_userId_key" ON "group_members"("groupId", "userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Language_name_key" ON "Language"("name");
+CREATE UNIQUE INDEX "language_name_key" ON "language"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserLanguage_userId_languageId_key" ON "UserLanguage"("userId", "languageId");
+CREATE UNIQUE INDEX "user_language_userId_languageId_key" ON "user_language"("userId", "languageId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Speciality_name_key" ON "Speciality"("name");
+CREATE UNIQUE INDEX "speciality_name_key" ON "speciality"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserSpeciality_userId_specialityId_key" ON "UserSpeciality"("userId", "specialityId");
+CREATE UNIQUE INDEX "user_speciality_userId_specialityId_key" ON "user_speciality"("userId", "specialityId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ConsultationRating_consultationId_key" ON "ConsultationRating"("consultationId");
+CREATE UNIQUE INDEX "consultation_rating_consultationId_key" ON "consultation_rating"("consultationId");
 
 -- CreateIndex
-CREATE INDEX "ConsultationRating_patientId_idx" ON "ConsultationRating"("patientId");
+CREATE INDEX "consultation_rating_patientId_idx" ON "consultation_rating"("patientId");
 
 -- CreateIndex
-CREATE INDEX "Consultation_status_idx" ON "Consultation"("status");
+CREATE INDEX "consultation_status_idx" ON "consultation"("status");
 
 -- CreateIndex
-CREATE INDEX "Consultation_ownerId_idx" ON "Consultation"("ownerId");
+CREATE INDEX "consultation_ownerId_idx" ON "consultation"("ownerId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "mediasoup_servers_url_key" ON "mediasoup_servers"("url");
@@ -339,13 +417,37 @@ CREATE INDEX "mediasoup_routers_routerId_idx" ON "mediasoup_routers"("routerId")
 CREATE UNIQUE INDEX "mediasoup_routers_consultationId_serverId_key" ON "mediasoup_routers"("consultationId", "serverId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Participant_consultationId_userId_key" ON "Participant"("consultationId", "userId");
+CREATE INDEX "mediasoup_transports_consultationId_idx" ON "mediasoup_transports"("consultationId");
+
+-- CreateIndex
+CREATE INDEX "mediasoup_producers_consultationId_idx" ON "mediasoup_producers"("consultationId");
+
+-- CreateIndex
+CREATE INDEX "participant_consultationId_isActive_idx" ON "participant"("consultationId", "isActive");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "participant_consultationId_userId_key" ON "participant"("consultationId", "userId");
+
+-- CreateIndex
+CREATE INDEX "message_consultationId_idx" ON "message"("consultationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "message_clientUuid_consultationId_userId_key" ON "message"("clientUuid", "consultationId", "userId");
+
+-- CreateIndex
+CREATE INDEX "message_read_receipt_messageId_idx" ON "message_read_receipt"("messageId");
+
+-- CreateIndex
+CREATE INDEX "message_read_receipt_userId_idx" ON "message_read_receipt"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "message_read_receipt_messageId_userId_key" ON "message_read_receipt"("messageId", "userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sms_providers_order_key" ON "sms_providers"("order");
 
 -- CreateIndex
-CREATE INDEX "DeletedConsultationLog_consultationId_idx" ON "DeletedConsultationLog"("consultationId");
+CREATE INDEX "deleted_consultation_log_consultationId_idx" ON "deleted_consultation_log"("consultationId");
 
 -- CreateIndex
 CREATE INDEX "practitioner_availability_practitionerId_idx" ON "practitioner_availability"("practitionerId");
@@ -355,6 +457,12 @@ CREATE UNIQUE INDEX "time_slots_consultationId_key" ON "time_slots"("consultatio
 
 -- CreateIndex
 CREATE INDEX "time_slots_practitionerId_date_idx" ON "time_slots"("practitionerId", "date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MediaPermissionStatus_consultationId_userId_key" ON "MediaPermissionStatus"("consultationId", "userId");
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_termId_fkey" FOREIGN KEY ("termId") REFERENCES "terms"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "organization_members" ADD CONSTRAINT "organization_members_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -372,52 +480,64 @@ ALTER TABLE "group_members" ADD CONSTRAINT "group_members_groupId_fkey" FOREIGN 
 ALTER TABLE "group_members" ADD CONSTRAINT "group_members_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserLanguage" ADD CONSTRAINT "UserLanguage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_language" ADD CONSTRAINT "user_language_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserLanguage" ADD CONSTRAINT "UserLanguage_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "Language"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_language" ADD CONSTRAINT "user_language_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "language"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserSpeciality" ADD CONSTRAINT "UserSpeciality_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_speciality" ADD CONSTRAINT "user_speciality_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserSpeciality" ADD CONSTRAINT "UserSpeciality_specialityId_fkey" FOREIGN KEY ("specialityId") REFERENCES "Speciality"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_speciality" ADD CONSTRAINT "user_speciality_specialityId_fkey" FOREIGN KEY ("specialityId") REFERENCES "speciality"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ConsultationRating" ADD CONSTRAINT "ConsultationRating_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "consultation_rating" ADD CONSTRAINT "consultation_rating_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ConsultationRating" ADD CONSTRAINT "ConsultationRating_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "consultation_rating" ADD CONSTRAINT "consultation_rating_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Consultation" ADD CONSTRAINT "Consultation_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "consultation" ADD CONSTRAINT "consultation_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Consultation" ADD CONSTRAINT "Consultation_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "consultation" ADD CONSTRAINT "consultation_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mediasoup_routers" ADD CONSTRAINT "mediasoup_routers_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "consultation" ADD CONSTRAINT "consultation_specialityId_fkey" FOREIGN KEY ("specialityId") REFERENCES "speciality"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "mediasoup_routers" ADD CONSTRAINT "mediasoup_routers_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "mediasoup_routers" ADD CONSTRAINT "mediasoup_routers_serverId_fkey" FOREIGN KEY ("serverId") REFERENCES "mediasoup_servers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD CONSTRAINT "Participant_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "mediasoup_transports" ADD CONSTRAINT "mediasoup_transports_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD CONSTRAINT "Participant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "participant" ADD CONSTRAINT "participant_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "participant" ADD CONSTRAINT "participant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "message" ADD CONSTRAINT "message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "message" ADD CONSTRAINT "message_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "message_read_receipt" ADD CONSTRAINT "message_read_receipt_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "message"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "message_read_receipt" ADD CONSTRAINT "message_read_receipt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "terms" ADD CONSTRAINT "terms_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DeletedConsultationLog" ADD CONSTRAINT "DeletedConsultationLog_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "deleted_consultation_log" ADD CONSTRAINT "deleted_consultation_log_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "practitioner_availability" ADD CONSTRAINT "practitioner_availability_practitionerId_fkey" FOREIGN KEY ("practitionerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -426,4 +546,10 @@ ALTER TABLE "practitioner_availability" ADD CONSTRAINT "practitioner_availabilit
 ALTER TABLE "time_slots" ADD CONSTRAINT "time_slots_practitionerId_fkey" FOREIGN KEY ("practitionerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "time_slots" ADD CONSTRAINT "time_slots_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "Consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "time_slots" ADD CONSTRAINT "time_slots_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MediaPermissionStatus" ADD CONSTRAINT "MediaPermissionStatus_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "consultation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MediaPermissionStatus" ADD CONSTRAINT "MediaPermissionStatus_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -114,7 +114,7 @@
           <div class="form-row">
             <mat-form-field class="form-field">
               <mat-label>Languages</mat-label>
-              <mat-select formControlName="practitioner_languages" multiple placeholder="Select languages you speak" >
+              <mat-select formControlName="practitioner_languages" multiple placeholder="Select languages you speak">
                 @for (language of languages(); track trackByLanguageId($index, language)) {
                 <mat-option [value]="language.id">
                   {{ language.name }}
@@ -188,7 +188,38 @@
           }
         </mat-card-content>
       </mat-card>
+
       }
+      <mat-card class="profile-card">
+        <mat-card-header>
+          <mat-card-title>User Settings</mat-card-title>
+          <mat-card-subtitle>Manage your preferences and configurations</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-slide-toggle formControlName="notificationsEnabled" class="toggle-notifications">
+              Enable Notifications
+            </mat-slide-toggle>
+          </div>
+          @if (profileForm.get('notificationsEnabled')?.value) {
+          <div class="form-row">
+            <mat-form-field class="form-field">
+              <mat-label>Notification Phone Number</mat-label>
+              <input matInput formControlName="notificationPhoneNumber"
+                placeholder="Enter phone number for notifications" type="tel" autocomplete="tel"
+                aria-describedby="notificationPhoneNumber-error">
+              @if (notificationPhoneNumber.invalid && notificationPhoneNumber.touched) {
+              <mat-error id="notificationPhoneNumber-error">
+                @if (notificationPhoneNumber.errors?.['pattern']) {
+                <span>Please enter a valid phone number</span>
+                }
+              </mat-error>
+              }
+            </mat-form-field>
+          </div>
+          }
+        </mat-card-content>
+      </mat-card>
 
       <div class="form-actions">
         <app-button [type]="ButtonType.Button" [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Medium"
@@ -197,7 +228,7 @@
         </app-button>
 
         <app-button [type]="ButtonType.Submit" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium"
-          [disabled]="!isFormValid() || isSaving()">
+          [disabled]="!profileForm.valid|| isSaving()">
           @if (isSaving()) {
           <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
           }

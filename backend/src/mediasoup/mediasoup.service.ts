@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { CreateMediasoupServerDto } from './dto/create-mediasoup-server.dto';
 import { UpdateMediasoupServerDto } from './dto/update-mediasoup-server.dto';
 import { QueryMediasoupServerDto } from './dto/query-mediasoup-server.dto';
@@ -7,7 +7,7 @@ import { MediasoupServerResponseDto } from './dto/mediasoup-server-response.dto'
 import { plainToInstance } from 'class-transformer';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { HttpExceptionHelper } from 'src/common/helpers/execption/http-exception.helper';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 
 @Injectable()
 export class MediasoupServerService {
@@ -18,29 +18,30 @@ export class MediasoupServerService {
   async create(
     createMediasoupServerDto: CreateMediasoupServerDto,
   ): Promise<MediasoupServerResponseDto> {
+    const { url, password, maxNumberOfSessions, active, ...rest } =
+      createMediasoupServerDto;
+
     const existingServer = await this.databaseService.mediasoupServer.findFirst(
       {
-        where: { url: createMediasoupServerDto.url },
+        where: { url },
       },
     );
 
     if (existingServer) {
-      this.logger.warn(
-        `Attempt to create duplicate server URL: ${createMediasoupServerDto.url}`,
-      );
+      this.logger.warn(`Attempt to create duplicate server URL: ${url}`);
       throw HttpExceptionHelper.conflict('Mediasoup server URL already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(
-      createMediasoupServerDto.password,
-      10,
-    );
+    // Hash the password securely
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const serverData = {
-      ...createMediasoupServerDto,
+      ...rest,
+      url,
       password: hashedPassword,
-      maxNumberOfSessions: createMediasoupServerDto.maxNumberOfSessions || 100,
-      active: createMediasoupServerDto.active ?? true,
+      maxNumberOfSessions:
+        maxNumberOfSessions !== undefined ? maxNumberOfSessions : 100,
+      active: active ?? true,
     };
 
     const server = await this.databaseService.mediasoupServer.create({
@@ -64,21 +65,23 @@ export class MediasoupServerService {
       sortOrder = 'desc',
     } = query;
 
-    const skip = (page - 1) * limit;
-    const where: Prisma.MediasoupServerWhereInput = {};
+    const pageNumber = Math.max(1, Number(page));
+    const limitNumber = Math.max(1, Number(limit));
+    const skip = (pageNumber - 1) * limitNumber;
 
-    if (search) {
-      where.OR = [
-        { url: { contains: search, mode: 'insensitive' } },
-        { username: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-    if (active !== undefined) {
-      where.active = active;
-    }
+    const where: Prisma.MediasoupServerWhereInput = {
+      ...(search && {
+        OR: [
+          { url: { contains: search, mode: 'insensitive' } },
+          { username: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(active !== undefined && { active }),
+    };
 
-    const orderBy: Prisma.MediasoupServerOrderByWithRelationInput = {};
-    orderBy[sortBy] = sortOrder;
+    const orderBy: Prisma.MediasoupServerOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
 
     const [servers, total] = await Promise.all([
       this.databaseService.mediasoupServer.findMany({
@@ -90,14 +93,14 @@ export class MediasoupServerService {
       this.databaseService.mediasoupServer.count({ where }),
     ]);
 
-    const transformedServers = servers.map((server) =>
+    const items = servers.map((server) =>
       plainToInstance(MediasoupServerResponseDto, server, {
         excludeExtraneousValues: true,
       }),
     );
 
     return {
-      items: transformedServers,
+      items,
       total,
       page,
       limit,

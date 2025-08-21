@@ -3,5 +3,8 @@
   "integrations": {
     "capacitor": {}
   },
-  "type": "angular-standalone"
+  "type": "angular-standalone",
+  "server": {
+    "port": 4201
+  }
 }

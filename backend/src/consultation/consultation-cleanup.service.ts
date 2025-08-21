@@ -81,6 +81,26 @@ export class ConsultationCleanupService {
       this.logger.log(
         `Soft-deleted ${updateResult.count} expired consultations`,
       );
+      const hangingTimeoutMs = 2 * 60 * 60 * 1000; // 2 hours
+
+      const oldTransports = await this.db.mediasoupTransport.findMany({
+        where: {
+          createdAt: { lt: new Date(Date.now() - hangingTimeoutMs) },
+        },
+      });
+
+      for (const transport of oldTransports) {
+        try {
+          await this.mediasoupSessionService.closeTransport(transport.id);
+          this.logger.log(
+            `Closed hanging transport ${transport.id} during cleanup`,
+          );
+        } catch (err) {
+          this.logger.error(
+            `Failed to close hanging transport ${transport.id}: ${err?.message || err}`,
+          );
+        }
+      }
     } catch (error) {
       this.logger.error('Failed to soft-delete expired consultations:', error);
     }

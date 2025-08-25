@@ -5,11 +5,13 @@ import { RoutePaths } from '../../constants/route-paths.enum';
 import { ButtonComponent } from '../ui/button/button.component';
 import { ButtonSize, ButtonVariant } from '../../constants/button.enums';
 import { ConsultationWithPatient } from '../../dtos';
+import { TourType } from '../../models/tour';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 
 @Component({
   selector: 'app-consultation-card',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent],
+  imports: [CommonModule, RouterLink, ButtonComponent, TourMatMenuModule],
   templateUrl: './consultations-card.component.html',
   styleUrls: ['./consultations-card.component.scss'],
 })
@@ -18,11 +20,13 @@ export class ConsultationCardComponent {
   description = input('List of consultations');
   consultations = input<ConsultationWithPatient[]>([]); 
   routerLink = input(RoutePaths.OpenConsultations);
+  tourAnchor = input('');
   showInvite = input(true);
   @Output() invite = new EventEmitter<void>();
 
   readonly ButtonSize = ButtonSize;
   readonly ButtonVariant = ButtonVariant;
+  readonly TourType = TourType;
 
   formatTime(date: Date): string {
     return new Date(date).toLocaleTimeString([], {

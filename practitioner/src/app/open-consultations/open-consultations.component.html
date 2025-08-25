@@ -1,4 +1,4 @@
-<div class="consultation-history-page">
+<div class="consultation-history-page" tourAnchor="{{TourType.OPEN_CONSULTATIONS_PAGE}}">
     <div class="page-header">
         <div class="header-content">
             <h2>OPENED CONSULTATIONS</h2>
@@ -30,7 +30,7 @@
             }
 
             @if (!isLoading && consultations.length > 0) {
-            <div class="consultations-grid">
+            <div class="consultations-grid" tourAnchor="{{TourType.OPEN_CONSULTATIONS_GRID}}">
                 @for (consultation of consultations; track consultation.id) {
                 <app-open-consultation-card [consultation]="consultation"
                     [isSelected]="selectedConsultation?.id === consultation.id"
@@ -63,7 +63,7 @@
             }
         </div>
 
-        <app-overlay [isOpen]="showRightPanel" (closed)="closeRightPanel()">
+        <app-overlay [isOpen]="showRightPanel" (closed)="closeRightPanel()" tourAnchor="{{TourType.OPEN_CONSULTATION_PANEL}}">
             <app-open-consultation-panel *ngIf="showRightPanel && selectedConsultation"
                 [consultation]="selectedConsultation" (close)="closeRightPanel()"
                 (joinConsultation)="onJoinConsultation($event)" (closeConsultation)="onCloseConsultation($event)"

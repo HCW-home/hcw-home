@@ -4,6 +4,9 @@ import { Environment } from './environment.enum';
 
 @Injectable()
 export class ConfigService {
+  get<T>(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private readonly configService: NestConfigService) {}
 
   get port(): number {
@@ -131,6 +134,28 @@ export class ConfigService {
     return this.isProduction;
   }
 
+  // WhatsApp Configuration
+  get whatsappTemplatesPath(): string {
+    return this.configService.get<string>(
+      'whatsapp.templatesPath',
+      'src/json/whatsapp-templates.json',
+    );
+  }
+
+  get twilioAuthToken(): string {
+    return this.configService.get<string>('twilio.authToken', 'twilio-auth');
+  }
+
+  get twilioAccountSid(): string {
+    return this.configService.get<string>('twilio.accountSid', 'twilio-account-sid');
+  }
+
+  // Alternative method to get the raw WHATSAPP_TEMPLATES_PATH env variable
+  get whatsappTemplatesPathFromEnv(): string | undefined {
+    return this.configService.get<string>('WHATSAPP_TEMPLATES_PATH');
+  }
+
+  // Additional helper methods for getting optional values
   get frontendConfig(): {
     loginMethod: string;
     branding: string;

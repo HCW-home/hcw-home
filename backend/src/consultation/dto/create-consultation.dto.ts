@@ -6,6 +6,12 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsEnum,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ConsultationStatus, UserRole } from '@prisma/client'; 
+import { ReminderConfigDto } from 'src/reminder/dto/reminder-config.dto';
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -67,6 +73,12 @@ export class CreateConsultationDto {
   @ApiPropertyOptional({ description: 'Create as draft (default false)' })
   @IsOptional()
   draft?: boolean;
+
+  @ApiPropertyOptional({ description: 'Reminder configuration' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ReminderConfigDto)
+  reminderConfig?: ReminderConfigDto;
 
   @ApiPropertyOptional({
     type: [CreateParticipantDto],

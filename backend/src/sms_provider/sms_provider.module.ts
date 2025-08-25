@@ -9,5 +9,6 @@ import { AuthModule } from 'src/auth/auth.module';
   controllers: [SmsProviderController],
   providers: [SmsProviderService],
   imports: [DatabaseModule, UserModule, AuthModule],
+  exports: [SmsProviderService],
 })
 export class SmsProviderModule {}

@@ -29,12 +29,17 @@
         </app-button>
     </div>
     <div class="consultation-cell">
-        <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Small" class=""
+        <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Small" [disabled]="downloadingPdf" class=""
             (click)="onExportClick($event)">
-            <app-svg-icon src="download" [svgStyle]="{ 'width.px': 16, 'height.px': 16 }" ariaLabel="Download icon">
+            <app-svg-icon [src]="downloadingPdf ? 'spinner' : 'download'"
+                [svgStyle]="{ 'width.px': 16, 'height.px': 16 }"
+                [ariaLabel]="downloadingPdf ? 'Downloading...' : 'Download icon'">
             </app-svg-icon>
-            Export
+            {{ downloadingPdf ? 'Downloading...' : 'Export' }}
         </app-button>
+        <div *ngIf="downloadError" class="error-message">
+            {{ downloadError }}
+        </div>
     </div>
     <div class="consultation-cell more-actions-cell">
         <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" (click)="onMoreActionsClick($event)">

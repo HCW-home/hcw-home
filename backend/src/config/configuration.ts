@@ -56,4 +56,12 @@ export default () => ({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
+  whatsapp: {
+    templatesPath:
+      process.env.WHATSAPP_TEMPLATES_PATH || 'src/json/whatsapp-templates.json',
+  },
+  twilio: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+  },
 });

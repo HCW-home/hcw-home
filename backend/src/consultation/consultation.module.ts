@@ -8,6 +8,10 @@ import { ConsultationGateway } from './consultation.gateway';
 import { DatabaseService } from '../database/database.service';
 import { ConfigModule } from '../config/config.module';
 import { ConsultationCleanupService } from './consultation-cleanup.service';
+import { AvailabilityModule } from 'src/availability/availability.module';
+import { MediasoupModule } from 'src/mediasoup/mediasoup.module';
+import { ReminderModule } from 'src/reminder/reminder.module';
+import { ReminderService } from 'src/reminder/reminder.service';
 import { AvailabilityModule } from '../availability/availability.module';
 import { MediasoupModule } from '../mediasoup/mediasoup.module';
 
@@ -16,6 +20,7 @@ import { MediasoupModule } from '../mediasoup/mediasoup.module';
     ConfigModule,
     AvailabilityModule,
     forwardRef(() => MediasoupModule),
+    ReminderModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

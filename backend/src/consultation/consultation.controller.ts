@@ -13,6 +13,7 @@ import {
   ValidationPipe,
   Query,
   UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
@@ -60,6 +61,8 @@ import {
   OpenConsultationQueryDto,
 } from './dto/open-consultation.dto';
 import { ResponseStatus } from '../common/helpers/response/response-status.enum';
+import { CreatePatientConsultationResponseDto } from './dto/invite-form.dto';
+import { CreatePatientConsultationDto } from './dto/invite-form.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
 
 @ApiTags('consultation')
@@ -145,6 +148,36 @@ export class ConsultationController {
         createDto,
         userId,
       );
+    return {
+      ...ApiResponseDto.success(result.data, result.message, result.statusCode),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('create-patient-consultation')
+  @ApiOperation({
+    summary: 'Create patient and consultation from invite form (creates patient if not exists)',
+  })
+  @ApiBody({ type: CreatePatientConsultationDto })
+  @ApiCreatedResponse({
+    description: 'Patient and consultation created successfully',
+    type: ApiResponseDto<CreatePatientConsultationResponseDto>,
+  })
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  async createPatientAndConsultation(
+    @Body() createDto: CreatePatientConsultationDto,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<any> {
+    const result = await this.consultationService.createPatientAndConsultation(
+      createDto,
+      practitionerId,
+    );
     return {
       ...ApiResponseDto.success(result.data, result.message, result.statusCode),
       timestamp: new Date().toISOString(),
@@ -347,32 +380,52 @@ export class ConsultationController {
       timestamp: new Date().toISOString(),
     };
   }
-
-  @Get(':id/pdf')
-  @ApiOperation({ summary: 'Download consultation PDF' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiQuery({
-    name: 'requesterId',
-    type: Number,
-    description: 'ID of requesting user',
-  })
-  @Header('Content-Type', 'application/pdf')
-  async downloadPdf(
-    @Param('id', ConsultationIdParamPipe) id: number,
-    @Query('requesterId', ParseIntPipe) requesterId: number,
-    @Res() res: Response,
-  ) {
+@Get(':id/pdf')
+@ApiOperation({ summary: 'Download consultation PDF' })
+@ApiParam({ name: 'id', type: Number })
+@ApiQuery({
+  name: 'requesterId',
+  type: Number,
+  description: 'ID of requesting user',
+})
+@Header('Content-Type', 'application/pdf')
+async downloadPdf(
+  @Param('id', ConsultationIdParamPipe) id: number,
+  @Query('requesterId', ParseIntPipe) requesterId: number,
+  @Res() res: Response,
+) {
+  try {
+    console.log(`PDF download request - Consultation ID: ${id}, Requester ID: ${requesterId}`);
+    
     const pdfBuffer = await this.consultationService.downloadConsultationPdf(
       id,
       requesterId,
     );
+    
+    console.log(`PDF generated successfully - Size: ${pdfBuffer.length} bytes`);
+    
     res
       .status(HttpStatus.OK)
       .set({
+        'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="consultation_${id}.pdf"`,
+        'Content-Length': pdfBuffer.length.toString(),
       })
       .send(pdfBuffer);
+      
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    
+    if (error.status) {
+      throw error;
+    } else {
+      throw new HttpException(
+        `Failed to generate PDF: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
+}
 
   @Get('/patient/history')
   @ApiOperation({ summary: 'Fetch consultation history for a patient' })

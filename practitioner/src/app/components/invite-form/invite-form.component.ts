@@ -25,6 +25,18 @@ import { GuidedTourService } from '../../services/guided-tour.service';
 import { TourType } from '../../models/tour';
 import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 
+export interface CreatePatientConsultationFormData {
+  firstName: string;
+  lastName: string;
+  gender: string;
+  language: string;
+  group?: string;
+  contact: string;
+  scheduledDate?: Date;
+  specialityId?: number;
+  symptoms?: string;
+}
+
 @Component({
   selector: 'app-invite-form',
   standalone: true,
@@ -36,8 +48,9 @@ import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 export class InviteFormComponent implements OnInit, OnDestroy {
   @Input() type: 'remote' = 'remote';
   @Input() editData: InviteFormData | null = null;
+  @Input() practitionerId!: number; // Required practitioner ID
   @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<any>();
+  @Output() submit = new EventEmitter<CreatePatientConsultationFormData>();
 
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
@@ -58,25 +71,25 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   }
 
   get modalTitle(): string {
-    return this.isEditMode ? 'EDIT PATIENT INVITATION' : 'PATIENT INVITATION';
+    return this.isEditMode ? 'EDIT PATIENT' : 'CREATE PATIENT & CONSULTATION';
   }
 
   get submitButtonText(): string {
-    return this.isEditMode ? 'Update' : 'Send';
+    return this.isEditMode ? 'Update' : 'Create';
   }
 
   constructor(private fb: FormBuilder, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     document.body.classList.add('modal-open');
-    this.form = this.buildRemoteForm();
+    this.form = this.buildForm();
 
     if (this.editData) {
       this.populateFormForEdit();
     }
   }
 
-  private buildRemoteForm(): FormGroup {
+  private buildForm(): FormGroup {
     return this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
@@ -90,16 +103,8 @@ export class InviteFormComponent implements OnInit, OnDestroy {
           Validators.pattern(/(^\+\d{2}\d{6,}$)|(^\S+@\S+\.\S+$)/),
         ],
       ],
-      manualSend: [false],
-      planLater: [false],
-      guests: this.buildGuestsGroup(),
-    });
-  }
-
-  private buildGuestsGroup(): FormGroup {
-    return this.fb.group({
-      lovedOne: [false],
-      colleague: [false],
+      scheduledDate: [''],
+      symptoms: [''],
     });
   }
 
@@ -113,12 +118,6 @@ export class InviteFormComponent implements OnInit, OnDestroy {
       language: this.editData.language,
       group: this.editData.group || '',
       contact: this.editData.contact,
-      manualSend: this.editData.manualSend,
-      planLater: this.editData.planLater,
-      guests: {
-        lovedOne: this.editData.guests.lovedOne,
-        colleague: this.editData.guests.colleague,
-      },
     });
   }
 
@@ -132,19 +131,20 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
     document.body.classList.remove('modal-open');
-
-    const formData = {
-      type: this.type,
-      ...this.form.value,
-      ...(this.editData?.id && { id: this.editData.id }),
+    this.form.value.scheduledDate = this.form.value.scheduledDate ? new Date(this.form.value.scheduledDate) : new Date();
+    const formData: CreatePatientConsultationFormData = {
+      firstName: this.form.value.firstName,
+      lastName: this.form.value.lastName,
+      gender: this.form.value.gender,
+      language: this.form.value.language,
+      contact: this.form.value.contact,
+      group: this.form.value.group || undefined,
+      scheduledDate: this.form.value.scheduledDate || undefined,
+      symptoms: this.form.value.symptoms || undefined,
     };
 
+    console.log('Emitting form data:', formData); // Debug log
     this.submit.emit(formData);
   }
 }

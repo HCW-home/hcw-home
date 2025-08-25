@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ConsultationCardComponent } from '../components/consultations-card/consultations-card.component';
 import { InviteFormComponent } from '../components/invite-form/invite-form.component';
 import { RoutePaths } from '../constants/route-paths.enum';
-import { ConsultationService } from '../services/consultations/consultation.service';
 import { GuidedTourService } from '../services/guided-tour.service';
+import { ConsultationService, CreatePatientConsultationRequest } from '../services/consultations/consultation.service';
 import { ConsultationWithPatient } from '../dtos';
 import { TourType } from '../models/tour';
 
@@ -21,12 +21,16 @@ export class DashboardComponent implements OnInit {
 
   waitingConsultations = signal<ConsultationWithPatient[]>([]);
   openConsultations = signal<ConsultationWithPatient[]>([]);
-
   isInviting = signal(false);
+  isLoading = signal(false); 
 
   constructor(private consultationService: ConsultationService, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
+    this.loadConsultations();
+  }
+
+  private loadConsultations(): void {
     this.consultationService
       .getWaitingConsultations()
       .subscribe({
@@ -39,6 +43,7 @@ export class DashboardComponent implements OnInit {
         }
       });
     
+    // Load open consultations
     this.consultationService
       .getOpenConsultations()
       .subscribe({
@@ -77,13 +82,52 @@ export class DashboardComponent implements OnInit {
     return card.title;
   }
 
-  openInviteSelector() {
-    this.isInviting.set(true);
+onInviteSubmit(formData: CreatePatientConsultationRequest) {
+    console.log('✅ Form submitted with data:', formData);
+    
+    this.isLoading.set(true);
+    
+    this.consultationService.createPatientAndConsultation(formData)
+      .subscribe({
+        next: (response) => {
+          this.isLoading.set(false);
+          if (response.data && response.data.success) {
+            const { patient, consultation } = response.data.data;
+            
+            if (patient.isNewPatient) {
+              alert(`New patient "${patient.firstName} ${patient.lastName}" created and consultation #${consultation.id} scheduled!`);
+            } else {
+              alert(`Consultation #${consultation.id} scheduled for existing patient "${patient.firstName} ${patient.lastName}"!`);
+            }
+            
+            this.closeInvite();
+            
+            this.loadConsultations();
+            
+          } else {
+            alert('Failed to create consultation: ');
+          }
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          console.error('API Error:', error);
+          
+          let errorMessage = 'Failed to create patient and consultation';
+          
+          if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          alert('Error: ' + errorMessage);
+          
+        }
+      });
   }
 
-  handleInvite(payload: any) {
-    console.log('Invite payload:', payload);
-    this.closeInvite();
+  openInviteSelector() {
+    this.isInviting.set(true);
   }
 
   closeInvite() {

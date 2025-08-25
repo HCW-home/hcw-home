@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, Logger, HttpStatus, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import {
   ConsultationStatus,
@@ -7,10 +7,13 @@ import {
   Participant,
   User,
   Message,
+  UserSex,
 } from '@prisma/client';
 import PDFDocument from 'pdfkit';
 import { PassThrough } from 'stream';
 import concat from 'concat-stream';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { ConsultationGateway } from './consultation.gateway';
 import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { ApiResponseDto } from '../common/helpers/response/api-response.dto';
@@ -37,18 +40,20 @@ import {
   ConsultationPatientHistoryItemDto,
 } from './dto/consultation-patient-history.dto';
 import { RateConsultationDto } from './dto/rate-consultation.dto';
-import { ConfigService } from '../config/config.service';
-import { AvailabilityService } from '../availability/availability.service';
-import { MediasoupSessionService } from '../mediasoup/mediasoup-session.service';
+import { RateConsultationDto } from './dto/rate-consultation.dto';
+import { ConfigService } from 'src/config/config.service';
+import { AvailabilityService } from 'src/availability/availability.service';
+import { MediasoupSessionService } from 'src/mediasoup/mediasoup-session.service';
+import { ReminderService } from 'src/reminder/reminder.service';
 import {
   CloseConsultationResponseDto,
   OpenConsultationItemDto,
   OpenConsultationPatientDto,
   OpenConsultationResponseDto,
 } from './dto/open-consultation.dto';
-import { EmailService } from '../common/email/email.service';
-import * as crypto from 'crypto';
+import { EmailService } from 'src/common/email/email.service';
 import { AddParticipantDto } from './dto/add-participant.dto';
+import { CreatePatientConsultationDto, CreatePatientConsultationResponseDto } from './dto/invite-form.dto';
 
 type ConsultationWithParticipants = Consultation & {
   participants: (Participant & { user: User })[];
@@ -68,6 +73,7 @@ export class ConsultationService {
     private readonly mediasoupSessionService: MediasoupSessionService,
     @Inject(forwardRef(() => ConsultationGateway))
     private readonly consultationGateway: ConsultationGateway,
+    private readonly reminderService: ReminderService,
   ) {}
 
   async addParticipantToConsultation(
@@ -267,11 +273,26 @@ export class ConsultationService {
       createData.owner = ownerConnect;
     }
 
+    // Set reminderEnabled based on the DTO if provided
+    if (createDto.reminderConfig?.enabled !== undefined) {
+      createData.reminderEnabled = createDto.reminderConfig.enabled;
+    }
+
     const consultation = await this.db.consultation.create({
       data: createData,
       include: { participants: true },
     });
-
+    // Schedule reminders if consultation has a scheduled date and reminders are enabled
+    if (consultation.scheduledDate && consultation.reminderEnabled && consultation.status === ConsultationStatus.SCHEDULED) {
+      try {
+        await this.reminderService.scheduleReminders(
+          consultation.id,
+          consultation.scheduledDate,
+          createDto.reminderConfig?.types
+        );
+      } catch (error) {
+        this.logger.error(`Failed to schedule reminders for consultation ${consultation.id}:`, error);
+        // Continue despite reminder scheduling failure
     if (createDto.participants && createDto.participants.length > 0) {
       for (const participantDto of createDto.participants) {
         if (!participantDto.email) {
@@ -344,6 +365,137 @@ export class ConsultationService {
       'Consultation created',
       201,
     );
+  }
+
+  async createPatientAndConsultation(
+    createDto: CreatePatientConsultationDto,
+    practitionerId: number,
+  ) {
+    const practitioner = await this.db.user.findFirst({
+      where: {
+        id: practitionerId,
+        role: UserRole.PRACTITIONER,
+      },
+    });
+
+    if (!practitioner) {
+      throw new NotFoundException('Practitioner not found');
+    }
+
+    // Determine if contact is email or phone
+    const isEmail = createDto.contact.includes('@');
+    const searchCriteria = isEmail 
+      ? { email: createDto.contact }
+      : { phoneNumber: createDto.contact };
+
+    // Check if patient already exists
+    let patient = await this.db.user.findFirst({
+      where: {
+        ...searchCriteria,
+        role: UserRole.PATIENT,
+      },
+    });
+
+    let isNewPatient = false;
+
+    if (!patient) {
+      const tempPassword = 'temp123'; 
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      
+      const patientData = {
+        role: UserRole.PATIENT,
+        firstName: createDto.firstName,
+        lastName: createDto.lastName,
+        sex: this.mapGenderToUserSex(createDto.gender),
+        temporaryAccount: true,
+        password: hashedPassword,
+        ...(isEmail 
+          ? { email: createDto.contact }
+          : { 
+              phoneNumber: createDto.contact,
+              email: `temp_${Date.now()}@temporary.local` 
+            }
+        ),
+      };
+
+      patient = await this.db.user.create({
+        data: patientData,
+      });
+      
+      isNewPatient = true;
+    }
+
+    const consultationData = {
+      ownerId: practitionerId,
+      groupId: createDto.group ? parseInt(createDto.group) : null,
+      specialityId: createDto.specialityId || null,
+      symptoms: createDto.symptoms || null,
+      scheduledDate: createDto.scheduledDate || null,
+      status: ConsultationStatus.SCHEDULED,
+      createdAt: new Date(),
+      startedAt: new Date(),
+    };
+
+    const consultation = await this.db.consultation.create({
+      data: consultationData,
+    });
+
+    await this.db.participant.create({
+      data: {
+        consultationId: consultation.id,
+        userId: patient.id,
+        role: UserRole.PATIENT,
+        isBeneficiary: true,
+        language: createDto.language,
+        inWaitingRoom: true,
+      },
+    });
+
+    await this.db.participant.create({
+      data: {
+        consultationId: consultation.id,
+        userId: practitionerId,
+        role: UserRole.PRACTITIONER,
+        isBeneficiary: false,
+        inWaitingRoom: false,
+      },
+    });
+
+    const response: CreatePatientConsultationResponseDto = {
+      patient: {
+        id: patient.id,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
+        email: patient.email,
+        phoneNumber: patient.phoneNumber ?? undefined,
+        isNewPatient,
+      },
+      consultation: {
+        id: consultation.id,
+        status: consultation.status,
+        ownerId: consultation.ownerId!,
+        scheduledDate: consultation.scheduledDate ? new Date(consultation.scheduledDate) : undefined,
+      },
+    };
+
+    return {
+      data: response,
+      message: isNewPatient 
+        ? 'Patient created and consultation scheduled successfully'
+        : 'Consultation scheduled for existing patient successfully',
+      statusCode: HttpStatus.CREATED,
+    };
+  }
+
+  private mapGenderToUserSex(gender: string): UserSex {
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return UserSex.MALE;
+      case 'female':
+        return UserSex.FEMALE;
+      default:
+        return UserSex.OTHER;
+    }
   }
 
   async createConsultationWithTimeSlot(
@@ -1129,6 +1281,14 @@ export class ConsultationService {
         `Consultation ${endDto.consultationId} ended by user ${userId} in ${durationMs}ms`,
       );
 
+      // Cancel any pending reminders
+      try {
+        await this.reminderService.cancelReminders(endDto.consultationId);
+      } catch (error) {
+        this.logger.error(`Failed to cancel reminders for consultation ${endDto.consultationId}:`, error);
+        // Continue despite reminder cancellation failure
+      }
+
       const responsePayload: EndConsultationResponseDto = {
         success: true,
         message,
@@ -1255,226 +1415,305 @@ export class ConsultationService {
     };
   }
 
-  async downloadConsultationPdf(
-    consultationId: number,
-    requesterId: number,
-  ): Promise<Buffer> {
-    const consultation = await this.db.consultation.findUnique({
-      where: { id: consultationId },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            specialities: {
-              select: { speciality: { select: { name: true } } },
-            },
-          },
-        },
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                role: true,
-                firstName: true,
-                lastName: true,
-                phoneNumber: true,
-                country: true,
-                sex: true,
-              },
-            },
-          },
-        },
-        rating: true,
-        messages: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!consultation) {
-      throw HttpExceptionHelper.notFound('Consultation not found');
-    }
-
-    const requester = await this.db.user.findUnique({
-      where: { id: requesterId },
-      select: {
-        role: true,
-        id: true,
-      },
-    });
-
-    if (!requester) {
-      throw HttpExceptionHelper.notFound('User not found');
-    }
-
-    const isAdmin = requester.role === UserRole.ADMIN;
-    const isOwner = consultation.ownerId === requesterId;
-    const isParticipant = consultation.participants?.some(
-      (p) => p.userId === requesterId,
-    );
-
-    if (!isAdmin && !isOwner && !isParticipant) {
-      throw HttpExceptionHelper.forbidden(
-        'You are not authorized to download this consultation',
-      );
-    }
-
-    return new Promise<Buffer>((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 40 });
-      const stream = new PassThrough();
-
-      const concatStream = concat((data: Buffer) => {
-        resolve(data);
-      });
-
-      stream.on('error', reject);
-      concatStream.on('error', reject);
-
-      doc.pipe(stream).pipe(concatStream);
-
-      doc.fontSize(20).text('Consultation Summary', { align: 'center' });
-      doc.moveDown();
-
-      doc.fontSize(12).text(`Consultation ID: ${consultation.id}`);
-      doc.text(
-        `Scheduled Date: ${consultation.scheduledDate?.toLocaleString() || 'Not scheduled'}`,
-      );
-      doc.text(`Status: ${consultation.status}`);
-      doc.text(
-        `Created At: ${consultation.createdAt?.toLocaleString() || '-'}`,
-      );
-      doc.text(`Closed At: ${consultation.closedAt?.toLocaleString() || '-'} `);
-      doc.moveDown();
-
-      if (consultation.ownerId) {
-        doc.fontSize(14).text('Practitioner:', { underline: true });
-        this.db.user
-          .findUnique({
-            where: { id: consultation.ownerId },
+  async downloadConsultationPdf(consultationId: number, requestingUserId: number): Promise<Buffer> {
+    try {
+      console.log(`Starting PDF generation for consultation ${consultationId} by user ${requestingUserId}`);
+      
+      const consultation = await this.db.consultation.findUnique({
+        where: { id: consultationId },
+        include: {
+          owner: {
             select: {
+              id: true,
               firstName: true,
               lastName: true,
+              email: true,
               specialities: {
-                select: { speciality: { select: { name: true } } },
-              },
-            },
-          })
-          .then((owner) => {
-            if (!owner) {
-              reject(HttpExceptionHelper.notFound('Owner not found'));
-              return;
-            }
-            const name = `${owner.firstName} ${owner.lastName}`;
-            const specialities = (owner.specialities ?? [])
-              .map((s) => s.speciality.name)
-              .join(', ');
-            doc.fontSize(12).text(`Name: ${name}`);
-            doc.text(`Specialities: ${specialities || 'N/A'}`);
-            doc.moveDown();
-
-            const patient = consultation.participants.find(
-              (p) => p.user.role === UserRole.PATIENT,
-            )?.user;
-            if (patient) {
-              doc.fontSize(14).text('Patient:', { underline: true });
-              doc
-                .fontSize(12)
-                .text(`Name: ${patient.firstName} ${patient.lastName}`);
-              doc.text(`Sex: ${patient.sex ?? 'NA'}`);
-              doc.text(`Phone: ${patient.phoneNumber ?? 'NA'}`);
-              doc.text(`Country: ${patient.country ?? 'NA'}`);
-              doc.moveDown();
-            }
-
-            if (consultation.rating) {
-              doc.fontSize(14).text('Patient Rating:', { underline: true });
-              doc.fontSize(12).text(`Rating: ${consultation.rating.rating}/5`);
-              if (consultation.rating.comment) {
-                doc.text(`Comment: ${consultation.rating.comment}`);
+                include: { speciality: true }
               }
-              doc.moveDown();
             }
-
-            if (consultation.messages?.length) {
-              doc.addPage();
-              doc.fontSize(14).text('Messages Exchanged:', { underline: true });
-              doc.moveDown(0.5);
-
-              consultation.messages.forEach((msg) => {
-                const sender = `${msg.user.firstName ?? ''} ${msg.user.lastName ?? ''}`;
-                const role = msg.user.role;
-                const time = msg.createdAt.toLocaleString();
-                doc
-                  .fontSize(11)
-                  .fillColor('black')
-                  .text(`[${time}] ${sender} (${role}):`, { continued: true })
-                  .fillColor('blue')
-                  .text(` ${msg.content}`);
-                doc.moveDown(0.4);
-              });
+          },
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  role: true,
+                  country: true,
+                  sex: true,
+                  phoneNumber: true
+                }
+              }
             }
-
-            doc.end();
-          })
-          .catch(reject);
-      } else {
-        const patient = consultation.participants.find(
-          (p) => p.user.role === UserRole.PATIENT,
-        )?.user;
-        if (patient) {
-          doc.fontSize(14).text('Patient:', { underline: true });
-          doc
-            .fontSize(12)
-            .text(`Name: ${patient.firstName} ${patient.lastName}`);
-          doc.text(`Sex: ${patient.sex ?? 'NA'}`);
-          doc.text(`Phone: ${patient.phoneNumber ?? 'NA'}`);
-          doc.text(`Country: ${patient.country ?? 'NA'}`);
-          doc.moveDown();
-        }
-
-        if (consultation.rating) {
-          doc.fontSize(14).text('Patient Rating:', { underline: true });
-          doc.fontSize(12).text(`Rating: ${consultation.rating.rating}/5`);
-          if (consultation.rating.comment) {
-            doc.text(`Comment: ${consultation.rating.comment}`);
+          },
+          messages: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  role: true
+                }
+              }
+            },
+            orderBy: { createdAt: 'asc' }
+          },
+          rating: {
+            include: {
+              patient: {
+                select: {
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          },
+          group: {
+            select: {
+              name: true,
+              description: true
+            }
+          },
+          speciality: {
+            select: {
+              name: true
+            }
           }
-          doc.moveDown();
         }
+      });
 
-        if (consultation.messages?.length) {
-          doc.addPage();
-          doc.fontSize(14).text('Messages Exchanged:', { underline: true });
-          doc.moveDown(0.5);
+      if (!consultation) {
+        throw HttpExceptionHelper.notFound('Consultation not found');
+      }
 
-          consultation.messages.forEach((msg) => {
-            const sender = `${msg.user.firstName ?? ''} ${msg.user.lastName ?? ''}`;
-            const role = msg.user.role;
-            const time = msg.createdAt.toLocaleString();
-            doc
-              .fontSize(11)
-              .fillColor('black')
-              .text(`[${time}] ${sender} (${role}):`, { continued: true })
-              .fillColor('blue')
-              .text(` ${msg.content}`);
-            doc.moveDown(0.4);
-          });
-        }
+      const isAuthorized = consultation.ownerId === requestingUserId ||
+        consultation.participants.some(p => p.userId === requestingUserId) ||
+        await this.isUserAdmin(requestingUserId);
 
+      if (!isAuthorized) {
+        throw HttpExceptionHelper.forbidden('Not authorized to download this consultation report');
+      }
+
+      return await this.generateConsultationPDF(consultation);
+      
+    } catch (error) {
+      console.error(`Error in downloadConsultationPdf:`, error);
+      throw error;
+    }
+  }
+
+  private async isUserAdmin(userId: number): Promise<boolean> {
+    try {
+      const user = await this.db.user.findUnique({
+        where: { id: userId },
+        select: { role: true }
+      });
+      return user?.role === 'ADMIN';
+    } catch (error) {
+      console.error(`Error checking admin status for user ${userId}:`, error);
+      return false;
+    }
+  }
+
+  private generateConsultationPDF(consultation: any): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument({ margin: 50 });
+        const chunks: Buffer[] = [];
+
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        this.addPDFHeader(doc, consultation);
+        this.addConsultationOverview(doc, consultation);
+        this.addParticipantsSection(doc, consultation);
+        this.addChatHistory(doc, consultation);
+        this.addFeedbackSection(doc, consultation);
+        this.addPDFFooter(doc); 
         doc.end();
+        
+      } catch (error) {
+        console.error('Error in generateConsultationPDF:', error);
+        reject(error);
       }
     });
+  }
+
+  private addPDFHeader(doc: PDFKit.PDFDocument, consultation: any): void {
+    doc.fontSize(20).font('Helvetica-Bold')
+      .text('CONSULTATION REPORT', { align: 'center' });
+    
+    doc.moveDown();
+    doc.fontSize(12).font('Helvetica')
+      .text(`Report Generated: ${new Date().toLocaleString()}`, { align: 'right' });
+    
+    doc.moveDown();
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown();
+  }
+
+  private addConsultationOverview(doc: PDFKit.PDFDocument, consultation: any): void {
+    doc.fontSize(16).font('Helvetica-Bold').text('CONSULTATION OVERVIEW');
+    doc.moveDown(0.5);
+
+    const overview = [
+      ['Consultation ID:', consultation.id?.toString() || 'N/A'],
+      ['Status:', consultation.status || 'N/A'],
+      ['Scheduled Date:', consultation.scheduledDate ? new Date(consultation.scheduledDate).toLocaleString() : 'Not scheduled'],
+      ['Started At:', consultation.startedAt ? new Date(consultation.startedAt).toLocaleString() : 'N/A'],
+      ['Closed At:', consultation.closedAt ? new Date(consultation.closedAt).toLocaleString() : 'N/A'],
+      ['Duration:', this.calculateDuration(consultation.startedAt, consultation.closedAt)],
+      ['Group:', consultation.group?.name || 'Individual Consultation'],
+      ['Speciality:', consultation.speciality?.name || 'General'],
+      ['Symptoms:', consultation.symptoms || 'N/A'],
+      ['Message Service:', consultation.messageService || 'N/A'],
+      ['Created At:', consultation.createdAt ? new Date(consultation.createdAt).toLocaleString() : 'N/A']
+    ];
+
+    overview.forEach(([label, value]) => {
+      doc.fontSize(10).font('Helvetica-Bold').text(label, { continued: true, width: 150 });
+      doc.font('Helvetica').text(` ${value || 'N/A'}`);
+    });
+
+    doc.moveDown();
+  }
+
+  private addParticipantsSection(doc: PDFKit.PDFDocument, consultation: any): void {
+    doc.fontSize(16).font('Helvetica-Bold').text('PARTICIPANTS');
+    doc.moveDown(0.5);
+
+    if (consultation.owner) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Practitioner:');
+      doc.fontSize(10).font('Helvetica')
+        .text(`Name: ${consultation.owner.firstName || ''} ${consultation.owner.lastName || ''}`)
+        .text(`Email: ${consultation.owner.email || 'N/A'}`)
+        .text(`Specialities: ${consultation.owner.specialities?.map(s => s.speciality?.name).filter(Boolean).join(', ') || 'N/A'}`);
+      doc.moveDown(0.5);
+    }
+
+    const patients = consultation.participants?.filter(p => p.user?.role === 'PATIENT') || [];
+    if (patients.length > 0) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Patient(s):');
+      patients.forEach((participant, index) => {
+        const user = participant.user;
+        if (user) {
+          doc.fontSize(10).font('Helvetica')
+            .text(`${index + 1}. Name: ${user.firstName || ''} ${user.lastName || ''}`)
+            .text(`   Email: ${user.email || 'N/A'}`)
+            .text(`   Phone: ${user.phoneNumber || 'N/A'}`)
+            .text(`   Country: ${user.country || 'N/A'}`)
+            .text(`   Gender: ${user.sex || 'N/A'}`)
+            .text(`   Joined At: ${participant.joinedAt ? new Date(participant.joinedAt).toLocaleString() : 'N/A'}`)
+            .text(`   Active: ${participant.isActive ? 'Yes' : 'No'}`)
+            .text(`   In Waiting Room: ${participant.inWaitingRoom ? 'Yes' : 'No'}`)
+            .text(`   Is Beneficiary: ${participant.isBeneficiary ? 'Yes' : 'No'}`)
+            .text(`   Language: ${participant.language || 'N/A'}`)
+            .text(`   Last Seen: ${participant.lastSeenAt ? new Date(participant.lastSeenAt).toLocaleString() : 'N/A'}`);
+          doc.moveDown(0.3);
+        }
+      });
+    }
+
+    doc.moveDown();
+  }
+
+  private addChatHistory(doc: PDFKit.PDFDocument, consultation: any): void {
+    if (consultation.messages && consultation.messages.length > 0 && doc.y > 600) {
+      doc.addPage();
+    }
+
+    doc.fontSize(16).font('Helvetica-Bold').text('CHAT HISTORY');
+    doc.moveDown(0.5);
+
+    if (!consultation.messages || consultation.messages.length === 0) {
+      doc.fontSize(10).font('Helvetica-Oblique').text('No messages recorded for this consultation.');
+      doc.moveDown();
+      return;
+    }
+
+    doc.fontSize(10).font('Helvetica')
+      .text(`Total Messages: ${consultation.messages.length}`);
+    doc.moveDown(0.5);
+
+    consultation.messages.forEach((message, index) => {
+      if (doc.y > 720) {
+        doc.addPage();
+      }
+
+      const user = message.user;
+      const userName = user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Unknown User';
+      const role = user?.role || 'Unknown';
+      const timestamp = message.createdAt ? new Date(message.createdAt).toLocaleString() : 'Unknown time';
+      const isSystemMessage = message.isSystem ? ' (System)' : '';
+
+      doc.fontSize(9).font('Helvetica-Bold')
+        .text(`[${timestamp}] ${userName} (${role})${isSystemMessage}:`);
+      
+      doc.fontSize(9).font('Helvetica')
+        .text(message.content || '', { indent: 20 });
+      
+      if (message.mediaUrl) {
+        doc.fontSize(8).font('Helvetica-Oblique')
+          .text(`Media: ${message.mediaType || 'Unknown'} - ${message.mediaUrl}`, { indent: 20 });
+      }
+
+      if (message.editedAt) {
+        doc.fontSize(8).font('Helvetica-Oblique')
+          .text(`(Edited at: ${new Date(message.editedAt).toLocaleString()})`, { indent: 20 });
+      }
+      
+      doc.moveDown(0.3);
+    });
+
+    doc.moveDown();
+  }
+
+  private addFeedbackSection(doc: PDFKit.PDFDocument, consultation: any): void {
+    doc.fontSize(16).font('Helvetica-Bold').text('FEEDBACK & RATINGS');
+    doc.moveDown(0.5);
+
+    if (consultation.rating) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Patient Rating:');
+      doc.fontSize(10).font('Helvetica')
+        .text(`Rating: ${consultation.rating.rating || 'N/A'}/5 stars`)
+        .text(`Rated by: ${consultation.rating.patient?.firstName || ''} ${consultation.rating.patient?.lastName || ''}`)
+        .text(`Date: ${consultation.rating.createdAt ? new Date(consultation.rating.createdAt).toLocaleString() : 'N/A'}`);
+      
+      if (consultation.rating.comment) {
+        doc.text(`Comment: ${consultation.rating.comment}`);
+      }
+    } else {
+      doc.fontSize(10).font('Helvetica-Oblique')
+        .text('No patient rating provided for this consultation.');
+    }
+
+    doc.moveDown();
+  }
+
+  private addPDFFooter(doc: PDFKit.PDFDocument): void {
+    doc.fontSize(8).font('Helvetica')
+      .text('Confidential Medical Document', 50, doc.page.height - 35, { align: 'center' });
+  }
+
+  private calculateDuration(startedAt: Date | null, closedAt: Date | null): string {
+    if (!startedAt || !closedAt) return 'N/A';
+    
+    const diffMs = new Date(closedAt).getTime() - new Date(startedAt).getTime();
+    const hours = Math.floor(diffMs / 3600000);
+    const minutes = Math.floor((diffMs % 3600000) / 60000);
+    const seconds = Math.floor((diffMs % 60000) / 1000);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+    return `${seconds}s`;
   }
 
   private mapToHistoryItem(c: any): ConsultationHistoryItemDto {

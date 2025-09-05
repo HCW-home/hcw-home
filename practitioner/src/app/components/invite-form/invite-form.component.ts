@@ -21,6 +21,9 @@ import {
 } from '../../constants/button.enums';
 import { ViewEncapsulation } from '@angular/core';
 import { InviteFormData } from '../../dtos/invites';
+import { GuidedTourService } from '../../services/guided-tour.service';
+import { TourType } from '../../models/tour';
+import { TourMatMenuModule } from 'ngx-ui-tour-md-menu';
 
 export interface CreatePatientConsultationFormData {
   firstName: string;
@@ -37,7 +40,7 @@ export interface CreatePatientConsultationFormData {
 @Component({
   selector: 'app-invite-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TourMatMenuModule],
   templateUrl: './invite-form.component.html',
   styleUrls: ['./invite-form.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -52,6 +55,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   readonly ButtonVariant = ButtonVariant;
   readonly ButtonSize = ButtonSize;
   readonly ButtonType = ButtonType;
+  readonly TourType = TourType;
 
   form!: FormGroup;
   genders = ['Male', 'Female', 'Other'];
@@ -74,7 +78,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     return this.isEditMode ? 'Update' : 'Create';
   }
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private guidedTourService: GuidedTourService) {}
 
   ngOnInit(): void {
     document.body.classList.add('modal-open');

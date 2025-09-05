@@ -29,11 +29,9 @@ export class TermService {
   }
 
   getLatestTermAndStore(): Observable<Term | undefined> {
-    console.log("terms called");
     return this.http.get<ApiResponse<Term>>(`${this.baseUrl}/latest`).pipe(
       map(res => res.data),
       tap(latest => {
-        console.log(latest);
         
         this.setLatestTerm(latest);
       }),
@@ -59,8 +57,6 @@ export class TermService {
 
 
   acceptTerm(termId: number): Observable<string> {
-    console.log("called");
-
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/accept-term/${termId}`, '').pipe(
       map((res) => res.data)
     )

@@ -140,7 +140,6 @@ export class InviteFormComponent implements OnInit, OnDestroy {
       symptoms: this.form.value.symptoms || undefined,
     };
 
-    console.log('Emitting form data:', formData); // Debug log
     this.submit.emit(formData);
   }
 }

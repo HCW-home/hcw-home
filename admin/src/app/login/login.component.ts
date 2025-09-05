@@ -115,10 +115,6 @@ export class LoginComponent implements OnInit {
       this.error = null;
   
       const { email, password } = this.loginForm.value!;
-      console.log('Logging in with:', email, password);
-      console.log(this.loginForm.value);
-      
-  
       this.authService.loginLocal(email!, password!).subscribe({
         next: (res) => {
           this.loading.set(false);

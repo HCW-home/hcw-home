@@ -60,7 +60,6 @@ export class CustomLoggerService extends ConsoleLogger implements LoggerService 
         message,
         context,
       );
-      console.log(formattedMessage);
     } else {
       const contextString = this.context || context.category || 'Application';
       super[level](message, contextString);

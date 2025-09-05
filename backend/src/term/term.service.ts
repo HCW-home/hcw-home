@@ -176,7 +176,6 @@ export class TermService {
       
     // Step 1: Get user
     const user = await this.userService.findOne(userId);
-    console.log(user);
     if (!user) throw HttpExceptionHelper.notFound('User not found');
     const organizationId = user.organizations?.[0]?.id;
     const country = user.country || 'US';
@@ -205,7 +204,6 @@ export class TermService {
   
     // Step 1: Get user
     const user = await this.userService.findOne(userId);
-    console.log(user);
     if (!user) throw HttpExceptionHelper.notFound('User not found');
   
     const organizationId = user.organizations?.[0]?.id;

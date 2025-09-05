@@ -212,7 +212,6 @@ export class LoginPage implements OnInit, OnDestroy {
       this.successMessage = (res as any)?.message ?? 'Requested';
     } catch (e: unknown) {
       const err = e as any;
-      console.log(err);
       this.errorMessage = err?.error?.message ?? err?.message ?? 'Something went wrong';
     }
   }

@@ -1,22 +1,22 @@
+
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule, MatError } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { AuthService } from '../../auth/auth.service';
 import { SnackbarService } from '../../services/snackbar/snackbar.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '../ui/button/button.component';
-
 @Component({
-  selector: 'app-forget-password',
+  selector: 'app-set-password',
+  templateUrl: './set-password.component.html',
+  styleUrl: './set-password.component.scss',
   standalone: true,
-  templateUrl: './forget-password.component.html',
-  styleUrl: './forget-password.component.scss',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -31,14 +31,10 @@ import { ButtonComponent } from '../ui/button/button.component';
     ButtonComponent
   ],
 })
-export class ForgotPasswordComponent {
-  step = 1;
-  readonly DEFAULT_OTP = '123456';
+export class SetPasswordComponent {
+  private route = inject(ActivatedRoute);
   error = '';
-  loading =  signal(false)
-
-  forgotForm: FormGroup;
-  otpForm: FormGroup;
+  loading = signal(false)
   resetForm: FormGroup;
 
   showPassword = false;
@@ -50,13 +46,7 @@ export class ForgotPasswordComponent {
     private snackbarService: SnackbarService,
     private router: Router
   ) {
-    this.forgotForm = this.fb.group({
-      username: ['', [Validators.required, Validators.email]],
-    });
 
-    this.otpForm = this.fb.group({
-      otp: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
-    });
 
     this.resetForm = this.fb.group({
       password: ['', [Validators.required]],
@@ -68,41 +58,25 @@ export class ForgotPasswordComponent {
     const { password, confirmPassword } = this.resetForm.value;
     return !!password && !!confirmPassword && password !== confirmPassword;
   }
-
-  sendOtp() {
-    if (this.forgotForm.valid) {
-      const username = this.forgotForm.value.username;
-      this.snackbarService.showSuccess('OTP sent successfully');
-      this.step = 2;
-    }
-  }
-
-  verifyOtp() {
-    if (this.otpForm.valid && this.otpForm.value.otp === this.DEFAULT_OTP) {
-      this.snackbarService.showSuccess('OTP verified successfully');
-      this.step = 3;
-    } else {
-      this.otpForm.get('otp')?.setErrors({ incorrect: true });
-      this.error = 'OTP not matched';
-      this.snackbarService.showError(this.error);
-    }
-  }
-
   resetPassword() {
     if (this.resetForm.valid && !this.passwordMismatch) {
       this.loading.set(true);
-
+      const queryParams = this.route.snapshot.queryParams;
+      const username = queryParams['email'];
+      const accessToken = queryParams['aT'];
+      const refreshToken = queryParams['rT'];
       const password = this.resetForm.get('password')?.value;
-      const username = this.forgotForm.get('username')?.value;
-
       this.authService.updatePassword(password, username).subscribe({
         next: (res) => {
-          this.snackbarService.showSuccess(res.message || 'Password reset successful');
+          this.snackbarService.showSuccess(res.message || 'Password set successful');
           this.loading.set(false);
-            this.router.navigate(['/login']);
+          const loginUrl = `/login?aT=${accessToken}&rT=${refreshToken}`;
+          this.router.navigateByUrl(loginUrl).then(() => {
+            window.location.reload();
+          });
         },
         error: (err) => {
-          this.error=err?.error.message ;
+          this.error = err?.error.message;
           this.loading.set(false);
           this.snackbarService.showError('Failed to reset password');
         },

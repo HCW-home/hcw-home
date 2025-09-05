@@ -17,8 +17,12 @@ import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 
 function generateStrongPassword(length = 12): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const randomPart = Array.from({ length }, () =>
+    chars[Math.floor(Math.random() * chars.length)]
+  ).join('');
+  return `temp-${randomPart}`;
 }
+
 
 
 @Injectable()
@@ -29,7 +33,7 @@ export class AuthService {
     private readonly JwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly databaseService: DatabaseService,
-  ) {}
+  ) { }
 
   async loginWithMagicLink(token: string): Promise<TokenDto> {
     const invitation =
@@ -311,10 +315,25 @@ export class AuthService {
       return;
     }
     this.logger.log(`user found with email:${email}`);
-    return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: false,
-    });
+    // return plainToInstance(UserResponseDto, user, {
+    //   excludeExtraneousValues: false,
+    // });
+    return user;
   }
+
+  async shouldRedirectToSetPassword(email: string): Promise<boolean> {
+    const user = await this.databaseService.user.findUnique({
+      where: { email },
+      select: { password: true },
+    });
+
+    if (!user || !user.password) {
+      return true;
+    }
+    return user.password.startsWith('temp');
+  }
+
+
 
   // oidc user validation
   async validateAdmin(
@@ -468,11 +487,14 @@ export class AuthService {
       excludeExtraneousValues: true,
     });
   }
-
-  encryptPassword(password: string): Promise<string> {
+  async encryptPassword(password: string): Promise<string> {
+    if (password.startsWith('temp')) {
+      return password;
+    }
     const saltRounds = 12;
     return bcrypt.hash(password, saltRounds);
   }
+
   isRoleAuthorized(userRole: string, uiRole: string): boolean {
     if (!userRole || !uiRole) return false;
 
@@ -588,8 +610,6 @@ export class AuthService {
     try {
       // Step 2: Verify JWT token using the secret
       const decoded = await this.JwtService.verify(token, { secret });
-      console.log(decoded);
-
       // Optional: Check for required fields in decoded payload
       if (!decoded?.userId || !decoded?.contact || !decoded?.type) {
         this.logger.error('Decoded JWT token is missing required fields');

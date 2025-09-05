@@ -107,8 +107,6 @@ export class AuthService {
   }
 
   refreshToken() {
-    console.log("refresh token called");
-
     const rToken = this.getrefreshToken();
 
     return this.http.post<any>(`${this.baseurl}/refresh-token`, { refreshToken: rToken }).pipe(

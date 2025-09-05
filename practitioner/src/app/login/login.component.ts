@@ -23,6 +23,7 @@ import { AccessDeniedComponent } from '../components/access-denied/access-denied
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { ButtonComponent } from '../components/ui/button/button.component';
 import { TermService } from '../services/term.service';
+import { SetPasswordComponent } from '../components/set-password/set-password.component';
 
 
 
@@ -51,7 +52,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     AccessDeniedComponent,
     AngularSvgIconModule,
     ButtonComponent,
-    RouterModule
+    RouterModule,
+    SetPasswordComponent
 
 
   ],
@@ -64,6 +66,7 @@ export class LoginComponent implements OnInit {
   private snackBarService=inject(SnackbarService)
   private termService= inject(TermService)
   errorMessage:string = '';
+  showSetPasswordForm:boolean=false;
 
 
   loginForm = new FormGroup({
@@ -91,7 +94,11 @@ export class LoginComponent implements OnInit {
     const refreshToken = queryParams['rT'];
     this.returnUrl = queryParams['returnUrl'] || '/dashboard';
     const error = queryParams['error'];  
-    if (accessToken && refreshToken) {
+    const mode= queryParams['mode'];
+    if(mode==='set-password'){
+      this.showSetPasswordForm=true
+    }
+    else if (accessToken && refreshToken) {
       this.authService.login(accessToken,refreshToken).subscribe({
         next: (user) => {
           if (user) {

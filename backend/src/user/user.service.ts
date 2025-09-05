@@ -128,9 +128,6 @@ export class UserService {
     } = query;
     const skip = (page - 1) * limit;
     
-    console.log('page type:', typeof page);
-    console.log('limit type:', typeof limit);
-
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 

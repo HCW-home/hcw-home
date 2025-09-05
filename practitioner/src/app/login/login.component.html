@@ -1,4 +1,7 @@
-<div class="auth-container">
+  <app-set-password *ngIf="showSetPasswordForm"></app-set-password>
+
+
+<div *ngIf="!showSetPasswordForm" class="auth-container">
   <div class="auth-card">
     <!-- Header -->
     <div class="logo-header">

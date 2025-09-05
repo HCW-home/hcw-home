@@ -157,17 +157,13 @@ export class ResourceManagerComponent {
       if (this.selectedLogoFile) {
         this.uploadLogo(this.selectedLogoFile).subscribe({
           next: (res) => {
-            console.log('Full upload response:', res);
-            console.log('Logo uploaded successfully with URL:', res.url);
             payload.logo = res.url;
-            console.log('Final Payload:', payload);
             this.saveResource(type, payload);
           },
           error: () => this.snackBarService.showError('Logo upload failed')
         });
       } else {
         payload.logo = this.resourceForm.value.logo;
-        console.log('Final Payload:', payload);
         this.saveResource(type, payload);
       }
     } else if (type === 'group') {

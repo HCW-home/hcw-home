@@ -111,7 +111,6 @@ export class TermController {
         @Query(new ValidationPipe({ transform: true })) query: QueryTermsDto
     ) {
         const data = await this.termsService.findAllunderOrg(query, +orgId);
-        console.log(data);
 
         return PaginatedApiResponseDto.paginatedSuccess(
             data.terms,

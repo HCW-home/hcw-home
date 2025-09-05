@@ -95,8 +95,6 @@ export class UsersComponent implements OnInit, OnDestroy {
         this.filterSex === '' ? undefined : this.filterSex
       ).subscribe({
         next: (response) => {
-          console.log( 'fetched data:', response);
-          console.log('users:', response.users);
           this.users = response.users;
           this.totalUsers = response.total;
           this.currentPage = response.page;

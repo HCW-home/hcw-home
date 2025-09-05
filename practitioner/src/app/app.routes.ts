@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
 import { TermComponent } from './pages/term/term.component';
 import { TermGuard } from './auth/guard/terms.guard';
 import { ForgotPasswordComponent } from './components/forget-password/forget-password.component';
+import { SetPasswordComponent } from './components/set-password/set-password.component';
 
 
 
@@ -61,6 +62,11 @@ export const routes: Routes = [
         path: RoutePaths.Availability,
         component: AvailabilityComponent 
       },
+      {
+        path: RoutePaths.SetPassword,
+        component:SetPasswordComponent
+
+      }
 
 
     ],

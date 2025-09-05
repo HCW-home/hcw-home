@@ -378,7 +378,7 @@ class ApplicationBootstrap {
   }
 
   private configureGlobalPrefix(app: NestExpressApplication): void {
-    app.setGlobalPrefix('api/v1', {
+    app.setGlobalPrefix('api', {
       exclude: [
         { path: 'health', method: RequestMethod.GET },
         { path: 'metrics', method: RequestMethod.GET },

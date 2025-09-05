@@ -30,17 +30,13 @@ export class TermService {
   }
   
   getLatestTermAndStore(): Observable<Term | undefined> {
-    console.log("terms called");
     return this.http.get<ApiResponse<Term>>(`${this.baseUrl}/latest`).pipe(
       map(res => res.data),
       tap(latest => {
         const currentVersion = this.authService.getCurrentTerm();
-        console.log(currentVersion);
-        console.log(latest.version);
   
         if (!currentVersion || currentVersion < latest.version) {
           this.setLatestTerm(latest);
-          console.log('Stored new term version:', latest);
           this.router.navigate([RoutePaths.AcceptTerm])
         }
       }),
@@ -67,9 +63,7 @@ export class TermService {
   }
 
 
-  acceptTerm(termId:number):Observable<string>{
-    console.log("called");
-    
+  acceptTerm(termId:number):Observable<string>{    
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/accept-term/${termId}`,'').pipe(
       map((res)=>res.data)
     )

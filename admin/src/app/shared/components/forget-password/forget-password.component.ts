@@ -72,7 +72,6 @@ export class ForgotPasswordComponent {
   sendOtp() {
     if (this.forgotForm.valid) {
       const username = this.forgotForm.value.username;
-      console.log('OTP sent to:', username);
       this.snackbarService.showSuccess('OTP sent successfully');
       this.step = 2;
     }

@@ -160,7 +160,6 @@ export class TermFormComponent implements OnInit, OnDestroy {
   
 
   onSubmit(): void {
-    console.log(this.termForm.value);
 
     if (this.termForm.invalid) {
       this.termForm.markAllAsTouched();
@@ -177,7 +176,6 @@ export class TermFormComponent implements OnInit, OnDestroy {
       payload.organizationId = this.termForm.get('organisationId')?.value;
     }
     
-    console.log(payload);
     
     this.loading = true;
     const operation = this.isEditMode && this.termId
@@ -192,7 +190,6 @@ export class TermFormComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.snackBarService.showError(`${error.error.message || 'Unknown error'}`);
-          console.log(error);
           
           this.loading = false;
         }

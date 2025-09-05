@@ -43,27 +43,22 @@ export class TermBoxComponent implements OnInit {
     if (!term) {
       return
     }
-    console.log(term.content);
     
     this.markdownContent = term.content ?? '*No terms found.*';
   }
 
 
   handleSubmit() {
-    console.log('User accepted all terms');
 
     if (this.termsForm.valid) {
-      console.log('User accepted all terms');
       const term = this.termService.getLatestTrem()
       const id = term?.id;
-      console.log(id);
       
       const queryParams = this.route.snapshot.queryParams;
       this.returnUrl = queryParams['redirect'] || '/dashboard';
       if(id !=null){
       this.termService.acceptTerm(id).subscribe({
         next: (response) => {
-          console.log('Term accepted successfully', response);
           this.router.navigateByUrl(this.returnUrl)
         },
         error: (error) => {

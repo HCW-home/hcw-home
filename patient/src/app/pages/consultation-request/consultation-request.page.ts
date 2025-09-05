@@ -96,7 +96,6 @@ export class ConsultationRequestPage implements OnInit {
       specialityId: this.consultation.selectedSpecialtyId,
       symptoms: this.consultation.symptoms || '',
     };
-    console.log("Dto: ", dto);
     const UserId = this.getCurrentUserId();
 
     this.consultationRequestService.createConsultation(dto, UserId).subscribe({

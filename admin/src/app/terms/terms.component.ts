@@ -182,7 +182,6 @@ export class TermsComponent implements OnInit, OnDestroy {
     this.organizationService.getAllOrganizations().subscribe({
       next: (orgs) => {
         this.organizations = orgs;
-        console.log('Organizations loaded:', this.organizations);
       },
       error: (error) => {
         console.error('Failed to load organizations:', error);

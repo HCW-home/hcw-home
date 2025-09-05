@@ -1,0 +1,216 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Join Consultation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="join-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoadingStep" class="loading-container">
+      <ion-spinner name="dots" color="primary"></ion-spinner>
+      <ion-text>
+        <h2>Joining Consultation</h2>
+        <p>Please wait while we connect you...</p>
+      </ion-text>
+    </div>
+
+    <!-- Terms Acceptance State -->
+    <div *ngIf="isTermsStep" class="terms-container">
+      <ion-card class="terms-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="document-text-outline" color="primary"></ion-icon>
+            Review & Accept Terms
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <form [formGroup]="termsForm" (ngSubmit)="joinWithTermsAccepted()">
+            <!-- Terms Display -->
+            <div class="terms-content" *ngIf="terms">
+              <ion-text>
+                <h3>{{ terms.name }}</h3>
+                <div [innerHTML]="terms.content"></div>
+              </ion-text>
+            </div>
+
+            <!-- Default Terms Message if no terms loaded -->
+            <div class="terms-content" *ngIf="!terms">
+              <ion-text>
+                <h3>Terms and Conditions</h3>
+                <p>
+                  By joining this consultation, you agree to our terms of
+                  service and privacy policy.
+                </p>
+                <ul>
+                  <li>
+                    Your consultation will be conducted securely and privately
+                  </li>
+                  <li>Session data may be recorded for quality assurance</li>
+                  <li>You consent to the use of telemedicine technology</li>
+                  <li>Standard healthcare privacy protections apply</li>
+                </ul>
+              </ion-text>
+            </div>
+
+            <!-- Terms Acceptance Checkbox -->
+            <ion-item class="terms-acceptance">
+              <ion-checkbox
+                slot="start"
+                formControlName="acceptTerms"
+                aria-describedby="terms-desc"
+              >
+              </ion-checkbox>
+              <ion-label>
+                I have read and agree to the terms and conditions
+              </ion-label>
+            </ion-item>
+
+            <!-- Form Validation Error -->
+            <ion-text
+              color="danger"
+              *ngIf="termsForm.get('acceptTerms')?.invalid && termsForm.get('acceptTerms')?.touched"
+            >
+              <p><small>You must accept the terms to continue</small></p>
+            </ion-text>
+
+            <!-- Action Buttons -->
+            <div class="terms-actions">
+              <ion-button
+                expand="block"
+                type="submit"
+                [disabled]="!termsForm.valid || isLoading"
+                color="primary"
+              >
+                <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+                Accept & Join Consultation
+              </ion-button>
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="medium"
+                (click)="goToDashboard()"
+              >
+                <ion-icon name="close-outline" slot="start"></ion-icon>
+                Cancel
+              </ion-button>
+            </div>
+
+            <ion-text color="medium" class="terms-note">
+              <p>
+                <small
+                  >By joining, you confirm that you accept the listed
+                  terms.</small
+                >
+              </p>
+            </ion-text>
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Joining State (Processing) -->
+    <div *ngIf="isJoiningStep" class="loading-container">
+      <ion-spinner name="dots" color="primary"></ion-spinner>
+      <ion-text>
+        <h2>Processing Request</h2>
+        <p>Connecting to consultation...</p>
+      </ion-text>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="isErrorStep" class="error-container">
+      <ion-card class="error-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+            Unable to Join
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-text color="danger">
+            <p>{{errorMessage}}</p>
+          </ion-text>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <!-- Retry button -->
+            <ion-button
+              expand="block"
+              color="primary"
+              (click)="retryJoin()"
+              *ngIf="token || consultationId"
+            >
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Try Again
+            </ion-button>
+
+            <!-- Login button for auth errors -->
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="primary"
+              (click)="goToLogin()"
+              *ngIf="errorMessage.includes('log in') || errorMessage.includes('Login') || errorMessage.includes('unauthorized')"
+            >
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              Login to Continue
+            </ion-button>
+
+            <!-- Dashboard button -->
+            <ion-button
+              expand="block"
+              fill="clear"
+              color="medium"
+              (click)="goToDashboard()"
+            >
+              <ion-icon name="home-outline" slot="start"></ion-icon>
+              Go to Dashboard
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Help Section -->
+      <ion-card class="help-card">
+        <ion-card-header>
+          <ion-card-title>Need Help?</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ul>
+            <li>
+              Make sure your consultation link is valid and hasn't expired
+            </li>
+            <li>Check that you're logged into the correct account</li>
+            <li>Ensure you have a stable internet connection</li>
+            <li>Try refreshing the page and clicking the link again</li>
+            <li>Contact your healthcare provider if the problem persists</li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Success State (rarely shown due to immediate redirect) -->
+    <div *ngIf="isSuccessStep" class="success-container">
+      <ion-card class="success-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon
+              name="checkmark-circle-outline"
+              color="success"
+            ></ion-icon>
+            Joining Consultation
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-text color="success">
+            <p>Successfully processed consultation link!</p>
+          </ion-text>
+          <p>You're being redirected to your consultation...</p>
+          <ion-spinner name="dots" color="success"></ion-spinner>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

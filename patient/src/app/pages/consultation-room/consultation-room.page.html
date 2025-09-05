@@ -1,0 +1,157 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Consultation Room</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="consultation-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-text>
+        <h3>{{connectionStatus}}</h3>
+      </ion-text>
+    </div>
+
+    <div *ngIf="!isLoading" class="consultation-content">
+      <ion-card class="status-card">
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <div class="status-item">
+                  <ion-icon
+                    [name]="isConnected ? 'medical-outline' : 'medical-outline'"
+                    [color]="isConnected ? 'success' : 'warning'"
+                  >
+                  </ion-icon>
+                  <ion-text [color]="isConnected ? 'success' : 'warning'">
+                    <small>{{connectionStatus}}</small>
+                  </ion-text>
+                </div>
+              </ion-col>
+              <ion-col size="6">
+                <div class="status-item">
+                  <ion-icon
+                    name="person-outline"
+                    [color]="practitionerPresent ? 'success' : 'medium'"
+                  >
+                  </ion-icon>
+                  <ion-text
+                    [color]="practitionerPresent ? 'success' : 'medium'"
+                  >
+                    <small
+                      >{{practitionerPresent ? practitionerName + ' online' :
+                      'Waiting for doctor'}}</small
+                    >
+                  </ion-text>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Video Area -->
+      <div class="video-container">
+        <!-- Remote Video (Doctor) -->
+        <div class="remote-video-wrapper">
+          <video
+            id="remoteVideo"
+            class="remote-video"
+            autoplay
+            playsinline
+          ></video>
+          <div class="video-placeholder" *ngIf="!practitionerPresent">
+            <ion-icon name="person-outline"></ion-icon>
+            <ion-text>
+              <p>Waiting for {{practitionerName}}</p>
+            </ion-text>
+          </div>
+        </div>
+
+        <!-- Local Video (Patient) -->
+        <div class="local-video-wrapper">
+          <video
+            id="localVideo"
+            class="local-video"
+            autoplay
+            playsinline
+            muted
+          ></video>
+          <div class="video-overlay" *ngIf="!isVideoEnabled">
+            <ion-icon name="videocam-off-outline"></ion-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div class="control-panel">
+        <ion-grid>
+          <ion-row class="ion-justify-content-center">
+            <!-- Audio Control -->
+            <ion-col size="auto">
+              <ion-button
+                [fill]="isAudioEnabled ? 'solid' : 'outline'"
+                [color]="isAudioEnabled ? 'primary' : 'danger'"
+                shape="round"
+                (click)="toggleAudio()"
+              >
+                <ion-icon
+                  [name]="isAudioEnabled ? 'mic-outline' : 'mic-off-outline'"
+                >
+                </ion-icon>
+              </ion-button>
+            </ion-col>
+
+            <!-- Video Control -->
+            <ion-col size="auto">
+              <ion-button
+                [fill]="isVideoEnabled ? 'solid' : 'outline'"
+                [color]="isVideoEnabled ? 'primary' : 'danger'"
+                shape="round"
+                (click)="toggleVideo()"
+              >
+                <ion-icon
+                  [name]="isVideoEnabled ? 'videocam-outline' : 'videocam-off-outline'"
+                >
+                </ion-icon>
+              </ion-button>
+            </ion-col>
+
+            <!-- Chat -->
+            <ion-col size="auto">
+              <ion-button
+                fill="outline"
+                color="medium"
+                shape="round"
+                (click)="openChat()"
+              >
+                <ion-icon name="chatbubble-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+
+            <!-- End Call -->
+            <ion-col size="auto">
+              <ion-button
+                fill="solid"
+                color="danger"
+                shape="round"
+                (click)="endConsultation()"
+              >
+                <ion-icon name="call-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </div>
+
+    <!-- Floating Action Button - Leave -->
+    <ion-fab vertical="top" horizontal="end" slot="fixed">
+      <ion-fab-button color="medium" size="small" (click)="leaveConsultation()">
+        <ion-icon name="exit-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </div>
+</ion-content>

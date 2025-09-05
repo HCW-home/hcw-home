@@ -14,6 +14,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { createClient } from 'redis';
+
 
 class ApplicationBootstrap {
   private logger: CustomLoggerService;
@@ -38,7 +40,6 @@ class ApplicationBootstrap {
       this.configureSecurityMiddleware(app, configService);
       this.configurePerformanceMiddleware(app, configService);
 
-      // Configure global validation pipe with enhanced options
       app.useGlobalPipes(
         new ValidationPipe({
           whitelist: true,
@@ -54,7 +55,6 @@ class ApplicationBootstrap {
         }),
       );
 
-      // Configure global exception filters
       this.configureGlobalFilters(app);
 
       // Configure API versioning
@@ -72,7 +72,7 @@ class ApplicationBootstrap {
       this.configureCors(app, configService);
       this.configureSwagger(app, configService);
       this.configureGlobalPrefix(app);
-      this.configureSession(app, configService);
+      await this.configureSession(app, configService);
       this.configureStaticAssets(app);
       this.configurePassport(app);
 
@@ -133,53 +133,32 @@ class ApplicationBootstrap {
   private configureSecurityMiddleware(app: NestExpressApplication, configService: ConfigService): void {
     // Helmet for security headers
     app.use(helmet({
-      contentSecurityPolicy: configService.isProduction ? {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'"],
-          fontSrc: ["'self'"],
-          objectSrc: ["'none'"],
-          mediaSrc: ["'self'"],
-          frameSrc: ["'none'"],
-        },
-      } : false,
+      contentSecurityPolicy: configService.isProduction ? configService.helmetCsp : false,
       crossOriginEmbedderPolicy: false,
     }));
 
     // Rate limiting
     if (configService.isProduction) {
       app.use(rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 1000, // limit each IP to 1000 requests per windowMs
-        message: {
-          error: 'Too many requests',
-          message: 'Rate limit exceeded, please try again later.',
-        },
+        windowMs: configService.rateLimitWindowMs,
+        max: configService.rateLimitMax,
+        message: configService.rateLimitMessage,
         standardHeaders: true,
         legacyHeaders: false,
         skip: (req) => {
-          // Skip rate limiting for health checks
-          return req.path === '/api/v1/health' || req.path === '/health';
+          return req.path === configService.healthPath || req.path === configService.healthAltPath;
         },
       }));
 
-      // Stricter rate limiting for auth endpoints
-      app.use('/api/v1/auth', rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 50, // limit each IP to 50 auth requests per windowMs
-        message: {
-          error: 'Too many authentication attempts',
-          message: 'Authentication rate limit exceeded, please try again later.',
-        },
+      app.use(configService.authRateLimitPath, rateLimit({
+        windowMs: configService.authRateLimitWindowMs,
+        max: configService.authRateLimitMax,
+        message: configService.authRateLimitMessage,
         standardHeaders: true,
         legacyHeaders: false,
       }));
     }
 
-    // Trust proxy if behind reverse proxy (common in production)
     if (configService.isProduction) {
       app.set('trust proxy', 1);
     }
@@ -192,7 +171,6 @@ class ApplicationBootstrap {
   }
 
   private configurePerformanceMiddleware(app: NestExpressApplication, configService: ConfigService): void {
-    // Enable compression
     app.use(compression({
       filter: (req, res) => {
         if (req.headers['x-no-compression']) {
@@ -200,16 +178,15 @@ class ApplicationBootstrap {
         }
         return compression.filter(req, res);
       },
-      level: configService.isProduction ? 6 : 1,
-      threshold: 1024,
+      level: configService.compressionLevel,
+      threshold: configService.compressionThreshold,
     }));
 
-    // Set response timeout
     app.use((req, res, next) => {
-      res.setTimeout(30000, () => {
+      res.setTimeout(configService.responseTimeoutMs, () => {
         res.status(408).json({
-          error: 'Request Timeout',
-          message: 'Request took too long to process',
+          error: configService.timeoutError,
+          message: configService.timeoutMessage,
         });
       });
       next();
@@ -217,7 +194,7 @@ class ApplicationBootstrap {
 
     this.logger.logServerAction('Performance middleware configured', {
       compression: true,
-      timeout: '30s',
+      timeout: `${configService.responseTimeoutMs / 1000}s`,
     });
   }
 
@@ -246,46 +223,18 @@ class ApplicationBootstrap {
 
   private configureCors(app: NestExpressApplication, configService: ConfigService): void {
     if (configService.shouldEnableCors) {
-      const corsOptions = {
-        origin: (origin, callback) => {
-          const allowedOrigins = configService.corsOrigins;
-
-          // Allow requests with no origin (mobile apps, Postman, etc.)
-          if (!origin) return callback(null, true);
-
-          if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            this.logger.warn(`Blocked CORS request from origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-          }
-        },
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: [
-          'Origin',
-          'X-Requested-With',
-          'Content-Type',
-          'Accept',
-          'Authorization',
-          'X-API-Key',
-          'Cache-Control',
-        ],
-        exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-        maxAge: 86400, // 24 hours
-      };
-
+      const corsOptions = configService.corsOptions();
       app.enableCors(corsOptions);
-
       this.logger.logServerAction('CORS configuration enabled', {
         origins: configService.corsOrigins,
-        credentials: true,
+        credentials: corsOptions.credentials,
         methods: corsOptions.methods,
       });
     } else {
       this.logger.logServerAction('CORS configuration disabled for production');
     }
   }
+
 
   private configureSwagger(app: NestExpressApplication, configService: ConfigService): void {
     if (!configService.shouldEnableSwagger) {
@@ -321,7 +270,7 @@ class ApplicationBootstrap {
         'api-key',
       )
       .addServer(
-        `http://localhost:${configService.port}/api/v1`,
+        configService.swaggerServerUrl,
         'Development server',
       )
       .addTag('Authentication', 'User authentication and authorization')
@@ -355,9 +304,6 @@ class ApplicationBootstrap {
         .swagger-ui .scheme-container { background: #f8f9fa; padding: 10px; }
       `,
       customfavIcon: '/favicon.ico',
-      customJs: [
-        'https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js',
-      ],
     });
 
     // Generate OpenAPI JSON endpoint
@@ -378,7 +324,7 @@ class ApplicationBootstrap {
   }
 
   private configureGlobalPrefix(app: NestExpressApplication): void {
-    app.setGlobalPrefix('api/v1', {
+    app.setGlobalPrefix('api', {
       exclude: [
         { path: 'health', method: RequestMethod.GET },
         { path: 'metrics', method: RequestMethod.GET },
@@ -387,12 +333,11 @@ class ApplicationBootstrap {
     });
 
     this.logger.logServerAction('Global API prefix configured', {
-      prefix: 'api/v1',
+      prefix: 'api',
       excludedPaths: ['health', 'metrics', ''],
     });
   }
-
-  private configureSession(app: NestExpressApplication, configService: ConfigService): void {
+  private async configureSession(app: NestExpressApplication, configService: ConfigService): Promise<void> {
     const sessionConfig: any = {
       secret: configService.jwtSecret || 'fallback-secret-change-in-production',
       resave: false,
@@ -401,32 +346,47 @@ class ApplicationBootstrap {
       cookie: {
         maxAge: configService.sessionTimeoutMs,
         httpOnly: true,
-        secure: configService.isProduction, // HTTPS only in production
+        secure: configService.isProduction,
         sameSite: configService.isProduction ? 'strict' : 'lax',
       },
     };
 
-    // Production session store configuration (Redis recommended)
-    if (configService.isProduction && configService.redisUrl) {
-      // Note: You'll need to install and configure connect-redis
-      // import RedisStore from 'connect-redis'
-      // import { createClient } from 'redis'
-      // const redisClient = createClient({ url: configService.redisUrl })
-      // sessionConfig.store = new RedisStore({ client: redisClient })
-      this.logger.logServerAction('Session store: Redis (configure connect-redis)');
-    } else {
-      this.logger.warn('Using memory session store - not suitable for production clustering');
-    }
+    const redisClient = createClient({ url: configService.redisUrl });
+    redisClient.on('error', (err) => this.logger.errorServerAction('Redis Client Error', err));
+    await redisClient.connect();
 
-    app.use(session(sessionConfig));
+    const RedisStore = require('connect-redis')(session);
+    const store = new RedisStore({
+      client: redisClient,
+      prefix: 'sess:',
+    });
 
+    app.use(
+      session({
+        store,
+        secret: configService.jwtSecret || 'fallback-secret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: configService.isProduction,
+          httpOnly: true,
+          maxAge: 1000 * 60 * 60,
+          sameSite: 'lax',
+        },
+      }),
+    );
+
+    this.logger.logServerAction('Session store: Redis configured successfully');
     this.logger.logServerAction('Session configuration applied', {
       secure: sessionConfig.cookie.secure,
       httpOnly: sessionConfig.cookie.httpOnly,
       sameSite: sessionConfig.cookie.sameSite,
       maxAge: `${sessionConfig.cookie.maxAge}ms`,
+      store: 'Redis',
     });
   }
+
+
 
   private configureStaticAssets(app: NestExpressApplication): void {
     const uploadsPath = join(__dirname, '..', 'uploads');
@@ -472,12 +432,21 @@ class ApplicationBootstrap {
       }, this.gracefulShutdownTimeoutMs);
 
       try {
-        // Close HTTP server
-        await app.close();
+        try {
+          const databaseService = app.get('DatabaseService');
+          this.logger.logServerAction('Closing database connections...');
+          await databaseService.onModuleDestroy();
+        } catch (e) {
+        }
 
-        // Clean up resources here (database connections, etc.)
-        // await databaseService.disconnect();
-        // await redisService.disconnect();
+        try {
+          const mediasoupSessionService = app.get('MediasoupSessionService');
+          this.logger.logServerAction('Cleaning up MediaSoup resources...');
+          await mediasoupSessionService.onModuleDestroy();
+        } catch (e) {
+        }
+
+        await app.close();
 
         clearTimeout(shutdownTimer);
         this.logger.logServerAction('Graceful shutdown completed successfully');
@@ -489,25 +458,20 @@ class ApplicationBootstrap {
       }
     };
 
-    // Handle termination signals
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-    // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason, promise) => {
       this.logger.errorServerAction('Unhandled Promise Rejection', String(reason), {
         promise: promise.toString(),
       });
-      // Don't exit process in production, just log
       if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
         process.exit(1);
       }
     });
 
-    // Handle uncaught exceptions
     process.on('uncaughtException', (error) => {
       this.logger.errorServerAction('Uncaught Exception', error.stack);
-      // Exit immediately on uncaught exceptions
       process.exit(1);
     });
 
@@ -530,7 +494,6 @@ class ApplicationBootstrap {
       memoryUsage: process.memoryUsage(),
     });
 
-    // Enable keep-alive for production
     if (configService.isProduction) {
       const server = await app.listen(port, '0.0.0.0');
       server.keepAliveTimeout = 65000; // Slightly higher than ALB idle timeout (60s)
@@ -578,7 +541,6 @@ class ApplicationBootstrap {
       });
     });
 
-    // Log development mode features
     if (configService.isDevelopment) {
       this.logger.logServerAction('Development mode features enabled', {
         cors: configService.shouldEnableCors,
@@ -590,7 +552,6 @@ class ApplicationBootstrap {
       });
     }
 
-    // Log production warnings and optimizations
     if (configService.isProduction) {
       this.logger.logServerAction(
         'Production mode active - security and performance optimizations enabled',
@@ -606,7 +567,6 @@ class ApplicationBootstrap {
         },
       );
 
-      // Log production checklist
       this.logger.logServerAction('Production deployment checklist', {
         databaseUrl: !!configService.databaseUrl,
         jwtSecret: !!configService.jwtSecret,

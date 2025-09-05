@@ -1,0 +1,106 @@
+.waiting-room-container {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+}
+
+.waiting-content {
+  padding-bottom: 100px;
+}
+
+.welcome-card {
+  margin-bottom: 16px;
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.status-card {
+  margin-bottom: 16px;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+
+    ion-icon {
+      color: var(--ion-color-primary);
+      margin-right: 8px;
+    }
+  }
+}
+
+.instructions-card {
+  margin-bottom: 24px;
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  ion-button {
+    --border-radius: 8px;
+    height: 48px;
+  }
+}
+
+.connection-status {
+  text-align: center;
+  padding: 8px;
+
+  small {
+    font-weight: 500;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .waiting-room-container {
+    padding: 12px;
+  }
+
+  .action-buttons ion-button {
+    height: 44px;
+  }
+}
+
+/* Animation for loading */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.loading-container {
+  animation: pulse 2s infinite;
+}

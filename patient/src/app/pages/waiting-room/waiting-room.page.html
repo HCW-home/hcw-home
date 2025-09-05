@@ -1,0 +1,144 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Waiting Room</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="waiting-room-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="dots" color="primary"></ion-spinner>
+      <ion-text>
+        <h2>Setting up waiting room...</h2>
+        <p>Please wait while we connect you to your consultation.</p>
+      </ion-text>
+    </div>
+
+    <!-- Main Waiting Room Content -->
+    <div *ngIf="!isLoading" class="waiting-content">
+      <!-- Header Card -->
+      <ion-card class="welcome-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="medical-outline" color="primary"></ion-icon>
+            Welcome to the Waiting Room
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>You're waiting to see <strong>{{practitionerName}}</strong></p>
+          <p>Please wait while the doctor prepares for your consultation.</p>
+          <p><small>You'll be automatically moved to the consultation room when the doctor is ready.</small></p>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Status Card -->
+      <ion-card class="status-card">
+        <ion-card-header>
+          <ion-card-title>Current Status</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item lines="none">
+            <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+            <ion-label>
+              <h3>Waiting Time</h3>
+              <p><strong>{{waitingTime}}</strong></p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="medical-outline" slot="start" color="medium"></ion-icon>
+            <ion-label>
+              <h3>Doctor</h3>
+              <p><strong>{{practitionerName}}</strong></p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+            <ion-label>
+              <h3>Estimated Wait</h3>
+              <p><strong>{{estimatedWaitTime}}</strong></p>
+            </ion-label>
+          </ion-item>
+
+          <!-- Connection Status -->
+          <ion-item lines="none">
+            <ion-icon 
+              [name]="isConnected ? 'checkmark-circle-outline' : 'alert-circle-outline'" 
+              slot="start" 
+              [color]="isConnected ? 'success' : 'warning'">
+            </ion-icon>
+            <ion-label>
+              <h3>Connection Status</h3>
+              <p [color]="isConnected ? 'success' : 'warning'">
+                <strong>{{isConnected ? 'Connected' : 'Reconnecting...'}}</strong>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Instructions Card -->
+      <ion-card class="instructions-card">
+        <ion-card-header>
+          <ion-card-title>While You Wait</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item lines="none">
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>Keep this page open</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>You'll be automatically redirected when ready</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>Ensure your camera and microphone work</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>Have your medical information ready</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="primary"
+          (click)="checkStatus()"
+        >
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Check Status
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          fill="clear"
+          color="medium"
+          (click)="refreshConnection()"
+          *ngIf="!isConnected"
+        >
+          <ion-icon name="sync-outline" slot="start"></ion-icon>
+          Reconnect
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          fill="clear"
+          color="danger"
+          (click)="leaveWaitingRoom()"
+        >
+          <ion-icon name="exit-outline" slot="start"></ion-icon>
+          Leave Waiting Room
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

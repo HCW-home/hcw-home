@@ -4,7 +4,7 @@ import { MediasoupSessionService } from './mediasoup-session.service';
 import { ConfigService } from 'src/config/config.service';
 
 @ApiTags('MediaSoup Health')
-@Controller('api/v1/mediasoup/health')
+@Controller('mediasoup/health')
 export class MediasoupHealthController {
  private readonly logger = new Logger(MediasoupHealthController.name);
 

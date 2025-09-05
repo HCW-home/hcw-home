@@ -252,7 +252,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     payload: { consultationId: number; limit?: number; offset?: number },
   ) {
     try {
-      const { consultationId, userId } = client.data;
+      const { consultationId } = client.data;
 
       if (payload.consultationId !== consultationId) {
         throw new WsException('Invalid consultation for message history');

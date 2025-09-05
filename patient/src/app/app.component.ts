@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { EnvironmentValidationService } from './services/environment-validation.service';
 import { TermService } from './services/term.service';
 
 @Component({
@@ -8,12 +9,15 @@ import { TermService } from './services/term.service';
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent implements OnInit {
-
   constructor(
+    private environmentValidation: EnvironmentValidationService,
     private termService: TermService
-  ) {}
+  ) { }
 
- ngOnInit() {
+  async ngOnInit() {
+    await this.environmentValidation.validateFullConfiguration();
+
+    // Fetch and store latest terms
     this.termService.getLatestTermAndStore().subscribe({
       next: (term) => {
         if (term) {
@@ -27,5 +31,4 @@ export class AppComponent implements OnInit {
       }
     });
   }
-
 }

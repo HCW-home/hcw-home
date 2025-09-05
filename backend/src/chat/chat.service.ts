@@ -8,6 +8,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ReadMessageDto } from './dto/read-message.dto';
 import { StorageService } from 'src/storage/storage.service';
+import { ConfigService } from 'src/config/config.service';
 
 @Injectable()
 export class ChatService {
@@ -16,7 +17,8 @@ export class ChatService {
   constructor(
     private readonly prisma: DatabaseService,
     private readonly storageService: StorageService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) { }
 
   async createMessage(data: CreateMessageDto, file?: Express.Multer.File) {
     try {
@@ -45,7 +47,7 @@ export class ChatService {
           mediaType: mediaType || data.mediaType,
           readReceipts: {
             create: {
-              userId: data.userId, 
+              userId: data.userId,
               readAt: new Date(),
             },
           },
@@ -243,7 +245,7 @@ export class ChatService {
       const unreadCount = await this.prisma.message.count({
         where: {
           consultationId,
-          userId: { not: userId }, 
+          userId: { not: userId },
           readReceipts: {
             none: {
               userId,
@@ -422,7 +424,7 @@ export class ChatService {
   }
 
   private validateFile(file: Express.Multer.File) {
-    const maxSize = 10 * 1024 * 1024; 
+    const maxSize = this.configService.maxFileUploadSizeBytes;
     const allowedTypes = [
       'image/jpeg',
       'image/png',
@@ -435,8 +437,9 @@ export class ChatService {
     ];
 
     if (file.size > maxSize) {
+      const maxSizeMB = Math.round(maxSize / (1024 * 1024));
       throw new BadRequestException(
-        'File size too large. Maximum size is 10MB.',
+        `File size too large. Maximum size is ${maxSizeMB}MB.`,
       );
     }
 

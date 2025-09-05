@@ -64,4 +64,10 @@ export default () => ({
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
   },
+  upload: {
+    maxFileSizeBytes: parseInt(
+      process.env.MAX_FILE_SIZE_MB || '10',
+      10,
+    ) * 1024 * 1024, 
+  },
 });

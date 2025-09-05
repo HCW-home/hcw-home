@@ -4,6 +4,124 @@ import { Environment } from './environment.enum';
 
 @Injectable()
 export class ConfigService {
+  get helmetCsp() {
+    return {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    };
+  }
+
+  get rateLimitWindowMs() {
+    return this.getNumber('RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000);
+  }
+  get rateLimitMax() {
+    return this.getNumber('RATE_LIMIT_MAX', 1000);
+  }
+  get rateLimitMessage() {
+    return {
+      error: this.configService.get<string>('RATE_LIMIT_ERROR', 'Too many requests'),
+      message: this.configService.get<string>('RATE_LIMIT_MESSAGE', 'Rate limit exceeded, please try again later.'),
+    };
+  }
+  get healthPath() {
+    return this.configService.get<string>('HEALTH_PATH', '/api/v1/health');
+  }
+  get healthAltPath() {
+    return this.configService.get<string>('HEALTH_ALT_PATH', '/health');
+  }
+  get authRateLimitPath() {
+    return this.configService.get<string>('AUTH_RATE_LIMIT_PATH', '/api/v1/auth');
+  }
+  get authRateLimitWindowMs() {
+    return this.getNumber('AUTH_RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000);
+  }
+  get authRateLimitMax() {
+    return this.getNumber('AUTH_RATE_LIMIT_MAX', 50);
+  }
+  get authRateLimitMessage() {
+    return {
+      error: this.configService.get<string>('AUTH_RATE_LIMIT_ERROR', 'Too many authentication attempts'),
+      message: this.configService.get<string>('AUTH_RATE_LIMIT_MESSAGE', 'Authentication rate limit exceeded, please try again later.'),
+    };
+  }
+
+  get compressionLevel() {
+    return this.getNumber('COMPRESSION_LEVEL', this.isProduction ? 6 : 1);
+  }
+  get compressionThreshold() {
+    return this.getNumber('COMPRESSION_THRESHOLD', 1024);
+  }
+  get responseTimeoutMs() {
+    return this.getNumber('RESPONSE_TIMEOUT_MS', 30000);
+  }
+  get timeoutError() {
+    return this.configService.get<string>('TIMEOUT_ERROR', 'Request Timeout');
+  }
+  get timeoutMessage() {
+    return this.configService.get<string>('TIMEOUT_MESSAGE', 'Request took too long to process');
+  }
+
+  // --- CORS Config ---
+  corsOptions(logger?: Logger) {
+    return {
+      origin: (origin, callback) => {
+        const allowedOrigins = this.corsOrigins;
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          if (logger) logger.warn?.(`Blocked CORS request from origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-API-Key',
+        'Cache-Control',
+      ],
+      exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+      maxAge: 86400,
+    };
+  }
+
+  get uploadsPath() {
+    return this.configService.get<string>('UPLOADS_PATH') || require('path').join(__dirname, '..', '..', 'uploads');
+  }
+  get staticAssetsOptions() {
+    return {
+      prefix: this.configService.get<string>('STATIC_ASSETS_PREFIX', '/uploads/'),
+      maxAge: this.getNumber('STATIC_ASSETS_MAX_AGE', 31536000000),
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, path) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Security-Policy', "default-src 'none'");
+        if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png') || path.endsWith('.gif')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    };
+  }
+
+  // --- Swagger Server URL ---
+  get swaggerServerUrl() {
+    return this.configService.get<string>('SWAGGER_SERVER_URL', `http://localhost:${this.port}/api/v1`);
+  }
   private readonly logger = new Logger(ConfigService.name);
 
   constructor(private readonly configService: NestConfigService) { }
@@ -119,7 +237,6 @@ export class ConfigService {
   }
 
   get redisUrl(): string {
-    // For development, allow localhost Redis or disable Redis for single-server mode
     if (this.isDevelopment) {
       return this.configService.get<string>('REDIS_URL', '');
     }
@@ -178,6 +295,11 @@ export class ConfigService {
       'twilio.accountSid',
       'twilio-account-sid',
     );
+  }
+
+  // File Upload Configuration
+  get maxFileUploadSizeBytes(): number {
+    return this.configService.get<number>('upload.maxFileSizeBytes', 10 * 1024 * 1024);
   }
 
   // Alternative method to get the raw WHATSAPP_TEMPLATES_PATH env variable

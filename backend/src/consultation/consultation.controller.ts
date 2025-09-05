@@ -96,7 +96,7 @@ export class ConsultationController {
   constructor(
     private readonly consultationService: ConsultationService,
     private readonly consultationMediaSoupService: ConsultationMediaSoupService,
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({
@@ -914,6 +914,51 @@ export class ConsultationController {
     return ApiResponseDto.success(
       result,
       'MediaSoup session initialized successfully',
+    );
+  }
+
+  @Get(':id/session-status')
+  @ApiOperation({ summary: 'Get current session status for a consultation' })
+  @ApiParam({ name: 'id', type: Number, description: 'Consultation ID' })
+  @ApiOkResponse({
+    description: 'Current session status retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        consultationId: { type: 'number' },
+        status: {
+          type: 'string',
+          enum: ['waiting', 'active', 'completed', 'cancelled'],
+          description: 'Current consultation status'
+        },
+        currentStage: {
+          type: 'string',
+          enum: ['waiting_room', 'consultation_room', 'completed'],
+          description: 'Current stage of consultation'
+        },
+        redirectTo: {
+          type: 'string',
+          enum: ['waiting-room', 'consultation-room'],
+          description: 'Where patient should be redirected'
+        },
+        waitingRoomUrl: { type: 'string', description: 'URL for waiting room' },
+        consultationRoomUrl: { type: 'string', description: 'URL for consultation room' },
+        estimatedWaitTime: { type: 'number', description: 'Estimated wait time in minutes' },
+        isActive: { type: 'boolean', description: 'Whether consultation is currently active' },
+        lastUpdated: { type: 'string', description: 'Last update timestamp' },
+        practitionerPresent: { type: 'boolean', description: 'Whether practitioner is present' },
+        queuePosition: { type: 'number', description: 'Position in waiting queue' }
+      }
+    }
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async getSessionStatus(
+    @Param('id', ConsultationIdParamPipe) consultationId: number,
+  ) {
+    const sessionStatus = await this.consultationService.getSessionStatus(consultationId);
+    return ApiResponseDto.success(
+      sessionStatus,
+      'Session status retrieved successfully',
     );
   }
 }

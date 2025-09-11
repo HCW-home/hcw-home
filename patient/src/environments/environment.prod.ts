@@ -38,5 +38,8 @@ export const environment = {
     name: 'HCW-Home Patient',
     version: '1.0.0',
     buildTime: new Date().toISOString(),
-  }
+  },
+
+  stripePublishableKey: ""
+
 };

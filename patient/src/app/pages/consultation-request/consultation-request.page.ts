@@ -27,6 +27,7 @@ import {
   CreateConsultationDto 
 } from 'src/app/services/createConsultation.service';
 import { Speciality, SpecialityService } from 'src/app/services/getSpeciality.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-tab2',
@@ -64,7 +65,8 @@ export class ConsultationRequestPage implements OnInit {
     private router: Router, 
     private toastController: ToastController,
     private consultationRequestService: createConsultationService,
-    private specialityService: SpecialityService
+    private specialityService: SpecialityService,
+    private authService: AuthService,
   ) {
     addIcons({
       'paper-plane-outline': paperPlaneOutline,
@@ -72,18 +74,18 @@ export class ConsultationRequestPage implements OnInit {
       'trash-outline': trashOutline
     }); 
   }
-  
+  patientId!: number;
   ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    if (typeof user?.id === 'number') {
+      this.patientId = user.id;
+    } else {
+      console.error('No patient ID found for the current user');
+      return;
+    }
     this.loadSpecialities();
   }
 
-  getPatientId(): number {
-    return 2; // Replace with real logged-in patient ID
-  }
-
-  getCurrentUserId(): number {
-    return 1; // Replace with real admin ID
-  }
 
   submitRequest() {
     if (!this.consultation.selectedSpecialtyId) {
@@ -92,16 +94,18 @@ export class ConsultationRequestPage implements OnInit {
     }
 
     const dto: CreateConsultationDto = {
-      patientId: this.getPatientId(),
+      patientId: this.patientId,
       specialityId: this.consultation.selectedSpecialtyId,
       symptoms: this.consultation.symptoms || '',
     };
-    const UserId = this.getCurrentUserId();
+    const UserId = this.patientId;
 
     this.consultationRequestService.createConsultation(dto, UserId).subscribe({
       next: () => {
         this.showSuccessToast('Consultation created');
-        this.router.navigate(['/consultation-list']);
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 2000);
       },
       error: (err) => {
         console.error('API error:', err);

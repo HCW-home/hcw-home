@@ -5927,18 +5927,7 @@ readdirp@^4.0.1:
   resolved "https://registry.npmjs.org/readdirp/-/readdirp-4.1.2.tgz"
   integrity sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==
 
-redis@*:
-  version "5.8.2"
-  resolved "https://registry.npmjs.org/redis/-/redis-5.8.2.tgz"
-  integrity sha512-31vunZj07++Y1vcFGcnNWEf5jPoTkGARgfWI4+Tk55vdwHxhAvug8VEtW7Cx+/h47NuJTEg/JL77zAwC6E0OeA==
-  dependencies:
-    "@redis/bloom" "5.8.2"
-    "@redis/client" "5.8.2"
-    "@redis/json" "5.8.2"
-    "@redis/search" "5.8.2"
-    "@redis/time-series" "5.8.2"
-
-redis@^5.8.2:
+redis@*, redis@^5.8.2:
   version "5.8.2"
   resolved "https://registry.yarnpkg.com/redis/-/redis-5.8.2.tgz#e24a2e36a1dc72f286a92de76f08a63d34a9e02a"
   integrity sha512-31vunZj07++Y1vcFGcnNWEf5jPoTkGARgfWI4+Tk55vdwHxhAvug8VEtW7Cx+/h47NuJTEg/JL77zAwC6E0OeA==

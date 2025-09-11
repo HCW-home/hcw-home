@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from 'src/config/config.service';
 import { UserRole, ConsultationStatus } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
@@ -25,7 +25,7 @@ export class ConsultationUtilityService {
   constructor(
     private readonly configService: ConfigService,
     private readonly db: DatabaseService,
-    @Inject(CONSULTATION_GATEWAY_TOKEN)
+    @Inject(forwardRef(() => CONSULTATION_GATEWAY_TOKEN))
     private readonly consultationGateway: IConsultationGateway,
     private readonly mediasoupSessionService: MediasoupSessionService,
   ) {}

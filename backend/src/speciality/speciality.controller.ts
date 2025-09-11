@@ -14,6 +14,7 @@ export class SpecialityController {
 
   @Get()
   findAll(): Promise<GetSpecialityDto[]> {
+    const res = this.service.findAll();
     return this.service.findAll();
   }
 

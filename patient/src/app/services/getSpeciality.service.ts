@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { map } from 'rxjs/operators';
 
 export interface Speciality {
   id: number;
@@ -16,7 +17,7 @@ export class SpecialityService {
   // Get all specialities
   getAllSpecialities(): Observable<Speciality[]> {
     const apiUrl = `${environment.apiUrl}/speciality`;
-    return this.http.get<Speciality[]>(apiUrl);
+    return this.http.get<{data: Speciality[], requestId: string, path: string, timestamp: string}>(apiUrl).pipe(
+    map(response => response.data))
   }
-  
 }

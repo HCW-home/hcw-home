@@ -28,6 +28,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './notification/notification.module';
 import { CoreModule } from './core/core.module';
 import { ChatModule } from './chat/chat.module';
+import { ConsultationModule } from './consultation/consultation.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ChatModule } from './chat/chat.module';
     TermModule,
     CoreModule,
     MediasoupModule,
+    ConsultationModule,
   ],
   controllers: [AppController],
   providers: [

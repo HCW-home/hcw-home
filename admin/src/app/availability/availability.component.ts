@@ -77,7 +77,6 @@ export class AvailabilityComponent implements OnInit {
 
   async loadPractitioners(): Promise<void> {
     try {
-      console.log('Loading practitioners...');
       const headers = this.getAuthHeaders();
       const response = await this.http.get<any>(`${environment.apiUrl}/user/role/practitioners`, { headers }).toPromise();
       this.practitioners = response?.data || [];

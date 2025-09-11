@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module, OnModuleInit } from '@nestjs/common';
 import { ConsultationController } from './consultation.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { ConfigModule } from 'src/config/config.module';
@@ -31,7 +31,7 @@ import { ConsultationInvitationModule } from './consultation-invitation.module';
     ConsultationUtilityService,
     {
       provide: CONSULTATION_GATEWAY_TOKEN,
-      useExisting: ConsultationGateway,
+      useExisting: forwardRef(() => ConsultationGateway),
     },
   ],
   exports: [
@@ -43,4 +43,4 @@ import { ConsultationInvitationModule } from './consultation-invitation.module';
     CONSULTATION_GATEWAY_TOKEN,
   ],
 })
-export class ConsultationModule { }
+export class ConsultationModule {} 

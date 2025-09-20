@@ -28,6 +28,32 @@ export class WaitingRoomPreviewDto {
     description: 'Preferred language of the patient, or null',
   })
   language!: string | null;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Position in the waiting queue',
+  })
+  queuePosition!: number;
+
+  @ApiProperty({
+    example: '15 mins',
+    description: 'Estimated wait time (formatted string)',
+  })
+  estimatedWaitTime!: string;
+
+  @ApiProperty({
+    example: 'Cardiology',
+    nullable: true,
+    description: 'Group name for this consultation',
+  })
+  group!: string | null;
+
+  @ApiProperty({
+    example: 'General Medicine',
+    nullable: true,
+    description: 'Speciality name for this consultation',
+  })
+  speciality!: string | null;
 }
 
 /**

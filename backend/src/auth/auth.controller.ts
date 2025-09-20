@@ -236,13 +236,13 @@ export class AuthController {
           return res.redirect(
             `${redirectTo}/login?error=${encodeURIComponent(err.message || 'OIDCError')}`,
           );
-        }        
+        }
         const data = user as LoginResponseDto;
         if (!data || !data.user || !data.tokens) {
           this.logger.warn('User data or tokens not found in OIDC callback');
           return res.redirect(`${redirectTo}/login?error=UserDataNotFound`);
         }
-        const { accessToken, refreshToken } = data.tokens; 
+        const { accessToken, refreshToken } = data.tokens;
         if (
           data.user.password &&
           data.user.password.startsWith('temp') &&

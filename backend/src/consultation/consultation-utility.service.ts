@@ -28,7 +28,7 @@ export class ConsultationUtilityService {
     @Inject(forwardRef(() => CONSULTATION_GATEWAY_TOKEN))
     private readonly consultationGateway: IConsultationGateway,
     private readonly mediasoupSessionService: MediasoupSessionService,
-  ) {}
+  ) { }
 
   /**
    * Generate appropriate magic link URL based on user role

@@ -43,4 +43,7 @@ import { ConsultationInvitationModule } from './consultation-invitation.module';
     CONSULTATION_GATEWAY_TOKEN,
   ],
 })
+export class ConsultationModule implements OnModuleInit {
+  onModuleInit() {}
+}
 export class ConsultationModule {} 

@@ -60,8 +60,8 @@ import {
   CreatePatientConsultationDto,
   CreatePatientConsultationResponseDto,
 } from './dto/invite-form.dto';
-import { 
-  SubmitFeedbackDto, 
+import {
+  SubmitFeedbackDto,
   FeedbackResponseDto,
   FeedbackSatisfaction
 } from './dto/submit-feedback.dto';
@@ -2000,7 +2000,12 @@ export class ConsultationService {
   ): Promise<ApiResponseDto<WaitingRoomPreviewResponseDto>> {
     const practitioner = await this.db.user.findUnique({
       where: { id: practitionerId },
-      select: { id: true },
+      select: {
+        id: true,
+        role: true,
+        GroupMember: { select: { groupId: true } },
+        specialities: { select: { specialityId: true } }
+      },
     });
     if (!practitioner) throw HttpExceptionHelper.notFound('User not found');
 
@@ -2008,28 +2013,71 @@ export class ConsultationService {
     const waitingTimeoutMs = 30 * 60000;
 
     const now = new Date();
+
+    // Clean up old waiting consultations
     await this.db.consultation.updateMany({
       where: {
         status: ConsultationStatus.WAITING,
-        ownerId: practitionerId,
         scheduledDate: { lt: new Date(now.getTime() - waitingTimeoutMs) },
       },
       data: { status: ConsultationStatus.TERMINATED_OPEN },
     });
 
-    const consultations = await this.db.consultation.findMany({
-      where: {
-        status: ConsultationStatus.WAITING,
-        ownerId: practitionerId,
+    // Build filter for unassigned consultations that match practitioner's groups/specialties
+    const practitionerGroupIds = practitioner.GroupMember.map(gm => gm.groupId);
+    const practitionerSpecialityIds = practitioner.specialities.map(s => s.specialityId);
+
+    const whereClause: any = {
+      status: ConsultationStatus.WAITING,
+      ownerId: null, // Only show unassigned consultations
+      participants: {
+        some: { isActive: true, user: { role: UserRole.PATIENT } },
+      },
+      NOT: {
         participants: {
-          some: { isActive: true, user: { role: UserRole.PATIENT } },
-        },
-        NOT: {
-          participants: {
-            some: { isActive: true, user: { role: UserRole.PRACTITIONER } },
-          },
+          some: { isActive: true, user: { role: UserRole.PRACTITIONER } },
         },
       },
+      OR: []
+    };
+
+    // If practitioner is in groups, show consultations for those groups
+    if (practitionerGroupIds.length > 0) {
+      whereClause.OR.push({
+        groupId: { in: practitionerGroupIds }
+      });
+    }
+
+    // If practitioner has specialities, show consultations for those specialities
+    if (practitionerSpecialityIds.length > 0) {
+      whereClause.OR.push({
+        specialityId: { in: practitionerSpecialityIds }
+      });
+    }
+
+    // If practitioner is admin, show all unassigned consultations
+    if (practitioner.role === UserRole.ADMIN) {
+      delete whereClause.OR;
+      // Remove group/specialty restrictions for admins
+    } else if (whereClause.OR.length === 0) {
+      // If practitioner has no groups or specialities, show no consultations
+      return ApiResponseDto.success(
+        new WaitingRoomPreviewResponseDto({
+          success: true,
+          statusCode: 200,
+          message: 'No consultations available for your specialization.',
+          waitingRooms: [],
+          totalCount: 0,
+          currentPage: page,
+          totalPages: 0,
+        }),
+        'No consultations available for your specialization.',
+        200,
+      );
+    }
+
+    const consultations = await this.db.consultation.findMany({
+      where: whereClause,
       orderBy: { scheduledDate: sortOrder },
       skip,
       take: limit,
@@ -2044,22 +2092,13 @@ export class ConsultationService {
           },
           orderBy: { joinedAt: 'asc' },
         },
+        group: { select: { name: true } },
+        speciality: { select: { name: true } }
       },
     });
 
     const totalCount = await this.db.consultation.count({
-      where: {
-        status: ConsultationStatus.WAITING,
-        ownerId: practitionerId,
-        participants: {
-          some: { isActive: true, user: { role: UserRole.PATIENT } },
-        },
-        NOT: {
-          participants: {
-            some: { isActive: true, user: { role: UserRole.PRACTITIONER } },
-          },
-        },
-      },
+      where: whereClause,
     });
 
     const waitingRooms = consultations.map((c, index) => {
@@ -2073,6 +2112,8 @@ export class ConsultationService {
         language: patient?.country ?? null,
         queuePosition: index + 1 + skip,
         estimatedWaitTime: this.estimateWaitTime(index + 1 + skip),
+        group: c.group?.name ?? null,
+        speciality: c.speciality?.name ?? null,
       };
     });
 
@@ -3114,9 +3155,11 @@ export class ConsultationService {
     if (!consultation) {
       throw HttpExceptionHelper.notFound('Consultation not found');
     }
-    if (consultation.status !== ConsultationStatus.DRAFT) {
+
+    // Allow admin assignment for both DRAFT and WAITING consultations
+    if (consultation.status !== ConsultationStatus.DRAFT && consultation.status !== ConsultationStatus.WAITING) {
       throw HttpExceptionHelper.badRequest(
-        'Only draft consultations can be assigned a practitioner',
+        'Only draft or waiting consultations can be assigned a practitioner',
       );
     }
 
@@ -3134,10 +3177,216 @@ export class ConsultationService {
         status: ConsultationStatus.SCHEDULED,
         version: { increment: 1 },
       },
-      include: { owner: true },
+      include: {
+        owner: true,
+        participants: {
+          where: { user: { role: UserRole.PATIENT } },
+          include: { user: true }
+        }
+      },
     });
 
+    // Send email notification to patient
+    await this.sendPatientAssignmentNotification(updatedConsultation, practitioner);
+
+    // Emit real-time cleanup events
+    await this.emitWaitingRoomCleanup(consultationId, practitionerId);
+
     return updatedConsultation;
+  }
+
+  /**
+   * Self-assignment method for practitioners to claim unassigned consultations
+   */
+  async selfAssignConsultation(
+    consultationId: number,
+    practitionerId: number,
+  ): Promise<ApiResponseDto<Consultation>> {
+    try {
+      const practitioner = await this.db.user.findUnique({
+        where: { id: practitionerId },
+        include: {
+          GroupMember: { select: { groupId: true } },
+          specialities: { select: { specialityId: true } }
+        }
+      });
+
+      if (!practitioner || practitioner.role !== UserRole.PRACTITIONER) {
+        throw HttpExceptionHelper.forbidden('Invalid practitioner');
+      }
+
+      const consultation = await this.db.consultation.findUnique({
+        where: { id: consultationId },
+        include: {
+          participants: {
+            where: { user: { role: UserRole.PATIENT } },
+            include: { user: true }
+          }
+        }
+      });
+
+      if (!consultation) {
+        throw HttpExceptionHelper.notFound('Consultation not found');
+      }
+
+      if (consultation.status !== ConsultationStatus.WAITING) {
+        throw HttpExceptionHelper.badRequest(
+          'Only waiting consultations can be self-assigned',
+        );
+      }
+
+      if (consultation.ownerId !== null) {
+        throw HttpExceptionHelper.conflict(
+          'Consultation is already assigned to another practitioner',
+        );
+      }
+
+      // Verify practitioner is eligible for this consultation
+      const practitionerGroupIds = practitioner.GroupMember.map(gm => gm.groupId);
+      const practitionerSpecialityIds = practitioner.specialities.map(s => s.specialityId);
+
+      const isEligible =
+        (consultation.groupId && practitionerGroupIds.includes(consultation.groupId)) ||
+        (consultation.specialityId && practitionerSpecialityIds.includes(consultation.specialityId));
+
+      if (!isEligible) {
+        throw HttpExceptionHelper.forbidden(
+          'You are not eligible to assign this consultation. Check your group/speciality access.',
+        );
+      }
+
+      // Atomic assignment to prevent race conditions
+      const updatedConsultation = await this.db.consultation.update({
+        where: {
+          id: consultationId,
+          ownerId: null, // Double-check it's still unassigned
+        },
+        data: {
+          ownerId: practitionerId,
+          status: ConsultationStatus.SCHEDULED,
+          version: { increment: 1 },
+        },
+        include: {
+          owner: true,
+          participants: {
+            where: { user: { role: UserRole.PATIENT } },
+            include: { user: true }
+          }
+        },
+      });
+
+      // Send email notification to patient
+      await this.sendPatientAssignmentNotification(updatedConsultation, practitioner);
+
+      // Emit real-time cleanup events
+      await this.emitWaitingRoomCleanup(consultationId, practitionerId);
+
+      return ApiResponseDto.success(
+        updatedConsultation,
+        'Consultation successfully assigned to you',
+      );
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw HttpExceptionHelper.conflict(
+          'Consultation was already assigned to another practitioner',
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Send email notification to patient when practitioner is assigned
+   */
+  private async sendPatientAssignmentNotification(
+    consultation: any,
+    practitioner: any,
+  ): Promise<void> {
+    try {
+      const patient = consultation.participants?.find(p => p.user.role === UserRole.PATIENT);
+      if (!patient) {
+        this.logger.warn(`No patient found for consultation ${consultation.id}`);
+        return;
+      }
+
+      const patientEmail = patient.user.email;
+      const patientName = `${patient.user.firstName} ${patient.user.lastName}`;
+      const practitionerName = `Dr. ${practitioner.firstName} ${practitioner.lastName}`;
+
+      // Get the frontend URL from config
+      const frontendUrl = this.configService.patientUrl;
+      const schedulingLink = `${frontendUrl}/consultations/${consultation.id}/schedule`;
+
+      await this.emailService.sendConsultationAssignedEmail(
+        patientEmail,
+        patientName,
+        practitionerName,
+        consultation.id,
+        schedulingLink,
+      );
+
+      this.logger.log(
+        `Assignment notification email sent to patient ${patientEmail} for consultation ${consultation.id}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send assignment notification email for consultation ${consultation.id}:`,
+        error,
+      );
+      // Don't throw - email failure shouldn't break the assignment
+    }
+  }
+
+  /**
+   * Emit real-time events to clean up waiting rooms after assignment
+   */
+  private async emitWaitingRoomCleanup(
+    consultationId: number,
+    assignedPractitionerId: number,
+  ): Promise<void> {
+    try {
+      // Get all practitioners who might have had this consultation in their waiting room
+      const eligiblePractitioners = await this.db.user.findMany({
+        where: {
+          role: { in: [UserRole.PRACTITIONER, UserRole.ADMIN] },
+          id: { not: assignedPractitionerId }, // Exclude the assigned practitioner
+        },
+        select: { id: true },
+      });
+
+      // Emit cleanup events to all other practitioners
+      for (const practitioner of eligiblePractitioners) {
+        this.consultationGateway.emitToUser(practitioner.id, 'waiting_room_consultation_assigned', {
+          consultationId,
+          assignedToPractitionerId: assignedPractitionerId,
+          message: 'This consultation has been assigned to another practitioner',
+        });
+      }
+
+      // Emit assignment confirmation to the assigned practitioner
+      this.consultationGateway.emitToUser(assignedPractitionerId, 'consultation_self_assigned', {
+        consultationId,
+        practitionerId: assignedPractitionerId,
+        message: 'You have successfully claimed this consultation',
+      });
+
+      // Also emit to the consultation room for any connected clients
+      this.consultationGateway.emitToRoom(consultationId, 'practitioner_assigned', {
+        consultationId,
+        practitionerId: assignedPractitionerId,
+        message: 'Practitioner has been assigned to this consultation',
+      });
+
+      this.logger.log(
+        `Emitted waiting room cleanup events for consultation ${consultationId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to emit waiting room cleanup events for consultation ${consultationId}:`,
+        error,
+      );
+      // Don't throw - WebSocket failure shouldn't break the assignment
+    }
   }
 
 
@@ -3251,7 +3500,7 @@ export class ConsultationService {
       // Verify consultation exists and user has access to it
       const consultation = await this.db.consultation.findUnique({
         where: { id: dto.consultationId },
-        include: { 
+        include: {
           participants: true,
           owner: true,
         },
@@ -3341,7 +3590,7 @@ export class ConsultationService {
       // Verify consultation exists and user has access to it
       const consultation = await this.db.consultation.findUnique({
         where: { id: consultationId },
-        include: { 
+        include: {
           participants: true,
           owner: true,
         },

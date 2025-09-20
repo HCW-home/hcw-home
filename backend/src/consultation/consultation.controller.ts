@@ -710,6 +710,32 @@ export class ConsultationController {
     };
   }
 
+  @Post(':id/self-assign')
+  @ApiOperation({
+    summary: 'Self-assign a consultation (practitioner only)',
+    description: 'Allows a practitioner to claim an unassigned consultation from their waiting room',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Consultation ID' })
+  @ApiQuery({ name: 'practitionerId', type: Number, description: 'Practitioner User ID' })
+  @ApiOkResponse({
+    description: 'Consultation self-assigned successfully',
+    type: ApiResponseDto<ConsultationResponseDto>,
+  })
+  async selfAssignConsultation(
+    @Param('id', ConsultationIdParamPipe) consultationId: number,
+    @Query('practitionerId', UserIdParamPipe) practitionerId: number,
+  ): Promise<any> {
+    const result = await this.consultationService.selfAssignConsultation(
+      consultationId,
+      practitionerId,
+    );
+
+    return {
+      ...result,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   // ===================================================================
   // ENHANCED MEDIASOUP INTEGRATION ENDPOINTS
   // ===================================================================

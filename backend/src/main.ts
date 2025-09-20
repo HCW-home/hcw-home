@@ -14,7 +14,7 @@ import rateLimit from 'express-rate-limit';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import session from 'express-session';
-import { RedisStore } from 'connect-redis';  
+import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 
 
@@ -52,7 +52,6 @@ class ApplicationBootstrap {
           forbidUnknownValues: true,
           skipMissingProperties: false,
           skipNullProperties: false,
-          skipUndefinedProperties: false,
           stopAtFirstError: false,
         }),
       );
@@ -353,39 +352,63 @@ class ApplicationBootstrap {
       },
     };
 
-    const redisClient = createClient({ url: configService.redisUrl });
-    redisClient.on('error', (err) => this.logger.errorServerAction('Redis Client Error', err));
-    await redisClient.connect();
+    // Try Redis session store with timeout and fallback
+    let useRedisStore = false;
+    let store: any = null;
 
+    if (configService.redisUrl && configService.redisUrl.trim() !== '') {
+      try {
+        this.logger.logServerAction('Attempting to connect to Redis for session storage...');
+        const redisClient = createClient({ url: configService.redisUrl });
+        redisClient.on('error', (err) => this.logger.errorServerAction('Redis Client Error', err));
 
+        // Connect with timeout
+        await Promise.race([
+          redisClient.connect(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Redis connection timeout after 5 seconds')), 5000)
+          )
+        ]);
 
-    // const RedisStore = require('connect-redis')(session);
-  const store = new RedisStore({
-    client: redisClient,
-    prefix: 'sess:',
-  });
-    app.use(
-      session({
-        store,
-        secret: configService.jwtSecret || 'fallback-secret',
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-          secure: configService.isProduction,
-          httpOnly: true,
-          maxAge: 1000 * 60 * 60,
-          sameSite: 'lax',
-        },
-      }),
-    );
+        store = new RedisStore({
+          client: redisClient,
+          prefix: 'sess:',
+        });
+        useRedisStore = true;
+        this.logger.logServerAction('Redis session store connected successfully');
+      } catch (error) {
+        this.logger.errorServerAction('Failed to connect to Redis for sessions', error.message);
+        this.logger.logServerAction('Falling back to memory session store');
+      }
+    } else {
+      this.logger.logServerAction('Redis URL not configured, using memory session store');
+    }
 
-    this.logger.logServerAction('Session store: Redis configured successfully');
+    const sessionOptions: any = {
+      secret: configService.jwtSecret || 'fallback-secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: configService.isProduction,
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60,
+        sameSite: 'lax',
+      },
+    };
+
+    if (useRedisStore && store) {
+      sessionOptions.store = store;
+    }
+
+    app.use(session(sessionOptions));
+
+    this.logger.logServerAction(`Session store: ${useRedisStore ? 'Redis' : 'Memory'} configured successfully`);
     this.logger.logServerAction('Session configuration applied', {
       secure: sessionConfig.cookie.secure,
       httpOnly: sessionConfig.cookie.httpOnly,
       sameSite: sessionConfig.cookie.sameSite,
       maxAge: `${sessionConfig.cookie.maxAge}ms`,
-      store: 'Redis',
+      store: useRedisStore ? 'Redis' : 'Memory',
     });
   }
 

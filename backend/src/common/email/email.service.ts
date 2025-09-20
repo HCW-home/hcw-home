@@ -263,6 +263,90 @@ export class EmailService {
     }
   }
 
+  async sendConsultationAssignedEmail(
+    toEmail: string,
+    patientName: string,
+    practitionerName: string,
+    consultationId: number,
+    schedulingLink: string,
+  ) {
+    try {
+      if (!toEmail?.trim() || !schedulingLink?.trim()) {
+        throw new Error('Email address and scheduling link are required');
+      }
+
+      const subject = `🏥 Your Healthcare Provider Has Been Assigned`;
+
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Healthcare Provider Assigned</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #ddd; border-top: none; }
+            .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; margin: 20px 0; font-weight: bold; }
+            .cta-button:hover { opacity: 0.9; }
+            .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; border-top: 1px solid #eee; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🏥 Healthcare Provider Assigned</h1>
+            <p>Great news! Your consultation has been assigned to a healthcare provider</p>
+          </div>
+          <div class="content">
+            <p>Hello ${patientName},</p>
+            
+            <p>We're pleased to inform you that your consultation request has been assigned to <strong>${practitionerName}</strong>.</p>
+            
+            <div class="info-box">
+              <p><strong>📋 Consultation ID:</strong> #${consultationId}</p>
+              <p><strong>👨‍⚕️ Assigned Provider:</strong> ${practitionerName}</p>
+            </div>
+            
+            <p>You can now proceed to schedule your appointment time slot that works best for you.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${schedulingLink}" class="cta-button">🗓️ Schedule Your Appointment</a>
+            </div>
+            
+            <p><strong>What's Next?</strong></p>
+            <ul>
+              <li>Click the button above to schedule your preferred time slot</li>
+              <li>You'll receive a confirmation once your appointment is scheduled</li>
+              <li>Join the consultation at your scheduled time</li>
+            </ul>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <p>Best regards,<br>
+            Your Healthcare Team</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p>If the button above doesn't work, copy and paste this link into your browser:<br>
+            <a href="${schedulingLink}">${schedulingLink}</a></p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      await this.sendEmail(toEmail, subject, html);
+      this.logger.log(`Consultation assigned email sent to ${toEmail} for consultation ${consultationId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send consultation assigned email to ${toEmail}:`,
+        error.stack,
+      );
+      throw new Error(`Email delivery failed: ${error.message}`);
+    }
+  }
+
   private getRoleDisplayName(role: UserRole): string {
     switch (role) {
       case UserRole.PATIENT:

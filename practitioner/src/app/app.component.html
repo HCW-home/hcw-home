@@ -1,22 +1,27 @@
-
 <ng-container *ngIf="loginChecked(); else loading">
   <ng-container *ngIf="isLoggedIn(); else noSidebar">
     <app-sidebar
-    [pendingConsultations]="pendingConsultations"
-    [activeConsultations]="activeConsultations"
-    [isLoggedIn]="isLoggedIn()"
-  >
-    <router-outlet></router-outlet>
-  </app-sidebar>
+      [pendingConsultations]="pendingConsultations"
+      [activeConsultations]="activeConsultations"
+      [isLoggedIn]="isLoggedIn()"
+    >
+      <router-outlet></router-outlet>
+    </app-sidebar>
   </ng-container>
-  
+
   <ng-template #noSidebar>
     <router-outlet></router-outlet>
   </ng-template>
-  </ng-container>
-  
-  <ng-template #loading>
+</ng-container>
+
+<ng-template #loading>
   <div class="full-screen-loader">
     <mat-spinner></mat-spinner>
   </div>
-  </ng-template> 
+</ng-template>
+
+<!-- Global Toast Notifications -->
+<app-toast-container></app-toast-container>
+
+<!-- Global Confirmation Dialogs -->
+<app-confirmation-dialog></app-confirmation-dialog>

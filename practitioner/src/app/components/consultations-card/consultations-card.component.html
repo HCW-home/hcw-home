@@ -7,17 +7,22 @@
     <p>No consultations</p>
   </div>
   }
-
-  @if (showInvite()) {
-  <app-button (click)="onInviteClick()" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium">
-    Send new invite
-  </app-button>
-  }
+  <div style="margin-top: 1.5rem" *ngIf="showInvite()">
+    <app-button
+      class="send-invite-btn"
+      (click)="onInviteClick()"
+      [variant]="ButtonVariant.Primary"
+      [size]="ButtonSize.Medium"
+    >
+      Send new invite
+    </app-button>
+  </div>
 
   <!-- Display regular consultations -->
   @if (consultations().length > 0) {
   <div class="consultation-list">
-    @for (history of consultations(); track trackByConsultationId($index, history)) {
+    @for (history of consultations(); track trackByConsultationId($index,
+    history)) {
     <div class="consultation-item">
       <div class="patient-info">
         <div class="label">Patient</div>
@@ -30,9 +35,9 @@
         <div class="label">Time</div>
         <div class="value">
           {{
-          history.consultation.startedAt
-          ? formatTime(history.consultation.startedAt)
-          : '—'
+            history.consultation.startedAt
+              ? formatTime(history.consultation.startedAt)
+              : "—"
           }}
         </div>
       </div>
@@ -59,9 +64,7 @@
 
       <div class="time-info">
         <div class="label">Queue Position</div>
-        <div class="value">
-          #{{ item.queuePosition }}
-        </div>
+        <div class="value">#{{ item.queuePosition }}</div>
       </div>
 
       <div class="action">
@@ -74,7 +77,11 @@
 
   <!-- View all -->
   @if (getItemCount() > 3) {
-  <app-button [variant]="ButtonVariant.Outline" [routerLink]="routerLink()" [size]="ButtonSize.Medium">
+  <app-button
+    [variant]="ButtonVariant.Outline"
+    [routerLink]="routerLink()"
+    [size]="ButtonSize.Medium"
+  >
     View all
   </app-button>
   }

@@ -1,0 +1,50 @@
+<div
+  *ngFor="let dialog of dialogs; trackBy: trackDialog"
+  class="confirmation-overlay"
+  (click)="onOverlayClick(dialog.id)"
+>
+  <div
+    class="confirmation-dialog"
+    [ngClass]="'dialog-' + dialog.type"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="dialog-header">
+      <h3 class="dialog-title">{{ dialog.title }}</h3>
+      <button
+        class="dialog-close"
+        (click)="onCancel(dialog.id)"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="dialog-body">
+      <div class="dialog-icon">
+        <span *ngIf="dialog.type === 'warning'">⚠️</span>
+        <span *ngIf="dialog.type === 'danger'">🗑️</span>
+        <span *ngIf="dialog.type === 'info'">ℹ️</span>
+        <span *ngIf="dialog.type === 'success'">✅</span>
+      </div>
+      <p class="dialog-message">{{ dialog.message }}</p>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn btn-secondary" (click)="onCancel(dialog.id)">
+        {{ dialog.cancelText }}
+      </button>
+      <button
+        class="btn"
+        [ngClass]="{
+          'btn-danger': dialog.type === 'danger',
+          'btn-warning': dialog.type === 'warning',
+          'btn-primary': dialog.type === 'info',
+          'btn-success': dialog.type === 'success'
+        }"
+        (click)="onConfirm(dialog.id)"
+      >
+        {{ dialog.confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

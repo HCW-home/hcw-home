@@ -3,13 +3,13 @@ import { HttpClient } from "@angular/common/http";
 import { map, switchMap, catchError } from "rxjs/operators";
 
 import { Router } from "@angular/router";
-import { environment } from "../../environments/environment";
-import {  UpdateUserProfileDto, ApiResponse, User } from "../models/user.model";
+import { UpdateUserProfileDto, ApiResponse, User } from "../models/user.model";
 import { Observable, throwError } from "rxjs";
+import { API_BASE_URL } from "../constants/api-endpoints";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-  private baseurl = `${environment.apiUrl}/v1/auth`;
+  private baseurl = `${API_BASE_URL}/auth`;
   private _user = signal<User | null>(null);
   private _loginChecked = signal(false);
   user = this._user.asReadonly();

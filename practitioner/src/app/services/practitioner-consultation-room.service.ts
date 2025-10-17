@@ -141,7 +141,7 @@ export class PractitionerConsultationRoomService {
         token: string;
         expiresAt: string;
       }>(
-        `${environment.apiUrl}/consultation/${consultationId}/magic-link`,
+        `${API_ENDPOINTS.CONSULTATION}/${consultationId}/magic-link`,
         participantData
       ).toPromise();
       return response as { magicLink: string; token: string; expiresAt: string };

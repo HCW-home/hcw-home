@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterModule, Router } from '@angular/router';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { AuthService } from '../../auth/auth.service';
-import { SnackbarService } from '../../services/snackbar/snackbar.service';
+import { ToastService } from '../../services/toast/toast.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '../ui/button/button.component';
 
@@ -35,7 +35,7 @@ export class ForgotPasswordComponent {
   step = 1;
   readonly DEFAULT_OTP = '123456';
   error = '';
-  loading =  signal(false)
+  loading = signal(false)
 
   forgotForm: FormGroup;
   otpForm: FormGroup;
@@ -47,7 +47,7 @@ export class ForgotPasswordComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private snackbarService: SnackbarService,
+    private toastService: ToastService,
     private router: Router
   ) {
     this.forgotForm = this.fb.group({
@@ -72,19 +72,19 @@ export class ForgotPasswordComponent {
   sendOtp() {
     if (this.forgotForm.valid) {
       const username = this.forgotForm.value.username;
-      this.snackbarService.showSuccess('OTP sent successfully');
+      this.toastService.showSuccess('OTP sent successfully');
       this.step = 2;
     }
   }
 
   verifyOtp() {
     if (this.otpForm.valid && this.otpForm.value.otp === this.DEFAULT_OTP) {
-      this.snackbarService.showSuccess('OTP verified successfully');
+      this.toastService.showSuccess('OTP verified successfully');
       this.step = 3;
     } else {
       this.otpForm.get('otp')?.setErrors({ incorrect: true });
       this.error = 'OTP not matched';
-      this.snackbarService.showError(this.error);
+      this.toastService.showError(this.error);
     }
   }
 
@@ -97,19 +97,14 @@ export class ForgotPasswordComponent {
 
       this.authService.updatePassword(password, username).subscribe({
         next: (res) => {
-          this.snackbarService.showSuccess(res.message || 'Password reset successful');
+          this.toastService.showSuccess(res.message || 'Password reset successful');
           this.loading.set(false);
-            this.router.navigate(['/login']);
+          this.router.navigate(['/login']);
         },
         error: (err) => {
-                    if (err.error.error?.validationErrors) {
-          const firstKey = Object.keys(err.error.error.validationErrors)[0];
-          const firstError = err.error.error.validationErrors[firstKey][0];
-          this.error = firstError;
-        } else {
-          this.error=(err.error?.message || 'Something went wrong');
-        }
-        this.loading.set(false);
+          this.error = err?.error.message;
+          this.loading.set(false);
+          this.toastService.showError('Failed to reset password');
         },
       });
     }

@@ -1,139 +1,270 @@
 <div class="invite-overlay" (click)="onCancel()">
-    <div class="invite-modal" (click)="$event.stopPropagation()">
+  <div class="invite-modal" (click)="$event.stopPropagation()">
+    <header class="invite-modal__header">
+      <button (click)="onCancel()" class="invite-modal__close">×</button>
+    </header>
 
-        <header class="invite-modal__header">
-            <button (click)="onCancel()" class="invite-modal__close">×</button>
-        </header>
+    <form class="invite-modal__body" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-section left">
+        <h3 class="section-title">{{ modalTitle }}</h3>
 
-        <form class="invite-modal__body" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="field">
+            <label>Firstname *</label>
+            <input
+              formControlName="firstName"
+              [class.error]="
+                form.get('firstName')?.invalid && form.get('firstName')?.touched
+              "
+            />
+            <div
+              class="error-message"
+              *ngIf="
+                form.get('firstName')?.invalid && form.get('firstName')?.touched
+              "
+            >
+              <span *ngIf="form.get('firstName')?.hasError('required')"
+                >First name is required</span
+              >
+              <span *ngIf="form.get('firstName')?.hasError('minlength')"
+                >First name must be at least 2 characters</span
+              >
+            </div>
+          </div>
+          <div class="field">
+            <label>Lastname *</label>
+            <input
+              formControlName="lastName"
+              [class.error]="
+                form.get('lastName')?.invalid && form.get('lastName')?.touched
+              "
+            />
+            <div
+              class="error-message"
+              *ngIf="
+                form.get('lastName')?.invalid && form.get('lastName')?.touched
+              "
+            >
+              <span *ngIf="form.get('lastName')?.hasError('required')"
+                >Last name is required</span
+              >
+              <span *ngIf="form.get('lastName')?.hasError('minlength')"
+                >Last name must be at least 2 characters</span
+              >
+            </div>
+          </div>
+        </div>
 
-            <div class="form-section left">
-                <h3 class="section-title">{{ modalTitle }}</h3>
+        <div class="row">
+          <div class="field">
+            <label>Gender *</label>
+            <select
+              formControlName="gender"
+              [class.error]="
+                form.get('gender')?.invalid && form.get('gender')?.touched
+              "
+            >
+              <option value="" disabled>Choose…</option>
+              @for (g of genders; track g) {
+              <option [value]="g">{{ g }}</option>
+              }
+            </select>
+            <div
+              class="error-message"
+              *ngIf="form.get('gender')?.invalid && form.get('gender')?.touched"
+            >
+              <span *ngIf="form.get('gender')?.hasError('required')"
+                >Gender is required</span
+              >
+            </div>
+          </div>
+          <div class="field">
+            <label>Language *</label>
+            <select
+              formControlName="language"
+              [class.error]="
+                form.get('language')?.invalid && form.get('language')?.touched
+              "
+            >
+              <option value="" disabled>Choose…</option>
+              @for (l of languages; track l) {
+              <option [value]="l">{{ l }}</option>
+              }
+            </select>
+            <div
+              class="error-message"
+              *ngIf="
+                form.get('language')?.invalid && form.get('language')?.touched
+              "
+            >
+              <span *ngIf="form.get('language')?.hasError('required')"
+                >Language is required</span
+              >
+            </div>
+          </div>
+        </div>
 
-                <div class="row">
-                    <div class="field">
-                        <label>Firstname *</label>
-                        <input formControlName="firstName" />
-                    </div>
-                    <div class="field">
-                        <label>Lastname *</label>
-                        <input formControlName="lastName" />
-                    </div>
-                </div>
+        <div class="row">
+          <div class="field full">
+            <label>Group (Optional)</label>
+            <select formControlName="group">
+              <option value="">No group selected</option>
+              @for (group of groups; track group) {
+              <option [value]="group">{{ group }}</option>
+              }
+            </select>
+          </div>
+        </div>
 
-                <div class="row">
-                    <div class="field">
-                        <label>Gender *</label>
-                        <select formControlName="gender">
-                            <option value="" disabled>Choose…</option>
-                            @for (g of genders; track g) {
-                            <option [value]="g">{{ g }}</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Language *</label>
-                        <select formControlName="language">
-                            <option value="" disabled>Choose…</option>
-                            @for (l of languages; track l) {
-                            <option [value]="l">{{ l }}</option>
-                            }
-                        </select>
-                    </div>
-                </div>
+        <div class="row">
+          <div class="field full">
+            <label> Email or Phone Number (International format) * </label>
+            <input
+              formControlName="contact"
+              placeholder="john@example.com or +1234567890"
+              [class.error]="
+                form.get('contact')?.invalid && form.get('contact')?.touched
+              "
+            />
+            <div
+              class="error-message"
+              *ngIf="
+                form.get('contact')?.invalid && form.get('contact')?.touched
+              "
+            >
+              {{ getContactErrorMessage() }}
+            </div>
+            <div class="help-text">
+              Enter a valid email address or international phone number
+              (starting with +)
+            </div>
+          </div>
+        </div>
 
-                <div class="row">
-                    <div class="field full">
-                        <label>Group (Optional)</label>
-                        <select formControlName="group" [disabled]="loading">
-                            <option value="">{{ loading ? 'Loading groups...' : 'No group selected' }}</option>
-                            @for (group of groups; track group.id) {
-                            <option [value]="group.name">{{ group.name }}</option>
-                            }
-                        </select>
-                    </div>
-                </div>
+        <div class="row checkbox-row">
+          <label>
+            <input type="checkbox" formControlName="manualSend" />
+            I want to send the link manually
+          </label>
+        </div>
 
-                <div class="row">
-                    <div class="field full">
-                        <label>
-                            Please enter only email or mobile number (+41 or +33) *
-                        </label>
-                        <input formControlName="contact" placeholder="+41…" />
-                    </div>
-                </div>
+        <div class="row checkbox-row">
+          <label>
+            <input type="checkbox" formControlName="planLater" />
+            Plan later
+          </label>
+        </div>
 
-                <div class="row checkbox-row">
-                    <label>
-                        <input type="checkbox" formControlName="manualSend" />
-                        I want to send the link manually
-                    </label>
-                </div>
+        <!-- Scheduling fields - shown when Plan later is checked -->
+        <div *ngIf="isPlanLaterSelected" class="scheduling-section">
+          <h4>Schedule Details</h4>
 
-                <div class="row checkbox-row">
-                    <label>
-                        <input type="checkbox" formControlName="planLater" />
-                        Plan later
-                    </label>
-                </div>
+          <div class="row">
+            <div class="field">
+              <label>Planned on *</label>
+              <input
+                type="date"
+                formControlName="scheduledDate"
+                [class.error]="
+                  form.get('scheduledDate')?.invalid &&
+                  form.get('scheduledDate')?.touched
+                "
+              />
+              <div
+                class="error-message"
+                *ngIf="
+                  form.get('scheduledDate')?.invalid &&
+                  form.get('scheduledDate')?.touched
+                "
+              >
+                <span *ngIf="form.get('scheduledDate')?.hasError('required')"
+                  >Scheduled date is required</span
+                >
+              </div>
+            </div>
+            <div class="field">
+              <label>Choose a time *</label>
+              <input
+                type="time"
+                formControlName="scheduledTime"
+                [class.error]="
+                  form.get('scheduledTime')?.invalid &&
+                  form.get('scheduledTime')?.touched
+                "
+              />
+              <div
+                class="error-message"
+                *ngIf="
+                  form.get('scheduledTime')?.invalid &&
+                  form.get('scheduledTime')?.touched
+                "
+              >
+                <span *ngIf="form.get('scheduledTime')?.hasError('required')"
+                  >Scheduled time is required</span
+                >
+              </div>
+            </div>
+          </div>
 
-                @if (isPlanLaterSelected) {
-                    <div class="scheduling-section">
-                        <h4>Planned on</h4>
-                        
-                        <div class="row">
-                            <div class="field">
-                                <label>Choose a date</label>
-                                <input type="date" formControlName="plannedDate" />
-                            </div>
-                            <div class="field">
-                                <label>Select Timezone</label>
-                                <select formControlName="timezone">
-                                    <option value="" disabled>Select timezone</option>
-                                    @for (tz of timezones; track tz.code) {
-                                    <option [value]="tz.code">{{ tz.name }}</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="field">
-                                <label>Choose a time</label>
-                                <select formControlName="plannedTime">
-                                    <option value="" disabled>Select time</option>
-                                    @for (time of timeSlots; track time) {
-                                    <option [value]="time">{{ time }}</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+          <div class="row">
+            <div class="field full">
+              <label>Select Timezone *</label>
+              <select
+                formControlName="timezone"
+                [class.error]="
+                  form.get('timezone')?.invalid && form.get('timezone')?.touched
+                "
+              >
+                @for (tz of timezones; track tz) {
+                <option [value]="tz">{{ tz }}</option>
                 }
+              </select>
+              <div
+                class="error-message"
+                *ngIf="
+                  form.get('timezone')?.invalid && form.get('timezone')?.touched
+                "
+              >
+                <span *ngIf="form.get('timezone')?.hasError('required')"
+                  >Timezone is required</span
+                >
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div class="form-section right">
-                <h3>GUESTS</h3>
-                <hr />
-                <div formGroupName="guests" class="checkbox-list">
-                    @for (opt of guestOptions; track opt.key) {
-                    <label>
-                        <input type="checkbox" formControlName="{{ opt.key }}" />
-                        {{ opt.label }}
-                    </label>
-                    }
-                </div>
-            </div>
-        </form>
+      <div class="form-section right">
+        <h3>GUESTS</h3>
+        <hr />
+        <div formGroupName="guests" class="checkbox-list">
+          @for (opt of guestOptions; track opt.key) {
+          <label>
+            <input type="checkbox" formControlName="{{ opt.key }}" />
+            {{ opt.label }}
+          </label>
+          }
+        </div>
+      </div>
+    </form>
 
-        <footer class="invite-modal__footer">
-            <app-button [variant]="ButtonVariant.Outline" [size]="ButtonSize.Medium" (click)="onCancel()">
-                Cancel
-            </app-button>
-            <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" [type]="ButtonType.Submit"
-                (click)="onSubmit()">
-                {{ submitButtonText }}
-            </app-button>
-        </footer>
-    </div>
+    <footer class="invite-modal__footer">
+      <app-button
+        [variant]="ButtonVariant.Outline"
+        [size]="ButtonSize.Medium"
+        (click)="onCancel()"
+      >
+        Cancel
+      </app-button>
+      <app-button
+        [variant]="ButtonVariant.Primary"
+        [size]="ButtonSize.Medium"
+        [type]="ButtonType.Submit"
+        [disabled]="form.invalid"
+        (click)="onSubmit()"
+      >
+        {{ submitButtonText }}
+      </app-button>
+    </footer>
+  </div>
 </div>

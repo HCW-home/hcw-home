@@ -3,10 +3,9 @@ import {
   Inject,
   Logger,
   HttpStatus,
-  forwardRef,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 import {
   ConsultationStatus,
   UserRole,

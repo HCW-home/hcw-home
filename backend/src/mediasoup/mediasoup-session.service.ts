@@ -620,14 +620,38 @@ export class MediasoupSessionService implements OnModuleDestroy, OnModuleInit {
       });
     });
 
-    // Store router in database with proper consultation mapping
     try {
+      // First, check if a router already exists for this consultation
+      const existingRouter = await this.databaseService.mediasoupRouter.findUnique({
+        where: { consultationId },
+      });
+
+      if (existingRouter) {
+        // Router exists in DB, delete the stale entry first
+        this.logStructured('warn', 'Router already exists for consultation in database, deleting stale entry', {
+          consultationId,
+          existingRouterId: existingRouter.routerId,
+          newRouterId: router.id,
+        });
+
+        await this.databaseService.mediasoupRouter.delete({
+          where: { consultationId },
+        });
+      }
+
+      // Now create the new router entry
       await this.databaseService.mediasoupRouter.create({
         data: {
           consultationId,
           routerId: router.id,
           serverId: server.id,
         },
+      });
+
+      this.logStructured('log', 'Router stored in database successfully', {
+        consultationId,
+        routerId: router.id,
+        serverId: server.id,
       });
     } catch (dbError) {
       // If database insertion fails, clean up the router
@@ -827,7 +851,7 @@ export class MediasoupSessionService implements OnModuleDestroy, OnModuleInit {
         // Router exists in DB but not in memory, need to recreate it
         this.logStructured(
           'log',
-          'Router found in DB but not in memory, recreating',
+          'Router exists in DB but not in memory, will recreate',
           {
             consultationId,
             routerId: dbRouter.routerId,
@@ -835,10 +859,14 @@ export class MediasoupSessionService implements OnModuleDestroy, OnModuleInit {
           },
         );
 
-        // Clean up the stale DB entry first
+        // Clean up the stale DB entry first to avoid unique constraint errors
         try {
           await this.databaseService.mediasoupRouter.delete({
             where: { consultationId },
+          });
+          this.logStructured('log', 'Deleted stale router DB entry before recreation', {
+            consultationId,
+            routerId: dbRouter.routerId,
           });
         } catch (dbError) {
           this.logStructured('warn', 'Failed to delete stale router DB entry', {

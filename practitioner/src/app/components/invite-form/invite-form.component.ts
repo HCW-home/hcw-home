@@ -24,7 +24,6 @@ import { InviteFormData } from '../../dtos/invites';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { Group } from '../../models/user.model';
-import { forkJoin } from 'rxjs';
 
 export interface CreatePatientConsultationFormData {
   firstName: string;
@@ -36,10 +35,13 @@ export interface CreatePatientConsultationFormData {
   scheduledDate?: Date;
   specialityId?: number;
   symptoms?: string;
+  manualSend?: boolean;
   planLater?: boolean;
-  plannedDate?: string;
   timezone?: string;
-  plannedTime?: string;
+  guests?: {
+    lovedOne?: boolean;
+    colleague?: boolean;
+  };
 }
 
 @Component({
@@ -53,7 +55,7 @@ export interface CreatePatientConsultationFormData {
 export class InviteFormComponent implements OnInit, OnDestroy {
   @Input() type: 'remote' = 'remote';
   @Input() editData: InviteFormData | null = null;
-  @Input() practitionerId!: number; // Required practitioner ID
+  @Input() practitionerId!: number;
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<CreatePatientConsultationFormData>();
 
@@ -66,13 +68,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   languages = ['English', 'French', 'German'];
   groups: Group[] = [];
   loading = false;
-  timezones = [
-    { code: 'Asia/Yerevan', name: 'Asia/Yerevan' },
-    { code: 'Europe/London', name: 'Europe/London' },
-    { code: 'Europe/Paris', name: 'Europe/Paris' },
-    { code: 'America/New_York', name: 'America/New_York' },
-    { code: 'America/Los_Angeles', name: 'America/Los_Angeles' },
-  ];
+  timezones: string[] = [];
   timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
@@ -83,6 +79,10 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     { key: 'lovedOne', label: 'Invite a loved one or another caregiver' },
     { key: 'colleague', label: 'Invite a colleague' },
   ];
+
+  get isPlanLaterSelected(): boolean {
+    return this.form?.get('planLater')?.value || false;
+  }
 
   get isEditMode(): boolean {
     return this.editData !== null;
@@ -96,21 +96,46 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     return this.isEditMode ? 'Update' : 'Create';
   }
 
-  get isPlanLaterSelected(): boolean {
-    return this.form?.get('planLater')?.value === true;
-  }
-
   constructor(
     private fb: FormBuilder,
     private groupService: GroupService,
     private userService: UserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     document.body.classList.add('modal-open');
     this.form = this.buildForm();
     this.loadGroups();
     this.setupPlanLaterValidation();
+
+    // Dynamically fetch all IANA timezones (if supported)
+    if (typeof Intl.supportedValuesOf === 'function') {
+      this.timezones = Intl.supportedValuesOf('timeZone');
+    } else {
+      // Fallback: use browser-detected timezone only
+      this.timezones = [Intl.DateTimeFormat().resolvedOptions().timeZone];
+    }
+
+    // Watch for planLater changes to add/remove validation
+    this.form.get('planLater')?.valueChanges.subscribe(planLater => {
+      const scheduledDateControl = this.form.get('scheduledDate');
+      const scheduledTimeControl = this.form.get('scheduledTime');
+      const timezoneControl = this.form.get('timezone');
+
+      if (planLater) {
+        scheduledDateControl?.setValidators([Validators.required]);
+        scheduledTimeControl?.setValidators([Validators.required]);
+        timezoneControl?.setValidators([Validators.required]);
+      } else {
+        scheduledDateControl?.clearValidators();
+        scheduledTimeControl?.clearValidators();
+        timezoneControl?.clearValidators();
+      }
+
+      scheduledDateControl?.updateValueAndValidity();
+      scheduledTimeControl?.updateValueAndValidity();
+      timezoneControl?.updateValueAndValidity();
+    });
 
     if (this.editData) {
       this.populateFormForEdit();
@@ -119,8 +144,8 @@ export class InviteFormComponent implements OnInit, OnDestroy {
 
   private buildForm(): FormGroup {
     return this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
       gender: ['', Validators.required],
       language: ['', Validators.required],
       group: [''],
@@ -128,21 +153,50 @@ export class InviteFormComponent implements OnInit, OnDestroy {
         '',
         [
           Validators.required,
-          Validators.pattern(/(^\+\d{2}\d{6,}$)|(^\S+@\S+\.\S+$)/),
+          this.contactValidator.bind(this)
         ],
       ],
-      scheduledDate: [''],
-      symptoms: [''],
       manualSend: [false],
       planLater: [false],
-      plannedDate: [''],
-      timezone: [''],
-      plannedTime: [''],
+      scheduledDate: [''],
+      scheduledTime: [''],
+      timezone: ['Asia/Kolkata'],
+      symptoms: [''],
       guests: this.fb.group({
         lovedOne: [false],
         colleague: [false],
       }),
     });
+  }
+
+  // Custom validator for email or phone number
+  private contactValidator(control: any) {
+    if (!control.value) return null;
+
+    const value = control.value.trim();
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const phonePattern = /^\+?[1-9]\d{1,14}$/;
+
+    const isValidEmail = emailPattern.test(value);
+    const isValidPhone = phonePattern.test(value);
+
+    if (!isValidEmail && !isValidPhone) {
+      return { invalidContact: true };
+    }
+
+    return null;
+  }
+
+  // Helper method to get contact validation error message
+  getContactErrorMessage(): string {
+    const contactControl = this.form.get('contact');
+    if (contactControl?.hasError('required')) {
+      return 'Email or phone number is required';
+    }
+    if (contactControl?.hasError('invalidContact')) {
+      return 'Please enter a valid email address or phone number (e.g., john@example.com or +1234567890)';
+    }
+    return '';
   }
 
   private populateFormForEdit(): void {
@@ -160,12 +214,11 @@ export class InviteFormComponent implements OnInit, OnDestroy {
 
   private loadGroups(): void {
     this.loading = true;
-    
-    this.userService.getCurrentUser().subscribe({
+    // Always fetch fresh user info for groups
+    this.userService.getCurrentUser(true).subscribe({
       next: (user) => {
         if (user.organizations && user.organizations.length > 0) {
           const organizationId = user.organizations[0].id;
-          
           this.groupService.getGroupsByOrganization(organizationId).subscribe({
             next: (groups) => {
               this.groups = groups;
@@ -189,6 +242,12 @@ export class InviteFormComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+
+    // Auto-detect user's timezone and set as default in form
+    const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (this.form && this.form.get('timezone')) {
+      this.form.get('timezone')?.setValue(detectedTz);
+    }
   }
 
   private setupPlanLaterValidation(): void {
@@ -226,24 +285,30 @@ export class InviteFormComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    if (this.form.invalid) {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.form.controls).forEach(key => {
+        this.form.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
     document.body.classList.remove('modal-open');
-    this.form.value.scheduledDate = this.form.value.scheduledDate ? new Date(this.form.value.scheduledDate) : new Date();
-    
-    const formData: CreatePatientConsultationFormData = {
-      firstName: this.form.value.firstName,
-      lastName: this.form.value.lastName,
-      gender: this.form.value.gender,
-      language: this.form.value.language,
-      contact: this.form.value.contact,
-      group: this.form.value.group || undefined,
-      scheduledDate: this.form.value.scheduledDate || undefined,
-      symptoms: this.form.value.symptoms || undefined,
-      planLater: this.form.value.planLater || false,
-      plannedDate: this.form.value.plannedDate || undefined,
-      timezone: this.form.value.timezone || undefined,
-      plannedTime: this.form.value.plannedTime || undefined,
+
+    // Combine date and time if both are provided
+    let scheduledDateTime: Date | undefined;
+    if (this.form.value.planLater && this.form.value.scheduledDate && this.form.value.scheduledTime) {
+      const dateStr = this.form.value.scheduledDate;
+      const timeStr = this.form.value.scheduledTime;
+      scheduledDateTime = new Date(`${dateStr}T${timeStr}`);
+    }
+
+    const { manualSend, guests, scheduledTime, ...rest } = this.form.value;
+    const payload: CreatePatientConsultationFormData = {
+      ...rest,
+      scheduledDate: scheduledDateTime,
     };
 
-    this.submit.emit(formData);
+    this.submit.emit(payload);
   }
 }

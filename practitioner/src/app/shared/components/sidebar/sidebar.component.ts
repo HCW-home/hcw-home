@@ -1,4 +1,4 @@
-import { Component, Input, HostListener, input, inject } from '@angular/core';
+import { Component, HostListener, input, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
@@ -49,7 +49,7 @@ export class SidebarComponent {
 
   ngOnInit() {
     this.checkMobileView();
-    this.currentUser=this.authService.getCurrentUser()
+    this.currentUser = this.authService.getCurrentUser()
 
     this.sidebarItems = [
       { icon: 'icon-dashboard.svg', label: 'Dashboard', route: '/dashboard' },
@@ -70,7 +70,7 @@ export class SidebarComponent {
         label: 'Consultation history',
         route: '/closed-consultations',
       },
-      { icon: 'icon-invite.svg', label: 'Invites', route: '/invites' },
+      { icon: 'icon-invite.svg', label: 'My Invitations', route: '/invites' },
       { icon: 'icon-calendar.svg', label: 'Availability', route: '/availability' },
     ];
   }
@@ -98,7 +98,7 @@ export class SidebarComponent {
   }
 
 
-  logout(){
+  logout() {
     this.authService.logout()
   }
 }

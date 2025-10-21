@@ -1,4 +1,7 @@
 import { Component, OnInit, computed, signal, OnDestroy } from '@angular/core';
+// ...existing code...
+import { UserService } from '../services/user.service';
+import { ToastService } from '../services/toast/toast.service';
 import { CommonModule } from '@angular/common';
 import { ConsultationCardComponent } from '../components/consultations-card/consultations-card.component';
 import { InviteFormComponent } from '../components/invite-form/invite-form.component';
@@ -35,12 +38,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private consultationService: ConsultationService,
-    private dashboardWebSocketService: DashboardWebSocketService
+    private dashboardWebSocketService: DashboardWebSocketService,
+    private toastService: ToastService,
+    private userService: UserService
   ) { }
 
   ngOnInit(): void {
     this.initializeDashboard();
     this.loadConsultations();
+    this.loadAudioSettings();
   }
 
   ngOnDestroy(): void {
@@ -52,33 +58,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Initialize dashboard with real-time features
    */
   private initializeDashboard(): void {
-    // Get practitioner ID (you might get this from auth service)
-    const practitionerId = 1; // Replace with actual practitioner ID
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (!user || !user.id) {
+          this.toastService.showError('Practitioner ID not found. Please log in again.');
+          return;
+        }
+        this.dashboardWebSocketService.initializeDashboardConnection(user.id);
 
-    this.dashboardWebSocketService.initializeDashboardConnection(practitionerId)
-      .catch(error => {
-        console.error('Failed to initialize dashboard WebSocket:', error);
-      });
+        this.dashboardWebSocketService.dashboardState$
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(state => {
+            this.waitingPatientCount.set(state.waitingPatientCount);
+            this.hasNewNotifications.set(state.hasNewNotifications);
+            this.isConnected.set(state.isConnected);
+          });
 
-    this.dashboardWebSocketService.dashboardState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(state => {
-        this.waitingPatientCount.set(state.waitingPatientCount);
-        this.hasNewNotifications.set(state.hasNewNotifications);
-        this.isConnected.set(state.isConnected);
-      });
-
-    // Subscribe to patient notifications
-    this.dashboardWebSocketService.patientJoined$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(notification => {
-        console.log('New patient notification:', notification);
-        // Refresh consultations when new patient joins
-        this.loadConsultations();
-      });
-
-    // Load audio settings
-    this.loadAudioSettings();
+        // Subscribe to patient notifications
+        this.dashboardWebSocketService.patientJoined$
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(notification => {
+            this.toastService.showInfo('New patient joined the waiting room.');
+            this.loadConsultations();
+          });
+      },
+      error: () => {
+        this.toastService.showError('Unable to fetch practitioner info. Please log in again.');
+      }
+    });
   }
 
   private loadConsultations(): void {
@@ -86,11 +93,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .getWaitingConsultations()
       .subscribe({
         next: (data) => {
-          console.log('Waiting consultations received:', data);
           this.waitingConsultations.set(data.data || []);
         },
-        error: (error) => {
-          console.error('Error fetching waiting consultations:', error);
+        error: (error: any) => {
+          this.toastService.showError('Error fetching waiting consultations.');
         }
       });
 
@@ -98,11 +104,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .getOpenConsultations()
       .subscribe({
         next: (data) => {
-          console.log('Open consultations received:', data);
           this.openConsultations.set(data);
         },
-        error: (error) => {
-          console.error('Error fetching open consultations:', error);
+        error: (error: any) => {
+          this.toastService.showError('Error fetching open consultations.');
         }
       });
   }
@@ -116,9 +121,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         id: consultation.consultation.id,
         patientInitials: consultation.patient.initials,
         joinTime: consultation.consultation.startedAt ? new Date(consultation.consultation.startedAt) : null,
-        language: 'English', // Default or derived value
-        queuePosition: 1, // Placeholder, update as needed
-        estimatedWaitTime: '5 mins', // Placeholder, update as needed
+        language: 'English',
+        queuePosition: 1,
+        estimatedWaitTime: '5 mins',
+        selected: false,
+        reason: undefined,
       })),
       totalCount: consultations.length,
       currentPage: 1,
@@ -139,16 +146,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
         waitingData: this.waitingConsultations() ? this.mapToWaitingRoomResponse(this.waitingConsultations()) : null,
       },
       {
+        title: 'CONSULTATION INVITES',
+        description: 'Pending consultation invitations',
+        consultations: [], // Will be populated with invite count from service
+        routerLink: RoutePaths.Invitations,
+        showInvite: false,
+        type: 'invites',
+        waitingData: null,
+      },
+      {
         title: 'OPEN CONSULTATIONS',
         description: 'Consultations in progress',
         consultations: this.openConsultations(),
         routerLink: RoutePaths.OpenConsultations,
         showInvite: false,
-        type: 'open', // Added type property
-        waitingData: null, // Added waitingData property
+        type: 'open',
+        waitingData: null,
       },
     ];
-    console.log('Cards computed:', cards);
     return cards;
   });
 
@@ -157,7 +172,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onInviteSubmit(formData: CreatePatientConsultationRequest) {
-    console.log('✅ Form submitted with data:', formData);
+    // Optionally show a toast for form submission (debug)
 
     this.isLoading.set(true);
 
@@ -167,35 +182,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.isLoading.set(false);
           if (response.data && response.data.success) {
             const { patient, consultation } = response.data.data;
-
             if (patient.isNewPatient) {
-              alert(`New patient "${patient.firstName} ${patient.lastName}" created and consultation #${consultation.id} scheduled!`);
+              this.toastService.showSuccess(`New patient "${patient.firstName} ${patient.lastName}" created and consultation invitation sent!`);
             } else {
-              alert(`Consultation #${consultation.id} scheduled for existing patient "${patient.firstName} ${patient.lastName}"!`);
+              this.toastService.showSuccess(`Consultation invitation sent to existing patient "${patient.firstName} ${patient.lastName}"!`);
             }
-
             this.closeInvite();
-
-            this.loadConsultations();
-
+            // Since a new invitation was created, we don't need to refresh open consultations
+            // The invitation will appear in the invites list instead
+            this.toastService.showInfo('The consultation invitation is now available in the Invites section.');
           } else {
-            alert('Failed to create consultation: ');
+            this.toastService.showError('Failed to create consultation invitation.');
           }
         },
         error: (error) => {
           this.isLoading.set(false);
-          console.error('API Error:', error);
-
-          let errorMessage = 'Failed to create patient and consultation';
-
+          let errorMessage = 'Failed to create patient and consultation invitation';
           if (error.error?.message) {
             errorMessage = error.error.message;
           } else if (error.message) {
             errorMessage = error.message;
           }
-
-          alert('Error: ' + errorMessage);
-
+          this.toastService.showError(errorMessage);
         }
       });
   }
@@ -242,10 +250,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async testAudio(): Promise<void> {
     try {
       await this.dashboardWebSocketService.playTestAlert();
-    } catch (error) {
-      console.error('Audio test failed:', error);
+    } catch (error: any) {
+      this.toastService.showError(error?.message || 'Audio test failed.');
     }
   }
+
+  /**
+   * Get practitioner ID from backend/auth service
+   */
+  // getPractitionerId removed: now uses UserService for actual business logic
 
   /**
    * Toggle audio settings panel

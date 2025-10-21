@@ -101,6 +101,8 @@ export class ChatService {
     offset: number = 0,
   ) {
     try {
+      this.logger.log(`[getMessages] 📥 Fetching messages for consultation ${consultationId} (limit: ${limit}, offset: ${offset})`);
+
       const messages = await this.prisma.message.findMany({
         where: { consultationId },
         include: {
@@ -130,9 +132,16 @@ export class ChatService {
         skip: offset,
       });
 
-      return messages.reverse();
+      this.logger.log(`[getMessages] ✅ Found ${messages.length} messages for consultation ${consultationId}`);
+
+      if (messages.length > 0) {
+        this.logger.log(`[getMessages] 📊 Message types: ${messages.map(m => m.messageType).join(', ')}`);
+        this.logger.log(`[getMessages] 📅 Date range: ${messages[messages.length - 1]?.createdAt} to ${messages[0]?.createdAt}`);
+      }
+
+      return messages.reverse(); // Return in chronological order (oldest first)
     } catch (error) {
-      this.logger.error('Failed to get messages:', error);
+      this.logger.error(`[getMessages] ❌ Failed to get messages for consultation ${consultationId}:`, error);
       throw error;
     }
   }
@@ -295,18 +304,36 @@ export class ChatService {
     }
   }
 
-  async createSystemMessage(consultationId: number, content: string) {
-    const message = await this.prisma.message.create({
-      data: {
-        consultationId,
-        content,
-        isSystem: true,
-        messageType: MessageType.SYSTEM,
-        userId: 0, // A user ID of 0 can represent the system
-        clientUuid: 'system-message',
-      },
-    });
-    return message;
+  async createSystemMessage(consultationId: number, content: string, userId?: number) {
+    try {
+      // If no userId provided, get the first participant (usually the practitioner who owns the consultation)
+      let systemUserId = userId;
+
+      if (!systemUserId) {
+        const consultation = await this.prisma.consultation.findUnique({
+          where: { id: consultationId },
+          select: { ownerId: true }
+        });
+
+        systemUserId = consultation?.ownerId || 1; // Fallback to user ID 1 if not found
+      }
+
+      const message = await this.prisma.message.create({
+        data: {
+          consultationId,
+          content,
+          isSystem: true,
+          messageType: MessageType.SYSTEM,
+          userId: systemUserId,
+          clientUuid: `system-message-${Date.now()}-${Math.random()}`,
+        },
+      });
+      return message;
+    } catch (error) {
+      this.logger.error(`Failed to create system message for consultation ${consultationId}:`, error);
+      // Don't throw - system messages are not critical
+      return null;
+    }
   }
 
   /**

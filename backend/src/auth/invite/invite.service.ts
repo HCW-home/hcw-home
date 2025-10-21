@@ -117,9 +117,10 @@ export class InviteService {
     this.logger.log(`Found ${invites.length} invites out of ${total} total`);
 
     const formattedInvites = invites.map(invite => {
-      // Determine acceptance status based on invitation status
-      let acceptanceStatus = 'Scheduled'; // Default status when invitation is created
-      let statusTag = 'scheduled';
+      let acceptanceStatus = 'Pending';
+      let statusTag = 'pending';
+      const now = this.getCurrentTimeIST();
+      const scheduledDate = invite.consultation?.scheduledDate ? new Date(invite.consultation.scheduledDate) : null;
 
       if (invite.status === 'USED') {
         acceptanceStatus = 'Accepted';
@@ -127,12 +128,12 @@ export class InviteService {
       } else if (invite.status === 'REVOKED') {
         acceptanceStatus = 'Rejected';
         statusTag = 'rejected';
-      } else if (invite.expiresAt < new Date()) {
+      } else if (scheduledDate && now > scheduledDate && invite.status === 'PENDING') {
         acceptanceStatus = 'Expired';
         statusTag = 'expired';
       } else if (invite.status === 'PENDING') {
-        acceptanceStatus = 'Scheduled';
-        statusTag = 'scheduled';
+        acceptanceStatus = 'Pending';
+        statusTag = 'pending';
       }
 
       return {
@@ -141,7 +142,7 @@ export class InviteService {
         patientEmail: invite.inviteEmail,
         status: invite.status.toLowerCase(),
         acceptanceStatus: acceptanceStatus,
-        statusTag: statusTag, // For frontend display
+        statusTag: statusTag,
         createdAt: invite.createdAt,
         consultationId: invite.consultationId,
         scheduledDate: invite.consultation?.scheduledDate,
@@ -149,8 +150,8 @@ export class InviteService {
         expiresAt: invite.expiresAt,
         notes: invite.notes,
         role: invite.role,
-        communicationMethod: 'Email', // Currently only email is supported
-        token: invite.token // Include token for frontend operations
+        communicationMethod: 'Email',
+        token: invite.token
       };
     });
 
@@ -912,6 +913,9 @@ export class InviteService {
       });
     }
 
+    let emailSent = false;
+    let emailError: string | null = null;
+
     try {
       await this.emailService.sendConsultationInvitationEmail(
         inviteEmail.trim(),
@@ -924,17 +928,26 @@ export class InviteService {
         scheduledTimeIST,
         deviceTestCutoffIST
       );
+      emailSent = true;
       this.logger.log(
-        `Sent ${role} invitation email to ${inviteEmail} for consultation ${consultationId} by ${inviterUserId}`,
+        `✅ Sent ${role} invitation email to ${inviteEmail} for consultation ${consultationId} by ${inviterUserId}`,
       );
     } catch (error) {
+      emailError = error.message;
       this.logger.error(
-        `Failed to send invitation email to ${inviteEmail}: ${error.message}`,
+        `❌ Failed to send invitation email to ${inviteEmail}: ${error.message}`,
         error,
+      );
+      this.logger.warn(
+        `Invitation created but email not sent. Invitation ID: ${invitation.id}`,
       );
     }
 
-    return invitation;
+    return {
+      ...invitation,
+      emailSent,
+      emailError,
+    };
   }
 
   /**
@@ -1140,5 +1153,147 @@ export class InviteService {
     });
 
     return !!invitation;
+  }
+
+  /**
+   * Create invitation for GUEST/EXPERT with DIRECT consultation room link
+   * This is specifically for add participant functionality in consultation room
+   */
+  async createDirectRoomInvitation(
+    consultationId: number,
+    inviterUserId: number,
+    inviteEmail: string,
+    role: UserRole,
+    name?: string,
+    notes?: string,
+    expiresInMinutes = 24 * 60, // 24 hours
+  ) {
+    this.logger.log(`[createDirectRoomInvitation] Creating direct room invitation for ${role}: ${inviteEmail}`);
+
+    // Only allow GUEST and EXPERT for direct room access
+    if (role !== UserRole.GUEST && role !== UserRole.EXPERT) {
+      throw new Error(`Direct room invitations are only allowed for GUEST and EXPERT roles. Received: ${role}`);
+    }
+
+    if (!inviteEmail || !inviteEmail.trim()) {
+      throw new Error('Invite email is required');
+    }
+
+    const inviterUser = await this.prisma.user.findUnique({
+      where: { id: inviterUserId },
+      select: { role: true, firstName: true, lastName: true },
+    });
+
+    if (
+      !inviterUser ||
+      !([UserRole.PRACTITIONER, UserRole.ADMIN] as UserRole[]).includes(
+        inviterUser.role,
+      )
+    ) {
+      throw new Error('Only practitioners or admins can send invitations');
+    }
+
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: consultationId },
+      select: { ownerId: true, scheduledDate: true },
+    });
+
+    if (!consultation) {
+      throw new Error('Consultation not found');
+    }
+
+    if (
+      inviterUser.role === UserRole.PRACTITIONER &&
+      consultation.ownerId !== inviterUserId
+    ) {
+      throw new Error('Not authorized to invite for this consultation');
+    }
+
+    // Check for existing pending invitations
+    const existing = await this.prisma.consultationInvitation.findFirst({
+      where: {
+        consultationId,
+        inviteEmail: { equals: inviteEmail.trim(), mode: 'insensitive' },
+        status: InvitationStatus.PENDING,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (existing) {
+      throw new Error('A pending invitation already exists for this email');
+    }
+
+    const expireTime = addMinutes(new Date(), expiresInMinutes);
+    const token = uuidv4();
+
+    // Create invitation
+    const invitation = await this.prisma.consultationInvitation.create({
+      data: {
+        consultationId,
+        inviteEmail: inviteEmail.trim(),
+        name: name || null,
+        notes: notes || null,
+        role,
+        token,
+        expiresAt: expireTime,
+        status: InvitationStatus.PENDING,
+        createdById: inviterUserId,
+      },
+    });
+
+    this.logger.log(`[createDirectRoomInvitation] Created invitation ${invitation.id} for consultation ${consultationId}`);
+
+    const inviterName = `${inviterUser.firstName ?? ''} ${inviterUser.lastName ?? ''}`.trim() || 'A practitioner';
+
+    const patientBaseUrl = this.configService.patientUrl || 'http://localhost:4201';
+    const directRoomLink = `${patientBaseUrl}/consultation/${consultationId}?token=${token}&role=${role}`;
+
+    this.logger.log(`[createDirectRoomInvitation] Direct room link generated: ${directRoomLink}`);
+
+    let scheduledTimeIST: string | undefined = undefined;
+
+    if (consultation.scheduledDate) {
+      const consultationTime = new Date(consultation.scheduledDate);
+      scheduledTimeIST = this.formatTimeIST(consultationTime);
+
+      this.logger.log(`[createDirectRoomInvitation] Scheduled time (IST): ${scheduledTimeIST}`);
+    }
+
+    // Send email with direct room link
+    let emailSent = false;
+    let emailError: string | null = null;
+
+    try {
+      await this.emailService.sendDirectRoomInvitationEmail(
+        inviteEmail.trim(),
+        inviterName,
+        consultationId,
+        directRoomLink,
+        role,
+        name,
+        notes,
+        scheduledTimeIST
+      );
+      emailSent = true;
+      this.logger.log(
+        `✅ [createDirectRoomInvitation] Sent direct room invitation email to ${inviteEmail} for consultation ${consultationId}`,
+      );
+    } catch (error) {
+      emailError = error.message;
+      this.logger.error(
+        `❌ [createDirectRoomInvitation] Failed to send invitation email to ${inviteEmail}: ${error.message}`,
+        error,
+      );
+      this.logger.warn(
+        `[createDirectRoomInvitation] Invitation created but email not sent. Invitation ID: ${invitation.id}`,
+      );
+    }
+
+    return {
+      ...invitation,
+      directRoomLink,
+      emailSent,
+      emailError,
+    };
   }
 }

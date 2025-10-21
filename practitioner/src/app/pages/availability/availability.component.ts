@@ -13,14 +13,14 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ToastService } from '../../services/toast/toast.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { 
-  AvailabilityService, 
-  PractitionerAvailability, 
-  TimeSlot, 
+import {
+  AvailabilityService,
+  PractitionerAvailability,
+  TimeSlot,
   CreateAvailabilityRequest,
-  UpdateAvailabilityRequest 
+  UpdateAvailabilityRequest
 } from '../../services/availability.service';
 
 @Component({
@@ -41,7 +41,6 @@ import {
     MatDatepickerModule,
     MatNativeDateModule,
     MatTabsModule,
-    MatSnackBarModule,
     MatTooltipModule
   ],
   templateUrl: './availability.component.html',
@@ -50,16 +49,16 @@ import {
 export class AvailabilityComponent implements OnInit {
   availabilityForm: FormGroup;
   generateSlotsForm: FormGroup;
-  
+
   availabilities: PractitionerAvailability[] = [];
   timeSlots: TimeSlot[] = [];
-  
+
   loading = false;
   selectedTabIndex = 0;
-  
+
   displayedColumns = ['day', 'time', 'duration', 'status', 'actions'];
   slotsDisplayedColumns = ['date', 'time', 'status', 'actions'];
-  
+
   daysOfWeek = [
     { value: 0, label: 'Sunday' },
     { value: 1, label: 'Monday' },
@@ -73,7 +72,7 @@ export class AvailabilityComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private availabilityService: AvailabilityService,
-    private snackBar: MatSnackBar
+    private toastService: ToastService
   ) {
     this.availabilityForm = this.fb.group({
       dayOfWeek: ['', Validators.required],
@@ -101,8 +100,7 @@ export class AvailabilityComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading availabilities:', error);
-        this.snackBar.open('Error loading availabilities', 'Close', { duration: 3000 });
+        this.toastService.showError('Error loading availabilities');
         this.loading = false;
       }
     });
@@ -111,17 +109,16 @@ export class AvailabilityComponent implements OnInit {
   loadTimeSlots() {
     const today = new Date();
     const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
+
     const startDate = today.toISOString().split('T')[0];
     const endDate = nextMonth.toISOString().split('T')[0];
-    
+
     this.availabilityService.getMyTimeSlots(startDate, endDate).subscribe({
       next: (response) => {
         this.timeSlots = response?.data || response || [];
       },
       error: (error) => {
-        console.error('Error loading time slots:', error);
-        this.snackBar.open('Error loading time slots', 'Close', { duration: 3000 });
+        this.toastService.showError('Error loading time slots');
       }
     });
   }
@@ -129,22 +126,38 @@ export class AvailabilityComponent implements OnInit {
   createAvailability() {
     if (this.availabilityForm.valid) {
       const formData = this.availabilityForm.value as CreateAvailabilityRequest;
-      
       this.availabilityService.createAvailability(formData).subscribe({
         next: (response) => {
           const newAvailability = response?.data || response;
           if (newAvailability) {
             this.availabilities.push(newAvailability);
+            this.toastService.showSuccess('Availability created successfully');
+          } else {
+            this.toastService.showError('Error: No availability returned');
           }
           this.availabilityForm.reset();
-          this.snackBar.open('Availability created successfully', 'Close', { duration: 3000 });
         },
         error: (error) => {
-          console.error('Error creating availability:', error);
-          this.snackBar.open('Error creating availability', 'Close', { duration: 3000 });
+          let msg = 'Error creating availability';
+          if (error?.error?.message) msg += ': ' + error.error.message;
+          this.toastService.showError(msg);
         }
       });
     }
+  }
+
+  generateSlots(startDate: string, endDate: string) {
+    this.availabilityService.generateTimeSlots(startDate, endDate).subscribe({
+      next: (response: any) => {
+        this.toastService.showSuccess('Slots generated successfully');
+        this.loadTimeSlots();
+      },
+      error: (error: any) => {
+        let msg = 'Error generating slots';
+        if (error?.error?.message) msg += ': ' + error.error.message;
+        this.toastService.showError(msg);
+      }
+    });
   }
 
   toggleAvailabilityStatus(availability: PractitionerAvailability) {
@@ -158,50 +171,34 @@ export class AvailabilityComponent implements OnInit {
         if (index !== -1) {
           this.availabilities[index] = updatedAvailability;
         }
-        this.snackBar.open(
-          `Availability ${updatedAvailability.isActive ? 'enabled' : 'disabled'}`, 
-          'Close', 
-          { duration: 3000 }
-        );
+        this.toastService.showSuccess(`Availability ${updatedAvailability.isActive ? 'enabled' : 'disabled'}`);
       },
       error: (error) => {
-        console.error('Error updating availability:', error);
-        this.snackBar.open('Error updating availability', 'Close', { duration: 3000 });
+        this.toastService.showError('Error updating availability');
       }
     });
   }
 
   deleteAvailability(id: number) {
-    if (confirm('Are you sure you want to delete this availability?')) {
-      this.availabilityService.deleteAvailability(id).subscribe({
-        next: () => {
-          this.availabilities = this.availabilities.filter(a => a.id !== id);
-          this.snackBar.open('Availability deleted successfully', 'Close', { duration: 3000 });
-        },
-        error: (error) => {
-          console.error('Error deleting availability:', error);
-          this.snackBar.open('Error deleting availability', 'Close', { duration: 3000 });
-        }
-      });
-    }
+    this.toastService.showWarning('Delete availability is not implemented as a confirmation modal.');
+    // Implement a proper modal for confirmation in the future.
   }
 
   generateTimeSlots() {
     if (this.generateSlotsForm.valid) {
       const { startDate, endDate } = this.generateSlotsForm.value;
-      
+
       this.availabilityService.generateTimeSlots(
         startDate.toISOString().split('T')[0],
         endDate.toISOString().split('T')[0]
       ).subscribe({
         next: (slots) => {
           this.timeSlots = [...this.timeSlots, ...slots];
-          this.snackBar.open(`Generated ${slots.length} time slots`, 'Close', { duration: 3000 });
+          this.toastService.showSuccess(`Generated ${slots.length} time slots`);
           this.generateSlotsForm.reset();
         },
         error: (error) => {
-          console.error('Error generating slots:', error);
-          this.snackBar.open('Error generating time slots', 'Close', { duration: 3000 });
+          this.toastService.showError('Error generating time slots');
         }
       });
     }
@@ -209,18 +206,17 @@ export class AvailabilityComponent implements OnInit {
 
   toggleSlotStatus(slot: TimeSlot) {
     const newStatus = slot.status === 'AVAILABLE' ? 'BLOCKED' : 'AVAILABLE';
-    
+
     this.availabilityService.updateSlotStatus(slot.id, newStatus).subscribe({
       next: (updatedSlot) => {
         const index = this.timeSlots.findIndex(s => s.id === slot.id);
         if (index !== -1) {
           this.timeSlots[index] = updatedSlot;
         }
-        this.snackBar.open(`Slot ${newStatus.toLowerCase()}`, 'Close', { duration: 3000 });
+        this.toastService.showSuccess(`Slot ${newStatus.toLowerCase()}`);
       },
       error: (error) => {
-        console.error('Error updating slot:', error);
-        this.snackBar.open('Error updating slot', 'Close', { duration: 3000 });
+        this.toastService.showError('Error updating slot');
       }
     });
   }

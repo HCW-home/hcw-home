@@ -37,7 +37,7 @@ export class TestCallComponent implements OnInit, AfterViewInit {
   analyser?: AnalyserNode;
   microphoneStream?: MediaStreamAudioSourceNode;
   mediaStream?: MediaStream;
-  constructor(private toast: ToastService) {}
+  constructor(private toast: ToastService) { }
 
   async ngOnInit(): Promise<void> {
     await this.enumerateAudioDevices();
@@ -61,7 +61,6 @@ export class TestCallComponent implements OnInit, AfterViewInit {
       this.videoPreview.nativeElement.srcObject = this.mediaStream;
       this.setupAudioAnalyzer();
     } catch (err) {
-      console.error('Error accessing media devices', err);
       this.toast.show('⚠️ Cannot access camera/microphone');
     }
   }
@@ -104,7 +103,7 @@ export class TestCallComponent implements OnInit, AfterViewInit {
         this.selectedAudioDeviceId = this.audioInputDevices[0].deviceId;
       }
     } catch (err) {
-      console.error('Error enumerating devices', err);
+      // Silently fail - device enumeration is not critical
     }
   }
 
@@ -128,7 +127,6 @@ export class TestCallComponent implements OnInit, AfterViewInit {
         this.microphoneStream.connect(this.analyser);
       }
     } catch (err) {
-      console.error('Error switching audio device', err);
       this.toast.show('⚠️ Error switching audio device');
     }
   }

@@ -4,12 +4,12 @@ import { MarkdownModule } from 'ngx-markdown';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SnackbarService } from '../../services/snackbar/snackbar.service';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-term',
   standalone: true,
-  imports: [MarkdownModule,CommonModule,ReactiveFormsModule],
+  imports: [MarkdownModule, CommonModule, ReactiveFormsModule],
   templateUrl: './term.component.html',
   styleUrls: ['./term.component.scss']
 })
@@ -17,13 +17,13 @@ export class TermComponent implements OnInit {
   private termService = inject(TermService)
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private snakebarservice=inject(SnackbarService)
+  private snakebarservice = inject(ToastService)
 
   private termId = signal<number | null>(null);
-  
+
   termsForm: FormGroup;
   markdownContent: string = '';
-  returnUrl:string='';
+  returnUrl: string = '';
 
   termsList = [
     'I accept all the Terms and Conditions',
@@ -44,7 +44,7 @@ export class TermComponent implements OnInit {
     if (!term) {
       return
     }
-    
+
     this.markdownContent = term.content ?? '*No terms found.*';
   }
 
@@ -54,23 +54,23 @@ export class TermComponent implements OnInit {
     if (this.termsForm.valid) {
       const term = this.termService.getLatestTrem()
       const id = term?.id;
-      
+
       const queryParams = this.route.snapshot.queryParams;
       this.returnUrl = queryParams['returnUrl'] || '/dashboard';
-      if(id !=null){
-      this.termService.acceptTerm(id).subscribe({
-        next: (response) => {
-          this.snakebarservice.showSuccess("New term accepted")
-          this.termService.deletelatestTerm()
-          this.router.navigateByUrl(this.returnUrl)
-        },
-        error: (error) => {
-          this.snakebarservice.showError(error.error.message)
-          console.error('Failed to accept term', error);
-        }
-      });
-    }
+      if (id != null) {
+        this.termService.acceptTerm(id).subscribe({
+          next: (response) => {
+            this.snakebarservice.showSuccess("New term accepted")
+            this.termService.deletelatestTerm()
+            this.router.navigateByUrl(this.returnUrl)
+          },
+          error: (error) => {
+            this.snakebarservice.showError(error.error.message)
+            }
+        });
+      }
     }
   }
-  
+
 }
+

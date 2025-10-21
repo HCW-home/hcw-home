@@ -58,7 +58,6 @@ export class AuthService {
           if (accessToken && refreshToken) {
             return this.login(accessToken, refreshToken);
           } else {
-            console.warn('[AuthService] Invalid login response structure:', res);
             return throwError(() => new Error('Invalid login response'));
           }
         })
@@ -129,7 +128,6 @@ export class AuthService {
           };
 
           this.storeCurrentUser(updatedUser);
-          console.log('Token refreshed successfully');
 
           return updatedUser;
         } else {
@@ -138,14 +136,11 @@ export class AuthService {
       }),
       // Enhanced error handling for token refresh failures
       catchError((error: any) => {
-        console.error('Token refresh failed:', error);
-
         if (error.status === 401 || error.status === 403) {
           // Auth error - logout immediately
           this.logout();
         } else if (error.status === 0 || error.status >= 500) {
           // Network or server error - don't logout immediately, let interceptor handle retry
-          console.warn('Network/server error during token refresh - will retry');
         } else {
           // Other errors - logout for safety
           this.logout();

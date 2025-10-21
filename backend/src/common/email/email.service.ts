@@ -447,6 +447,109 @@ export class EmailService {
     }
   }
 
+  async sendScheduledConsultationEmail(
+    toEmail: string,
+    patientName: string,
+    practitionerName: string,
+    consultationId: number,
+    magicLinkUrl: string,
+    scheduledDate: Date,
+  ) {
+    try {
+      if (!toEmail?.trim() || !magicLinkUrl?.trim()) {
+        throw new Error('Email address and magic link URL are required');
+      }
+
+      const subject = `Consultation Scheduled - Join on ${scheduledDate.toLocaleDateString()}`;
+      const formattedDate = scheduledDate.toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Consultation Scheduled</title>
+        </head>
+        <body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,sans-serif;">
+          <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px #e5e7eb;overflow:hidden;">
+            <div style="background:#1e40af;color:#fff;padding:32px;text-align:center;">
+              <h1 style="margin-bottom:8px;">Consultation Scheduled</h1>
+              <p style="color:#bfdbfe;">Your healthcare consultation has been scheduled</p>
+            </div>
+            <div style="padding:32px;">
+              <p style="font-size:18px;color:#1e293b;margin-bottom:16px;">Hello ${patientName},</p>
+              <p>Your consultation with <strong>${practitionerName}</strong> has been scheduled. Please save this email as it contains your secure access link.</p>
+              
+              <div style="background:#f0f9ff;padding:20px;border-radius:8px;margin:24px 0;border-left:4px solid #1e40af;">
+                <h3 style="margin:0 0 12px 0;color:#1e40af;">Consultation Details</h3>
+                <p style="margin:4px 0;"><strong>Consultation ID:</strong> #${consultationId}</p>
+                <p style="margin:4px 0;"><strong>Practitioner:</strong> ${practitionerName}</p>
+                <p style="margin:4px 0;"><strong>Scheduled Time:</strong> ${formattedDate}</p>
+                <p style="margin:4px 0;"><strong>Status:</strong> <span style="color:#059669;font-weight:600;">Scheduled</span></p>
+              </div>
+
+              <div style="background:#fef3c7;padding:16px;border-radius:6px;margin:24px 0;">
+                <strong>📅 Important:</strong> You can join the consultation 15 minutes before your scheduled time. We'll send you a reminder 24 hours before.
+              </div>
+
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${magicLinkUrl}" style="background:#1e40af;color:#fff;padding:18px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:18px;">Join Consultation</a>
+              </div>
+
+              <div style="background:#f1f5f9;padding:16px;border-radius:6px;margin:24px 0;">
+                <strong>How to join:</strong>
+                <ol style="margin:8px 0;padding-left:20px;">
+                  <li>Click "Join Consultation" at your scheduled time</li>
+                  <li>You'll enter a secure waiting room</li>
+                  <li>The practitioner will be notified of your arrival</li>
+                  <li>You'll be admitted to the consultation when ready</li>
+                </ol>
+                
+                <strong>What you'll need:</strong>
+                <ul style="margin:8px 0;padding-left:20px;">
+                  <li>Stable internet connection</li>
+                  <li>Camera and microphone (for video consultation)</li>
+                  <li>Chrome, Firefox, Safari, or Edge browser</li>
+                  <li>Quiet, private space for the consultation</li>
+                </ul>
+              </div>
+
+              <div style="background:#fee2e2;padding:12px;border-radius:6px;margin:20px 0;color:#991b1b;font-size:14px;">
+                <strong>Need to reschedule?</strong> Please contact your healthcare provider as soon as possible.
+              </div>
+
+              <p style="color:#64748b;font-size:14px;margin-top:24px;">
+                This link is secure and personal to you. Please do not share it with others.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      await this.sendEmail(toEmail, subject, html);
+
+      this.logger.log(
+        `Scheduled consultation email sent successfully - To: ${toEmail}, Consultation: ${consultationId}, Date: ${formattedDate}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send scheduled consultation email to ${toEmail}: ${error.message}`,
+        error.stack,
+      );
+      throw new Error(`Scheduled consultation email delivery failed: ${error.message}`);
+    }
+  }
+
   private getRoleDisplayName(role: UserRole): string {
     switch (role) {
       case UserRole.PATIENT:

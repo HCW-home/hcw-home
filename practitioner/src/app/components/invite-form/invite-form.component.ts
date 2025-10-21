@@ -149,13 +149,7 @@ export class InviteFormComponent implements OnInit, OnDestroy {
       gender: ['', Validators.required],
       language: ['', Validators.required],
       group: [''],
-      contact: [
-        '',
-        [
-          Validators.required,
-          this.contactValidator.bind(this)
-        ],
-      ],
+      contact: ['', Validators.required],
       manualSend: [false],
       planLater: [false],
       scheduledDate: [''],
@@ -169,35 +163,6 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Custom validator for email or phone number
-  private contactValidator(control: any) {
-    if (!control.value) return null;
-
-    const value = control.value.trim();
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const phonePattern = /^\+?[1-9]\d{1,14}$/;
-
-    const isValidEmail = emailPattern.test(value);
-    const isValidPhone = phonePattern.test(value);
-
-    if (!isValidEmail && !isValidPhone) {
-      return { invalidContact: true };
-    }
-
-    return null;
-  }
-
-  // Helper method to get contact validation error message
-  getContactErrorMessage(): string {
-    const contactControl = this.form.get('contact');
-    if (contactControl?.hasError('required')) {
-      return 'Email or phone number is required';
-    }
-    if (contactControl?.hasError('invalidContact')) {
-      return 'Please enter a valid email address or phone number (e.g., john@example.com or +1234567890)';
-    }
-    return '';
-  }
 
   private populateFormForEdit(): void {
     if (!this.editData) return;

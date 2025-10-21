@@ -67,6 +67,10 @@ export class DashboardWebSocketService {
   public fileUploadProgressSubject = new Subject<{ percent: number; fileId?: string }>();
   public fileUploadErrorSubject = new Subject<{ error: string; fileId?: string }>();
 
+  // Public observables for external subscriptions
+  public patientLeft$ = this.patientLeftSubject.asObservable();
+  public waitingRoomUpdate$ = this.waitingRoomUpdateSubject.asObservable();
+
   constructor(
     private audioAlertService: AudioAlertService,
     private eventBus: EventBusService,

@@ -118,10 +118,10 @@
 
         <div class="row">
           <div class="field full">
-            <label> Email or Phone Number (International format) * </label>
+            <label>Contact Information *</label>
             <input
               formControlName="contact"
-              placeholder="john@example.com or +1234567890"
+              placeholder="Enter contact information"
               [class.error]="
                 form.get('contact')?.invalid && form.get('contact')?.touched
               "
@@ -132,11 +132,7 @@
                 form.get('contact')?.invalid && form.get('contact')?.touched
               "
             >
-              {{ getContactErrorMessage() }}
-            </div>
-            <div class="help-text">
-              Enter a valid email address or international phone number
-              (starting with +)
+              <span *ngIf="form.get('contact')?.hasError('required')">Contact information is required</span>
             </div>
           </div>
         </div>

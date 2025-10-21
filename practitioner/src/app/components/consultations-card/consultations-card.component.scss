@@ -37,12 +37,22 @@
     flex: 1;
   }
 
-  .consultation-list {
-    app-button.send-invite-btn {
-      margin-top: 16px;
-      margin-bottom: 8px;
-      display: block;
+  .invite-button-container {
+    margin: 24px 0;
+    padding: 20px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.01);
+    border-radius: 8px;
+
+    .send-invite-btn {
+      width: 100%;
+      max-width: 200px;
     }
+  }
+
+  .consultation-list {
     display: flex;
     flex-direction: column;
     flex: 1;

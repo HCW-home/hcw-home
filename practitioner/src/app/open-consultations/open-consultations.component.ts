@@ -12,6 +12,8 @@ import { OpenConsultationCardComponent } from '../components/open-consultation-c
 import { OpenConsultationPanelComponent } from '../components/open-consultation-panel/open-consultation-panel.component';
 import { OverlayComponent } from '../components/overlay/overlay.component';
 import { UserService } from '../services/user.service';
+import { DashboardWebSocketService } from '../services/dashboard-websocket.service';
+import { EventBusService } from '../services/event-bus.service';
 
 @Component({
   selector: 'app-open-consultations',
@@ -45,11 +47,14 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
     private openConsultationService: OpenConsultationService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private userService: UserService
+    private userService: UserService,
+    private dashboardWebSocketService: DashboardWebSocketService,
+    private eventBusService: EventBusService
   ) { }
 
   ngOnInit(): void {
     this.loadConsultations();
+    this.setupWebSocketSubscriptions();
   }
 
   ngOnDestroy(): void {
@@ -70,6 +75,11 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response) => {
+          // BACKEND FIX NEEDED: The /consultation/open endpoint should only return 
+          // consultations that have been ACCEPTED by the practitioner, not newly created ones.
+          // Currently, newly created consultations are appearing here when they should 
+          // only appear in the invites list until accepted.
+          
           this.consultations = response.consultations;
           this.totalConsultations = response.total;
           this.currentPage = response.currentPage;
@@ -81,6 +91,112 @@ export class OpenConsultationsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
       });
+  }
+
+  private setupWebSocketSubscriptions(): void {
+    // Listen for consultation status updates
+    this.eventBusService.on('consultation:status_updated')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleConsultationUpdate(data);
+      });
+
+    // Listen for consultation closed events (remove from open consultations)
+    this.eventBusService.on('consultation:closed')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleConsultationClosed(data);
+      });
+
+    // Listen for invite accepted events (add to open consultations)
+    this.eventBusService.on('invite:accepted')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleInviteAccepted(data);
+      });
+
+    // Listen for consultation started events (when practitioner joins consultation room)
+    this.eventBusService.on('consultation:practitioner_joined')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handlePractitionerJoined(data);
+      });
+
+    // Listen for patient join events (for real-time updates)
+    this.dashboardWebSocketService.patientJoined$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notification) => {
+        this.handlePatientJoined(notification);
+      });
+
+    // Listen for waiting room updates
+    this.dashboardWebSocketService.waitingRoomUpdateSubject
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => {
+        this.handleWaitingRoomUpdate(data);
+      });
+  }
+
+  private handleConsultationUpdate(data: any): void {
+    const consultationIndex = this.consultations.findIndex(c => c.id === data.consultationId);
+    if (consultationIndex !== -1) {
+      // Update existing consultation
+      this.consultations[consultationIndex] = { ...this.consultations[consultationIndex], ...data.updates };
+      this.cdr.detectChanges();
+    }
+  }
+
+  private handleConsultationClosed(data: any): void {
+    // Remove consultation from open consultations list
+    this.consultations = this.consultations.filter(c => c.id !== data.consultationId);
+    this.totalConsultations = Math.max(0, this.totalConsultations - 1);
+    
+    // Close detail panel if the closed consultation was selected
+    if (this.selectedConsultation?.id === data.consultationId) {
+      this.closeRightPanel();
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  private handleInviteAccepted(data: any): void {
+    // When an invite is accepted, the consultation should now appear in open consultations
+    if (data.practitionerId === this.practitionerId) {
+      console.log('Invite accepted - consultation should now appear in open consultations:', data);
+      this.loadConsultations();
+    }
+  }
+
+  private handlePractitionerJoined(data: any): void {
+    // When practitioner joins a consultation room, update the consultation status
+    if (data.practitionerId === this.practitionerId) {
+      console.log('Practitioner joined consultation room:', data);
+      // Update the specific consultation or refresh the list
+      this.loadConsultations();
+    }
+  }
+
+  private handlePatientJoined(notification: any): void {
+    // Find if this consultation is in our open consultations
+    const consultationIndex = this.consultations.findIndex(c => c.id === notification.consultationId);
+    if (consultationIndex !== -1) {
+      // Update patient status or add visual indicator
+      // Note: We can add a visual indicator or refresh the consultation data
+      // For now, we'll just trigger a change detection to update the UI
+      this.cdr.detectChanges();
+    }
+  }
+
+  private handleWaitingRoomUpdate(data: any): void {
+    // Update consultation status based on waiting room changes
+    if (data.consultationId) {
+      const consultationIndex = this.consultations.findIndex(c => c.id === data.consultationId);
+      if (consultationIndex !== -1) {
+        // Note: We can update consultation data or trigger a UI refresh
+        // For now, we'll just trigger a change detection to update the UI
+        this.cdr.detectChanges();
+      }
+    }
   }
 
   onConsultationClick(consultation: OpenConsultation): void {

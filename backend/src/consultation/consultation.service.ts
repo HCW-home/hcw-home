@@ -731,7 +731,8 @@ export class ConsultationService {
         scheduledDate: createDto.scheduledDate || null,
         status: ConsultationStatus.SCHEDULED,
         createdAt: new Date(),
-        startedAt: new Date(),
+        // Don't set startedAt until practitioner actually joins the consultation
+        // startedAt: new Date(), // Removed this line
       };
 
       const consultation = await tx.consultation.create({ data: consultationData });
@@ -795,7 +796,7 @@ export class ConsultationService {
     if (createDto.planLater && createDto.plannedDate && createDto.plannedTime && createDto.timezone) {
       const dateTimeString = `${createDto.plannedDate}T${createDto.plannedTime}:00`;
       scheduledDate = new Date(dateTimeString);
-
+      this.logger.log(`Plan Later consultation scheduled for: ${scheduledDate.toISOString()}`);
     }
 
     const consultationData = {
@@ -837,6 +838,52 @@ export class ConsultationService {
       },
     });
 
+    // Handle Plan Later functionality - send patient joining email with magic link
+    if (createDto.planLater && isEmail && createdPatient.email && scheduledDate) {
+      try {
+        // Generate magic link for patient to join the consultation
+        const magicLinkResult = await this.generateMagicLinkForParticipant(
+          newConsultation.id,
+          practitionerId,
+          createdPatient.email,
+          UserRole.PATIENT,
+          `${createdPatient.firstName} ${createdPatient.lastName}`,
+          `Scheduled consultation for ${scheduledDate.toLocaleDateString()}`,
+          60 * 24 * 7 // 7 days expiration for planned consultations
+        );
+
+
+        // Send scheduled consultation email to patient
+        await this.emailService.sendScheduledConsultationEmail(
+          createdPatient.email,
+          `${createdPatient.firstName} ${createdPatient.lastName}`,
+          `${practitioner.firstName} ${practitioner.lastName}`,
+          newConsultation.id,
+          magicLinkResult.data?.magicLink || '',
+          scheduledDate
+        );
+
+        this.logger.log(`Plan Later consultation email sent to ${createdPatient.email} for consultation ${newConsultation.id}`);
+
+        // Set up reminder for Plan Later consultation
+        try {
+          const { ReminderType } = await import('../reminder/reminder.constants');
+          await this.reminderService.scheduleReminders(
+            newConsultation.id,
+            scheduledDate,
+            [ReminderType.UPCOMING_APPOINTMENT_24H] // 24-hour reminder for planned consultations
+          );
+          this.logger.log(`Reminder scheduled for Plan Later consultation ${newConsultation.id}`);
+        } catch (reminderError) {
+          this.logger.warn(`Failed to schedule reminder for consultation ${newConsultation.id}: ${reminderError.message}`);
+        }
+
+      } catch (emailError) {
+        this.logger.error(`Failed to send Plan Later email for consultation ${newConsultation.id}: ${emailError.message}`);
+        // Don't fail the entire operation if email fails
+      }
+    }
+
     const response: CreatePatientConsultationResponseDto = {
       patient: {
         id: createdPatient.id,
@@ -856,11 +903,17 @@ export class ConsultationService {
       },
     };
 
+    const baseMessage = isNewPatient
+      ? 'Patient created and consultation scheduled successfully'
+      : 'Consultation scheduled for existing patient successfully';
+    
+    const emailMessage = createDto.planLater && isEmail 
+      ? ' Scheduled consultation email sent to patient.'
+      : ' Invitation email sent.';
+
     return {
       data: response,
-      message: isNewPatient
-        ? 'Patient created and consultation scheduled successfully. Invitation email sent.'
-        : 'Consultation scheduled for existing patient successfully. Invitation email sent.',
+      message: baseMessage + emailMessage,
       statusCode: HttpStatus.CREATED,
     };
   }
@@ -1631,15 +1684,27 @@ export class ConsultationService {
       });
       this.logger.log(`✅ Participant upserted successfully`);
 
+      this.logger.log(`📍 Step 4: Updating consultation status and marking practitioner as admitted`);
+      const updateData: any = { 
+        practitionerAdmitted: true,
+        startedAt: new Date(), // Set startedAt when practitioner actually joins
+      };
+      
       if (consultation.status !== ConsultationStatus.ACTIVE) {
-        this.logger.log(`📍 Step 4: Updating consultation status to ACTIVE`);
-        await this.db.consultation.update({
-          where: { id: consultationId },
-          data: { status: ConsultationStatus.ACTIVE },
-        });
-        consultation.status = ConsultationStatus.ACTIVE;
-        this.logger.log(`✅ Consultation status updated to ACTIVE`);
+        updateData.status = ConsultationStatus.ACTIVE;
+        this.logger.log(`Setting consultation status to ACTIVE`);
       }
+      
+      await this.db.consultation.update({
+        where: { id: consultationId },
+        data: updateData,
+      });
+      
+      if (updateData.status) {
+        consultation.status = ConsultationStatus.ACTIVE;
+      }
+      this.logger.log(`✅ Consultation updated: practitioner marked as admitted, startedAt set${updateData.status ? ', and status set to ACTIVE' : ''}`);
+      
 
       this.logger.log(`📍 Step 5: Setting up mediasoup router`);
       let routerCreated = false;
@@ -3441,7 +3506,10 @@ export class ConsultationService {
       where: {
         ownerId: practitionerId,
         closedAt: null,
-        startedAt: { not: null },
+        practitionerAdmitted: true, // Only consultations where practitioner has joined
+        status: {
+          in: [ConsultationStatus.ACTIVE, ConsultationStatus.WAITING], // Active or waiting for patient
+        },
       },
     });
 
@@ -3449,7 +3517,10 @@ export class ConsultationService {
       where: {
         ownerId: practitionerId,
         closedAt: null,
-        startedAt: { not: null },
+        practitionerAdmitted: true, // Only consultations where practitioner has joined
+        status: {
+          in: [ConsultationStatus.ACTIVE, ConsultationStatus.WAITING], // Active or waiting for patient
+        },
       },
       include: {
         participants: {

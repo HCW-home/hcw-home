@@ -7,7 +7,7 @@
     <p>No consultations</p>
   </div>
   }
-  <div style="margin-top: 1.5rem" *ngIf="showInvite()">
+  <div class="invite-button-container" *ngIf="showInvite()">
     <app-button
       class="send-invite-btn"
       (click)="onInviteClick()"

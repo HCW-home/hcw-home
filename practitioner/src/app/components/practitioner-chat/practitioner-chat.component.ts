@@ -4,6 +4,9 @@ import { ToastService } from '../../services/toast/toast.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+// Re-export ChatMessage for external components
+export type { ChatMessage } from '../../services/chat.service';
+
 
 export interface TypingIndicator {
   userId: number;

@@ -16,12 +16,12 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
+import { Request, Response, NextFunction } from 'express';
 
 
 
 class ApplicationBootstrap {
   private logger: CustomLoggerService;
-  private externalLoggerInitialized = false;
   private readonly gracefulShutdownTimeoutMs = 10000;
 
   async bootstrap(): Promise<void> {
@@ -38,14 +38,48 @@ class ApplicationBootstrap {
 
       // Use custom logger for the application
       app.useLogger(this.logger);
-      // Integrate external logging/monitoring if configured
-      if (process.env.MONITORING_DSN) {
-        this.logger.logServerAction('External monitoring configured', { dsn: process.env.MONITORING_DSN });
-        this.externalLoggerInitialized = true;
-      }
 
-      // Configure security and performance middleware
-      this.configureSecurityMiddleware(app, configService);
+      // Add CORS middleware before any other middleware
+      app.use((req: Request, res: Response, next: NextFunction) => {
+        const requestOrigin = req.headers.origin || '*';
+        
+        // Always set basic CORS headers
+        res.header('Access-Control-Allow-Origin', requestOrigin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+
+        if (req.method === 'OPTIONS') {
+          // Handle preflight
+          res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+          res.header('Access-Control-Allow-Headers', 
+            'Origin, X-Requested-With, Content-Type, Accept, Authorization, ' +
+            'X-API-Key, Cache-Control, pragma, Pragma, expires, Expires, ' +
+            'if-match, if-none-match, if-modified-since, if-unmodified-since'
+          );
+          res.header('Access-Control-Max-Age', '86400');
+          res.header('Access-Control-Expose-Headers', 'X-Total-Count, X-Page-Count, ETag');
+          
+          // Log headers for debugging
+          this.logger.debug('CORS Preflight Response Headers:', res.getHeaders());
+          
+          res.sendStatus(204);
+          return;
+        }
+        next();
+      });
+
+      // Configure security and performance middleware with CORS-friendly settings
+      if (configService.isDevelopment) {
+        app.use(
+          helmet({
+            contentSecurityPolicy: false,
+            crossOriginEmbedderPolicy: false,
+            crossOriginResourcePolicy: { policy: "cross-origin" },
+            crossOriginOpenerPolicy: false,
+          })
+        );
+      } else {
+        this.configureSecurityMiddleware(app, configService);
+      }
       this.configurePerformanceMiddleware(app, configService);
 
       app.useGlobalPipes(
@@ -53,9 +87,13 @@ class ApplicationBootstrap {
           whitelist: true,
           forbidNonWhitelisted: true,
           transform: true,
+          transformOptions: {
+            enableImplicitConversion: true,
+            exposeDefaultValues: true
+          },
           disableErrorMessages: configService.isProduction,
           validateCustomDecorators: true,
-          forbidUnknownValues: true,
+          forbidUnknownValues: false, // Allow unknown values
           skipMissingProperties: false,
           skipNullProperties: false,
           stopAtFirstError: false,
@@ -139,14 +177,10 @@ class ApplicationBootstrap {
 
   private configureSecurityMiddleware(app: NestExpressApplication, configService: ConfigService): void {
     // Helmet for security headers
-    const helmetOptions: any = {
+    app.use(helmet({
       contentSecurityPolicy: configService.isProduction ? configService.helmetCsp : false,
       crossOriginEmbedderPolicy: false,
-    };
-    if (process.env.HELMET_HSTS_MAX_AGE) {
-      helmetOptions.hsts = { maxAge: parseInt(process.env.HELMET_HSTS_MAX_AGE, 10) };
-    }
-    app.use(helmet(helmetOptions));
+    }));
 
     // Rate limiting
     if (configService.isProduction) {
@@ -194,12 +228,27 @@ class ApplicationBootstrap {
     }));
 
     app.use((req, res, next) => {
-      res.setTimeout(configService.responseTimeoutMs, () => {
-        res.status(408).json({
-          error: configService.timeoutError,
-          message: configService.timeoutMessage,
-        });
-      });
+      const timeout = setTimeout(() => {
+        if (!res.headersSent && !res.finished) {
+          try {
+            res.status(408).json({
+              error: configService.timeoutError,
+              message: configService.timeoutMessage,
+            });
+          } catch (err) {
+            console.error('Error sending timeout response:', err);
+          }
+        }
+      }, configService.responseTimeoutMs);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+      };
+
+      res.on('finish', cleanup);
+      res.on('close', cleanup);
+      res.on('error', cleanup);
+
       next();
     });
 
@@ -335,13 +384,6 @@ class ApplicationBootstrap {
   }
 
   private configureGlobalPrefix(app: NestExpressApplication): void {
-    // Enable versioning
-    app.enableVersioning({
-      type: VersioningType.URI,
-      prefix: 'v',
-      defaultVersion: '1',
-    });
-
     app.setGlobalPrefix('api', {
       exclude: [
         { path: 'health', method: RequestMethod.GET },
@@ -352,13 +394,12 @@ class ApplicationBootstrap {
 
     this.logger.logServerAction('Global API prefix configured', {
       prefix: 'api',
-      versioning: 'URI-based with v1 default',
       excludedPaths: ['health', 'metrics', ''],
     });
   }
   private async configureSession(app: NestExpressApplication, configService: ConfigService): Promise<void> {
     const sessionConfig: any = {
-      secret: configService.jwtSecret,
+      secret: configService.jwtSecret || 'fallback-secret-change-in-production',
       resave: false,
       saveUninitialized: false,
       name: 'sessionId',
@@ -403,7 +444,7 @@ class ApplicationBootstrap {
     }
 
     const sessionOptions: any = {
-      secret: configService.jwtSecret,
+      secret: configService.jwtSecret || 'fallback-secret',
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -539,28 +580,9 @@ class ApplicationBootstrap {
     });
 
     if (configService.isProduction) {
-      // HTTPS enforcement in production
-      const sslKey = process.env.SSL_KEY_PATH;
-      const sslCert = process.env.SSL_CERT_PATH;
-      if (sslKey && sslCert) {
-        const fs = require('fs');
-        const https = require('https');
-        const httpsOptions = {
-          key: fs.readFileSync(sslKey),
-          cert: fs.readFileSync(sslCert),
-        };
-        const server = https.createServer(httpsOptions, app.getHttpAdapter().getInstance());
-        server.keepAliveTimeout = 65000;
-        server.headersTimeout = 66000;
-        server.listen(port, '0.0.0.0', () => {
-          this.logger.logServerAction('HTTPS server started', { port });
-        });
-      } else {
-        this.logger.warn('SSL cert/key not configured, falling back to HTTP. Set SSL_KEY_PATH and SSL_CERT_PATH for HTTPS.');
-        const server = await app.listen(port, '0.0.0.0');
-        server.keepAliveTimeout = 65000;
-        server.headersTimeout = 66000;
-      }
+      const server = await app.listen(port, '0.0.0.0');
+      server.keepAliveTimeout = 65000; // Slightly higher than ALB idle timeout (60s)
+      server.headersTimeout = 66000; // Slightly higher than keepAliveTimeout
     } else {
       await app.listen(port);
     }
@@ -570,7 +592,7 @@ class ApplicationBootstrap {
 
   private logApplicationInfo(port: number, configService: ConfigService): void {
     const baseUrl = `http://localhost:${port}`;
-    const apiUrl = `${baseUrl}/api`;
+    const apiUrl = `${baseUrl}/api/v1`;
 
     this.logger.logServerAction(`Application started successfully`, {
       url: apiUrl,

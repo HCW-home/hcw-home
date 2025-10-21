@@ -1,133 +1,257 @@
 <div class="availability-management">
-  <div class="header">
-    <h2>Practitioner Availability Management</h2>
+  <!-- Header with title and description -->
+  <div class="page-header">
+    <h1>Doctor Availability Management</h1>
+    <p class="subtitle">Set working hours first, then appointments can be booked within available time slots</p>
   </div>
 
-  <div class="content">
-    <div class="form-section">
-      <h3>{{ editingId ? 'Edit' : 'Add' }} Availability</h3>
-      <form [formGroup]="availabilityForm" (ngSubmit)="onSubmit()">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="practitionerId">Practitioner</label>
-            <select id="practitionerId" formControlName="practitionerId" class="form-control">
-              <option value="">Select Practitioner</option>
-              <option *ngFor="let practitioner of practitioners" [value]="practitioner.id">
-                {{ practitioner.firstName }} {{ practitioner.lastName }}
-              </option>
-            </select>
-          </div>
+  <!-- Top control cards -->
+    <div class="top-controls">
+    <div class="control-card">
+      <label>Doctor</label>
+      <select (change)="onDoctorChange($event)" class="control-select">
+        <option value="">Select Doctor</option>
+        <option *ngFor="let doctor of practitioners" [value]="doctor.id">
+          {{ doctor.firstName }} {{ doctor.lastName }}
+        </option>
+      </select>
+    </div>
 
-          <div class="form-group">
-            <label for="dayOfWeek">Day of Week</label>
-            <select id="dayOfWeek" formControlName="dayOfWeek" class="form-control">
-              <option value="">Select Day</option>
-              <option *ngFor="let day of daysOfWeek" [value]="day.value">
-                {{ day.label }}
-              </option>
-            </select>
-          </div>
-        </div>
+    <div class="control-card">
+      <label>Week Navigation</label>
+      <div class="week-nav">
+        <button class="nav-btn" (click)="changeWeek(-1)">←</button>
+        <span class="week-range">{{ formatWeekRange() }}</span>
+        <button class="nav-btn" (click)="changeWeek(1)">→</button>
+      </div>
+    </div>
+  </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="startTime">Start Time</label>
-            <input
-              type="time"
-              id="startTime"
-              formControlName="startTime"
-              class="form-control"
-            >
-          </div>
+  <!-- Stats cards -->
+  <div class="stats-row">
+    <div class="stat-card working-days">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="#3B82F6" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ weekStats.workingDays }}</div>
+        <div class="stat-label">Working Days</div>
+      </div>
+    </div>
 
-          <div class="form-group">
-            <label for="endTime">End Time</label>
-            <input
-              type="time"
-              id="endTime"
-              formControlName="endTime"
-              class="form-control"
-            >
-          </div>
-        </div>
+    <div class="stat-card available-slots">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ weekStats.availableSlots }}</div>
+        <div class="stat-label">Available Slots</div>
+      </div>
+    </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="slotDuration">Slot Duration (minutes)</label>
-            <input
-              type="number"
-              id="slotDuration"
-              formControlName="slotDuration"
-              class="form-control"
-              min="15"
-              max="120"
-            >
-          </div>
+    <div class="stat-card booked-slots">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 9V13M12 17.0195V17M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ weekStats.bookedSlots }}</div>
+        <div class="stat-label">Booked Slots</div>
+      </div>
+    </div>
 
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                formControlName="isActive"
-              >
-              Active
+    <div class="stat-card free-slots">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.1601 10.87C12.0601 10.86 11.9401 10.86 11.8301 10.87C9.45006 10.79 7.56006 8.84 7.56006 6.44C7.56006 3.99 9.54006 2 12.0001 2C14.4501 2 16.4401 3.99 16.4401 6.44C16.4301 8.84 14.5401 10.79 12.1601 10.87Z" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7.15997 14.56C4.73997 16.18 4.73997 18.82 7.15997 20.43C9.90997 22.27 14.42 22.27 17.17 20.43C19.59 18.81 19.59 16.17 17.17 14.56C14.43 12.73 9.91997 12.73 7.15997 14.56Z" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ weekStats.freeSlots }}</div>
+        <div class="stat-label">Free Slots</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Schedule Section -->
+  <div class="weekly-schedule-section">
+    <div class="section-header">
+      <h2>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Weekly Availability Schedule
+      </h2>
+      <button class="save-btn" (click)="saveSchedule()" [disabled]="isLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.89 5.87988H5.10999C3.39999 5.87988 2 7.27987 2 8.98987V20.3499C2 21.7999 3.04 22.4199 4.31 21.7099L8.23999 19.5199C8.65999 19.2899 9.34 19.2899 9.75 19.5199L13.68 21.7099C14.95 22.4199 15.99 21.7999 15.99 20.3499V8.98987C16 7.27987 14.6 5.87988 12.89 5.87988Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 8.98987V20.3499C16 21.7999 14.96 22.4199 13.69 21.7099L9.76001 19.5199C9.34001 19.2899 8.65999 19.2899 8.23999 19.5199L4.31 21.7099C3.04 22.4199 2 21.7999 2 20.3499V8.98987C2 7.27987 3.39999 5.87988 5.10999 5.87988H12.89C14.6 5.87988 16 7.27987 16 8.98987Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 5.10999V16.47C22 17.92 20.96 18.54 19.69 17.83L16 15.77V8.98999C16 7.27999 14.6 5.88 12.89 5.88H8V5.10999C8 3.39999 9.39999 2 11.11 2H18.89C20.6 2 22 3.39999 22 5.10999Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Save Schedule
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading availability data...</p>
+    </div>
+
+    <!-- Weekly calendar -->
+    <div *ngIf="!isLoading" class="weekly-calendar">
+      <div *ngFor="let day of weeklySchedule; let i = index" class="day-column">
+        
+        <!-- Day header -->
+        <div class="day-header">
+          <h3>{{ getWeekdayLabel(day.date) }}</h3>
+          <p class="day-date">{{ formatDateForDay(day.date) }}</p>
+          
+          <!-- Working day toggle -->
+          <div class="working-day-toggle">
+            <label class="toggle-switch">
+              <input 
+                type="checkbox" 
+                [checked]="day.isWorkingDay"
+                (change)="toggleWorkingDay(i)">
+              <span class="toggle-slider"></span>
             </label>
+            <span class="toggle-label">{{ day.isWorkingDay ? 'Working Day' : 'Day Off' }}</span>
           </div>
         </div>
 
+        <!-- Day content -->
+        <div class="day-content" [class.day-off]="!day.isWorkingDay">
+          
+          <!-- Working day content -->
+          <div *ngIf="day.isWorkingDay" class="working-day-content">
+            
+            <!-- Available Times Section -->
+            <div class="available-times-section">
+              <div class="section-title">
+                <span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Available Times
+                </span>
+                <button class="add-btn" (click)="addTimeSlot(i)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 12H18M12 18V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              
+              <div class="time-slots">
+                <div *ngFor="let slot of day.availableTimes; let slotIndex = index" class="time-slot">
+                  <div class="time-range">
+                    <span class="time">{{ formatTime(slot.startTime) }}</span>
+                    <span class="separator">-</span>
+                    <span class="time">{{ formatTime(slot.endTime) }}</span>
+                  </div>
+                  <span class="duration">{{ slot.slotDuration }}min</span>
+                  <div class="slot-actions">
+                    <button class="edit-slot-btn" title="Edit" (click)="editTimeSlot(i, slotIndex)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <button class="delete-slot-btn" title="Delete" (click)="deleteTimeSlot(i, slotIndex)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 5.97998C17.67 5.64998 14.32 5.47998 10.98 5.47998C9 5.47998 7.02 5.57998 5.04 5.77998L3 5.97998M8.5 4.97L8.72 3.66C8.88 2.71 9 2 10.69 2H13.31C15 2 15.13 2.75 15.28 3.67L15.5 4.97M18.85 9.14L18.2 19.21C18.09 20.78 18 22 15.21 22H8.79C6 22 5.91 20.78 5.8 19.21L5.15 9.14M10.33 16.5H13.66M9.5 12.5H14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appointments Section -->
+            <div class="appointments-section">
+              <div class="section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.1601 10.87C12.0601 10.86 11.9401 10.86 11.8301 10.87C9.45006 10.79 7.56006 8.84 7.56006 6.44C7.56006 3.99 9.54006 2 12.0001 2C14.4501 2 16.4401 3.99 16.4401 6.44C16.4301 8.84 14.5401 10.79 12.1601 10.87Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7.15997 14.56C4.73997 16.18 4.73997 18.82 7.15997 20.43C9.90997 22.27 14.42 22.27 17.17 20.43C19.59 18.81 19.59 16.17 17.17 14.56C14.43 12.73 9.91997 12.73 7.15997 14.56Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Appointments
+              </div>
+              
+              <div *ngIf="day.appointments.length > 0" class="appointments-list">
+                <div *ngFor="let appointment of day.appointments" class="appointment-item">
+                  <span class="appointment-time">{{ appointment.time }}</span>
+                  <span class="patient-name">{{ appointment.patientName }}</span>
+                  <button class="cancel-appointment-btn" (click)="deleteAppointment(appointment.appointmentId)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div *ngIf="day.appointments.length === 0" class="no-appointments">
+                No appointments scheduled
+              </div>
+
+              <!-- Slot summary -->
+              <div class="slot-summary">
+                <span class="booked-count">{{ day.bookedSlots }}/{{ day.totalSlots }} slots booked</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day off content -->
+          <div *ngIf="!day.isWorkingDay" class="day-off-content">
+            <p>Day Off</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time Slot Form Modal -->
+  <div *ngIf="editingSlot" class="modal-overlay" (click)="cancelSlotEdit()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ editingSlot?.isNew ? 'Add Time Slot' : 'Edit Time Slot' }}</h3>
+      
+      <form [formGroup]="timeSlotForm" (ngSubmit)="saveTimeSlot()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" formControlName="startTime" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>End Time</label>
+            <input type="time" formControlName="endTime" class="form-control">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Slot Duration (minutes)</label>
+          <select formControlName="slotDuration" class="form-control">
+            <option value="15">15 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+        </div>
+        
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="!availabilityForm.valid">
-            {{ editingId ? 'Update' : 'Create' }} Availability
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="resetForm()">
-            Cancel
+          <button type="button" class="btn btn-secondary" (click)="cancelSlotEdit()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!timeSlotForm.valid">
+            {{ editingSlot?.isNew ? 'Add Slot' : 'Update Slot' }}
           </button>
         </div>
       </form>
-    </div>
-
-    <div class="list-section">
-      <h3>Current Availabilities</h3>
-      <div class="loading" *ngIf="isLoading">Loading...</div>
-      
-      <div class="availability-table" *ngIf="!isLoading">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Practitioner</th>
-              <th>Day</th>
-              <th>Time</th>
-              <th>Slot Duration</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let availability of availabilities">
-              <td>{{ getPractitionerName(availability.practitionerId) }}</td>
-              <td>{{ getDayName(availability.dayOfWeek) }}</td>
-              <td>{{ availability.startTime }} - {{ availability.endTime }}</td>
-              <td>{{ availability.slotDuration }} min</td>
-              <td>
-                <span class="status" [class.active]="availability.isActive" [class.inactive]="!availability.isActive">
-                  {{ availability.isActive ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
-              <td>
-                <button class="btn btn-sm btn-edit" (click)="editAvailability(availability)">
-                  Edit
-                </button>
-                <button class="btn btn-sm btn-danger" (click)="deleteAvailability(availability.id)">
-                  Delete
-                </button>
-                <button class="btn btn-sm btn-generate" (click)="generateTimeSlots(availability.practitionerId)">
-                  Generate Slots
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 </div>

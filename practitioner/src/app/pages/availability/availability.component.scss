@@ -4,6 +4,30 @@
   margin: 0 auto;
 }
 
+.refresh-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+  
+  .refresh-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    min-width: 40px !important;
+    
+    &:hover {
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      transform: scale(1.1);
+    }
+  }
+}
+
 .tab-content {
   padding: 20px 0;
 }
@@ -52,6 +76,85 @@
   th {
     font-weight: 600;
     background-color: #f5f5f5;
+  }
+
+  .actions-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .emoji-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    font-size: 20px;
+    line-height: 1;
+
+    &:hover {
+      transform: scale(1.2);
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &:focus {
+      outline: 2px solid rgba(0, 0, 0, 0.1);
+    }
+
+    &.delete-btn {
+      &:hover {
+        background-color: rgba(244, 67, 54, 0.1);
+      }
+    }
+
+    &.block-btn {
+      &:hover {
+        background-color: rgba(244, 67, 54, 0.1);
+      }
+    }
+
+    &.unblock-btn {
+      &:hover {
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+    }
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+
+  .page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    select {
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background: white;
+    }
+  }
+
+  .pages {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: #555;
   }
 }
 

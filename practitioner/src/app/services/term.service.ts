@@ -41,7 +41,6 @@ export class TermService {
         }
       }),
       catchError(err => {
-        console.error('Failed to fetch latest term:', err);
         return of(undefined);
       })
     );
@@ -72,6 +71,7 @@ export class TermService {
 
 
 }
+
 
 
 

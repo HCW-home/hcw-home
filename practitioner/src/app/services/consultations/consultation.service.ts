@@ -108,7 +108,6 @@ export class ConsultationService {
         recipientType: 'patient'
       }).toPromise();
     } catch (error: any) {
-      console.error('Failed to send message to patient:', error);
       throw error;
     }
   }
@@ -120,7 +119,6 @@ export class ConsultationService {
     try {
       await this.http.post<any>(`${this.baseUrl}/${consultationId}/dismiss-patient`, {}).toPromise();
     } catch (error: any) {
-      console.error('Failed to dismiss patient:', error);
       throw error;
     }
   }
@@ -138,9 +136,6 @@ export class ConsultationService {
     return this.userService.getCurrentUser().pipe(
       switchMap(user => {
         const params = new HttpParams().set('practitionerId', user.id.toString());
-
-        console.log('Creating patient and consultation with data:', formData);
-        console.log('Practitioner ID:', user.id);
 
         return this.http.post<CreatePatientConsultationResponse>(
           `${this.baseUrl}/create-patient-consultation`,
@@ -343,4 +338,5 @@ export class ConsultationService {
     );
   }
 }
+
 

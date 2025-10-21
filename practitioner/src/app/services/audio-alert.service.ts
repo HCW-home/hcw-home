@@ -40,9 +40,7 @@ export class AudioAlertService {
     try {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this._isInitialized = true;
-      console.log('[AudioAlertService] Audio context initialized successfully');
     } catch (error) {
-      console.warn('[AudioAlertService] Audio notification not supported:', error);
     }
   }
 
@@ -61,7 +59,6 @@ export class AudioAlertService {
         const buffer = await this.generateToneBuffer(sound.frequency, sound.duration);
         this.soundBuffers.set(sound.key, buffer);
       } catch (error) {
-        console.error(`[AudioAlertService] Failed to generate ${sound.key} sound:`, error);
       }
     }
   }
@@ -105,7 +102,6 @@ export class AudioAlertService {
           this.sounds.set(type, audioBuffer);
         }
       } catch (error) {
-        console.warn(`Failed to load sound ${type}:`, error);
       }
     }
   }
@@ -135,7 +131,6 @@ export class AudioAlertService {
       source.start(0);
 
     } catch (error) {
-      console.warn('Failed to play notification sound:', error);
     }
   }
 
@@ -165,16 +160,13 @@ export class AudioAlertService {
       oscillator.stop(this.audioContext.currentTime + duration / 1000);
 
     } catch (error) {
-      console.warn('Failed to play beep sound:', error);
     }
   }
 
   async playUrgentAlert(): Promise<void> {
     try {
       await this.playNotificationSound({ type: 'urgent_alert' });
-      console.log('[AudioAlertService] Urgent alert played');
     } catch (error) {
-      console.error('[AudioAlertService] Failed to play urgent alert:', error);
     }
   }
 
@@ -187,27 +179,22 @@ export class AudioAlertService {
           await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
-      console.log(`[AudioAlertService] Multiple patient alert played (${beepCount} beeps)`);
+      // ...existing code...
     } catch (error) {
-      console.error('[AudioAlertService] Failed to play multiple patient alert:', error);
     }
   }
 
   async playPatientJoinedAlert(): Promise<void> {
     try {
       await this.playNotificationSound({ type: 'patient_joined' });
-      console.log('[AudioAlertService] Patient joined alert played');
     } catch (error) {
-      console.error('[AudioAlertService] Failed to play patient joined alert:', error);
     }
   }
 
   async playReminderAlert(): Promise<void> {
     try {
       await this.playNotificationSound({ type: 'reminder' });
-      console.log('[AudioAlertService] Reminder alert played');
     } catch (error) {
-      console.error('[AudioAlertService] Failed to play reminder alert:', error);
     }
   }
 
@@ -216,12 +203,10 @@ export class AudioAlertService {
       // For modern browsers, test by trying to create and play a silent audio
       if (this.audioContext) {
         await this.resumeAudioContext();
-        console.log('[AudioAlertService] Audio permission granted');
         return true;
       }
       return false;
     } catch (error) {
-      console.error('[AudioAlertService] Audio permission denied:', error);
       return false;
     }
   }
@@ -230,9 +215,7 @@ export class AudioAlertService {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       try {
         await this.audioContext.resume();
-        console.log('[AudioAlertService] Audio context resumed');
       } catch (error) {
-        console.warn('[AudioAlertService] Could not resume audio context:', error);
       }
     }
   }
@@ -242,12 +225,10 @@ export class AudioAlertService {
       // For modern browsers, test by trying to create and play a silent audio
       if (this.audioContext) {
         await this.resumeAudioContext();
-        console.log('[AudioAlertService] Audio permission granted');
         return true;
       }
       return false;
     } catch (error) {
-      console.error('[AudioAlertService] Audio permission denied:', error);
       return false;
     }
   }
@@ -256,7 +237,6 @@ export class AudioAlertService {
     this.config = { ...this.config, ...config };
     this.enabled = this.config.enabled;
     this.volume = this.config.volume;
-    console.log('[AudioAlertService] Configuration updated:', this.config);
   }
 
   getConfig(): AudioAlertConfig {
@@ -266,13 +246,11 @@ export class AudioAlertService {
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     this.config.enabled = enabled;
-    console.log(`[AudioAlertService] Audio alerts ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   setVolume(volume: number): void {
     this.volume = Math.max(0, Math.min(1, volume));
     this.config.volume = this.volume;
-    console.log(`[AudioAlertService] Volume set to ${this.config.volume}`);
   }
 
   async testAudio(): Promise<boolean> {
@@ -280,7 +258,6 @@ export class AudioAlertService {
       await this.playBeep(800, 200);
       return true;
     } catch (error) {
-      console.error('[AudioAlertService] Audio test failed:', error);
       return false;
     }
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, ReplaySubject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../environments/environment';
 import { API_ENDPOINTS } from '../constants/api-endpoints';
@@ -146,7 +146,6 @@ export class PractitionerConsultationRoomService {
       ).toPromise();
       return response as { magicLink: string; token: string; expiresAt: string };
     } catch (error) {
-      console.error('[PractitionerConsultationRoomService] Failed to generate magic link:', error);
       throw new Error('Failed to generate magic link');
     }
   }
@@ -198,7 +197,11 @@ export class PractitionerConsultationRoomService {
     }
   });
 
-  private chatMessagesSubject = new BehaviorSubject<ChatMessage[]>([]);
+  // Chat state - Using ReplaySubject to ensure late subscribers get last messages even after initial emission
+  private chatMessagesSubject = new ReplaySubject<ChatMessage[]>(1);
+  private currentChatMessages: ChatMessage[] = []; // Cache for current messages
+  private hasMoreMessages: boolean = true; // Pagination: more messages available
+  private messagesOffset: number = 0; // Pagination: current offset
   private participantsSubject = new BehaviorSubject<ConsultationParticipant[]>([]);
 
 
@@ -314,28 +317,29 @@ export class PractitionerConsultationRoomService {
   async initializePractitionerConsultationRoom(consultationId: number, practitionerId: number): Promise<void> {
     this.consultationId = consultationId;
     try {
-      console.log(`[PractitionerConsultationRoomService] Initializing consultation room: ${consultationId}`);
-
       // Update consultation ID in state
       this.updateConsultationState({ consultationId });
 
       // Join consultation as practitioner via backend API
       const joinResponse = await this.joinConsultationAsPractitioner(consultationId, practitionerId);
 
-      if (joinResponse && joinResponse.success) {
-        await this.initializeWebSocketConnections(consultationId, practitionerId);
-
-        this.loadInitialConsultationData(joinResponse);
-
-        // Setup media devices
-        await this.initializeMediaDevices();
-
-        console.log(`[PractitionerConsultationRoomService] Consultation room initialized successfully`);
-      } else {
-        throw new Error('Failed to join consultation as practitioner');
+      // Check if response is valid - backend returns { success: true, ... } or just the data
+      if (!joinResponse) {
+        throw new Error('No response received from backend');
       }
-    } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to initialize consultation room:`, error);
+
+      // Initialize WebSocket connections
+      await this.initializeWebSocketConnections(consultationId, practitionerId);
+
+      // Load initial consultation data
+      this.loadInitialConsultationData(joinResponse);
+
+      // Setup media devices (non-blocking)
+      this.initializeMediaDevices().catch(err => {
+        // Don't fail the whole initialization if media setup fails
+      });
+
+    } catch (error: any) {
       this.updateConsultationState({ sessionStatus: 'error' });
       throw error;
     }
@@ -352,11 +356,11 @@ export class PractitionerConsultationRoomService {
         })
       );
 
-      console.log(`[PractitionerConsultationRoomService] Join response:`, response);
       return response;
-    } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to join consultation:`, error);
-      throw error;
+    } catch (error: any) {
+      // Re-throw with more context
+      const errorMessage = error?.error?.message || error?.message || 'Failed to join consultation';
+      throw new Error(`Failed to join consultation as practitioner: ${errorMessage}`);
     }
   }
 
@@ -366,10 +370,9 @@ export class PractitionerConsultationRoomService {
   private async initializeWebSocketConnections(consultationId: number, practitionerId: number): Promise<void> {
     try {
       const wsBaseUrl = environment.socketUrl || environment.wsUrl || environment.baseUrl;
-
       // Enhanced connection options for better reliability
       const socketOptions = {
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'], // Allow polling as fallback
         timeout: 20000,
         forceNew: true,
         reconnection: true,
@@ -404,7 +407,7 @@ export class PractitionerConsultationRoomService {
         ...socketOptions,
         query: {
           userId: practitionerId,
-          userRole: 'PRACTITIONER',
+          role: 'PRACTITIONER',
           consultationId: consultationId,
           joinType: 'dashboard'
         }
@@ -418,33 +421,27 @@ export class PractitionerConsultationRoomService {
       this.setupMediaSoupEventListeners();
       this.setupChatEventListeners();
 
-      // Wait for all connections to establish
+      // Wait for all connections to establish (with timeout)
       await this.waitForConnections();
 
       // Join consultation room - using correct events that exist in backend
       this.consultationSocket.emit('join_media_session', {
         consultationId,
         userId: practitionerId,
-        userRole: 'PRACTITIONER'
+        role: 'PRACTITIONER'
       });
 
       // The mediasoup events are handled through the consultation gateway
       // Chat is auto-joined when connecting to the chat namespace
 
-      // Wait for successful connection responses
-      this.consultationSocket.on('media_join_response', (response) => {
-        console.log(`[PractitionerConsultationRoomService] Media join response:`, response);
-        if (response.success) {
-          this.updateConsultationState({ isConnected: true });
-        } else {
-          throw new Error(`Failed to join media session: ${response.error}`);
-        }
+    } catch (error: any) {
+      // Don't throw here - allow the app to continue with degraded functionality
+      this.addNotification({
+        type: 'warning',
+        title: '⚠️ Connection Warning',
+        message: 'Some real-time features may be limited. Refreshing the page may help.',
+        duration: 8000
       });
-
-      console.log(`[PractitionerConsultationRoomService] All WebSocket connections initialized successfully`);
-    } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to initialize WebSocket connections:`, error);
-      throw error;
     }
   }
 
@@ -588,7 +585,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('patient_admission_confirmed', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Patient admission confirmed:`, data);
       // Practitioner receives confirmation that patient was successfully admitted
       this.patientAdmittedSubject.next({
         ...data,
@@ -598,7 +594,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('consultation_status', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Consultation status update:`, data);
       if (data.status === 'ACTIVE') {
         this.updateConsultationState({
           sessionStatus: 'active',
@@ -608,7 +603,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('media_session_live', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Media session live:`, data);
       this.updateMediaSessionState({
         canJoinMedia: true,
         mediaInitialized: true
@@ -617,7 +611,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('redirect_to_consultation_room', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Redirect to consultation room:`, data);
       // This can be used to ensure all participants are in sync
       this.updateConsultationState({
         sessionStatus: 'active'
@@ -625,7 +618,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('transition_to_consultation_room', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Transition to consultation room:`, data);
       this.updateConsultationState({
         sessionStatus: 'active',
         participantCount: data.participantIds?.length || 1
@@ -659,7 +651,6 @@ export class PractitionerConsultationRoomService {
 
 
     this.consultationSocket.on('consultation_activated', (data) => {
-      console.log(`[PractitionerConsultationRoomService] Consultation activated:`, data);
       this.updateConsultationState({
         sessionStatus: 'active',
         consultationStartTime: new Date(),
@@ -684,13 +675,11 @@ export class PractitionerConsultationRoomService {
 
     this.consultationSocket.on('consultation_activated_response', (data) => {
       if (data.success) {
-        console.log(`[PractitionerConsultationRoomService] Consultation activation successful`);
         this.updateConsultationState({
           sessionStatus: 'active',
           isConnected: true
         });
       } else {
-        console.error(`[PractitionerConsultationRoomService] Consultation activation failed:`, data.error);
         this.addNotification({
           type: 'error',
           title: 'Activation Failed',
@@ -860,14 +849,14 @@ export class PractitionerConsultationRoomService {
         this.addNotification({
           type: 'success',
           title: '🎉 Participant Joined',
-          message: `A ${data.userRole.toLowerCase()} has joined the live consultation`,
+          message: `A ${data.role?.toLowerCase?.() || data.userRole?.toLowerCase?.() || 'participant'} has joined the live consultation`,
           duration: 4000
         });
 
         this.addEvent({
           type: 'participant_joined',
           title: 'Live Participant Joined',
-          description: `${data.userRole} joined the live consultation`,
+          description: `${data.role || data.userRole || 'Participant'} joined the live consultation`,
           severity: 'success',
           data
         });
@@ -881,8 +870,6 @@ export class PractitionerConsultationRoomService {
 
     // Handle practitioner joined events (when practitioner joins)
     this.consultationSocket.on('practitioner_joined', (data) => {
-      console.log('Practitioner joined consultation:', data);
-
       // Update consultation state to active
       this.updateConsultationState({
         sessionStatus: 'active',
@@ -909,7 +896,6 @@ export class PractitionerConsultationRoomService {
 
     // Handle session timeout warnings
     this.consultationSocket.on('practitioner_session_warning', (data) => {
-      console.log('Session timeout warning:', data);
       this.addNotification({
         type: 'warning',
         title: 'Session Warning',
@@ -920,7 +906,6 @@ export class PractitionerConsultationRoomService {
 
     // Handle session cleanup
     this.consultationSocket.on('practitioner_session_cleanup', (data) => {
-      console.log('Session cleanup initiated:', data);
       this.addNotification({
         type: 'error',
         title: 'Session Timeout',
@@ -974,8 +959,6 @@ export class PractitionerConsultationRoomService {
 
     // Media state synchronization events
     this.consultationSocket.on('participant_video_toggled', (data) => {
-      console.log('Participant video toggled:', data);
-
       const userName = data.userId ? `User ${data.userId}` : 'A participant';
       const videoStatus = data.enabled ? 'enabled' : 'disabled';
 
@@ -996,8 +979,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('participant_audio_toggled', (data) => {
-      console.log('Participant audio toggled:', data);
-
       const userName = data.userId ? `User ${data.userId}` : 'A participant';
       const audioStatus = data.enabled ? 'unmuted' : 'muted';
 
@@ -1018,8 +999,6 @@ export class PractitionerConsultationRoomService {
     });
 
     this.consultationSocket.on('connection_quality_updated', (data) => {
-      console.log('Connection quality updated:', data);
-
       const userName = data.userId ? `User ${data.userId}` : 'A participant';
       const qualityEmojis: Record<string, string> = {
         excellent: '🟢',
@@ -1198,25 +1177,60 @@ export class PractitionerConsultationRoomService {
   private setupChatEventListeners(): void {
     if (!this.chatSocket) return;
 
+    // Listen for message history - backend sends this on connection
     this.chatSocket.on('message_history', (data) => {
-      const messages = data.messages?.map((msg: any) => ({
-        id: msg.id,
-        userId: msg.userId,
-        content: msg.content,
-        createdAt: msg.createdAt,
-        messageType: msg.messageType || 'TEXT',
-        fileName: msg.fileName,
-        fileSize: msg.fileSize,
-        filePath: msg.filePath,
-        userName: msg.userName || 'Unknown',
-        isFromPractitioner: msg.role === 'PRACTITIONER',
-        readBy: msg.readBy || []
+      console.log('🔍 [Chat History] Received message_history event:', data);
+      console.log('🔍 [Chat History] Number of messages:', data.messages?.length);
+      console.log('🔍 [Chat History] Has more messages:', data.hasMore);
 
-      })) || [];
+      // Diagnostic: Log raw messages
+      if (!data.messages || !Array.isArray(data.messages)) {
+        console.warn('⚠️ [Chat History] No messages or invalid format');
+        this.chatMessagesSubject.next([]);
+        return;
+      }
 
+      const messages = data.messages.map((msg: any) => {
+        console.log('🔍 [Chat History] Processing message:', msg.id, msg.content?.substring(0, 30), 'from user', msg.userId, 'role:', msg.user?.role);
+
+        return {
+          id: msg.id,
+          userId: msg.userId,
+          content: msg.content,
+          createdAt: msg.createdAt,
+          messageType: msg.messageType || 'TEXT',
+          fileName: msg.fileName,
+          fileSize: msg.fileSize,
+          filePath: msg.filePath || msg.mediaUrl,
+          mediaUrl: msg.mediaUrl,
+          userName: msg.userName || msg.user?.firstName || 'Unknown',
+          isFromPractitioner: msg.user?.role === 'PRACTITIONER' || msg.isFromPractitioner,
+          readBy: msg.readBy || msg.readReceipts || [],
+          consultationId: msg.consultationId || this.consultationId || 0,
+
+          senderId: msg.userId || 0,
+          senderName: msg.userName || msg.user?.firstName || 'Unknown',
+          timestamp: msg.createdAt || new Date().toISOString(),
+          deliveryStatus: (msg.readBy && msg.readBy.length > 0) ? 'read' : 'sent'
+        };
+      });
+
+      console.log('🔍 [Chat History] Processed messages:', messages.length);
+      console.log('🔍 [Chat History] Sample messages:', messages.slice(0, 3));
+
+      this.currentChatMessages = messages;
       this.chatMessagesSubject.next(messages);
+      this.hasMoreMessages = data.hasMore || false;
+      this.messagesOffset = messages.length;
 
       if (messages.length > 0) {
+        this.addNotification({
+          type: 'success',
+          title: '💬 Chat History Loaded',
+          message: `${messages.length} previous ${messages.length === 1 ? 'message' : 'messages'} loaded`,
+          duration: 3000
+        });
+
         this.addEvent({
           type: 'message_received',
           title: 'Chat History Loaded',
@@ -1227,32 +1241,108 @@ export class PractitionerConsultationRoomService {
       }
     });
 
+    // Listen for additional messages loaded (pagination)
+    this.chatSocket.on('more_messages_loaded', (data) => {
+      console.log('🔍 [Load More] Received more_messages_loaded event:', data);
+      console.log('🔍 [Load More] Number of additional messages:', data.messages?.length);
+
+      if (!data.messages || !Array.isArray(data.messages)) {
+        console.warn('⚠️ [Load More] No messages or invalid format');
+        return;
+      }
+
+      const newMessages = data.messages.map((msg: any) => ({
+        id: msg.id,
+        userId: msg.userId,
+        content: msg.content,
+        createdAt: msg.createdAt,
+        messageType: msg.messageType || 'TEXT',
+        fileName: msg.fileName,
+        fileSize: msg.fileSize,
+        filePath: msg.filePath || msg.mediaUrl,
+        mediaUrl: msg.mediaUrl,
+        userName: msg.userName || msg.user?.firstName || 'Unknown',
+        isFromPractitioner: msg.user?.role === 'PRACTITIONER' || msg.isFromPractitioner,
+        readBy: msg.readBy || msg.readReceipts || [],
+        consultationId: msg.consultationId || this.consultationId || 0,
+        senderId: msg.userId || 0,
+        senderName: msg.userName || msg.user?.firstName || 'Unknown',
+        timestamp: msg.createdAt || new Date().toISOString(),
+        deliveryStatus: (msg.readBy && msg.readBy.length > 0) ? 'read' : 'sent'
+      }));
+
+      // Prepend older messages to the beginning
+      const updatedMessages = [...newMessages, ...this.currentChatMessages];
+      this.currentChatMessages = updatedMessages;
+      this.chatMessagesSubject.next(updatedMessages);
+      this.hasMoreMessages = data.hasMore || false;
+      this.messagesOffset = updatedMessages.length;
+
+      this.addNotification({
+        type: 'info',
+        title: '📜 Older Messages Loaded',
+        message: `${newMessages.length} older ${newMessages.length === 1 ? 'message' : 'messages'} loaded`,
+        duration: 2000
+      });
+    });
+
+    // Handle load more messages errors
+    this.chatSocket.on('load_more_messages_error', (data) => {
+      this.addNotification({
+        type: 'error',
+        title: '❌ Failed to Load More Messages',
+        message: data.error || 'Could not load older messages',
+        duration: 5000
+      });
+    });
+
+    // Handle message history errors
+    this.chatSocket.on('message_history_error', (data) => {
+      this.addNotification({
+        type: 'error',
+        title: '❌ Failed to Load Chat History',
+        message: data.error || 'Could not load previous messages',
+        duration: 5000
+      });
+    });
+
     this.chatSocket.on('new_message', (data) => {
-      const currentMessages = this.chatMessagesSubject.value;
-      const deliveryStatus = (data.readBy && data.readBy.length > 0)
-        ? (data.readBy.length >= (this.participantsSubject.value.length - 1) ? 'read' : 'sent')
+      console.log('🔍 [New Message] Received new_message event:', data);
+
+      const currentMessages = this.currentChatMessages;
+      const messageData = data.message || data; // Handle both response formats
+
+      console.log('🔍 [New Message] Message data:', messageData);
+      console.log('🔍 [New Message] User info:', messageData.user);
+
+      const deliveryStatus = (messageData.readBy && messageData.readBy.length > 0)
+        ? (messageData.readBy.length >= (this.participantsSubject.value.length - 1) ? 'read' : 'sent')
         : 'sent';
       const newMessage: ChatMessage = {
-        id: data.id,
-        consultationId: data.consultationId ?? this.consultationId ?? 0,
-        userId: data.userId ?? data.senderId ?? 0,
-        senderId: data.senderId || 0,
-        senderName: data.senderName || 'Unknown',
-        timestamp: data.timestamp || new Date().toISOString(),
-        content: data.content,
-        messageType: data.messageType,
-        fileName: data.fileName,
-        fileSize: data.fileSize,
-        filePath: data.filePath,
-        userName: data.userName,
-        isFromPractitioner: data.isFromPractitioner || false,
-        readBy: data.readBy || [],
-        createdAt: data.createdAt || new Date().toISOString(),
+        id: messageData.id,
+        consultationId: messageData.consultationId ?? this.consultationId ?? 0,
+        userId: messageData.userId ?? messageData.senderId ?? 0,
+        senderId: messageData.senderId || 0,
+        senderName: messageData.senderName || 'Unknown',
+        timestamp: messageData.timestamp || new Date().toISOString(),
+        content: messageData.content,
+        messageType: messageData.messageType || 'TEXT',
+        fileName: messageData.fileName,
+        fileSize: messageData.fileSize,
+        filePath: messageData.filePath,
+        userName: messageData.userName || messageData.user?.firstName || 'Unknown',
+        isFromPractitioner: messageData.isFromPractitioner || messageData.user?.role === 'PRACTITIONER' || false,
+        readBy: messageData.readBy || messageData.readReceipts || [],
+        createdAt: messageData.createdAt || new Date().toISOString(),
         deliveryStatus,
       };
 
+      console.log('🔍 [New Message] Processed message:', newMessage);
+      console.log('🔍 [New Message] Total messages (before add):', currentMessages.length);
+
       this.chatMessagesSubject.next([...currentMessages, newMessage]);
 
+      console.log('🔍 [New Message] Total messages (after add):', this.currentChatMessages.length);
       // Only notify for messages from others, not our own
       if (!newMessage.isFromPractitioner) {
         this.addNotification({
@@ -1279,6 +1369,21 @@ export class PractitionerConsultationRoomService {
 
     this.chatSocket.on('connect', () => {
       this.updateConnectionStatus('chat', true);
+
+      // EXPLICITLY REQUEST MESSAGE HISTORY ON CONNECT/RECONNECT
+      // Backend already sends message_history on connection, but we request again
+      // to ensure we get the latest messages (e.g., after reconnection)
+      if (this.consultationId && this.chatSocket) {
+        setTimeout(() => {
+          if (this.chatSocket) {
+            this.chatSocket.emit('request_message_history', {
+              consultationId: this.consultationId,
+              limit: 100,
+              offset: 0
+            });
+          }
+        }, 500); // Small delay to ensure listeners are set up
+      }
 
       this.addNotification({
         type: 'success',
@@ -1326,13 +1431,12 @@ export class PractitionerConsultationRoomService {
             userId: data.userId,
             userName: data.userName || 'Unknown',
             isTyping: true,
-            messageType: 'user', // or 'system' if appropriate
+            messageType: 'user',
           }];
         } else {
           updatedTyping = currentTyping;
         }
       } else {
-        // Remove user from typing list
         updatedTyping = currentTyping.filter(user => user.userId !== data.userId);
       }
 
@@ -1340,8 +1444,8 @@ export class PractitionerConsultationRoomService {
     });
 
     this.chatSocket.on('message_read', (data) => {
-      const currentMessages = this.chatMessagesSubject.value;
-      const updatedMessages = currentMessages.map(message => {
+      const currentMessages = this.currentChatMessages;
+      const updatedMessages = currentMessages.map((message: ChatMessage) => {
         if (message.id === data.messageId) {
           return {
             ...message,
@@ -1354,6 +1458,7 @@ export class PractitionerConsultationRoomService {
         return message;
       });
 
+      this.currentChatMessages = updatedMessages;
       this.chatMessagesSubject.next(updatedMessages);
     });
 
@@ -1362,6 +1467,28 @@ export class PractitionerConsultationRoomService {
       if (typeof data.percent === 'number') {
         this.fileUploadProgressSubject.next(data.percent);
       }
+    });
+
+    // Add error handling for chat messages
+    this.chatSocket.on('message_error', (error) => {
+      this.addNotification({
+        type: 'error',
+        title: '❌ Message Failed',
+        message: error.error || 'Failed to send message. Please try again.',
+        duration: 5000
+      });
+
+      this.addEvent({
+        type: 'consultation_status_changed',
+        title: 'Message Send Failed',
+        description: error.error || 'Failed to send message',
+        severity: 'error',
+        data: error
+      });
+    });
+
+    // Add error handling for read receipts
+    this.chatSocket.on('read_receipt_error', (error) => {
     });
 
     this.chatSocket.on('file_upload_error', (data) => {
@@ -1375,56 +1502,80 @@ export class PractitionerConsultationRoomService {
    * Load initial consultation data from join response
    */
   private loadInitialConsultationData(joinResponse: any): void {
-    const data = joinResponse.data || joinResponse;
+    try {
+      // Handle different response structures
+      const data = joinResponse.data || joinResponse;
 
-    // Update consultation state
-    this.updateConsultationState({
-      sessionStatus: data.status?.toLowerCase() || 'active',
-      consultationStartTime: new Date()
-    });
-
-    // Update media session state
-    if (data.mediasoup) {
-      this.updateMediaSessionState({
-        routerId: data.mediasoup.routerId,
-        canJoinMedia: data.mediasoup.active || false
+      // Update consultation state
+      this.updateConsultationState({
+        sessionStatus: 'active',
+        consultationStartTime: new Date(),
+        isConnected: true
       });
-    }
 
-    // Load participants
-    if (data.participants) {
-      const participants = data.participants.map((p: any) => ({
-        id: p.id,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        role: p.role,
-        isActive: p.isActive,
-        inWaitingRoom: p.inWaitingRoom || false,
-        joinedAt: p.joinedAt
-      }));
-      this.participantsSubject.next(participants);
-
-      const patient = participants.find((p: any) => p.role === 'PATIENT');
-      if (patient && patient.isActive) {
-        this.updateConsultationState({
-          patientPresent: true,
-          patientName: `${patient.firstName} ${patient.lastName}`.trim(),
-          participantCount: participants.filter((p: any) => p.isActive).length
+      // Update media session state
+      if (data.mediasoup) {
+        this.updateMediaSessionState({
+          routerId: data.mediasoup.routerId,
+          rtpCapabilities: data.mediasoup.rtpCapabilities,
+          canJoinMedia: data.mediasoup.active || true,
+          mediaInitialized: true
         });
       }
-    }
 
-    if (data.messages) {
-      const messages = data.messages.map((msg: any) => ({
-        id: msg.id,
-        userId: msg.userId,
-        content: msg.content,
-        createdAt: msg.createdAt,
-        messageType: 'user',
-        userName: msg.userName || 'Unknown',
-        isFromPractitioner: msg.role === 'PRACTITIONER'
-      }));
-      this.chatMessagesSubject.next(messages);
+      // Load participants
+      if (data.participants && Array.isArray(data.participants)) {
+        const participants = data.participants.map((p: any) => ({
+          id: p.id || p.userId,
+          firstName: p.firstName || p.user?.firstName || '',
+          lastName: p.lastName || p.user?.lastName || '',
+          role: p.role || 'GUEST',
+          isActive: p.isActive !== undefined ? p.isActive : true,
+          inWaitingRoom: p.inWaitingRoom || false,
+          joinedAt: p.joinedAt
+        }));
+        this.participantsSubject.next(participants);
+
+        // Check for patient presence
+        const patient = participants.find((p: any) => p.role === 'PATIENT');
+        if (patient && patient.isActive) {
+          this.updateConsultationState({
+            patientPresent: true,
+            patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+            participantCount: participants.filter((p: any) => p.isActive).length
+          });
+        }
+      }
+
+      // Load messages
+      if (data.messages && Array.isArray(data.messages)) {
+        const messages = data.messages.map((msg: any) => ({
+          id: msg.id,
+          consultationId: this.consultationId,
+          userId: msg.userId || msg.senderId,
+          senderId: msg.senderId || msg.userId,
+          senderName: msg.senderName || msg.userName || 'Unknown',
+          timestamp: msg.timestamp || msg.createdAt || new Date().toISOString(),
+          content: msg.content,
+          messageType: msg.messageType || 'text',
+          userName: msg.userName || msg.senderName || 'Unknown',
+          isFromPractitioner: msg.role === 'PRACTITIONER' || msg.isFromPractitioner,
+          readBy: msg.readBy || [],
+          createdAt: msg.createdAt || msg.timestamp
+        }));
+        this.chatMessagesSubject.next(messages);
+      }
+
+      // Add success notification
+      this.addNotification({
+        type: 'success',
+        title: '✅ Consultation Ready',
+        message: 'Consultation room is now active and ready for communication',
+        duration: 3000
+      });
+
+    } catch (error: any) {
+      // Don't throw - allow the consultation to continue with default state
     }
   }
 
@@ -1434,7 +1585,6 @@ export class PractitionerConsultationRoomService {
   private setupConnectionMonitoring(): void {
     const monitorConnection = (socket: Socket, name: string) => {
       socket.on('connect', () => {
-        console.log(`[${name}] Connected successfully`);
         this.updateConnectionStatus(name.toLowerCase() as any, true);
 
         this.addNotification({
@@ -1446,7 +1596,6 @@ export class PractitionerConsultationRoomService {
       });
 
       socket.on('disconnect', (reason) => {
-        console.warn(`[${name}] Disconnected:`, reason);
         this.updateConnectionStatus(name.toLowerCase() as any, false);
 
         if (reason !== 'io client disconnect') {
@@ -1460,7 +1609,6 @@ export class PractitionerConsultationRoomService {
       });
 
       socket.on('reconnect', (attemptNumber) => {
-        console.log(`[${name}] Reconnected after ${attemptNumber} attempts`);
         this.updateConnectionStatus(name.toLowerCase() as any, true);
 
         this.addNotification({
@@ -1472,15 +1620,12 @@ export class PractitionerConsultationRoomService {
       });
 
       socket.on('reconnect_attempt', (attemptNumber) => {
-        console.log(`[${name}] Reconnection attempt ${attemptNumber}`);
       });
 
       socket.on('reconnect_error', (error) => {
-        console.error(`[${name}] Reconnection error:`, error);
       });
 
       socket.on('reconnect_failed', () => {
-        console.error(`[${name}] Reconnection failed`);
         this.addNotification({
           type: 'error',
           title: `❌ ${name} Connection Failed`,
@@ -1490,7 +1635,6 @@ export class PractitionerConsultationRoomService {
       });
 
       socket.on('connect_error', (error) => {
-        console.error(`[${name}] Connection error:`, error);
         this.updateConnectionStatus(name.toLowerCase() as any, false);
       });
     };
@@ -1518,9 +1662,27 @@ export class PractitionerConsultationRoomService {
           if (this.consultationSocket!.connected) {
             resolve();
           } else {
-            this.consultationSocket!.once('connect', resolve);
-            this.consultationSocket!.once('connect_error', reject);
-            setTimeout(() => reject(new Error('Consultation connection timeout')), 10000);
+            const connectHandler = () => {
+              cleanup();
+              resolve();
+            };
+            const errorHandler = (error: any) => {
+              cleanup();
+              reject(new Error('Consultation connection error'));
+            };
+            const timeoutId = setTimeout(() => {
+              cleanup();
+              reject(new Error('Consultation connection timeout'));
+            }, 10000);
+
+            const cleanup = () => {
+              this.consultationSocket!.off('connect', connectHandler);
+              this.consultationSocket!.off('connect_error', errorHandler);
+              clearTimeout(timeoutId);
+            };
+
+            this.consultationSocket!.once('connect', connectHandler);
+            this.consultationSocket!.once('connect_error', errorHandler);
           }
         })
       );
@@ -1532,9 +1694,27 @@ export class PractitionerConsultationRoomService {
           if (this.mediasoupSocket!.connected) {
             resolve();
           } else {
-            this.mediasoupSocket!.once('connect', resolve);
-            this.mediasoupSocket!.once('connect_error', reject);
-            setTimeout(() => reject(new Error('Media connection timeout')), 10000);
+            const connectHandler = () => {
+              cleanup();
+              resolve();
+            };
+            const errorHandler = (error: any) => {
+              cleanup();
+              reject(new Error('Media connection error'));
+            };
+            const timeoutId = setTimeout(() => {
+              cleanup();
+              reject(new Error('Media connection timeout'));
+            }, 10000);
+
+            const cleanup = () => {
+              this.mediasoupSocket!.off('connect', connectHandler);
+              this.mediasoupSocket!.off('connect_error', errorHandler);
+              clearTimeout(timeoutId);
+            };
+
+            this.mediasoupSocket!.once('connect', connectHandler);
+            this.mediasoupSocket!.once('connect_error', errorHandler);
           }
         })
       );
@@ -1546,9 +1726,27 @@ export class PractitionerConsultationRoomService {
           if (this.chatSocket!.connected) {
             resolve();
           } else {
-            this.chatSocket!.once('connect', resolve);
-            this.chatSocket!.once('connect_error', reject);
-            setTimeout(() => reject(new Error('Chat connection timeout')), 10000);
+            const connectHandler = () => {
+              cleanup();
+              resolve();
+            };
+            const errorHandler = (error: any) => {
+              cleanup();
+              reject(new Error('Chat connection error'));
+            };
+            const timeoutId = setTimeout(() => {
+              cleanup();
+              reject(new Error('Chat connection timeout'));
+            }, 10000);
+
+            const cleanup = () => {
+              this.chatSocket!.off('connect', connectHandler);
+              this.chatSocket!.off('connect_error', errorHandler);
+              clearTimeout(timeoutId);
+            };
+
+            this.chatSocket!.once('connect', connectHandler);
+            this.chatSocket!.once('connect_error', errorHandler);
           }
         })
       );
@@ -1556,10 +1754,8 @@ export class PractitionerConsultationRoomService {
 
     try {
       await Promise.all(connectPromises);
-      console.log('[PractitionerConsultationRoomService] All WebSocket connections established');
-    } catch (error) {
-      console.error('[PractitionerConsultationRoomService] Failed to establish all connections:', error);
-      throw error;
+    } catch (error: any) {
+      // Don't throw - allow partial connectivity
     }
   }
 
@@ -1588,13 +1784,7 @@ export class PractitionerConsultationRoomService {
       // Setup connection quality monitoring
       this.setupConnectionQualityMonitoring();
 
-      console.log(`[PractitionerConsultationRoomService] Media devices initialized:`, {
-        cameras: cameras.length,
-        microphones: microphones.length,
-        speakers: speakers.length
-      });
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to initialize media devices:`, error);
     }
   }
 
@@ -1603,6 +1793,7 @@ export class PractitionerConsultationRoomService {
    */
   private async requestInitialMediaAccess(): Promise<void> {
     try {
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 1280, height: 720, frameRate: 30 },
         audio: {
@@ -1615,6 +1806,18 @@ export class PractitionerConsultationRoomService {
 
       // Store stream for later use
       this.localMediaStream = stream;
+
+      // Enumerate available devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter(device => device.kind === 'videoinput');
+      const microphones = devices.filter(device => device.kind === 'audioinput');
+      const speakers = devices.filter(device => device.kind === 'audiooutput');
+
+      this.updateMediaSessionState({
+        devices: { cameras, microphones, speakers },
+        mediaInitialized: true,
+        connectionQuality: 'good'
+      });
 
       // Update media status
       this.updateConsultationState({
@@ -1633,20 +1836,29 @@ export class PractitionerConsultationRoomService {
       });
 
       // Emit media ready event to backend
-      if (this.mediasoupSocket) {
+      if (this.mediasoupSocket && this.mediasoupSocket.connected) {
         this.mediasoupSocket.emit('media_ready', {
           consultationId: this.consultationId,
           hasVideo: true,
           hasAudio: true
         });
+      } else {
       }
 
-    } catch (error) {
-      console.error('Failed to get initial media access:', error);
+    } catch (error: any) {
+      let errorMessage = 'Please allow camera and microphone access for video calls';
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Camera/microphone access denied. Please grant permissions.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No camera or microphone found on this device.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       this.addNotification({
         type: 'warning',
         title: '⚠️ Media Access Required',
-        message: 'Please allow camera and microphone access for video calls',
+        message: errorMessage,
         duration: 5000,
         actions: [{
           label: 'Grant Access',
@@ -1654,6 +1866,8 @@ export class PractitionerConsultationRoomService {
           style: 'primary'
         }]
       });
+
+      throw error;
     }
   }
 
@@ -1756,7 +1970,6 @@ export class PractitionerConsultationRoomService {
 
     } catch (error) {
       this.updateMediaSessionState({ connectionQuality: 'disconnected' });
-      console.warn('Connection quality check failed:', error);
     }
   }
 
@@ -1779,10 +1992,7 @@ export class PractitionerConsultationRoomService {
         patientId
       }).toPromise();
 
-      console.log(`[PractitionerConsultationRoomService] Patient admission request sent`, response);
-
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to admit patient:`, error);
       throw error;
     }
   }
@@ -1792,27 +2002,121 @@ export class PractitionerConsultationRoomService {
    */
   async sendMessage(content: string, practitionerId: number): Promise<void> {
     try {
-      if (!this.chatSocket) {
-        throw new Error('Chat socket not connected');
-      }
-
       const consultationId = this.consultationStateSubject.value.consultationId;
 
+      // Validate consultation ID first
+      if (!consultationId || consultationId === 0) {
+        const errorMsg = 'Invalid consultation ID. Cannot send message.';
+        throw new Error(errorMsg);
+      }
+
+      // If chat socket doesn't exist, try to initialize it
+      if (!this.chatSocket) {
+        try {
+          const wsBaseUrl = environment.socketUrl || environment.wsUrl || environment.baseUrl;
+
+          this.chatSocket = io(`${wsBaseUrl}/chat`, {
+            transports: ['websocket', 'polling'],
+            timeout: 20000,
+            forceNew: false,
+            reconnection: true,
+            query: {
+              userId: practitionerId,
+              role: 'PRACTITIONER',
+              consultationId: consultationId
+            }
+          });
+
+          // Setup chat event listeners
+          this.setupChatEventListeners();
+
+          // Wait for connection
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Chat socket connection timeout'));
+            }, 5000);
+
+            if (this.chatSocket!.connected) {
+              clearTimeout(timeout);
+              resolve(undefined);
+            } else {
+              this.chatSocket!.once('connect', () => {
+                clearTimeout(timeout);
+                resolve(undefined);
+              });
+              this.chatSocket!.once('connect_error', (err: any) => {
+                clearTimeout(timeout);
+                reject(err);
+              });
+            }
+          });
+
+        } catch (initError: any) {
+          throw new Error('Failed to initialize chat connection. Please refresh the page.');
+        }
+      }
+
+      // If socket exists but not connected, try to connect
+      if (!this.chatSocket.connected) {
+        this.chatSocket.connect();
+
+        // Wait for connection
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Connection timeout'));
+          }, 3000);
+
+          if (this.chatSocket!.connected) {
+            clearTimeout(timeout);
+            resolve(undefined);
+          } else {
+            this.chatSocket!.once('connect', () => {
+              clearTimeout(timeout);
+              resolve(undefined);
+            });
+            this.chatSocket!.once('connect_error', (err: any) => {
+              clearTimeout(timeout);
+              reject(err);
+            });
+          }
+        });
+
+      }
+
+      // Emit the message to the chat socket
       this.chatSocket.emit('send_message', {
         consultationId,
         userId: practitionerId,
         content,
-        role: 'PRACTITIONER'
+        role: 'PRACTITIONER',
+        messageType: 'TEXT'
       });
 
-      console.log(`[PractitionerConsultationRoomService] Message sent:`, content);
-    } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to send message:`, error);
+      // Add message optimistically to local state
+      const optimisticMessage: ChatMessage = {
+        id: Date.now(), // Temporary ID
+        consultationId,
+        userId: practitionerId,
+        senderId: practitionerId,
+        senderName: 'You',
+        timestamp: new Date().toISOString(),
+        content,
+        messageType: 'text',
+        userName: 'You',
+        isFromPractitioner: true,
+        readBy: [],
+        createdAt: new Date().toISOString(),
+        deliveryStatus: 'pending'
+      };
+
+      const currentMessages = this.currentChatMessages;
+      this.currentChatMessages = [...currentMessages, optimisticMessage];
+      this.chatMessagesSubject.next(this.currentChatMessages);
+
+    } catch (error: any) {
       throw error;
     }
-  }
-
-  /**
+  }  /**
    * Send file message
    */
   async sendFileMessage(file: File, practitionerId: number): Promise<void> {
@@ -1837,7 +2141,6 @@ export class PractitionerConsultationRoomService {
 
       xhr.onload = () => {
         if (xhr.status === 200) {
-          console.log(`[PractitionerConsultationRoomService] File sent:`, xhr.responseText);
         } else {
           // Emit error event for UI
           this.chatSocket?.emit('file_upload_error', { error: xhr.statusText });
@@ -1854,7 +2157,6 @@ export class PractitionerConsultationRoomService {
       if (typeof error === 'string') errorMsg = error;
       else if (error instanceof Error) errorMsg = error.message;
       this.chatSocket?.emit('file_upload_error', { error: errorMsg });
-      console.error(`[PractitionerConsultationRoomService] Failed to send file:`, error);
       throw error;
     }
   }
@@ -1875,6 +2177,35 @@ export class PractitionerConsultationRoomService {
   }
 
   /**
+   * Load more (older) messages - Pagination support
+   */
+  loadMoreMessages(): void {
+    if (!this.chatSocket || !this.hasMoreMessages || !this.consultationId) {
+      console.warn('🔍 [Load More] Cannot load more messages:', {
+        hasSocket: !!this.chatSocket,
+        hasMore: this.hasMoreMessages,
+        consultationId: this.consultationId
+      });
+      return;
+    }
+
+    console.log(`🔍 [Load More] Requesting more messages (offset: ${this.messagesOffset})`);
+
+    this.chatSocket.emit('load_more_messages', {
+      consultationId: this.consultationId,
+      offset: this.messagesOffset,
+      limit: 50
+    });
+  }
+
+  /**
+   * Check if more messages are available for loading
+   */
+  get canLoadMoreMessages(): boolean {
+    return this.hasMoreMessages;
+  }
+
+  /**
    * Stop typing indicator
    */
   stopTypingIndicator(practitionerId: number, practitionerName: string): void {
@@ -1887,6 +2218,25 @@ export class PractitionerConsultationRoomService {
       userName: practitionerName,
       isTyping: false
     });
+  }
+
+  /**
+   * Request chat history manually (useful for re-loading after reconnection)
+   */
+  async requestChatHistory(limit: number = 100, offset: number = 0): Promise<void> {
+    try {
+      if (!this.chatSocket || !this.chatSocket.connected) {
+        return;
+      }
+
+      const consultationId = this.consultationStateSubject.value.consultationId;
+      this.chatSocket.emit('request_message_history', {
+        consultationId,
+        limit,
+        offset
+      });
+    } catch (error) {
+    }
   }
 
   /**
@@ -1907,9 +2257,9 @@ export class PractitionerConsultationRoomService {
    * Mark all messages as read
    */
   markAllMessagesAsRead(practitionerId: number): void {
-    const messages = this.chatMessagesSubject.value;
-    messages.forEach(message => {
-      if (!message.readBy?.find(r => r.userId === practitionerId)) {
+    const messages = this.currentChatMessages;
+    messages.forEach((message: ChatMessage) => {
+      if (!message.readBy?.find((r: any) => r.userId === practitionerId)) {
         this.markMessageAsRead(message.id, practitionerId);
       }
     });
@@ -1945,9 +2295,7 @@ export class PractitionerConsultationRoomService {
         practitionerId
       });
 
-      console.log(`[PractitionerConsultationRoomService] Consultation activation requested: ${consultationId}`);
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to activate consultation:`, error);
       throw error;
     }
   }
@@ -1979,9 +2327,7 @@ export class PractitionerConsultationRoomService {
         }
       });
 
-      console.log(`[PractitionerConsultationRoomService] ${mediaType} ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to toggle ${mediaType}:`, error);
       throw error;
     }
   }
@@ -2000,9 +2346,7 @@ export class PractitionerConsultationRoomService {
       // Disconnect and reset
       await this.leaveConsultation();
 
-      console.log(`[PractitionerConsultationRoomService] Consultation ended`);
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to end consultation:`, error);
       throw error;
     }
   }
@@ -2034,9 +2378,7 @@ export class PractitionerConsultationRoomService {
       // Reset state
       this.resetState();
 
-      console.log(`[PractitionerConsultationRoomService] Left consultation and cleaned up`);
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to leave consultation:`, error);
       throw error;
     }
   }
@@ -2055,6 +2397,35 @@ export class PractitionerConsultationRoomService {
   private updateMediaSessionState(updates: Partial<PractitionerMediaSessionState>): void {
     const currentState = this.mediaSessionStateSubject.value;
     this.mediaSessionStateSubject.next({ ...currentState, ...updates });
+  }
+
+  /**
+   * Update local media state (stores the media stream)
+   */
+  async updateLocalMediaState(state: { video: boolean; audio: boolean; stream: MediaStream }): Promise<void> {
+    try {
+      // Store the local media stream
+      this.localMediaStream = state.stream;
+
+      // Update consultation state
+      const currentState = this.consultationStateSubject.value;
+      this.updateConsultationState({
+        mediaStatus: {
+          ...currentState.mediaStatus,
+          videoEnabled: state.video,
+          audioEnabled: state.audio
+        }
+      });
+
+      // Update media session state
+      this.updateMediaSessionState({
+        mediaInitialized: true,
+        connectionQuality: 'good'
+      });
+
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -2098,10 +2469,6 @@ export class PractitionerConsultationRoomService {
     this.participantsSubject.next([]);
   }
 
-  // ================================
-  // Enhanced WebRTC Media Control Methods
-  // ================================
-
   /**
    * Enable/disable video with smooth transitions
    */
@@ -2127,12 +2494,13 @@ export class PractitionerConsultationRoomService {
         });
 
         // Notify backend and other participants
-        if (this.mediasoupSocket) {
+        if (this.mediasoupSocket && this.mediasoupSocket.connected) {
           this.mediasoupSocket.emit('media_toggle', {
             consultationId: this.consultationId,
             type: 'video',
             enabled: enable
           });
+        } else {
         }
 
         this.addNotification({
@@ -2141,15 +2509,18 @@ export class PractitionerConsultationRoomService {
           message: `Video is now ${enable ? 'on' : 'off'}`,
           duration: 2000
         });
+
+      } else {
+        throw new Error('No media stream available. Please allow camera access.');
       }
     } catch (error) {
-      console.error('Failed to toggle video:', error);
       this.addNotification({
         type: 'error',
         title: '❌ Video Error',
         message: 'Failed to toggle video. Please check your camera permissions.',
         duration: 5000
       });
+      throw error;
     }
   }
 
@@ -2178,12 +2549,13 @@ export class PractitionerConsultationRoomService {
         });
 
         // Notify backend and other participants
-        if (this.mediasoupSocket) {
+        if (this.mediasoupSocket && this.mediasoupSocket.connected) {
           this.mediasoupSocket.emit('media_toggle', {
             consultationId: this.consultationId,
             type: 'audio',
             enabled: enable
           });
+        } else {
         }
 
         this.addNotification({
@@ -2192,15 +2564,103 @@ export class PractitionerConsultationRoomService {
           message: `Microphone is now ${enable ? 'on' : 'off'}`,
           duration: 2000
         });
+
+      } else {
+        throw new Error('No media stream available. Please allow microphone access.');
       }
     } catch (error) {
-      console.error('Failed to toggle audio:', error);
       this.addNotification({
         type: 'error',
         title: '❌ Audio Error',
         message: 'Failed to toggle microphone. Please check your microphone permissions.',
         duration: 5000
       });
+      throw error;
+    }
+  }
+
+  /**
+   * Get local media stream - Returns the current stream or creates a new one
+   */
+  async getLocalMediaStreamWithConstraints(constraints?: MediaStreamConstraints): Promise<MediaStream> {
+    try {
+      if (this.localMediaStream && this.localMediaStream.active) {
+        return this.localMediaStream;
+      }
+
+      const defaultConstraints: MediaStreamConstraints = {
+        video: {
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 60 },
+          facingMode: 'user'
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(
+        constraints || defaultConstraints
+      );
+
+
+      this.localMediaStream = stream;
+
+      // Update state
+      this.updateConsultationState({
+        mediaStatus: {
+          videoEnabled: stream.getVideoTracks().some(t => t.enabled),
+          audioEnabled: stream.getAudioTracks().some(t => t.enabled),
+          screenShareEnabled: false
+        }
+      });
+
+      return stream;
+    } catch (error: any) {
+      let errorMessage = 'Failed to access camera/microphone';
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Permission denied. Please allow camera and microphone access.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No camera or microphone found.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Camera/microphone is already in use by another application.';
+      }
+
+      this.addNotification({
+        type: 'error',
+        title: '❌ Media Access Error',
+        message: errorMessage,
+        duration: 5000
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Stop local media stream
+   */
+  stopLocalMediaStream(): void {
+    if (this.localMediaStream) {
+      this.localMediaStream.getTracks().forEach(track => {
+        track.stop();
+      });
+
+      this.localMediaStream = null;
+
+      this.updateConsultationState({
+        mediaStatus: {
+          videoEnabled: false,
+          audioEnabled: false,
+          screenShareEnabled: false
+        }
+      });
+
     }
   }
 
@@ -2259,7 +2719,6 @@ export class PractitionerConsultationRoomService {
       };
 
     } catch (error) {
-      console.error('Failed to start screen sharing:', error);
       this.addNotification({
         type: 'error',
         title: '❌ Screen Share Error',
@@ -2325,7 +2784,6 @@ export class PractitionerConsultationRoomService {
       });
 
     } catch (error) {
-      console.error('Failed to stop screen sharing:', error);
     }
   }
 
@@ -2368,7 +2826,6 @@ export class PractitionerConsultationRoomService {
       });
 
     } catch (error) {
-      console.error('Failed to switch camera:', error);
       this.addNotification({
         type: 'error',
         title: '❌ Camera Switch Error',
@@ -2422,7 +2879,6 @@ export class PractitionerConsultationRoomService {
       });
 
     } catch (error) {
-      console.error('Failed to switch microphone:', error);
       this.addNotification({
         type: 'error',
         title: '❌ Microphone Switch Error',
@@ -2543,11 +2999,9 @@ export class PractitionerConsultationRoomService {
     email: string;
     name: string;
     notes?: string;
-  }): Promise<void> {
+  }): Promise<any> {
     try {
-      console.log(`[PractitionerConsultationRoomService] Adding participant to consultation ${consultationId}:`, participantData);
-
-      const response = await this.http.post(
+      const response: any = await this.http.post(
         `${API_ENDPOINTS.CONSULTATION}/${consultationId}/participants`,
         {
           email: participantData.email,
@@ -2557,13 +3011,9 @@ export class PractitionerConsultationRoomService {
         }
       ).toPromise();
 
-      console.log(`[PractitionerConsultationRoomService] Participant added successfully:`, response);
-
-      // The real-time update will come through WebSocket 'participant_added' event
-      // which is already handled in setupConsultationEventListeners()
-
+      // Return the full response including emailSent status
+      return response;
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to add participant:`, error);
       throw error;
     }
   }
@@ -2573,8 +3023,6 @@ export class PractitionerConsultationRoomService {
    */
   async removeParticipant(consultationId: number, participantId: number): Promise<void> {
     try {
-      console.log(`[PractitionerConsultationRoomService] Removing participant ${participantId} from consultation ${consultationId}`);
-
       await this.http.delete(
         `${API_ENDPOINTS.CONSULTATION}/${consultationId}/participants/${participantId}`
       ).toPromise();
@@ -2583,10 +3031,7 @@ export class PractitionerConsultationRoomService {
       const updatedParticipants = currentParticipants.filter(p => p.id !== participantId);
       this.participantsSubject.next(updatedParticipants);
 
-      console.log(`[PractitionerConsultationRoomService] Participant removed successfully`);
-
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to remove participant:`, error);
       throw error;
     }
   }
@@ -2596,8 +3041,6 @@ export class PractitionerConsultationRoomService {
    */
   async loadConsultationParticipants(consultationId: number): Promise<ConsultationParticipant[]> {
     try {
-      console.log(`[PractitionerConsultationRoomService] Loading participants for consultation ${consultationId}`);
-
       const participants = await this.http.get<ConsultationParticipant[]>(
         `${API_ENDPOINTS.CONSULTATION}/${consultationId}/participants`
       ).toPromise();
@@ -2607,7 +3050,6 @@ export class PractitionerConsultationRoomService {
       return participants || [];
 
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to load participants:`, error);
       return [];
     }
   }
@@ -2617,22 +3059,20 @@ export class PractitionerConsultationRoomService {
    */
   async admitPatientFromWaitingRoom(consultationId: number, patientId?: number): Promise<void> {
     try {
-      console.log(`[PractitionerConsultationRoomService] Admitting patient to consultation ${consultationId}`);
-
       if (this.consultationSocket) {
         this.consultationSocket.emit('admit_patient', {
           consultationId,
           patientId
         });
 
-        console.log(`[PractitionerConsultationRoomService] Patient admission request sent`);
       } else {
         throw new Error('Consultation socket not connected');
       }
 
     } catch (error) {
-      console.error(`[PractitionerConsultationRoomService] Failed to admit patient:`, error);
       throw error;
     }
   }
 }
+
+

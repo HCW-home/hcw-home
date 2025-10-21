@@ -121,7 +121,7 @@ export class OpenConsultationService {
     );
 
     const body = {
-      consultationId,
+      consultationId: Number(consultationId), // Ensure it's a number
       ...(reason && { reason }),
     };
 
@@ -132,13 +132,17 @@ export class OpenConsultationService {
         { params }
       )
       .pipe(
-        map((response) => response.data),
+        map((response) => {
+          return response.data;
+        }),
         catchError((error) => {
-          this.toastService.showError('Error closing consultation');
+          this.toastService.showError(
+            error.error?.message || 'Error closing consultation'
+          );
           return of({
             success: false,
-            statusCode: 500,
-            message: 'Failed to close consultation',
+            statusCode: error.status || 500,
+            message: error.error?.message || 'Failed to close consultation',
             consultationId,
             closedAt: new Date(),
           });

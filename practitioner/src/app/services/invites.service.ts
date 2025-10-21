@@ -48,9 +48,6 @@ export class InvitesService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    const url = `${this.apiUrl}?${params.toString()}`;
-    console.log('[InvitesService] Calling GET:', url);
-
     return this.http.get<InvitesResponse>(this.apiUrl, { params });
   }
 

@@ -136,8 +136,7 @@ export class DashboardWebSocketService {
               try {
                 this.router.navigate(['/consultation-room', notification.consultationId], { queryParams: { practitionerId: this.practitionerId } });
               } catch (e) {
-                console.error('Navigation from toast failed', e);
-              }
+                }
             },
           },
         );
@@ -148,8 +147,7 @@ export class DashboardWebSocketService {
           origin: data.origin ?? null,
         });
       } catch (e) {
-        console.warn('[DashboardWebSocketService] Toast error:', e);
-      }
+        }
       this.handlePatientJoinedAlert(notification);
     });
 
@@ -203,8 +201,7 @@ export class DashboardWebSocketService {
               try {
                 this.router.navigate(['/consultation-room', notification.consultationId], { queryParams: { practitionerId: this.practitionerId } });
               } catch (e) {
-                console.error('Navigation from toast failed', e);
-              }
+                }
             },
           },
         );
@@ -215,8 +212,7 @@ export class DashboardWebSocketService {
           origin: data.origin ?? null,
         });
       } catch (e) {
-        console.warn('[DashboardWebSocketService] Toast error:', e);
-      }
+        }
       this.handlePatientJoinedAlert(notification);
     });
 
@@ -351,8 +347,7 @@ export class DashboardWebSocketService {
           try {
             this.router.navigate(['/consultation-room', notification.consultationId], { queryParams: { practitionerId: this.practitionerId } });
           } catch (e) {
-            console.error('Navigation from toast failed', e);
-          }
+            }
         },
       });
       this.eventBus.emit('dashboard:patient_actionable', {
@@ -362,8 +357,7 @@ export class DashboardWebSocketService {
         origin: data.origin ?? null,
       });
     } catch (e) {
-      console.warn('[DashboardWebSocketService] Toast error:', e);
-    }
+      }
     this.handlePatientJoinedAlert(notification);
   }
 
@@ -410,8 +404,7 @@ export class DashboardWebSocketService {
           try {
             this.router.navigate(['/consultation-room', notification.consultationId], { queryParams: { practitionerId: this.practitionerId } });
           } catch (e) {
-            console.error('Navigation from toast failed', e);
-          }
+            }
         },
       });
       this.eventBus.emit('dashboard:patient_actionable', {
@@ -421,8 +414,7 @@ export class DashboardWebSocketService {
         origin: data.origin ?? null,
       });
     } catch (e) {
-      console.warn('[DashboardWebSocketService] Toast error:', e);
-    }
+      }
     this.handlePatientJoinedAlert(notification);
   }
 
@@ -545,7 +537,7 @@ export class DashboardWebSocketService {
         await this.audioAlertService.playPatientJoinedAlert();
       }
     } catch (error) {
-      console.error('[DashboardWebSocketService] Failed to play audio alert:', error);
+      // Audio alert failed silently
     }
   }
 
@@ -578,7 +570,7 @@ export class DashboardWebSocketService {
         // Audio alerts initialized
       }
     } catch (error) {
-      console.error('[DashboardWebSocketService] Failed to initialize audio alerts:', error);
+      // Audio initialization failed silently
     }
   }
 
@@ -598,7 +590,7 @@ export class DashboardWebSocketService {
         });
       }
     } catch (error) {
-      console.error('[DashboardWebSocketService] Failed to load audio settings:', error);
+      // Failed to load audio settings - use defaults
     }
   }
 
@@ -614,8 +606,7 @@ export class DashboardWebSocketService {
       };
       localStorage.setItem('dashboard_audio_settings', JSON.stringify(settings));
     } catch (error) {
-      console.error('[DashboardWebSocketService] Failed to save audio settings:', error);
-    }
+      }
   }
 
   setAudioEnabled(enabled: boolean): void {
@@ -657,3 +648,4 @@ export class DashboardWebSocketService {
     };
   }
 }
+

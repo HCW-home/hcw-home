@@ -6,7 +6,13 @@
     </mat-card-header>
 
     <mat-card-content>
-      <mat-tab-group [(selectedIndex)]="selectedTabIndex">
+      <div class="refresh-container">
+    <button mat-raised-button color="primary" class="refresh-button" (click)="manualRefresh()" title="Refresh Data">
+      🔄
+    </button>
+  </div>
+  
+  <mat-tab-group [(selectedIndex)]="selectedTabIndex">
         <mat-tab label="Weekly Availability">
           <div class="tab-content">
             <mat-card class="form-card">
@@ -91,9 +97,14 @@
                     <ng-container matColumnDef="actions">
                       <th mat-header-cell *matHeaderCellDef>Actions</th>
                       <td mat-cell *matCellDef="let availability">
-                        <button mat-icon-button color="warn" (click)="deleteAvailability(availability.id)">
-                          <mat-icon>delete</mat-icon>
-                        </button>
+                        <div class="actions-container">
+                          <button type="button"
+                                  class="emoji-btn delete-btn"
+                                  (click)="deleteAvailability(availability.id)"
+                                  title="Delete this availability">
+                            🗑️
+                          </button>
+                        </div>
                       </td>
                     </ng-container>
 
@@ -157,7 +168,7 @@
               </mat-card-header>
               <mat-card-content>
                 <div class="table-container">
-                  <table mat-table [dataSource]="timeSlots" class="slots-table">
+                  <table mat-table [dataSource]="pagedTimeSlots" class="slots-table">
                     <ng-container matColumnDef="date">
                       <th mat-header-cell *matHeaderCellDef>Date</th>
                       <td mat-cell *matCellDef="let slot">{{ formatDate(slot.date) }}</td>
@@ -182,19 +193,46 @@
                     <ng-container matColumnDef="actions">
                       <th mat-header-cell *matHeaderCellDef>Actions</th>
                       <td mat-cell *matCellDef="let slot">
-                        <button mat-icon-button 
-                                *ngIf="slot.status !== 'BOOKED'"
-                                [color]="slot.status === 'AVAILABLE' ? 'warn' : 'primary'"
-                                (click)="toggleSlotStatus(slot)"
-                                [matTooltip]="slot.status === 'AVAILABLE' ? 'Block slot' : 'Unblock slot'">
-                          <mat-icon>{{ slot.status === 'AVAILABLE' ? 'block' : 'check_circle' }}</mat-icon>
-                        </button>
+                        <div class="actions-container">
+                          <button type="button" 
+                                  class="emoji-btn toggle-btn"
+                                  *ngIf="slot.status !== 'BOOKED'"
+                                  [class.block-btn]="slot.status === 'AVAILABLE'"
+                                  [class.unblock-btn]="slot.status !== 'AVAILABLE'"
+                                  (click)="toggleSlotStatus(slot)"
+                                  [title]="slot.status === 'AVAILABLE' ? 'Block this time slot' : 'Make slot available'">
+                            {{ slot.status === 'AVAILABLE' ? '🚫' : '✅' }}
+                          </button>
+                          <button type="button"
+                                  class="emoji-btn delete-btn"
+                                  *ngIf="slot.status !== 'BOOKED'"
+                                  (click)="deleteSlot(slot.id)"
+                                  title="Delete this time slot">
+                            🗑️
+                          </button>
+                        </div>
                       </td>
                     </ng-container>
 
                     <tr mat-header-row *matHeaderRowDef="slotsDisplayedColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: slotsDisplayedColumns;"></tr>
                   </table>
+
+                  <!-- Pagination Controls -->
+                  <div class="pagination-controls" *ngIf="timeSlots.length > 0">
+                    <div class="page-size">
+                      <label>Rows:</label>
+                      <select [(ngModel)]="pageSize" (ngModelChange)="currentPage = 1">
+                        <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
+                      </select>
+                    </div>
+
+                    <div class="pages">
+                      <button mat-button [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">Previous</button>
+                      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                      <button mat-button [disabled]="currentPage >= totalPages" (click)="currentPage = currentPage + 1">Next</button>
+                    </div>
+                  </div>
 
                   <div *ngIf="timeSlots.length === 0" class="no-data">
                     

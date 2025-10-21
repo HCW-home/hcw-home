@@ -32,8 +32,7 @@ export class ToastContainerComponent {
       }
       this.toast.removeMessage(msg.id);
     } catch (e) {
-      console.warn('Toast action failed', e);
-    }
+      }
   }
 
   closeToast(id: string): void {
@@ -62,3 +61,4 @@ export class ToastContainerComponent {
     return toast.id;
   }
 }
+

@@ -44,6 +44,18 @@
 
   <!-- Messages Container -->
   <div #messagesContainer class="messages-container" (scroll)="onScroll()">
+    <!-- Load More Messages Button -->
+    <div class="load-more-container" *ngIf="canLoadMore">
+      <button
+        class="btn-load-more"
+        (click)="onLoadMoreMessages()"
+        [disabled]="isLoadingMore"
+      >
+        <span *ngIf="!isLoadingMore">📜 Load Older Messages</span>
+        <span *ngIf="isLoadingMore">⏳ Loading...</span>
+      </button>
+    </div>
+
     <!-- Messages List -->
     <div class="messages-list">
       <div
@@ -88,31 +100,103 @@
               {{ message.content }}
             </p>
 
-            <!-- Image Content -->
+            <!-- Image Preview -->
             <div
-              *ngIf="message.messageType === 'image' && message.mediaUrl"
+              *ngIf="
+                getFilePreviewType(message) === 'image' && getMediaUrl(message)
+              "
               class="image-content"
             >
               <img
-                [src]="message.mediaUrl"
+                [src]="getMediaUrl(message)"
                 [alt]="message.fileName || 'Image'"
-                (click)="openImagePreview(message.mediaUrl)"
+                (click)="openImagePreview(getMediaUrl(message))"
+                class="preview-image"
               />
               <div class="image-info" *ngIf="message.fileName">
-                <small
-                  >{{ message.fileName }} •
-                  {{ formatFileSize(message.fileSize) }}</small
+                <small>
+                  {{ message.fileName }} •
+                  {{ formatFileSize(message.fileSize) }}
+                </small>
+                <button
+                  class="btn-download-small"
+                  (click)="downloadFile(message)"
+                  title="Download"
                 >
+                  ⬇️
+                </button>
               </div>
             </div>
 
-            <!-- File Content -->
+            <!-- Video Preview -->
             <div
-              *ngIf="message.messageType === 'file' && message.mediaUrl"
+              *ngIf="
+                getFilePreviewType(message) === 'video' && getMediaUrl(message)
+              "
+              class="video-content"
+            >
+              <video
+                [src]="getMediaUrl(message)"
+                controls
+                class="preview-video"
+                preload="metadata"
+              >
+                Your browser does not support the video tag.
+              </video>
+              <div class="video-info" *ngIf="message.fileName">
+                <small>
+                  {{ message.fileName }} •
+                  {{ formatFileSize(message.fileSize) }}
+                </small>
+                <button
+                  class="btn-download-small"
+                  (click)="downloadFile(message)"
+                  title="Download"
+                >
+                  ⬇️
+                </button>
+              </div>
+            </div>
+
+            <!-- Audio Preview -->
+            <div
+              *ngIf="
+                getFilePreviewType(message) === 'audio' && getMediaUrl(message)
+              "
+              class="audio-content"
+            >
+              <audio
+                [src]="getMediaUrl(message)"
+                controls
+                class="preview-audio"
+                preload="metadata"
+              >
+                Your browser does not support the audio element.
+              </audio>
+              <div class="audio-info" *ngIf="message.fileName">
+                <small>
+                  {{ message.fileName }} •
+                  {{ formatFileSize(message.fileSize) }}
+                </small>
+                <button
+                  class="btn-download-small"
+                  (click)="downloadFile(message)"
+                  title="Download"
+                >
+                  ⬇️
+                </button>
+              </div>
+            </div>
+
+            <!-- File Download (for non-previewable files) -->
+            <div
+              *ngIf="
+                getFilePreviewType(message) === 'file' && getMediaUrl(message)
+              "
               class="file-content"
             >
               <div class="file-info">
-                <div class="file-icon">📎</div>
+                <div class="file-icon">{{ getFileIcon(message) }}</div>
                 <div class="file-details">
                   <div class="file-name">{{ message.fileName || "File" }}</div>
                   <div class="file-size">

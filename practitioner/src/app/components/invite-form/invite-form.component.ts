@@ -225,19 +225,16 @@ export class InviteFormComponent implements OnInit, OnDestroy {
               this.loading = false;
             },
             error: (error) => {
-              console.error('Error loading groups:', error);
               this.groups = [];
               this.loading = false;
             }
           });
         } else {
-          console.warn('User has no organizations');
           this.groups = [];
           this.loading = false;
         }
       },
       error: (error) => {
-        console.error('Error loading user data:', error);
         this.groups = [];
         this.loading = false;
       }
@@ -312,3 +309,4 @@ export class InviteFormComponent implements OnInit, OnDestroy {
     this.submit.emit(payload);
   }
 }
+

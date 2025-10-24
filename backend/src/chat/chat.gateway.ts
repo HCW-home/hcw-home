@@ -92,12 +92,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
       // Send recent messages to newly connected client
+      this.logger.log(`[handleConnection] Fetching message history for consultation ${consultationId}`);
+
       const recentMessages = await this.chatService.getMessages(
         Number(consultationId),
       );
+
+      this.logger.log(`[handleConnection] Sending ${recentMessages.length} messages to newly connected client (user ${userId})`);
+
       client.emit('message_history', {
         messages: recentMessages,
         consultationId: Number(consultationId),
+        hasMore: recentMessages.length === this.configService.chatMessageHistoryLimit,
         timestamp: new Date().toISOString(),
       });
 
@@ -296,7 +302,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('request_message_history')
   async handleRequestMessageHistory(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket & { data: any },
     @MessageBody()
     payload: { consultationId: number; limit?: number; offset?: number },
   ) {
@@ -307,21 +313,72 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new WsException('Invalid consultation for message history');
       }
 
+      const limit = payload.limit || this.configService.chatMessageHistoryLimit;
+      const offset = payload.offset || 0;
+
+      this.logger.log(`[request_message_history] User ${client.data.userId} requesting messages for consultation ${consultationId} (limit: ${limit}, offset: ${offset})`);
+
       const messages = await this.chatService.getMessages(
         consultationId,
-        payload.limit || this.configService.chatMessageHistoryLimit,
-        payload.offset || 0,
+        limit,
+        offset,
       );
+
+      this.logger.log(`[request_message_history] Sending ${messages.length} messages to user ${client.data.userId}`);
 
       client.emit('message_history', {
         messages,
         consultationId,
-        hasMore: messages.length === (payload.limit || this.configService.chatMessageHistoryLimit),
+        offset,
+        hasMore: messages.length === limit,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      this.logger.error('Request message history error:', error);
+      this.logger.error('[request_message_history] Error:', error);
       client.emit('message_history_error', {
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  @SubscribeMessage('load_more_messages')
+  async handleLoadMoreMessages(
+    @ConnectedSocket() client: Socket & { data: any },
+    @MessageBody()
+    payload: { consultationId: number; offset: number; limit?: number },
+  ) {
+    try {
+      const { consultationId, userId } = client.data;
+
+      if (payload.consultationId !== consultationId) {
+        throw new WsException('Invalid consultation for load more messages');
+      }
+
+      const limit = payload.limit || 50;
+      const offset = payload.offset || 0;
+
+      this.logger.log(`[load_more_messages] User ${userId} loading more messages for consultation ${consultationId} (offset: ${offset}, limit: ${limit})`);
+
+      const messages = await this.chatService.getMessages(
+        consultationId,
+        limit,
+        offset,
+      );
+
+      this.logger.log(`[load_more_messages] Sending ${messages.length} additional messages to user ${userId}`);
+
+      client.emit('more_messages_loaded', {
+        messages,
+        consultationId,
+        offset,
+        limit,
+        hasMore: messages.length === limit,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      this.logger.error('[load_more_messages] Error:', error);
+      client.emit('load_more_messages_error', {
         error: error.message,
         timestamp: new Date().toISOString(),
       });

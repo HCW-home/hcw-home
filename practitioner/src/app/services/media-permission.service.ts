@@ -110,7 +110,6 @@ export class MediaPermissionService {
       }
 
     } catch (error) {
-      console.error('Failed to check media permissions:', error);
       status.camera.error = 'Failed to access media devices';
       status.microphone.error = 'Failed to access media devices';
     }
@@ -145,7 +144,6 @@ export class MediaPermissionService {
       return stream;
     } catch (error) {
       const mediaError = error as Error;
-      console.error('Failed to get media stream:', mediaError);
 
       // Update permission status with error information
       this.updatePermissionError(mediaError, constraints);
@@ -218,7 +216,6 @@ export class MediaPermissionService {
 
       return this.availableDevices;
     } catch (error) {
-      console.error('Failed to enumerate devices:', error);
       return [];
     }
   }

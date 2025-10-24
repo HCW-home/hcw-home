@@ -121,26 +121,19 @@ export class ConsultationGateway
         return;
       }
 
-      if (
-        ([UserRole.PRACTITIONER, UserRole.EXPERT] as UserRole[]).includes(role)
-      ) {
-        const connectedSameRole =
-          await this.databaseService.participant.findMany({
-            where: {
-              consultationId,
-              isActive: true,
-              role,
-            },
-          });
-        if (
-          connectedSameRole.length > 0 &&
-          !connectedSameRole.some((p) => p.userId === userId)
-        ) {
-          client.emit('error', {
-            message: `Another ${role.toLowerCase()} is already connected to this consultation.`,
-          });
-          client.disconnect(true);
-          return;
+
+      // Disconnect previous session for same userId and consultationId
+      if (([UserRole.PRACTITIONER, UserRole.EXPERT] as UserRole[]).includes(role)) {
+        for (const [socketId, connectedClient] of this.connectedClients.entries()) {
+          if (
+            connectedClient.userId === userId &&
+            connectedClient.consultationId === consultationId &&
+            connectedClient.userRole === role
+          ) {
+            this.logger.log(`Disconnecting previous session for userId ${userId}, consultationId ${consultationId}, role ${role}`);
+            connectedClient.disconnect(true);
+            this.connectedClients.delete(socketId);
+          }
         }
       }
 

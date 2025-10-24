@@ -93,7 +93,7 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
   async initializeEnhancedConsultation(
     consultationId: number,
     userId: number,
-    userRole: string,
+    role: string,
     config: Partial<WebSocketConfig> = {}
   ): Promise<void> {
     const finalConfig = { ...this.defaultConfig, ...config };
@@ -107,7 +107,7 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
         query: {
           consultationId: consultationId.toString(),
           userId: userId.toString(),
-          userRole
+          role
         },
         autoConnect: finalConfig.autoConnect,
         reconnection: finalConfig.reconnection,
@@ -122,10 +122,7 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
         this.enhancedConsultationSocket.connect();
       }
 
-      console.log(`[PractitionerEnhancedWebSocket] Enhanced consultation socket initialized for consultation ${consultationId}`);
-
-    } catch (error) {
-      console.error('[PractitionerEnhancedWebSocket] Failed to initialize enhanced consultation socket:', error);
+      } catch (error) {
       throw error;
     }
   }
@@ -138,73 +135,60 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
 
     // Connection events
     this.enhancedConsultationSocket.on('connect', () => {
-      console.log('[PractitionerEnhancedWebSocket] Enhanced consultation connected');
       this.connectionState$.next({ status: 'connected', lastConnected: new Date() });
     });
 
     this.enhancedConsultationSocket.on('disconnect', (reason) => {
-      console.log('[PractitionerEnhancedWebSocket] Enhanced consultation disconnected:', reason);
       this.connectionState$.next({ status: 'disconnected' });
     });
 
     this.enhancedConsultationSocket.on('reconnect', () => {
-      console.log('[PractitionerEnhancedWebSocket] Enhanced consultation reconnected');
       this.connectionState$.next({ status: 'connected', lastConnected: new Date() });
     });
 
     this.enhancedConsultationSocket.on('connect_error', (error) => {
-      console.error('[PractitionerEnhancedWebSocket] Connection error:', error);
       this.connectionState$.next({ status: 'error' });
     });
 
     // Waiting room events
     this.enhancedConsultationSocket.on('patient_waiting', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Patient waiting:', data);
       this.patientWaitingSubject.next(data);
     });
 
     this.enhancedConsultationSocket.on('waiting_room_sessions', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Waiting room sessions:', data);
       this.waitingRoomSessionsSubject.next(data);
     });
 
     // Participant management events
     this.enhancedConsultationSocket.on('participant_invited', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Participant invited:', data);
       this.participantInvitedSubject.next(data);
     });
 
     this.enhancedConsultationSocket.on('participant_removed_notification', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Participant removed:', data);
       this.participantRemovedSubject.next(data);
     });
 
     // Media permission guidance
     this.enhancedConsultationSocket.on('media_permission_guidance', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Media permission guidance:', data);
       this.mediaPermissionGuidanceSubject.next(data);
     });
 
     // System notifications
     this.enhancedConsultationSocket.on('system_notification', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] System notification:', data);
       this.systemNotificationSubject.next(data);
     });
 
     // Real-time events
     this.enhancedConsultationSocket.on('recent_events', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Recent events:', data);
       this.recentEventsSubject.next(data);
     });
 
     // Typing indicators
     this.enhancedConsultationSocket.on('typing_indicators', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] Typing indicators:', data);
       this.typingIndicatorsSubject.next(data);
     });
 
     this.enhancedConsultationSocket.on('user_typing', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] User typing:', data);
       const current = this.typingIndicatorsSubject.value;
       const updated = current.filter(t => t.userId !== data.userId);
       if (data.isTyping) {
@@ -215,14 +199,12 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
 
     // Enhanced message events
     this.enhancedConsultationSocket.on('new_message', (data) => {
-      console.log('[PractitionerEnhancedWebSocket] New enhanced message:', data);
       // This would integrate with your existing chat service
     });
 
     // Error handling
     this.enhancedConsultationSocket.on('error', (error) => {
-      console.error('[PractitionerEnhancedWebSocket] Socket error:', error);
-    });
+      });
   }
 
   /**
@@ -397,8 +379,7 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
     if (this.enhancedConsultationSocket) {
       this.enhancedConsultationSocket.disconnect();
       this.enhancedConsultationSocket = null;
-      console.log('[PractitionerEnhancedWebSocket] Enhanced consultation disconnected');
-    }
+      }
   }
 
   ngOnDestroy(): void {
@@ -407,3 +388,4 @@ export class PractitionerEnhancedWebSocketService implements OnDestroy {
     this.disconnectEnhancedConsultation();
   }
 }
+

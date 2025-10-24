@@ -75,7 +75,7 @@ export class EmailService {
         lastError = error;
         this.logger.warn(`Attempt ${attempt} to send email to ${to} failed: ${error?.message || error}`);
         // exponential backoff before retrying
-        const backoffMs = Math.pow(2, attempt) * 250; 
+        const backoffMs = Math.pow(2, attempt) * 250;
         await new Promise((res) => setTimeout(res, backoffMs));
       }
     }
@@ -233,14 +233,14 @@ export class EmailService {
     }
   }
   async sendSelfInvitationEmail(toEmail: string, invitationLink: string) {
-  try {
-    if (!toEmail?.trim() || !invitationLink?.trim()) {
-      throw new Error('Email address and invitation link are required');
-    }
+    try {
+      if (!toEmail?.trim() || !invitationLink?.trim()) {
+        throw new Error('Email address and invitation link are required');
+      }
 
-    const subject = `✨ You're Invited to Join Our Healthcare Platform`;
+      const subject = `✨ You're Invited to Join Our Healthcare Platform`;
 
-    const html = `
+      const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -291,17 +291,17 @@ export class EmailService {
       </html>
     `;
 
-    await this.sendEmail(toEmail, subject, html);
-    this.logger.log(`Self-invitation email sent to ${toEmail}`);
-  } catch (error) {
-    throw HttpExceptionHelper.internalServerError('Failed to send self-invitation email');
-    this.logger.error(
-      `Failed to send self-invitation email to ${toEmail}:`,
-      error.stack,
-    );
-    throw new Error(`Email delivery failed: ${error.message}`);
+      await this.sendEmail(toEmail, subject, html);
+      this.logger.log(`Self-invitation email sent to ${toEmail}`);
+    } catch (error) {
+      throw HttpExceptionHelper.internalServerError('Failed to send self-invitation email');
+      this.logger.error(
+        `Failed to send self-invitation email to ${toEmail}:`,
+        error.stack,
+      );
+      throw new Error(`Email delivery failed: ${error.message}`);
+    }
   }
-}
 
 
   async sendConsultationReminderEmail(
@@ -459,6 +459,192 @@ export class EmailService {
         return 'Practitioner';
       default:
         return role;
+    }
+  }
+
+  /**
+   * Send direct consultation room invitation to GUEST or EXPERT
+   * This email contains a direct link to join the consultation room - no authentication required
+   */
+  async sendDirectRoomInvitationEmail(
+    toEmail: string,
+    inviterName: string,
+    consultationId: number,
+    directRoomLink: string,
+    role: UserRole,
+    inviteeName?: string,
+    notes?: string,
+    scheduledTimeIST?: string
+  ) {
+    try {
+      this.logger.log(`[EmailService] 📧 Sending DIRECT ROOM invitation email to: ${toEmail}`);
+      this.logger.log(`[EmailService] Role: ${role}, Consultation: ${consultationId}`);
+      this.logger.log(`[EmailService] Email service configured: ${this.isConfigured}`);
+
+      if (!toEmail?.trim() || !directRoomLink?.trim()) {
+        throw new Error('Email address and direct room link are required');
+      }
+
+      if (role !== UserRole.GUEST && role !== UserRole.EXPERT) {
+        throw new Error('Direct room invitations are only for GUEST and EXPERT roles');
+      }
+
+      const roleDisplay = this.getRoleDisplayName(role);
+
+      const subject = `🎯 Direct Access: Join Consultation as ${roleDisplay}`;
+      const urlDomain = new URL(directRoomLink).hostname;
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Consultation Invitation</title>
+        </head>
+        <body style="font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; margin:0; padding:0;">
+          <div style="max-width:600px;margin:40px auto;background:#ffffff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);overflow:hidden;">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;padding:40px 32px;text-align:center;">
+              <h1 style="margin:0 0 12px 0;font-size:28px;font-weight:700;">🎯 You're Invited!</h1>
+              <p style="margin:0;font-size:16px;color:#d1fae5;font-weight:500;">Direct Access to Healthcare Consultation</p>
+            </div>
+            
+            <!-- Main Content -->
+            <div style="padding:40px 32px;">
+              <p style="font-size:18px;color:#1e293b;margin:0 0 16px 0;font-weight:600;">Hello${inviteeName ? ` ${inviteeName}` : ''}! 👋</p>
+              
+              <p style="font-size:15px;color:#475569;line-height:1.6;margin:0 0 24px 0;">
+                <strong style="color:#10b981;">${inviterName}</strong> has invited you to join a healthcare consultation as <strong style="color:#10b981;">${roleDisplay}</strong>.
+              </p>
+              
+              <!-- Consultation Details Box -->
+              <div style="background:#f0fdf4;border:2px solid #86efac;padding:20px;border-radius:10px;margin:0 0 28px 0;">
+                <h3 style="margin:0 0 12px 0;font-size:16px;color:#166534;font-weight:600;">📋 Consultation Details</h3>
+                <table style="width:100%;font-size:14px;color:#166534;">
+                  <tr>
+                    <td style="padding:6px 0;"><strong>Consultation ID:</strong></td>
+                    <td style="padding:6px 0;text-align:right;">#${consultationId}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;"><strong>Your Role:</strong></td>
+                    <td style="padding:6px 0;text-align:right;">${roleDisplay}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;"><strong>Invited by:</strong></td>
+                    <td style="padding:6px 0;text-align:right;">${inviterName}</td>
+                  </tr>
+                  ${scheduledTimeIST ? `
+                  <tr>
+                    <td style="padding:6px 0;"><strong>Scheduled Time:</strong></td>
+                    <td style="padding:6px 0;text-align:right;">${scheduledTimeIST} (IST)</td>
+                  </tr>
+                  ` : ''}
+                  <tr>
+                    <td style="padding:6px 0;"><strong>Platform:</strong></td>
+                    <td style="padding:6px 0;text-align:right;">${urlDomain}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              ${notes ? `
+              <!-- Personal Note -->
+              <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:6px;margin:0 0 28px 0;">
+                <p style="margin:0 0 8px 0;font-size:13px;color:#92400e;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📝 Personal Message</p>
+                <p style="margin:0;font-size:14px;color:#78350f;line-height:1.6;">${notes}</p>
+              </div>
+              ` : ''}
+              
+              <!-- Call to Action Button -->
+              <div style="text-align:center;margin:0 0 32px 0;">
+                <a href="${directRoomLink}" style="display:inline-block;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#ffffff;padding:18px 48px;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;">
+                  🚀 Join Consultation Now
+                </a>
+              </div>
+              
+              <!-- Direct Access Notice -->
+              <div style="background:#e0f2fe;border:2px solid #38bdf8;padding:18px 20px;border-radius:10px;margin:0 0 28px 0;">
+                <div style="display:flex;align-items:flex-start;">
+                  <span style="font-size:24px;margin-right:12px;">⚡</span>
+                  <div>
+                    <h4 style="margin:0 0 8px 0;font-size:15px;color:#0369a1;font-weight:700;">Direct Access - No Sign-up Required!</h4>
+                    <p style="margin:0;font-size:14px;color:#0c4a6e;line-height:1.5;">
+                      Simply click the button above to join instantly. No account creation or authentication needed. 
+                      ${scheduledTimeIST ? `You can join anytime, but the consultation is scheduled for <strong>${scheduledTimeIST} (IST)</strong>.` : 'You can join anytime the consultation is active.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- What to Expect Section -->
+              <div style="margin:0 0 28px 0;">
+                <h3 style="margin:0 0 16px 0;font-size:16px;color:#1e293b;font-weight:600;">✨ What to Expect</h3>
+                <ul style="margin:0;padding:0 0 0 20px;font-size:14px;color:#475569;line-height:1.8;">
+                  <li style="margin-bottom:8px;">🎥 <strong>Instant access</strong> to the consultation room</li>
+                  <li style="margin-bottom:8px;">💬 <strong>Real-time chat</strong> with all participants</li>
+                  <li style="margin-bottom:8px;">🎤 <strong>Audio & video</strong> communication (optional)</li>
+                  <li style="margin-bottom:8px;">🤝 <strong>Collaborate</strong> as ${roleDisplay.toLowerCase()}</li>
+                  <li style="margin-bottom:8px;">🔐 <strong>Secure & private</strong> consultation environment</li>
+                </ul>
+              </div>
+              
+              <!-- Technical Requirements -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:18px 20px;border-radius:8px;margin:0 0 20px 0;">
+                <h4 style="margin:0 0 12px 0;font-size:14px;color:#334155;font-weight:600;">💻 Technical Requirements</h4>
+                <ul style="margin:0;padding:0 0 0 20px;font-size:13px;color:#64748b;line-height:1.7;">
+                  <li>Modern browser (Chrome, Firefox, Safari, or Edge)</li>
+                  <li>Stable internet connection (recommended: 5+ Mbps)</li>
+                  <li>Camera & microphone (optional, but recommended)</li>
+                  <li>Desktop or tablet for best experience</li>
+                </ul>
+              </div>
+              
+              <!-- Security Notice -->
+              <div style="background:#fef2f2;border-left:4px solid #ef4444;padding:14px 18px;border-radius:6px;margin:0 0 20px 0;">
+                <p style="margin:0;font-size:13px;color:#7f1d1d;line-height:1.6;">
+                  🔒 <strong>Privacy & Security:</strong> This link is personal to you and expires in 24 hours. 
+                  Do not share this link with others. All communication is encrypted and HIPAA-compliant.
+                </p>
+              </div>
+              
+              <!-- Alternative Link -->
+              <div style="padding:16px 0;border-top:1px solid #e2e8f0;">
+                <p style="margin:0 0 8px 0;font-size:12px;color:#94a3b8;text-align:center;">
+                  If the button doesn't work, copy and paste this link:
+                </p>
+                <p style="margin:0;font-size:12px;color:#64748b;text-align:center;word-break:break-all;">
+                  <a href="${directRoomLink}" style="color:#10b981;text-decoration:underline;">${directRoomLink}</a>
+                </p>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background:#f1f5f9;padding:24px 32px;text-align:center;">
+              <p style="margin:0 0 8px 0;font-size:13px;color:#475569;font-weight:500;">Need help? Contact our support team</p>
+              <p style="margin:0 0 16px 0;font-size:12px;color:#94a3b8;">
+                This is an automated message. If you received this in error, please ignore.
+              </p>
+              <p style="margin:0;font-size:11px;color:#cbd5e1;">
+                © ${new Date().getFullYear()} Healthcare Platform. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      await this.sendEmail(toEmail, subject, html);
+
+      this.logger.log(
+        `✅ Direct room invitation email sent successfully - To: ${toEmail}, Role: ${role}, Consultation: ${consultationId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to send direct room invitation email to ${toEmail}: ${error.message}`,
+        error.stack,
+      );
+      throw new Error(`Email delivery failed: ${error.message}`);
     }
   }
 }

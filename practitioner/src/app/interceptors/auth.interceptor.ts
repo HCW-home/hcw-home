@@ -67,8 +67,6 @@ export class AuthInterceptor implements HttpInterceptor {
    }),
    catchError((refreshError) => {
     this.isRefreshing = false;
-    console.error('Token refresh failed in interceptor:', refreshError);
-
     // Only logout on auth failures, not network issues
     if (refreshError.status === 401 || refreshError.status === 403) {
      this.authService.logout();
@@ -86,12 +84,10 @@ export class AuthInterceptor implements HttpInterceptor {
    retry({
     count: 2,
     delay: (error, retryIndex) => {
-     console.warn(`Network error - retry attempt ${retryIndex + 1}:`, error);
      return timer(1000 * Math.pow(2, retryIndex)); // 1s, 2s, 4s delays
     }
    }),
    catchError((finalError) => {
-    console.error('Network error after retries:', finalError);
     return throwError(() => finalError);
    })
   );
@@ -105,9 +101,9 @@ export class AuthInterceptor implements HttpInterceptor {
     delay: () => timer(2000)
    }),
    catchError((finalError) => {
-    console.error('Server error after retry:', finalError);
     return throwError(() => finalError);
    })
   );
  }
 }
+

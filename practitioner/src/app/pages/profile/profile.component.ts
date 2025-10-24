@@ -18,7 +18,6 @@ import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
 import { ConfigService } from '../../services/config.service';
 import { AuthService } from '../../auth/auth.service';
-import { SnackbarService } from '../../services/snackbar/snackbar.service';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { NotificationService } from '../../services/notification.service';
 import { NotificationSettings } from '../../services/notification.service';
@@ -70,7 +69,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly specialityService = inject(SpecialityService);
   private readonly configService = inject(ConfigService)
   private readonly authservice = inject(AuthService)
-  private readonly snackBarService = inject(SnackbarService)
+  private readonly snackBarService = inject(ToastService)
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
@@ -137,21 +136,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
     forkJoin({
       languages: this.languageService.getAllLanguages().pipe(
         catchError(error => {
-          console.error('Error loading languages:', error);
           this.toastService.showError('Failed to load languages');
           return of([]);
         })
       ),
       specialities: this.specialityService.getAllSpecialities().pipe(
         catchError(error => {
-          console.error('Error loading specialities:', error);
           this.toastService.showError('Failed to load specialities');
           return of([]);
         })
       ),
       countries: this.configService.getCountries().pipe(
         catchError(error => {
-          console.error('Error loading specialities:', error);
           this.toastService.showError('Failed to load countries');
           return of([]);
         })
@@ -169,7 +165,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error loading profile data:', error);
         this.toastService.showError('Failed to load profile data');
       }
     });
@@ -323,3 +318,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get notificationsEnabled(): FormControl { return this.profileForm.get('notificationsEnabled') as FormControl; }
   get notificationPhoneNumber(): FormControl { return this.profileForm.get('notificationPhoneNumber') as FormControl }
 }
+

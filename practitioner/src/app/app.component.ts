@@ -61,10 +61,9 @@ export class AppComponent implements OnInit, OnDestroy {
       const currentUser = this.authService.getCurrentUser();
       if (currentUser?.id) {
         this.dashboardWebSocketService.initializeDashboardConnection(currentUser.id);
-        console.log('[AppComponent] Dashboard WebSocket initialized for practitioner:', currentUser.id);
       }
     } catch (error) {
-      console.warn('[AppComponent] Failed to initialize dashboard WebSocket:', error);
+      // Silently fail - WebSocket initialization is not critical
     }
   }
 
@@ -80,8 +79,9 @@ export class AppComponent implements OnInit, OnDestroy {
         this.iconRegistry
           .loadSvg(`assets/svg/${iconName}.svg`, iconName)
           ?.subscribe({
-            error: (error) =>
-              console.error(`Failed to register icon ${iconName}:`, error),
+            error: () => {
+              // Silently fail - icon loading is not critical
+            }
           });
       }
     });

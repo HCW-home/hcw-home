@@ -173,6 +173,7 @@ export class ConsultationService {
         ConsultationStatus.DRAFT,
         ConsultationStatus.SCHEDULED,
         ConsultationStatus.WAITING,
+        ConsultationStatus.TERMINATED_OPEN,
       ];
       if (!validStatuses.includes(consultation.status)) {
         throw HttpExceptionHelper.badRequest(
@@ -208,9 +209,19 @@ export class ConsultationService {
         );
       }
 
-      // Use the dedicated invitation service with enhanced security
-      const invitation =
-        await this.consultationInvitationService.createInvitationEmail(
+
+      // Only allow GUEST or EXPERT roles for add participant
+      if (role !== UserRole.GUEST && role !== UserRole.EXPERT) {
+        this.logger.warn(`Attempted to add participant with invalid role: ${role}`);
+        throw HttpExceptionHelper.badRequest('Only GUEST or EXPERT roles are allowed for add participant.');
+      }
+
+      // Proceed with direct room invitation for valid roles
+      this.logger.log(
+        `Creating DIRECT ROOM invitation for ${role}: ${trimmedEmail}`,
+      );
+      const invitationResult =
+        await this.consultationInvitationService.createDirectRoomInvitation(
           consultationId,
           userId,
           trimmedEmail,
@@ -219,6 +230,23 @@ export class ConsultationService {
           notes?.trim(),
           24 * 60, // 24 hours expiration
         );
+
+      // Extract invitation and email status from result
+      const invitation = invitationResult;
+      const emailSent = (invitationResult as any).emailSent !== false;
+      const emailError = (invitationResult as any).emailError || null;
+      const directRoomLink = (invitationResult as any).directRoomLink || null;
+
+      // Log the email status
+      if (emailSent) {
+        this.logger.log(
+          `✅ Invitation created and email sent successfully to ${trimmedEmail} (Type: ${role === UserRole.GUEST || role === UserRole.EXPERT ? 'DIRECT ROOM' : 'ACKNOWLEDGMENT'})`,
+        );
+      } else {
+        this.logger.warn(
+          `⚠️ Invitation created but email failed for ${trimmedEmail}: ${emailError}`,
+        );
+      }
 
       // Create user if doesn't exist (for tracking)
       let participantUser = await this.db.user.findUnique({
@@ -249,7 +277,7 @@ export class ConsultationService {
           userId: participantUser.id,
           role,
           isActive: false,
-          isBeneficiary: role === UserRole.PATIENT,
+          isBeneficiary: false, // Only PATIENT can be beneficiary, but only GUEST/EXPERT allowed here
         },
       });
 
@@ -283,8 +311,13 @@ export class ConsultationService {
       }
 
       this.logger.log(
-        `Participant invited successfully - Email: ${trimmedEmail}, Role: ${role}, Consultation: ${consultationId}, By: ${userId}`,
+        `Participant invited successfully - Email: ${trimmedEmail}, Role: ${role}, Consultation: ${consultationId}, By: ${userId}, Email Sent: ${emailSent}`,
       );
+
+      const invitationType = (role === UserRole.GUEST || role === UserRole.EXPERT) ? 'direct room access' : 'acknowledgment';
+      const responseMessage = emailSent
+        ? `${role} invited successfully! Invitation email with ${invitationType} has been sent to ${trimmedEmail}.`
+        : `${role} invited successfully. However, email sending failed. Please share the link manually.`;
 
       return ApiResponseDto.success(
         {
@@ -292,8 +325,12 @@ export class ConsultationService {
           participantId: participantUser.id,
           invitationId: invitation.id,
           expiresAt: invitation.expiresAt,
+          emailSent,
+          emailError: emailSent ? null : emailError,
+          invitationType, // 'direct room access' or 'acknowledgment'
+          directRoomLink: directRoomLink || undefined, // Only for GUEST/EXPERT
         },
-        'Participant invited successfully. Invitation email has been sent.',
+        responseMessage,
         201,
       );
     } catch (error) {
@@ -1028,8 +1065,7 @@ export class ConsultationService {
             language: patient.country ?? null,
             message: 'Patient joined and is waiting',
           });
-        // Targeted patient joined event for dashboard and immediate UI update + sound
-        // Use centralized gateway helper to apply debounce and consistent logging
+
         try {
           const requestId = uuidv4(); // generate request id for traceability
           const payload = {
@@ -2726,6 +2762,7 @@ export class ConsultationService {
       ConsultationStatus.ACTIVE,
       ConsultationStatus.WAITING,
       ConsultationStatus.SCHEDULED,
+      ConsultationStatus.TERMINATED_OPEN,
     ]);
 
     if (!ALLOWED_TERMINATION_STATUSES.has(consultation.status)) {
@@ -2939,7 +2976,16 @@ export class ConsultationService {
       orderBy: { closedAt: 'desc' },
     });
 
-    return consults.map((c) => this.mapToHistoryItem(c));
+    // Only include consultations that have a patient participant
+    return consults
+      .map((c) => {
+        try {
+          return this.mapToHistoryItem(c);
+        } catch (err) {
+          return null;
+        }
+      })
+      .filter((item) => item !== null);
   }
 
   async getConsultationDetails(id: number): Promise<ConsultationDetailDto> {
@@ -3441,7 +3487,11 @@ export class ConsultationService {
       where: {
         ownerId: practitionerId,
         closedAt: null,
-        startedAt: { not: null },
+        OR: [
+          { startedAt: { not: null } },
+          { status: ConsultationStatus.SCHEDULED },
+          { status: ConsultationStatus.TERMINATED_OPEN },
+        ],
       },
     });
 
@@ -3449,7 +3499,11 @@ export class ConsultationService {
       where: {
         ownerId: practitionerId,
         closedAt: null,
-        startedAt: { not: null },
+        OR: [
+          { startedAt: { not: null } },
+          { status: ConsultationStatus.SCHEDULED },
+          { status: ConsultationStatus.TERMINATED_OPEN },
+        ],
       },
       include: {
         participants: {
@@ -3478,7 +3532,10 @@ export class ConsultationService {
           },
         },
       },
-      orderBy: { startedAt: 'desc' },
+      orderBy: [
+        { startedAt: 'desc' },
+        { scheduledDate: 'desc' },
+      ],
       skip,
       take: limit,
     });
@@ -3505,9 +3562,15 @@ export class ConsultationService {
           isOffline: patientParticipant ? !patientParticipant.isActive : true,
         };
 
-        const timeSinceStart = this.calculateTimeSinceStart(
-          consultation.startedAt!,
-        );
+        // Calculate time display based on consultation status
+        let timeSinceStart: string;
+        if (consultation.startedAt) {
+          timeSinceStart = this.calculateTimeSinceStart(consultation.startedAt);
+        } else if (consultation.status === ConsultationStatus.SCHEDULED) {
+          timeSinceStart = 'Scheduled';
+        } else {
+          timeSinceStart = 'Not started';
+        }
 
         return {
           id: consultation.id,
@@ -3641,7 +3704,6 @@ export class ConsultationService {
         },
       });
 
-      // Create an audit log entry or other follow-up DB updates here if needed in future
       return consultationUpdate;
     });
 

@@ -54,161 +54,7 @@ export interface SystemMessage {
   selector: 'app-real-time-status-panel',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="real-time-status-panel">
-      <!-- Connection Status -->
-      <div class="connection-status" [class]="'status-' + connectionState.status">
-        <div class="status-indicator">
-          <span class="status-dot"></span>
-          <span class="status-text">{{ getConnectionStatusText() }}</span>
-        </div>
-        <div *ngIf="connectionState.reconnectAttempts > 0" class="reconnect-info">
-          Reconnection attempts: {{ connectionState.reconnectAttempts }}
-        </div>
-      </div>
-
-      <!-- Waiting Room Status -->
-      <div *ngIf="waitingRoomStatus.hasWaitingPatients" class="waiting-room-alert">
-        <div class="alert-header">
-          <span class="alert-icon">👥</span>
-          <span class="alert-title">Patients Waiting ({{ waitingRoomStatus.waitingCount }})</span>
-          <button class="sound-toggle" 
-                  [class.active]="soundEnabled" 
-                  (click)="toggleSoundNotifications()"
-                  title="Toggle sound notifications">
-            🔊
-          </button>
-        </div>
-        <div class="waiting-patients">
-          <div *ngFor="let patient of waitingRoomStatus.patients" class="waiting-patient">
-            <div class="patient-info">
-              <span class="patient-name">{{ patient.name }}</span>
-              <span class="wait-time">Waiting {{ patient.waitingTime }}m</span>
-            </div>
-            <button class="admit-btn" (click)="admitPatient(patient.id)">
-              Admit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Participants List -->
-      <div class="participants-section">
-        <h3>Participants ({{ participants.length }})</h3>
-        <div class="participants-list">
-          <div *ngFor="let participant of participants" class="participant-item">
-            <div class="participant-info">
-              <div class="participant-avatar" [class]="'role-' + participant.role.toLowerCase()">
-                {{ getParticipantInitials(participant.name) }}
-              </div>
-              <div class="participant-details">
-                <span class="participant-name">{{ participant.name }}</span>
-                <span class="participant-role">{{ participant.role.toLowerCase() }}</span>
-                <div class="participant-status">
-                  <span *ngIf="participant.isActive" class="status-active">Active</span>
-                  <span *ngIf="!participant.isActive" class="status-inactive">
-                    Away {{ getTimeAgo(participant.lastSeen) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="participant-controls">
-              <!-- Media Status Icons -->
-              <div class="media-status">
-                <button class="media-btn camera" 
-                        [class.enabled]="participant.mediaStatus.cameraEnabled"
-                        [class.blocked]="participant.mediaStatus.cameraBlocked"
-                        [disabled]="!canControlMedia(participant)"
-                        (click)="toggleParticipantCamera(participant.id)"
-                        [title]="getCameraStatusText(participant.mediaStatus)">
-                  📹
-                </button>
-                <button class="media-btn microphone" 
-                        [class.enabled]="participant.mediaStatus.microphoneEnabled"
-                        [class.blocked]="participant.mediaStatus.microphoneBlocked"
-                        [disabled]="!canControlMedia(participant)"
-                        (click)="toggleParticipantMicrophone(participant.id)"
-                        [title]="getMicrophoneStatusText(participant.mediaStatus)">
-                  🎤
-                </button>
-              </div>
-              
-              <!-- Connection Quality -->
-              <div class="connection-quality" [class]="'quality-' + participant.connectionQuality">
-                <span class="quality-indicator" 
-                      [title]="'Connection: ' + participant.connectionQuality">
-                  📶
-                </span>
-              </div>
-              
-              <!-- Remove Participant (for practitioners) -->
-              <button *ngIf="canRemoveParticipant(participant)" 
-                      class="remove-btn"
-                      (click)="removeParticipant(participant.id)"
-                      title="Remove participant">
-                ❌
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- System Messages -->
-      <div class="system-messages">
-        <h3>Activity</h3>
-        <div class="messages-list">
-          <div *ngFor="let message of recentMessages" 
-               class="system-message"
-               [class]="'priority-' + message.priority">
-            <div class="message-content">
-              <span class="message-text">{{ message.message }}</span>
-              <span class="message-time">{{ formatTime(message.timestamp) }}</span>
-            </div>
-            <div *ngIf="message.type === 'media_permission'" class="message-action">
-              <button class="help-btn" (click)="showMediaHelp(message.data)">
-                Help
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Add Participant Button -->
-      <div class="add-participant-section" *ngIf="userRole === 'PRACTITIONER'">
-        <button class="add-participant-btn" (click)="showAddParticipantDialog()">
-          + Add Expert/Guest
-        </button>
-      </div>
-
-      <!-- Media Permission Status -->
-      <div class="media-permission-status" *ngIf="showMediaStatus">
-        <h4>Media Permissions</h4>
-        <div class="permission-item">
-          <span class="permission-label">Camera:</span>
-          <span class="permission-status" [class]="getCameraPermissionClass()">
-            {{ getCameraPermissionText() }}
-          </span>
-          <button *ngIf="mediaPermissions.camera.blocked" 
-                  class="permission-help-btn"
-                  (click)="showCameraHelp()">
-            Help
-          </button>
-        </div>
-        <div class="permission-item">
-          <span class="permission-label">Microphone:</span>
-          <span class="permission-status" [class]="getMicrophonePermissionClass()">
-            {{ getMicrophonePermissionText() }}
-          </span>
-          <button *ngIf="mediaPermissions.microphone.blocked" 
-                  class="permission-help-btn"
-                  (click)="showMicrophoneHelp()">
-            Help
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './real-time-status-panel.component.html',
   styleUrls: ['./real-time-status-panel.component.scss']
 })
 export class RealTimeStatusPanelComponent implements OnInit, OnDestroy {
@@ -344,7 +190,6 @@ export class RealTimeStatusPanelComponent implements OnInit, OnDestroy {
     try {
       await this.mediaPermissionService.checkAndRequestPermissions({ video: false, audio: false });
     } catch (error) {
-      console.error('Failed to check media permissions:', error);
     }
   }
 
@@ -425,12 +270,10 @@ export class RealTimeStatusPanelComponent implements OnInit, OnDestroy {
 
   toggleParticipantCamera(participantId: number): void {
     // Implementation for toggling participant camera
-    console.log('Toggle camera for participant:', participantId);
   }
 
   toggleParticipantMicrophone(participantId: number): void {
     // Implementation for toggling participant microphone
-    console.log('Toggle microphone for participant:', participantId);
   }
 
   canControlMedia(participant: ParticipantStatus): boolean {
@@ -443,7 +286,6 @@ export class RealTimeStatusPanelComponent implements OnInit, OnDestroy {
 
   showAddParticipantDialog(): void {
     // Implementation for showing add participant dialog
-    console.log('Show add participant dialog');
   }
 
   showMediaHelp(data: any): void {
@@ -535,3 +377,4 @@ export class RealTimeStatusPanelComponent implements OnInit, OnDestroy {
     }
   }
 }
+

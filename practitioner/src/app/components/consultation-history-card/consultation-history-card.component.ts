@@ -69,15 +69,13 @@ export class ConsultationHistoryCardComponent {
             error: (error) => {
               this.downloadingPdf = false;
               this.downloadError = error.message || 'Failed to download PDF report';
-              console.error('PDF download error:', error);
-            },
+              },
           });
       },
       error: (error) => {
         this.downloadingPdf = false;
         this.downloadError = 'Failed to get user information';
-        console.error('Error getting current user:', error);
-      }
+        }
     });
   }
 

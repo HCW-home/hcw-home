@@ -76,8 +76,7 @@ export class ConsultationDetailPanelComponent implements OnChanges {
         error: (error) => {
           this.error = error.message || 'Failed to load consultation details';
           this.loading = false;
-          console.error('Error loading consultation detail:', error);
-        },
+          },
       });
   }
 
@@ -104,15 +103,13 @@ export class ConsultationDetailPanelComponent implements OnChanges {
             error: (error) => {
               this.downloadingPdf = false;
               this.downloadError = error.message || 'Failed to download PDF report';
-              console.error('PDF download error:', error);
-            },
+              },
           });
       },
       error: (error) => {
         this.downloadingPdf = false;
         this.downloadError = 'Failed to get user information';
-        console.error('Error getting current user:', error);
-      }
+        }
     });
   }
 
@@ -186,7 +183,6 @@ export class ConsultationDetailPanelComponent implements OnChanges {
 
   onFeedbackSubmit(feedbackData: FeedbackData): void {
     if (!this.consultationDetail) {
-      console.error('No consultation detail available');
       return;
     }
 
@@ -208,12 +204,10 @@ export class ConsultationDetailPanelComponent implements OnChanges {
 
     this.consultationService.submitFeedback(submitRequest).subscribe({
       next: (response) => {
-        console.log('Feedback submitted successfully:', response);
         this.showFeedbackModal = false;
         // You could show a success message here
       },
       error: (error) => {
-        console.error('Failed to submit feedback:', error);
         // You could show an error message here
         // For now, we'll still close the modal
         this.showFeedbackModal = false;

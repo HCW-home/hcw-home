@@ -31,6 +31,8 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
   @Input() unreadCount: number = 0;
   @Input() typingUsers: TypingIndicator[] = [];
   @Input() participants: Array<{ id: number; firstName: string; lastName: string; role: string }> = [];
+  @Input() canLoadMore: boolean = false;
+  @Output() loadMoreMessages = new EventEmitter<void>();
   @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   newMessage: string = '';
@@ -38,6 +40,7 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
   typingTimeout?: number;
   selectedFile?: File;
   isUploading: boolean = false;
+  isLoadingMore: boolean = false;
   uploadProgress: number = 0;
   uploadError: string = '';
   messageSendError: string = '';
@@ -65,6 +68,23 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
     if (event.key === 'Enter') {
       this.onSendMessage();
     }
+  }
+
+  /**
+   * Load more messages handler
+   */
+  onLoadMoreMessages(): void {
+    if (this.isLoadingMore || !this.canLoadMore) {
+      return;
+    }
+
+    this.isLoadingMore = true;
+    this.loadMoreMessages.emit();
+
+    // Reset loading state after 5 seconds (timeout)
+    setTimeout(() => {
+      this.isLoadingMore = false;
+    }, 5000);
   }
 
   ngOnInit() {
@@ -115,19 +135,19 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
 
   async onSendMessage() {
     const messageContent = this.newMessage.trim();
-    if (!messageContent) return;
+    if (!messageContent) {
+      return;
+    }
+
     try {
-      // Ensure backend connection before sending
-      const isConnected = await this.chatService.getConnectionState().toPromise();
-      if (!isConnected) {
-        this.messageSendError = 'Chat connection lost. Please try again.';
-        this.toastService.showError(this.messageSendError);
-        return;
-      }
+      // Emit the message to parent component (consultation room)
       this.sendMessage.emit(messageContent);
+
+      // Clear input and stop typing indicator
       this.newMessage = '';
       this.stopTypingIndicator();
       this.shouldScrollToBottom = true;
+
     } catch (err: any) {
       this.messageSendError = err?.message || 'Failed to send message.';
       this.toastService.showError(this.messageSendError);
@@ -243,13 +263,115 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
     return mediaType?.startsWith('image/') || false;
   }
 
-  downloadFile(message: ChatMessage) {
-    if (message.mediaUrl) {
-      const link = document.createElement('a');
-      link.href = message.mediaUrl;
-      link.download = message.fileName || 'download';
-      link.click();
+  /**
+   * Get file preview type for inline rendering
+   */
+  getFilePreviewType(message: ChatMessage): 'image' | 'video' | 'audio' | 'file' {
+    // Check messageType first
+    if (message.messageType === 'image') {
+      return 'image';
     }
+    if (message.messageType === 'file') {
+      // For file type, need to check filename extension
+      const fileName = message.fileName?.toLowerCase();
+      if (fileName) {
+        if (fileName.match(/\.(mp4|webm|mov|avi|mkv)$/i)) {
+          return 'video';
+        }
+        if (fileName.match(/\.(mp3|wav|ogg|m4a|flac)$/i)) {
+          return 'audio';
+        }
+        if (fileName.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i)) {
+          return 'image';
+        }
+      }
+    }
+
+    // Fallback to filename extension detection
+    const fileName = message.fileName?.toLowerCase();
+    if (fileName) {
+      if (fileName.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i)) {
+        return 'image';
+      }
+      if (fileName.match(/\.(mp4|webm|mov|avi|mkv)$/i)) {
+        return 'video';
+      }
+      if (fileName.match(/\.(mp3|wav|ogg|m4a|flac)$/i)) {
+        return 'audio';
+      }
+    }
+
+    // Check media URL
+    const mediaPath = message.mediaUrl || '';
+    if (mediaPath.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i)) {
+      return 'image';
+    }
+    if (mediaPath.match(/\.(mp4|webm|mov|avi|mkv)$/i)) {
+      return 'video';
+    }
+    if (mediaPath.match(/\.(mp3|wav|ogg|m4a|flac)$/i)) {
+      return 'audio';
+    }
+
+    return 'file';
+  }
+
+  /**
+   * Get the media URL for display
+   */
+  getMediaUrl(message: ChatMessage): string {
+    return message.mediaUrl || '';
+  }
+
+  /**
+   * Download file handler
+   */
+  downloadFile(message: ChatMessage): void {
+    const url = this.getMediaUrl(message);
+    if (!url) {
+      this.toastService.showError('File URL not available');
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = message.fileName || 'download';
+      link.target = '_blank'; // Open in new tab if download fails
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      this.toastService.showSuccess(`Downloading ${message.fileName || 'file'}...`);
+    } catch (error) {
+      this.toastService.showError('Failed to download file');
+      console.error('Download error:', error);
+    }
+  }
+
+  /**
+   * Get file icon based on file type
+   */
+  getFileIcon(message: ChatMessage): string {
+    const fileName = message.fileName?.toLowerCase() || '';
+
+    // Documents
+    if (fileName.match(/\.pdf$/i)) return '📄';
+    if (fileName.match(/\.(doc|docx)$/i)) return '📝';
+    if (fileName.match(/\.(xls|xlsx)$/i)) return '📊';
+    if (fileName.match(/\.(ppt|pptx)$/i)) return '📽️';
+
+    // Archives
+    if (fileName.match(/\.(zip|rar|7z|tar|gz)$/i)) return '🗜️';
+
+    // Code files
+    if (fileName.match(/\.(js|ts|jsx|tsx|py|java|cpp|c|h)$/i)) return '💻';
+
+    // DICOM medical files
+    if (fileName.match(/\.dcm$/i)) return '🏥';
+
+    // Default
+    return '📎';
   }
 
   getMessageInitials(message: ChatMessage): string {
@@ -284,3 +406,4 @@ export class PractitionerChatComponent implements OnInit, OnDestroy, AfterViewCh
     }
   }
 }
+

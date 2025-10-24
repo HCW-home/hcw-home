@@ -17,14 +17,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
-import { SnackbarService } from '../services/snackbar/snackbar.service';
+import { ToastService } from '../services/toast/toast.service';
 import { AccessDeniedComponent } from '../components/access-denied/access-denied.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { ButtonComponent } from '../components/ui/button/button.component';
 import { TermService } from '../services/term.service';
 import { SetPasswordComponent } from '../components/set-password/set-password.component';
-
-
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: NgForm | FormGroupDirective | null): boolean {
@@ -32,7 +30,6 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
   }
 }
-
 
 @Component({
   selector: 'app-login',
@@ -61,11 +58,13 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
-  private snackBarService=inject(SnackbarService)
-  private termService= inject(TermService)
-  errorMessage:string = '';
-  showSetPasswordForm:boolean=false;
-  showPassword = false;
+  private snackBarService = inject(ToastService)
+  private termService = inject(TermService)
+  errorMessage: string = '';
+  showSetPasswordForm: boolean = false;
+
+  showPassword: boolean = false;
+
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -91,13 +90,13 @@ export class LoginComponent implements OnInit {
     const accessToken = queryParams['aT'];
     const refreshToken = queryParams['rT'];
     this.returnUrl = queryParams['returnUrl'] || '/dashboard';
-    const error = queryParams['error'];  
-    const mode= queryParams['mode'];
-    if(mode==='set-password'){
-      this.showSetPasswordForm=true
+    const error = queryParams['error'];
+    const mode = queryParams['mode'];
+    if (mode === 'set-password') {
+      this.showSetPasswordForm = true
     }
     else if (accessToken && refreshToken) {
-      this.authService.login(accessToken,refreshToken).subscribe({
+      this.authService.login(accessToken, refreshToken).subscribe({
 
         next: (user) => {
           if (user) {
@@ -109,8 +108,7 @@ export class LoginComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('[Login] Error fetching profile:', err);
-        }
+          }
       });
       return;
     } else if (error) {
@@ -159,11 +157,9 @@ export class LoginComponent implements OnInit {
             this.snackBarService.showError('Invalid email or password.');
           }
 
-          console.error('Login failed:', err);
-        }
+          }
       });
     } else {
-      console.warn('Form invalid');
       this.snackBarService.showError('Please fill in all required fields correctly.');
     }
   }
@@ -174,3 +170,4 @@ export class LoginComponent implements OnInit {
   }
 
 }
+

@@ -1,1 +1,278 @@
-<p>invites works!</p>
+<div class="invites-page">
+  <!-- Invite Form Modal -->
+  <app-invite-form
+    *ngIf="isInviteFormOpen"
+    [editData]="editingInviteFormData"
+    [practitionerId]="editingInvite?.practitionerId || 1"
+    (close)="closeInviteForm()"
+    (submit)="onInviteFormSubmit($event)"
+  ></app-invite-form>
+
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">📧 INVITATIONS</h1>
+      <p class="page-subtitle">
+        Manage and track patient consultation invitations
+      </p>
+    </div>
+    <div class="header-actions">
+      <button
+        class="btn-refresh"
+        (click)="loadInvites()"
+        [disabled]="isLoading"
+        title="Refresh invitations"
+      >
+        <span class="refresh-icon">🔄</span>
+        <span class="refresh-text">Refresh</span>
+      </button>
+      <div class="invites-count-badge">
+        <span class="count-number">{{ totalInvites }}</span>
+        <span class="count-label">{{
+          totalInvites === 1 ? "Invitation" : "Invitations"
+        }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading invitations...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h3 class="error-title">Error Loading Invitations</h3>
+        <p class="error-message">{{ error }}</p>
+        <button class="btn-retry" (click)="loadInvites()">
+          <span class="retry-icon">🔄</span>
+          Try Again
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div
+      *ngIf="!isLoading && !error && invites.length === 0"
+      class="empty-state"
+    >
+      <div class="empty-card">
+        <div class="empty-icon">📧</div>
+        <h3 class="empty-title">No Invitations Found</h3>
+        <p class="empty-description">
+          You haven't sent any invitations yet. Start by creating a new patient
+          consultation to send your first invitation.
+        </p>
+      </div>
+    </div>
+
+    <!-- Invites Table -->
+    <div
+      *ngIf="!isLoading && !error && invites.length > 0"
+      class="invites-table-container"
+    >
+      <div class="table-card">
+        <div class="table-header">
+          <h3 class="table-title">📋 Invitation Details</h3>
+          <div class="table-stats">
+            <span class="stat-item">
+              <span class="stat-label">Total:</span>
+              <span class="stat-value">{{ invites.length }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="invites-table">
+            <thead>
+              <tr>
+                <th class="col-email">📧 Email</th>
+                <th class="col-name">👤 Patient Name</th>
+                <th class="col-created">📅 Created</th>
+                <th class="col-method">📱 Method</th>
+                <th class="col-scheduled">⏰ Scheduled</th>
+                <th class="col-consultation">🏥 Consultation</th>
+                <th class="col-status">📊 Status</th>
+                <th class="col-notes">📝 Notes</th>
+                <th class="col-actions">⚡ Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let invite of invites; trackBy: trackInvite"
+                class="invite-row"
+              >
+                <td class="col-email">
+                  <div class="email-cell">
+                    <span class="email-text">{{ invite.patientEmail }}</span>
+                  </div>
+                </td>
+                <td class="col-name">
+                  <span class="name-text">{{
+                    invite.patientName || "N/A"
+                  }}</span>
+                </td>
+                <td class="col-created">
+                  <span class="date-text">{{
+                    formatDate(invite.createdAt)
+                  }}</span>
+                </td>
+                <td class="col-method">
+                  <span class="method-badge">{{
+                    invite.communicationMethod || "Email"
+                  }}</span>
+                </td>
+                <td class="col-scheduled">
+                  <div class="scheduled-cell">
+                    <span class="scheduled-text" *ngIf="invite.scheduledDate">
+                      {{ formatDate(invite.scheduledDate) }}
+                      <small class="timezone-text">(Asia/Kolkata)</small>
+                    </span>
+                    <span class="no-schedule" *ngIf="!invite.scheduledDate"
+                      >-</span
+                    >
+                  </div>
+                </td>
+                <td class="col-consultation">
+                  <span class="consultation-id" *ngIf="invite.consultationId">
+                    #{{ invite.consultationId }}
+                  </span>
+                  <span class="no-consultation" *ngIf="!invite.consultationId"
+                    >-</span
+                  >
+                </td>
+                <td class="col-status">
+                  <span
+                    class="status-badge"
+                    [class]="
+                      getAcceptanceStatusClass(getStatusDisplayText(invite))
+                    "
+                  >
+                    {{ getStatusDisplayText(invite) }}
+                  </span>
+                </td>
+                <td class="col-notes">
+                  <div class="notes-cell">
+                    <span class="notes-text" *ngIf="invite.notes">{{
+                      invite.notes
+                    }}</span>
+                    <span class="no-notes" *ngIf="!invite.notes">-</span>
+                  </div>
+                </td>
+                <td class="col-actions">
+                  <div class="action-cell">
+                    <ng-container
+                      *ngIf="
+                        getStatusDisplayText(invite).toLowerCase() ===
+                          'accepted';
+                        else statusActions
+                      "
+                    >
+                      <button
+                        class="action-btn join-btn"
+                        [routerLink]="[
+                          '/consultation-room',
+                          invite.consultationId
+                        ]"
+                        title="Join consultation"
+                      >
+                        <span class="btn-icon">🎥</span>
+                        <span class="btn-text">Join</span>
+                      </button>
+                    </ng-container>
+                    <ng-template #statusActions>
+                      <div class="status-actions">
+                        <button
+                          *ngIf="
+                            getStatusDisplayText(invite).toLowerCase() ===
+                            'scheduled'
+                          "
+                          class="action-btn edit-btn"
+                          (click)="onInvite(invite)"
+                          title="Edit or resend this invitation"
+                        >
+                          <span class="btn-icon">✉️</span>
+                          <span class="btn-text">Resend/Edit</span>
+                        </button>
+                        <span
+                          *ngIf="
+                            getStatusDisplayText(invite).toLowerCase() ===
+                            'rejected'
+                          "
+                          class="status-text declined"
+                        >
+                          ❌ Declined
+                        </span>
+                        <span
+                          *ngIf="
+                            getStatusDisplayText(invite).toLowerCase() ===
+                            'expired'
+                          "
+                          class="status-text expired"
+                        >
+                          ⏰ Expired
+                        </span>
+                      </div>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination-container">
+      <div class="pagination-card">
+        <div class="pagination-controls">
+          <button
+            class="page-btn prev-btn"
+            [disabled]="currentPage === 1"
+            (click)="onPageChange(currentPage - 1)"
+            title="Previous page"
+          >
+            <span class="btn-icon">‹</span>
+            <span class="btn-text">Previous</span>
+          </button>
+
+          <div class="page-numbers">
+            <button
+              *ngFor="let page of getPaginationPages(); trackBy: trackPage"
+              class="page-number"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)"
+              [title]="'Go to page ' + page"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            class="page-btn next-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="onPageChange(currentPage + 1)"
+            title="Next page"
+          >
+            <span class="btn-text">Next</span>
+            <span class="btn-icon">›</span>
+          </button>
+        </div>
+
+        <div class="pagination-info">
+          <span class="info-text">
+            Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to
+            <strong>{{
+              Math.min(currentPage * pageSize, totalInvites)
+            }}</strong>
+            of <strong>{{ totalInvites }}</strong> invitations
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

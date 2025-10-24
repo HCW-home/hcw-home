@@ -4,28 +4,48 @@
     <!-- Main Content Area -->
     <main class="content">
       <div class="content-header">
-        <h1 class="page-title">WAITING ROOM</h1>
+        <h1 class="page-title">
+          WAITING ROOM
+          <span
+            *ngIf="newPatientBadge"
+            class="new-patient-badge"
+            title="New patient joined!"
+          >
+            <span class="badge-dot"></span> New Patient
+            <button
+              class="clear-badge-btn"
+              (click)="clearNewPatientBadge()"
+              title="Clear new patient alert"
+            >
+              ✕
+            </button>
+          </span>
+        </h1>
         <div class="header-actions">
           <!-- Connection Status Indicator -->
-          <div class="connection-status" [class.connected]="isRealTimeActive()" [class.offline]="!isRealTimeActive()">
+          <div
+            class="connection-status"
+            [class.connected]="isRealTimeActive()"
+            [class.offline]="!isRealTimeActive()"
+          >
             <span class="status-dot"></span>
             <span class="status-text">{{ getConnectionStatus() }}</span>
           </div>
-          
+
           <!-- Reconnect Button (show only when disconnected) -->
-          <button 
+          <button
             *ngIf="!isRealTimeActive()"
-            class="reconnect-btn" 
-            (click)="reconnectWebSocket()" 
+            class="reconnect-btn"
+            (click)="reconnectWebSocket()"
             [disabled]="isLoading"
             title="Reconnect real-time updates"
           >
             Reconnect
           </button>
-          
-          <button 
-            class="refresh-btn" 
-            (click)="onRefresh()" 
+
+          <button
+            class="refresh-btn"
+            (click)="onRefresh()"
             [disabled]="isLoading"
             title="Refresh waiting room"
           >
@@ -48,24 +68,37 @@
           <p class="error-message">{{ error }}</p>
           <div class="error-actions">
             <button class="retry-btn" (click)="onRefresh()">Try Again</button>
-            <button *ngIf="!isRealTimeActive()" class="reconnect-btn" (click)="reconnectWebSocket()">
+            <button
+              *ngIf="!isRealTimeActive()"
+              class="reconnect-btn"
+              (click)="reconnectWebSocket()"
+            >
               Reconnect WebSocket
             </button>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!isLoading && !error && waitingRoomItems.length === 0" class="no-consultation">
+        <div
+          *ngIf="!isLoading && !error && waitingRoomItems.length === 0"
+          class="no-consultation"
+        >
           <div class="empty-icon">👥</div>
           <h3>No patients waiting</h3>
-          <p>The waiting room is currently empty. New appointments will appear here.</p>
+          <p>
+            The waiting room is currently empty. New appointments will appear
+            here.
+          </p>
           <div class="empty-status">
             <p class="status-message">{{ getStatusMessage() }}</p>
           </div>
         </div>
-        
+
         <!-- Waiting Room Entries -->
-        <div *ngIf="!isLoading && !error && waitingRoomItems.length > 0" class="waiting-room-content">
+        <div
+          *ngIf="!isLoading && !error && waitingRoomItems.length > 0"
+          class="waiting-room-content"
+        >
           <!-- Enhanced Summary Info -->
           <div class="summary-bar">
             <div class="summary-item">
@@ -78,98 +111,215 @@
             </div>
           </div>
 
-          <!-- Enhanced Patients Grid -->
+          <!-- Sorting/Filtering Controls -->
+          <div
+            class="controls-bar"
+            role="region"
+            aria-label="Sorting and Filtering Controls"
+          >
+            <label for="sortSelect" class="visually-hidden">Sort by</label>
+            <select
+              id="sortSelect"
+              [(ngModel)]="sortOption"
+              aria-label="Sort patients"
+            >
+              <option value="queue">Queue Position</option>
+              <option value="wait">Wait Time</option>
+              <option value="language">Language</option>
+            </select>
+            <label for="filterInput" class="visually-hidden"
+              >Filter by name or ID</label
+            >
+            <input
+              id="filterInput"
+              type="text"
+              [(ngModel)]="filterText"
+              placeholder="Filter by name or ID"
+              aria-label="Filter patients"
+            />
+          </div>
+
+          <!-- Bulk Actions -->
+          <div class="bulk-actions-bar" role="region" aria-label="Bulk Actions">
+            <button
+              class="bulk-btn"
+              (click)="admitSelected()"
+              [disabled]="!hasSelected()"
+              aria-label="Admit selected patients"
+            >
+              Admit Selected
+            </button>
+            <button
+              class="bulk-btn"
+              (click)="messageSelected()"
+              [disabled]="!hasSelected()"
+              aria-label="Message selected patients"
+            >
+              Message Selected
+            </button>
+            <button
+              class="bulk-btn"
+              (click)="dismissSelected()"
+              [disabled]="!hasSelected()"
+              aria-label="Dismiss selected patients"
+            >
+              Dismiss Selected
+            </button>
+          </div>
           <div class="patients-grid">
-            <div 
-              *ngFor="let entry of waitingRoomItems; trackBy: trackByPatientId" 
+            <div
+              *ngFor="
+                let entry of filteredAndSortedItems();
+                trackBy: trackByPatientId
+              "
               class="patient-card"
               [class.stale]="isConsultationStale(entry.joinTime)"
-              [class.priority-high]="getPriorityClass(entry.joinTime) === 'priority-high'"
-              [class.priority-medium]="getPriorityClass(entry.joinTime) === 'priority-medium'"
-              [class.priority-normal]="getPriorityClass(entry.joinTime) === 'priority-normal'"
+              [class.priority-high]="
+                getPriorityClass(entry.joinTime) === 'priority-high'
+              "
+              [class.priority-medium]="
+                getPriorityClass(entry.joinTime) === 'priority-medium'
+              "
+              [class.priority-normal]="
+                getPriorityClass(entry.joinTime) === 'priority-normal'
+              "
               [class.not-joined]="!entry.joinTime"
             >
-              <div class="patient-header">
-                <div class="patient-avatar" [class.waiting]="entry.joinTime" [class.pending]="!entry.joinTime">
+              <div class="patient-header" aria-label="Patient Card Header">
+                <div
+                  class="patient-avatar"
+                  [class.waiting]="entry.joinTime"
+                  [class.pending]="!entry.joinTime"
+                  aria-label="Patient Avatar"
+                >
                   {{ entry.patientInitials }}
                 </div>
-                <div class="patient-info">
+                <div class="patient-info" aria-label="Patient Info">
                   <h3 class="patient-initials">{{ entry.patientInitials }}</h3>
                   <span class="patient-id">ID: {{ entry.id }}</span>
-                  <!-- Queue position badge -->
-                  <span class="queue-badge" *ngIf="entry.queuePosition && entry.joinTime">
-                    #{{ entry.queuePosition }}
+                  <span
+                    class="queue-badge"
+                    *ngIf="entry.queuePosition && entry.joinTime"
+                    >#{{ entry.queuePosition }}</span
+                  >
+                  <span class="patient-language" *ngIf="entry.language">
+                    <i class="lang-icon" aria-label="Language"></i>
+                    {{ entry.language | uppercase }}
+                  </span>
+                  <span class="patient-reason" *ngIf="entry.reason">
+                    <i class="reason-icon" aria-label="Reason"></i>
+                    {{ entry.reason }}
                   </span>
                 </div>
-                
-                <!-- Status indicators -->
                 <div class="status-indicators">
-                  <div class="status-indicator" *ngIf="isConsultationStale(entry.joinTime)" title="Patient has been waiting for more than 30 minutes">
+                  <div
+                    class="status-indicator"
+                    *ngIf="isConsultationStale(entry.joinTime)"
+                    title="Patient has been waiting for more than 30 minutes"
+                  >
                     <span class="stale-warning">⚠️</span>
                   </div>
-                  <div class="status-indicator" *ngIf="!entry.joinTime" title="Patient hasn't joined the waiting room yet">
+                  <div
+                    class="status-indicator"
+                    *ngIf="!entry.joinTime"
+                    title="Patient hasn't joined the waiting room yet"
+                  >
                     <span class="pending-indicator">⏳</span>
                   </div>
                 </div>
               </div>
-              
-              <div class="patient-details">
+
+              <div class="patient-details" aria-label="Patient Details">
                 <div class="detail-row">
                   <span class="detail-label">Join Time:</span>
-                  <span class="detail-value">{{ getJoinTimeFormatted(entry.joinTime) }}</span>
+                  <span class="detail-value">{{
+                    getJoinTimeFormatted(entry.joinTime)
+                  }}</span>
                 </div>
-                
+
                 <div class="detail-row">
                   <span class="detail-label">Waiting:</span>
-                  <span class="detail-value waiting-time" 
-                        [class.stale-time]="isConsultationStale(entry.joinTime)"
-                        [class.relative-time]="entry.joinTime">
+                  <span
+                    class="detail-value waiting-time"
+                    [class.stale-time]="isConsultationStale(entry.joinTime)"
+                    [class.relative-time]="entry.joinTime"
+                  >
                     {{ getRelativeTime(entry.joinTime) }}
                   </span>
                 </div>
-                
+
                 <!-- Queue status -->
                 <div class="detail-row">
                   <span class="detail-label">Status:</span>
-                  <span class="detail-value queue-status" [class.waiting]="entry.joinTime" [class.pending]="!entry.joinTime">
+                  <span
+                    class="detail-value queue-status"
+                    [class.waiting]="entry.joinTime"
+                    [class.pending]="!entry.joinTime"
+                  >
                     {{ getQueueStatus(entry) }}
                   </span>
                 </div>
-                
+
                 <!-- Estimated wait time -->
-                <div class="detail-row" *ngIf="entry.joinTime && entry.estimatedWaitTime">
+                <div
+                  class="detail-row"
+                  *ngIf="entry.joinTime && entry.estimatedWaitTime"
+                >
                   <span class="detail-label">Est. Wait:</span>
-                  <span class="detail-value estimated-time">{{ getEstimatedWaitTime(entry) }}</span>
+                  <span class="detail-value estimated-time">{{
+                    getEstimatedWaitTime(entry)
+                  }}</span>
                 </div>
-                
+
                 <div class="detail-row" *ngIf="entry.language">
                   <span class="detail-label">Language:</span>
-                  <span class="detail-value language-tag">{{ entry.language | uppercase }}</span>
+                  <span class="detail-value language-tag">{{
+                    entry.language | uppercase
+                  }}</span>
                 </div>
               </div>
 
-              <div class="patient-actions">
-                <button 
+              <div class="patient-actions" aria-label="Patient Actions">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="entry.selected"
+                  aria-label="Select patient for bulk actions"
+                />
+                <button
                   class="action-btn primary"
                   [disabled]="!entry.joinTime"
-                  (click)="enterConsultation(practitionerId)"
-                  [title]="!entry.joinTime ? 'Patient has not joined yet' : 'Start consultation with ' + entry.patientInitials"
+                  (click)="enterConsultation(entry.id)"
+                  [title]="
+                    !entry.joinTime
+                      ? 'Patient has not joined yet'
+                      : 'Start consultation with ' + entry.patientInitials
+                  "
                 >
-                  <span *ngIf="!entry.joinTime" class="btn-text">Waiting for Patient</span>
-                  <span *ngIf="entry.joinTime" class="btn-text">Join Consultation</span>
+                  <span *ngIf="!entry.joinTime" class="btn-text"
+                    >Waiting for Patient</span
+                  >
+                  <span *ngIf="entry.joinTime" class="btn-text"
+                    >Join Consultation</span
+                  >
                 </button>
-                <button 
+                <button
                   class="action-btn primary"
                   [disabled]="!entry.joinTime"
                   (click)="onJoinConsultation(entry)"
-                  [title]="!entry.joinTime ? 'Patient has not joined yet' : 'Start consultation with ' + entry.patientInitials"
+                  [title]="
+                    !entry.joinTime
+                      ? 'Patient has not joined yet'
+                      : 'Start consultation with ' + entry.patientInitials
+                  "
                 >
-                  <span *ngIf="!entry.joinTime" class="btn-text">Join Consultation</span>
+                  <span *ngIf="!entry.joinTime" class="btn-text"
+                    >Join Consultation</span
+                  >
                   <span *ngIf="entry.joinTime" class="btn-text">Admit</span>
                 </button>
                 <!-- Additional action button for stale consultations -->
-                <button 
-                  *ngIf="isConsultationStale(entry.joinTime)" 
+                <button
+                  *ngIf="isConsultationStale(entry.joinTime)"
                   class="action-btn secondary"
                   (click)="onRefresh()"
                   title="Refresh to check if patient is still waiting"
@@ -179,7 +329,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </main>

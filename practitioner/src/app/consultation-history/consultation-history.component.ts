@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConsultationHistoryItem } from '../models/consultations/consultation.model';
 import { ConsultationHistoryService } from '../services/consultations/consultation-history.service';
@@ -9,7 +9,11 @@ import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { HttpClientModule } from '@angular/common/http';
 import { OverlayComponent } from '../components/overlay/overlay.component';
 import { UserService } from '../services/user.service';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { DashboardWebSocketService } from '../services/dashboard-websocket.service';
+import { ToastService, ToastType } from '../services/toast/toast.service';
+import { ConfirmationDialogService } from '../services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-consultation-history',
@@ -25,7 +29,7 @@ import { switchMap } from 'rxjs/operators';
   templateUrl: './consultation-history.component.html',
   styleUrls: ['./consultation-history.component.scss'],
 })
-export class ConsultationHistoryComponent implements OnInit {
+export class ConsultationHistoryComponent implements OnInit, OnDestroy {
   consultations: ConsultationHistoryItem[] = [];
   loading = false;
   error: string | null = null;
@@ -44,14 +48,36 @@ export class ConsultationHistoryComponent implements OnInit {
   readonly ButtonSize = ButtonSize;
 
   private practitionerId: number | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private consultationService: ConsultationHistoryService,
-    private userService: UserService
-  ) {}
+    private userService: UserService,
+    private dashboardWebSocketService: DashboardWebSocketService,
+    private toastService: ToastService,
+    private confirmationService: ConfirmationDialogService
+  ) { }
 
   ngOnInit(): void {
     this.loadConsultations();
+    this.setupWebSocketListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupWebSocketListeners(): void {
+    // Listen for consultation status updates
+    this.dashboardWebSocketService.dashboardState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        if (state.hasNewNotifications) {
+          // Refresh consultation history when there are updates
+          this.loadConsultations();
+        }
+      });
   }
 
   loadConsultations(): void {
@@ -74,8 +100,8 @@ export class ConsultationHistoryComponent implements OnInit {
         error: (error) => {
           this.error = error.message || 'Failed to load consultation history';
           this.loading = false;
-          console.error('Error loading consultations:', error);
-        },
+          this.toastService.show('Failed to load consultation history', 5000, ToastType.ERROR);
+          },
       });
   }
 
@@ -113,13 +139,13 @@ export class ConsultationHistoryComponent implements OnInit {
 
     this.downloadErrors.delete(id);
     this.downloadingPdfIds.add(id);
-    
+
     const consultation = this.consultations.find(c => c.consultation.id === id);
-    const patientName = consultation?.patient 
+    const patientName = consultation?.patient
       ? `${consultation.patient.firstName}-${consultation.patient.lastName}`.replace(/\s+/g, '-')
       : 'unknown-patient';
     const customFilename = `consultation-${id}-${patientName}-${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     this.consultationService
       .downloadAndSavePDF(id, this.practitionerId, customFilename)
       .subscribe({
@@ -132,8 +158,7 @@ export class ConsultationHistoryComponent implements OnInit {
           const errorMessage = error.message || 'Failed to download PDF report';
           this.downloadErrors.set(id, errorMessage);
           this.showErrorMessage(errorMessage);
-          console.error('PDF download error:', error);
-        },
+          },
       });
   }
 
@@ -150,12 +175,10 @@ export class ConsultationHistoryComponent implements OnInit {
   }
 
   private showSuccessMessage(message: string): void {
-    console.log('Success:', message);
-  }
+    }
 
   private showErrorMessage(message: string): void {
-    console.error('Error:', message);
-  }
+    }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -175,38 +198,58 @@ export class ConsultationHistoryComponent implements OnInit {
     }
   }
 
-  downloadAllVisible(): void {
+  async downloadAllVisible(): Promise<void> {
     const visibleConsultations = this.paginatedConsultations;
-    
+
     if (visibleConsultations.length === 0) {
       this.showErrorMessage('No consultations available to download');
       return;
     }
 
-    const confirmMessage = `Download PDF reports for all ${visibleConsultations.length} consultations on this page?`;
-    
-    if (!confirm(confirmMessage)) {
+    const confirmed = await this.confirmationService.confirmInfo(
+      `Download PDF reports for all ${visibleConsultations.length} consultations on this page?`,
+      'Download PDF Reports',
+      'Download All',
+      'Cancel'
+    );
+
+    if (!confirmed) {
       return;
     }
+
+    this.toastService.notifyInfo(`Starting download of ${visibleConsultations.length} PDF reports...`);
 
     visibleConsultations.forEach((consultation, index) => {
       setTimeout(() => {
         this.onDownloadPDF(consultation.consultation.id);
-      }, index * 500); 
+      }, index * 500);
     });
   }
 
-  downloadAll(): void {
+  async downloadAll(): Promise<void> {
     if (this.consultations.length === 0) {
       this.showErrorMessage('No consultations available to download');
       return;
     }
 
-    const confirmMessage = `Download PDF reports for all ${this.consultations.length} consultations? This may take several minutes.`;
-    
-    if (!confirm(confirmMessage)) {
+    const confirmed = await this.confirmationService.confirmWarning(
+      `Download PDF reports for all ${this.consultations.length} consultations? This may take several minutes and could affect system performance.`,
+      'Download All PDF Reports',
+      'Download All',
+      'Cancel'
+    );
+
+    if (!confirmed) {
       return;
     }
+
+    this.toastService.notifyWarning(
+      `Starting download of ${this.consultations.length} PDF reports. This may take several minutes...`,
+      'Cancel Downloads',
+      () => {
+        this.toastService.showInfo('Download cancellation is not yet implemented');
+      }
+    );
 
     this.consultations.forEach((consultation, index) => {
       setTimeout(() => {
@@ -215,3 +258,4 @@ export class ConsultationHistoryComponent implements OnInit {
     });
   }
 }
+

@@ -67,7 +67,7 @@ def send_message(self, message_id):
             return
 
         except Exception as e:
-            error_msg = f"Exception with provider {messaging_provider.name}: {str(e)}"
+            error_msg = f"Exception with provider {messaging_provider.name}: {str(e)}\n"
             message.task_logs += error_msg
             message.save()
             logger.error(error_msg)
@@ -75,8 +75,8 @@ def send_message(self, message_id):
             continue
 
     # All providers failed
-    message.task_logs = (
-        f"All providers failed for communication method: {message.communication_method}"
+    message.task_logs += (
+        f"All providers failed for communication method: {message.communication_method}\n"
     )
     message.status = MessageStatus.failed
     message.save()

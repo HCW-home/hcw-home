@@ -7,6 +7,7 @@ from consultations.serializers import AppointmentDetailSerializer, CustomFieldsM
 from dj_rest_auth.serializers import PasswordResetSerializer
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
+from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers, status
 from rest_framework.response import Response
@@ -57,6 +58,8 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     organisations = OrganisationSerializer(many=True, read_only=True)
     languages = LanguageSerializer(many=True, read_only=True)
 
+    mobile_phone_number = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+
     languages_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.all(),
@@ -102,6 +105,29 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
                 "A permanent patient cannot be made temporary."
             )
         return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        communication_method = attrs.get(
+            "communication_method",
+            getattr(self.instance, "communication_method", None),
+        )
+        phone = attrs.get(
+            "mobile_phone_number",
+            getattr(self.instance, "mobile_phone_number", None),
+        )
+
+        if communication_method in ("sms", "whatsapp") and not phone:
+            raise serializers.ValidationError(
+                {
+                    "mobile_phone_number": _(
+                        "A phone number is required when communication method is SMS or WhatsApp."
+                    )
+                }
+            )
+
+        return attrs
 
 
 class RegisterSerializer(serializers.Serializer):

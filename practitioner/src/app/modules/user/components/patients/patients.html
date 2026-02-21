@@ -27,85 +27,101 @@
 
       <div class="patients-list">
         @if (loading()) {
-          <div class="loading-state">
-            <app-loader></app-loader>
-          </div>
+        <div class="loading-state">
+          <app-loader></app-loader>
+        </div>
         } @else if (patients().length === 0) {
-          <div class="empty-state">
-            <app-svg src="user" [svgStyle]="{'width.px': 48, 'height.px': 48, 'color': 'var(--slate-300)'}"></app-svg>
-            <app-typography [variant]="TypographyTypeEnum['body-l-medium']" color="var(--slate-600)">
-              {{ 'patients.noPatients' | translate }}
+        <div class="empty-state">
+          <app-svg
+            src="user"
+            [svgStyle]="{'width.px': 48, 'height.px': 48, 'color': 'var(--slate-300)'}"></app-svg>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-l-medium']"
+            color="var(--slate-600)">
+            {{ 'patients.noPatients' | translate }}
+          </app-typography>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-s-regular']"
+            color="var(--slate-400)">
+            @if (searchQuery) { {{ 'patients.tryDifferentSearch' | translate }}
+            } @else { {{ 'patients.addFirstPatient' | translate }} }
+          </app-typography>
+        </div>
+        } @else { @for (patient of patients(); track patient.pk) {
+        <app-list-item
+          [variant]="patient.temporary ? 'temporary' : 'default'"
+          [avatarText]="getInitials(patient)"
+          [avatarImage]="patient.picture || ''"
+          [showOnlineIndicator]="patient.is_online ?? false"
+          (itemClick)="viewPatient(patient)">
+          <div slot="content">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-semibold']"
+              color="var(--slate-800)">
+              {{ getFullName(patient) }}
             </app-typography>
-            <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-400)">
-              @if (searchQuery) {
-                {{ 'patients.tryDifferentSearch' | translate }}
-              } @else {
-                {{ 'patients.addFirstPatient' | translate }}
+            <div class="contact-info">
+              @if (patient.email) {
+              <div class="contact-item">
+                <app-svg
+                  src="email"
+                  [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--slate-400)'}"></app-svg>
+                <span class="contact-text">{{ patient.email }}</span>
+              </div>
+              } @if (patient.mobile_phone_number) {
+              <div class="contact-item">
+                <app-svg
+                  src="phone"
+                  [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--slate-400)'}"></app-svg>
+                <span class="contact-text"
+                  >{{ patient.mobile_phone_number }}</span
+                >
+              </div>
+              } @if (patient.temporary) {
+              <div class="contact-item temporary-tag">
+                <app-svg
+                  src="clock"
+                  [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--amber-500)'}"></app-svg>
+                <span class="contact-text"
+                  >{{ 'patients.temporary' | translate }}</span
+                >
+              </div>
+              } @if (patient.is_practitioner) {
+              <div class="contact-item practitioner-tag">
+                <app-svg
+                  src="stethoscope"
+                  [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--primary-500)'}"></app-svg>
+                <span class="contact-text"
+                  >{{ 'patients.practitioner' | translate }}</span
+                >
+              </div>
+              } @if (!patient.email && !patient.mobile_phone_number) {
+              <span class="contact-text no-contact"
+                >{{ 'patients.noContactInfo' | translate }}</span
+              >
               }
-            </app-typography>
-          </div>
-        } @else {
-          @for (patient of patients(); track patient.pk) {
-            <app-list-item
-              [variant]="patient.temporary ? 'temporary' : 'default'"
-              [avatarText]="getInitials(patient)"
-              [showOnlineIndicator]="patient.is_online ?? false"
-              (itemClick)="viewPatient(patient)">
-              <div slot="content">
-                <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                  {{ getFullName(patient) }}
-                </app-typography>
-                <div class="contact-info">
-                  @if (patient.email) {
-                    <div class="contact-item">
-                      <app-svg src="email" [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--slate-400)'}"></app-svg>
-                      <span class="contact-text">{{ patient.email }}</span>
-                    </div>
-                  }
-                  @if (patient.mobile_phone_number) {
-                    <div class="contact-item">
-                      <app-svg src="phone" [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--slate-400)'}"></app-svg>
-                      <span class="contact-text">{{ patient.mobile_phone_number }}</span>
-                    </div>
-                  }
-                  @if (patient.temporary) {
-                    <div class="contact-item temporary-tag">
-                      <app-svg src="clock" [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--amber-500)'}"></app-svg>
-                      <span class="contact-text">{{ 'patients.temporary' | translate }}</span>
-                    </div>
-                  }
-                  @if (patient.is_practitioner) {
-                    <div class="contact-item practitioner-tag">
-                      <app-svg src="stethoscope" [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'var(--primary-500)'}"></app-svg>
-                      <span class="contact-text">{{ 'patients.practitioner' | translate }}</span>
-                    </div>
-                  }
-                  @if (!patient.email && !patient.mobile_phone_number) {
-                    <span class="contact-text no-contact">{{ 'patients.noContactInfo' | translate }}</span>
-                  }
-                </div>
-              </div>
-              <div slot="meta">
-                <app-badge [type]="getOnlineStatusBadgeType(patient.is_online ?? false)">
-                  {{ patient.is_online ? ('patients.online' | translate) : ('patients.offline' | translate) }}
-                </app-badge>
-              </div>
-            </app-list-item>
-          }
-
-          @if (hasMore()) {
-            <div class="load-more-container">
-              <app-button
-                [text]="'patients.viewMore' | translate"
-                [style]="ButtonStyleEnum.text"
-                [size]="ButtonSizeEnum.medium"
-                [loading]="loadingMore()"
-                [disabled]="loadingMore()"
-                (buttonClick)="loadMore()">
-              </app-button>
             </div>
-          }
-        }
+          </div>
+          <div slot="meta">
+            <app-badge
+              [type]="getOnlineStatusBadgeType(patient.is_online ?? false)">
+              {{ patient.is_online ? ('patients.online' | translate) :
+              ('patients.offline' | translate) }}
+            </app-badge>
+          </div>
+        </app-list-item>
+        } @if (hasMore()) {
+        <div class="load-more-container">
+          <app-button
+            [text]="'patients.viewMore' | translate"
+            [style]="ButtonStyleEnum.text"
+            [size]="ButtonSizeEnum.medium"
+            [loading]="loadingMore()"
+            [disabled]="loadingMore()"
+            (buttonClick)="loadMore()">
+          </app-button>
+        </div>
+        } }
       </div>
     </div>
   </div>

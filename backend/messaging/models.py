@@ -277,6 +277,7 @@ class Template(models.Model):
 
     @staticmethod
     def get_template(name: str, event_type: str) -> "Template":
+        # First try: override specific to this communication method
         try:
             return Template.objects.get(
                 communication_method__contains=[name],
@@ -284,24 +285,36 @@ class Template(models.Model):
                 is_active=True,
             )
         except Template.DoesNotExist:
-            return Template(
+            pass
+
+        # Second try: generic override (empty communication_method = all methods)
+        try:
+            return Template.objects.get(
+                communication_method=[],
                 event_type=event_type,
-                template_subject=DEFAULT_NOTIFICATION_MESSAGES[event_type][
-                    "template_subject"
-                ],
-                template_content=DEFAULT_NOTIFICATION_MESSAGES[event_type][
-                    "template_content"
-                ],
-                action_label=DEFAULT_NOTIFICATION_MESSAGES[event_type].get(
-                    "action_label"
-                ),
-                template_content_html=DEFAULT_NOTIFICATION_MESSAGES[event_type][
-                    "template_content_html"
-                ],
+                is_active=True,
             )
+        except Template.DoesNotExist:
+            pass
+
+        # Fallback: defaults from template.py
+        return Template(
+            event_type=event_type,
+            template_subject=DEFAULT_NOTIFICATION_MESSAGES[event_type][
+                "template_subject"
+            ],
+            template_content=DEFAULT_NOTIFICATION_MESSAGES[event_type][
+                "template_content"
+            ],
+            action_label=DEFAULT_NOTIFICATION_MESSAGES[event_type].get("action_label"),
+            template_content_html=DEFAULT_NOTIFICATION_MESSAGES[event_type][
+                "template_content_html"
+            ],
+        )
 
     @staticmethod
     def get_field_template(name: str, event_type: str, field: str) -> str:
+        # First try: override specific to this communication method
         try:
             template = Template.objects.get(
                 communication_method__contains=[name],
@@ -309,10 +322,33 @@ class Template(models.Model):
                 is_active=True,
             )
             content = getattr(template, f"template_{field}")
+            if content:
+                return content
         except Template.DoesNotExist:
-            content = None
+            pass
 
-        return content or DEFAULT_NOTIFICATION_MESSAGES[event_type][field]
+        # Second try: generic override (empty communication_method = all methods)
+        try:
+            template = Template.objects.get(
+                communication_method=[],
+                event_type=event_type,
+                is_active=True,
+            )
+            content = getattr(template, f"template_{field}")
+            if content:
+                return content
+        except Template.DoesNotExist:
+            pass
+
+        # Fallback: defaults from template.py
+        return DEFAULT_NOTIFICATION_MESSAGES[event_type][field]
+
+    @property
+    def model(self) -> Optional[str]:
+        """Get expected model from DEFAULT_NOTIFICATION_MESSAGES based on event_type."""
+        if self.event_type and self.event_type in DEFAULT_NOTIFICATION_MESSAGES:
+            return DEFAULT_NOTIFICATION_MESSAGES[self.event_type].get("model")
+        return None
 
     @property
     def factory_instance(self) -> Optional[DjangoModelFactory]:

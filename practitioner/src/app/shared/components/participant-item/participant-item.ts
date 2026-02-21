@@ -2,13 +2,21 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { Participant, CreateParticipantRequest } from '../../../core/models/consultation';
+import {
+  Participant,
+  CreateParticipantRequest,
+} from '../../../core/models/consultation';
 import { TranslationService } from '../../../core/services/translation.service';
 
 import { Svg } from '../../ui-components/svg/svg';
 import { Button } from '../../ui-components/button/button';
 import { Badge } from '../badge/badge';
-import { ButtonStyleEnum, ButtonSizeEnum, ButtonStateEnum } from '../../constants/button';
+import { UserAvatar } from '../user-avatar/user-avatar';
+import {
+  ButtonStyleEnum,
+  ButtonSizeEnum,
+  ButtonStateEnum,
+} from '../../constants/button';
 import { BadgeTypeEnum } from '../../constants/badge';
 import { getParticipantBadgeType } from '../../tools/helper';
 
@@ -16,13 +24,7 @@ import { getParticipantBadgeType } from '../../tools/helper';
   selector: 'app-participant-item',
   templateUrl: './participant-item.html',
   styleUrl: './participant-item.scss',
-  imports: [
-    CommonModule,
-    Svg,
-    Button,
-    Badge,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, Svg, Button, Badge, UserAvatar, TranslatePipe],
 })
 export class ParticipantItem {
   private t = inject(TranslationService);
@@ -68,13 +70,23 @@ export class ParticipantItem {
 
   getDisplayName(): string {
     if (this.participant?.user) {
-      const fullName = `${this.participant.user.first_name || ''} ${this.participant.user.last_name || ''}`.trim();
-      return fullName || this.participant.user.email || this.t.instant('participantItem.unknown');
+      const fullName =
+        `${this.participant.user.first_name || ''} ${this.participant.user.last_name || ''}`.trim();
+      return (
+        fullName ||
+        this.participant.user.email ||
+        this.t.instant('participantItem.unknown')
+      );
     }
 
     if (this.pendingParticipant) {
-      const name = `${this.pendingParticipant.first_name || ''} ${this.pendingParticipant.last_name || ''}`.trim();
-      return name || this.pendingParticipant.email || this.t.instant('participantItem.participant');
+      const name =
+        `${this.pendingParticipant.first_name || ''} ${this.pendingParticipant.last_name || ''}`.trim();
+      return (
+        name ||
+        this.pendingParticipant.email ||
+        this.t.instant('participantItem.participant')
+      );
     }
 
     return this.t.instant('participantItem.unknown');
@@ -82,11 +94,19 @@ export class ParticipantItem {
 
   getContact(): string {
     if (this.participant?.user) {
-      return this.participant.user.email || this.participant.user.mobile_phone_number || '';
+      return (
+        this.participant.user.email ||
+        this.participant.user.mobile_phone_number ||
+        ''
+      );
     }
 
     if (this.pendingParticipant) {
-      return this.pendingParticipant.email || this.pendingParticipant.mobile_phone_number || '';
+      return (
+        this.pendingParticipant.email ||
+        this.pendingParticipant.mobile_phone_number ||
+        ''
+      );
     }
 
     return '';
@@ -111,5 +131,27 @@ export class ParticipantItem {
 
   getAvatarImage(): string {
     return this.participant?.user?.picture || '';
+  }
+
+  getFirstName(): string {
+    return (
+      this.participant?.user?.first_name ||
+      this.pendingParticipant?.first_name ||
+      ''
+    );
+  }
+
+  getLastName(): string {
+    return (
+      this.participant?.user?.last_name ||
+      this.pendingParticipant?.last_name ||
+      ''
+    );
+  }
+
+  getEmail(): string {
+    return (
+      this.participant?.user?.email || this.pendingParticipant?.email || ''
+    );
   }
 }

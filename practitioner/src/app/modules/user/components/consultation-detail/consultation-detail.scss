@@ -165,6 +165,18 @@
     letter-spacing: 0.5px;
   }
 
+  .info-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .info-user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
   .info-value {
     font-size: 16px;
     font-weight: 600;
@@ -189,7 +201,6 @@
     app-video-consultation {
       display: block;
       height: 500px;
-
     }
   }
 
@@ -358,7 +369,11 @@
 
 :host ::ng-deep {
   .fc {
-    font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      'Source Sans Pro',
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
   }
 
   .fc-theme-standard td,
@@ -411,7 +426,9 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
     overflow: hidden;
 
     &:hover {
@@ -560,7 +577,9 @@
   border-radius: 16px;
   padding: 24px;
   border: 2px solid var(--slate-100);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 
   &.highlighted {
     border-color: var(--primary-500);

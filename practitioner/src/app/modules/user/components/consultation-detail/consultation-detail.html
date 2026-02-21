@@ -198,26 +198,48 @@
               <span class="info-label"
                 >{{ 'consultationDetail.createdBy' | translate }}</span
               >
-              <span class="info-value"
-                >{{ consultation()!.created_by.first_name }} {{
-                consultation()!.created_by.last_name }}</span
-              >
-              <span class="info-sub"
-                >{{ consultation()!.created_by.email }}</span
-              >
+              <div class="info-user">
+                <app-user-avatar
+                  [firstName]="consultation()!.created_by.first_name"
+                  [lastName]="consultation()!.created_by.last_name"
+                  [email]="consultation()!.created_by.email"
+                  [picture]="consultation()!.created_by.picture || ''"
+                  [isOnline]="consultation()!.created_by.is_online">
+                </app-user-avatar>
+                <div class="info-user-details">
+                  <span class="info-value"
+                    >{{ consultation()!.created_by.first_name }} {{
+                    consultation()!.created_by.last_name }}</span
+                  >
+                  <span class="info-sub"
+                    >{{ consultation()!.created_by.email }}</span
+                  >
+                </div>
+              </div>
             </div>
             } @if (consultation()?.owned_by) {
             <div class="info-item">
               <span class="info-label"
                 >{{ 'consultationDetail.practitioner' | translate }}</span
               >
-              <span class="info-value"
-                >{{ consultation()!.owned_by?.first_name }} {{
-                consultation()!.owned_by?.last_name }}</span
-              >
-              <span class="info-sub"
-                >{{ consultation()!.owned_by?.email }}</span
-              >
+              <div class="info-user">
+                <app-user-avatar
+                  [firstName]="consultation()!.owned_by!.first_name"
+                  [lastName]="consultation()!.owned_by!.last_name"
+                  [email]="consultation()!.owned_by!.email"
+                  [picture]="consultation()!.owned_by!.picture || ''"
+                  [isOnline]="consultation()!.owned_by!.is_online">
+                </app-user-avatar>
+                <div class="info-user-details">
+                  <span class="info-value"
+                    >{{ consultation()!.owned_by?.first_name }} {{
+                    consultation()!.owned_by?.last_name }}</span
+                  >
+                  <span class="info-sub"
+                    >{{ consultation()!.owned_by?.email }}</span
+                  >
+                </div>
+              </div>
             </div>
             }
 
@@ -225,12 +247,25 @@
               <span class="info-label"
                 >{{ 'consultationDetail.patient' | translate }}</span
               >
-              <span class="info-value">{{ getBeneficiaryDisplayName() }}</span>
-              @if (consultation()?.beneficiary?.email) {
-              <span class="info-sub"
-                >{{ consultation()!.beneficiary!.email }}</span
-              >
-              }
+              <div class="info-user">
+                <app-user-avatar
+                  [firstName]="consultation()?.beneficiary?.first_name || ''"
+                  [lastName]="consultation()?.beneficiary?.last_name || ''"
+                  [email]="consultation()?.beneficiary?.email || ''"
+                  [picture]="consultation()?.beneficiary?.picture || ''"
+                  [isOnline]="consultation()?.beneficiary?.is_online">
+                </app-user-avatar>
+                <div class="info-user-details">
+                  <span class="info-value"
+                    >{{ getBeneficiaryDisplayName() }}</span
+                  >
+                  @if (consultation()?.beneficiary?.email) {
+                  <span class="info-sub"
+                    >{{ consultation()!.beneficiary!.email }}</span
+                  >
+                  }
+                </div>
+              </div>
             </div>
 
             @if (consultation()?.group) {

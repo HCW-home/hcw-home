@@ -1,0 +1,10 @@
+<div class="user-avatar" [class.sm]="size === 'sm'" [class.md]="size === 'md'" [class.lg]="size === 'lg'">
+  @if (picture) {
+    <img [src]="picture" class="avatar-image" alt="">
+  } @else {
+    {{ initials }}
+  }
+  @if (showOnlineIndicator) {
+    <span class="online-indicator" [class.online]="isOnline"></span>
+  }
+</div>

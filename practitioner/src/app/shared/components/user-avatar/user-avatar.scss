@@ -1,0 +1,51 @@
+.user-avatar {
+  position: relative;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--primary-600);
+  flex-shrink: 0;
+
+  &.sm {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  &.md {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  &.lg {
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
+  }
+
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .online-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--slate-300);
+    border: 2px solid var(--White);
+
+    &.online {
+      background: var(--emerald-500);
+    }
+  }
+}

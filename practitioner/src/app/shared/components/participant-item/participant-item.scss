@@ -13,39 +13,6 @@
   }
 }
 
-.participant-avatar {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary-600);
-  flex-shrink: 0;
-
-  .avatar-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-
-  .online-indicator {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--emerald-500);
-    border: 2px solid var(--White);
-  }
-}
-
 .participant-details {
   flex: 1;
   min-width: 0;

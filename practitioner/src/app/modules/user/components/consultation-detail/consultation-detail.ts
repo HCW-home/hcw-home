@@ -77,6 +77,7 @@ import { getErrorMessage } from '../../../../core/utils/error-helper';
 import { AppointmentFormModal } from './appointment-form-modal/appointment-form-modal';
 import { RoutePaths } from '../../../../core/constants/routes';
 import { ParticipantItem } from '../../../../shared/components/participant-item/participant-item';
+import { UserAvatar } from '../../../../shared/components/user-avatar/user-avatar';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
 
@@ -106,6 +107,7 @@ type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
     FullCalendarModule,
     LocalDatePipe,
     ParticipantItem,
+    UserAvatar,
     TranslatePipe,
   ],
 })

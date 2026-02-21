@@ -44,7 +44,7 @@
   >
   } @else if (participant?.status) {
   <app-badge [type]="getParticipantBadgeType(participant!.status)">
-    {{ participant!.status }}
+    {{ getStatusTranslationKey() | translate }}
   </app-badge>
   } @if (showRemoveAction) {
   <app-button

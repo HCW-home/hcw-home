@@ -154,4 +154,16 @@ export class ParticipantItem {
       this.participant?.user?.email || this.pendingParticipant?.email || ''
     );
   }
+
+  getStatusTranslationKey(): string {
+    const status = this.participant?.status;
+    const map: Record<string, string> = {
+      draft: 'participantItem.statusDraft',
+      invited: 'participantItem.statusInvited',
+      confirmed: 'participantItem.statusConfirmed',
+      unavailable: 'participantItem.statusUnavailable',
+      cancelled: 'participantItem.statusCancelled',
+    };
+    return status ? map[status] || status : '';
+  }
 }

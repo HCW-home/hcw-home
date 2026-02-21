@@ -318,8 +318,8 @@
     "consultationsTitle": "Consultations",
     "consultationsSubtitle": "Manage and review all your consultations",
     "patientDetailTitle": "Patient Details",
-    "patientsTitle": "Patients",
-    "patientsSubtitle": "View and manage your patients",
+    "patientsTitle": "Contacts",
+    "patientsSubtitle": "View and manage your patients and collaborators",
     "appointmentsTitle": "Appointments",
     "appointmentsSubtitle": "Schedule and manage appointments",
     "configurationTitle": "Configuration",
@@ -394,19 +394,19 @@
     "customFields": "Additional Information"
   },
   "patients": {
-    "searchPlaceholder": "Search patients...",
-    "addPatient": "Add Patient",
+    "searchPlaceholder": "Search contacts...",
+    "addPatient": "Add Contact",
     "tabAll": "All",
     "tabPermanent": "Permanent",
     "tabTemporary": "Temporary",
-    "noPatients": "No patients found",
+    "noPatients": "No contacts found",
     "tryDifferentSearch": "Try a different search term",
-    "addFirstPatient": "Add your first patient to get started",
+    "addFirstPatient": "Add your first contact to get started",
     "noContactInfo": "No contact info",
     "online": "Online",
     "offline": "Offline",
     "viewMore": "View More",
-    "errorLoading": "Error Loading Patients",
+    "errorLoading": "Error Loading Contacts",
     "temporary": "temporary",
     "practitioner": "practitioner"
   },
@@ -648,7 +648,15 @@
     "messageDeletedMessage": "Message deleted successfully",
     "errorDeletingMessage": "Error Deleting Message",
     "video": "Video",
-    "inPersonLabel": "In Person"
+    "inPersonLabel": "In Person",
+    "typeOnline": "Online",
+    "typeInPerson": "In Person",
+    "statusDraft": "Draft",
+    "statusScheduled": "Scheduled",
+    "statusCancelled": "Cancelled",
+    "languageEnglish": "English",
+    "languageGerman": "German",
+    "languageFrench": "French"
   },
   "appointmentFormModal": {
     "editAppointment": "Edit Appointment",
@@ -825,7 +833,12 @@
   "participantItem": {
     "pending": "Pending",
     "unknown": "Unknown",
-    "participant": "Participant"
+    "participant": "Participant",
+    "statusDraft": "Draft",
+    "statusInvited": "Invited",
+    "statusConfirmed": "Confirmed",
+    "statusUnavailable": "Unavailable",
+    "statusCancelled": "Cancelled"
   },
   "messageList": {
     "messages": "Messages",

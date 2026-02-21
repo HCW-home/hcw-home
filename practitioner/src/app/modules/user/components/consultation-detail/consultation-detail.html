@@ -457,11 +457,15 @@
                   <span
                     class="appointment-type"
                     [class.online]="appointment.type === AppointmentType.ONLINE">
-                    {{ appointment.type }}
+                    {{ appointment.type === AppointmentType.ONLINE ?
+                    ('consultationDetail.typeOnline' | translate) :
+                    ('consultationDetail.typeInPerson' | translate) }}
                   </span>
                 </div>
                 <app-badge [type]="getAppointmentBadgeType(appointment.status)">
-                  {{ appointment.status }}
+                  {{ 'consultationDetail.status' + (appointment.status ===
+                  'draft' ? 'Draft' : appointment.status === 'scheduled' ?
+                  'Scheduled' : 'Cancelled') | translate }}
                 </app-badge>
               </div>
 

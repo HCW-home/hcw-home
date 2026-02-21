@@ -11,7 +11,7 @@ class ProviderException(Exception): ...
 
 
 if TYPE_CHECKING:
-    from ..models import Message, TemplateValidation, TemplateValidationStatus
+    from ..models import Message, TemplateValidation
 
 
 class Main(BaseMessagingProvider):
@@ -108,17 +108,19 @@ class Main(BaseMessagingProvider):
         # Prepare template data for Twilio Content API
         # Note: This is a simplified example - you may need to adjust based on your template structure
         content_data = {
-            "friendly_name": template_validation.template.name,
+            "friendly_name": template_validation.event_type,
             "language": template_validation.language_code,
             "variables": {},
             "types": {
-                "twilio/text": {"body": template_validation.template.template_content}
+                "twilio/text": {
+                    "body": str(template_validation.template.template_content)
+                }
             },
         }
 
         # If there's a subject, add it as a header
         if template_validation.template.template_subject:
-            content_data["types"]["twilio/text"]["header"] = (
+            content_data["types"]["twilio/text"]["header"] = str(
                 template_validation.template.template_subject
             )
 
@@ -126,6 +128,8 @@ class Main(BaseMessagingProvider):
 
         response = requests.post(url, json=content_data, headers=headers)
         response_data = response.json() if response.content else {}
+
+        from ..models import TemplateValidationStatus
 
         template_validation.validation_response = response_data
         template_validation.external_template_id = response_data["sid"]
@@ -156,6 +160,8 @@ class Main(BaseMessagingProvider):
         # Get the status from the response
         # Twilio Content API returns status in different ways depending on the template state
         status = response_data.get("status", "unknown").lower()
+
+        from ..models import TemplateValidationStatus
 
         # Map Twilio statuses to our understanding
         if status in ["approved", "active"]:

@@ -28,7 +28,7 @@ from .models import (
     TemplateValidation,
     TemplateValidationStatus,
 )
-from .tasks import send_message
+from .tasks import send_message, template_messaging_provider_task
 from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
 
 # admin.site.register(MessagingProvider, ModelAdmin)
@@ -390,10 +390,11 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
 @admin.register(TemplateValidation)
 class TemplateValidationAdmin(ModelAdmin):
     list_display = [
-        "template",
+        "event_type",
         "language_code",
         "messaging_provider",
         "display_status",
+        "display_is_outdated",
         "external_template_id",
         "created_at",
         "validated_at",
@@ -402,14 +403,14 @@ class TemplateValidationAdmin(ModelAdmin):
         "status",
         "language_code",
         "messaging_provider",
-        "template__communication_method",
+        "event_type",
         "created_at",
         "validated_at",
     ]
     search_fields = [
-        "template__system_name",
+        "event_type",
         "external_template_id",
-        "messaging_provider",
+        "messaging_provider__name",
         "language_code",
     ]
     readonly_fields = [
@@ -420,31 +421,35 @@ class TemplateValidationAdmin(ModelAdmin):
         "status",
         "validation_response",
         "external_template_id",
+        "content_hash",
+        "display_is_outdated",
     ]
 
     fieldsets = [
         (
-            "Template Information",
-            {"fields": ["template", "messaging_provider", "language_code"]},
+            _("Template Information"),
+            {"fields": ["event_type", "messaging_provider", "language_code"]},
         ),
         (
-            "Validation Details",
+            _("Validation Details"),
             {
-                "fields": ["external_template_id"],
-                "description": "This field is automatically populated when the template is submitted for validation",
+                "fields": [
+                    "external_template_id",
+                    "content_hash",
+                    "display_is_outdated",
+                ],
             },
         ),
-        ("Status", {"fields": ["status", "task_logs"]}),
+        (_("Status"), {"fields": ["status", "task_logs"]}),
         (
-            "Validation Response",
+            _("Validation Response"),
             {
                 "fields": ["validation_response"],
                 "classes": ["collapse"],
-                "description": "Raw response data from the messaging provider",
             },
         ),
         (
-            "Timestamps",
+            _("Timestamps"),
             {
                 "fields": ["created_at", "updated_at", "validated_at"],
                 "classes": ["collapse"],
@@ -461,19 +466,28 @@ class TemplateValidationAdmin(ModelAdmin):
             TemplateValidationStatus.pending: "warning",
             TemplateValidationStatus.validated: "success",
             TemplateValidationStatus.rejected: "danger",
+            TemplateValidationStatus.outdated: "warning",
         },
     )
     def display_status(self, instance):
         return instance.get_status_display()
 
+    @display(
+        description=_("Content changed"),
+        label={
+            "True": "warning",
+            "False": "success",
+        },
+    )
+    def display_is_outdated(self, instance):
+        return str(instance.is_outdated)
+
     def get_queryset(self, request):
         """Filter templates based on communication method and provider capabilities"""
         qs = super().get_queryset(request)
 
-        # Only show validations for providers that support template validation
         provider_names = []
         for provider_name, provider_class in providers.MAIN_CLASSES.items():
-            # Check if provider has validation methods
             if hasattr(provider_class, "validate_template") and hasattr(
                 provider_class, "check_template_validation"
             ):
@@ -482,14 +496,30 @@ class TemplateValidationAdmin(ModelAdmin):
         if provider_names:
             qs = qs.filter(messaging_provider__name__in=provider_names)
 
-        return qs.select_related("template", "messaging_provider")
+        return qs.select_related("messaging_provider")
 
+    @action(description=_("Submit templates for validation"))
+    def validate_templates(self, request, queryset):
+        """Submit selected templates for validation with their messaging provider."""
+        for template_validation in queryset:
+            template_messaging_provider_task.delay(
+                template_validation.pk, "validate_template"
+            )
+        messages.success(
+            request,
+            _("%(count)d template(s) submitted for validation.")
+            % {"count": queryset.count()},
+        )
+
+    @action(description=_("Check validation status"))
     def check_validation_status(self, request, queryset):
-        """Check validation status for pending templates"""
-
+        """Check validation status for pending templates."""
         for template_validation in queryset:
             template_messaging_provider_task.delay(
                 template_validation.pk, "check_template_validation"
             )
-
-    check_validation_status.short_description = "Check validation status"
+        messages.success(
+            request,
+            _("Checking status for %(count)d template(s).")
+            % {"count": queryset.count()},
+        )

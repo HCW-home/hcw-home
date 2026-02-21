@@ -1,3 +1,4 @@
+import hashlib
 from importlib import import_module
 from typing import Dict, Optional, Sequence
 from zoneinfo import ZoneInfo
@@ -564,11 +565,11 @@ class TemplateValidation(ModelCeleryAbstract):
         verbose_name=_("messaging provider"),
         help_text=_("The messaging provider where the template is validated"),
     )
-    template = models.ForeignKey(
-        Template,
-        on_delete=models.CASCADE,
-        verbose_name=_("template"),
-        help_text=_("The local template that needs validation"),
+    event_type = models.CharField(
+        _("event type"),
+        max_length=100,
+        choices=NOTIFICATION_CHOICES,
+        help_text=_("The template event type to validate"),
     )
     language_code = models.CharField(
         _("language code"),
@@ -598,15 +599,46 @@ class TemplateValidation(ModelCeleryAbstract):
         null=True,
         help_text=_("Response from the messaging provider during validation"),
     )
+    content_hash = models.CharField(
+        max_length=32,
+        blank=True,
+        help_text=_("MD5 hash of template content at last validation submission"),
+    )
 
     class Meta:
         verbose_name = _("template validation")
         verbose_name_plural = _("template validations")
-        unique_together = ["messaging_provider", "template", "language_code"]
+        unique_together = ["messaging_provider", "event_type", "language_code"]
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.template} [{self.language_code}] - {self.messaging_provider.name} ({self.get_status_display()})"
+        return f"{self.event_type} [{self.language_code}] - {self.messaging_provider.name} ({self.get_status_display()})"
+
+    @property
+    def template(self) -> Template:
+        """Resolve the template (DB override or default) for this validation's provider."""
+        return Template.get_template(
+            name=self.messaging_provider.communication_method,
+            event_type=self.event_type,
+        )
+
+    def compute_content_hash(self) -> str:
+        """Compute MD5 hash of the resolved template content for the given language."""
+        tpl = self.template
+        parts = [
+            str(getattr(tpl, f"template_subject_{self.language_code}", "") or ""),
+            str(getattr(tpl, f"template_content_{self.language_code}", "") or ""),
+            str(getattr(tpl, f"template_content_html_{self.language_code}", "") or ""),
+            str(tpl.action_label or ""),
+        ]
+        return hashlib.md5("|".join(parts).encode()).hexdigest()
+
+    @property
+    def is_outdated(self) -> bool:
+        """Check if the template content has changed since last validation."""
+        if not self.content_hash:
+            return True
+        return self.content_hash != self.compute_content_hash()
 
 
 class MessageStatus(models.TextChoices):

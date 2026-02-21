@@ -48,6 +48,7 @@ export class UserSearchSelect
   initialUser = input<IUser | null>(null);
   temporary = input<boolean | undefined>(undefined);
   hasGroupPermissions = input<boolean | undefined>(undefined);
+  isPractitioner = input<boolean | undefined>(undefined);
   meUser = input<IUser | null>(null);
   excludeUserIds = input<number[]>([]);
 
@@ -144,15 +145,17 @@ export class UserSearchSelect
         this.currentPage(),
         this.pageSize,
         this.temporary(),
-        this.hasGroupPermissions()
+        this.hasGroupPermissions(),
+        this.isPractitioner()
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: response => {
           const excluded = this.excludeUserIds();
-          const filtered = excluded.length > 0
-            ? response.results.filter(u => !excluded.includes(u.pk))
-            : response.results;
+          const filtered =
+            excluded.length > 0
+              ? response.results.filter(u => !excluded.includes(u.pk))
+              : response.results;
           if (this.currentPage() === 1) {
             this.users.set(filtered);
           } else {

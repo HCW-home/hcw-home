@@ -1,480 +1,520 @@
 <app-page>
   <div class="consultation-form-container">
     @if (isLoading()) {
-      <div class="loading-container">
-        <app-loader></app-loader>
-      </div>
+    <div class="loading-container">
+      <app-loader></app-loader>
+    </div>
     } @else {
-      <app-stepper
-        [steps]="stepItems"
-        [currentStep]="currentStep()"
-        [allowStepClick]="mode === 'edit'"
-        (stepChange)="goToStep($event)">
-      </app-stepper>
+    <app-stepper
+      [steps]="stepItems"
+      [currentStep]="currentStep()"
+      [allowStepClick]="mode === 'edit'"
+      (stepChange)="goToStep($event)">
+    </app-stepper>
 
-      <form [formGroup]="consultationForm" (ngSubmit)="onSubmit()" class="consultation-form">
-        @if (currentStep() === 0) {
-          <div class="step-content">
-            <div class="form-card">
-              <app-typography [variant]="TypographyTypeEnum['body-l-bold']" style="margin-bottom: 24px; display: block;">
-                {{ 'consultationForm.consultationDetails' | translate }}
-              </app-typography>
+    <form
+      [formGroup]="consultationForm"
+      (ngSubmit)="onSubmit()"
+      class="consultation-form">
+      @if (currentStep() === 0) {
+      <div class="step-content">
+        <div class="form-card">
+          <app-typography
+            [variant]="TypographyTypeEnum['body-l-bold']"
+            style="margin-bottom: 24px; display: block">
+            {{ 'consultationForm.consultationDetails' | translate }}
+          </app-typography>
 
-              <div class="form-group">
-                <app-user-search-select
-                  [label]="'consultationForm.selectBeneficiary' | translate"
-                  [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
-                  [temporary]="false"
-                  formControlName="beneficiary_id"
-                  (userSelected)="onBeneficiarySelected($event)">
-                </app-user-search-select>
-              </div>
-
-              <div class="form-group">
-                <app-input
-                  [label]="'consultationForm.reason' | translate"
-                  [required]="true"
-                  [placeholder]="'consultationForm.reasonPlaceholder' | translate"
-                  formControlName="title"
-                  [invalid]="isFieldInvalid('title')"
-                  [invalidMessage]="getFieldError('title')">
-                </app-input>
-              </div>
-
-              <div class="form-group">
-                <app-textarea
-                  [label]="'consultationForm.description' | translate"
-                  [placeholder]="'consultationForm.descriptionPlaceholder' | translate"
-                  [rows]="4"
-                  formControlName="description">
-                </app-textarea>
-              </div>
-
-              @if (customFields().length > 0) {
-                <div class="custom-fields-section" formGroupName="custom_fields">
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" style="margin-top: 24px; margin-bottom: 16px; display: block;">
-                    {{ 'consultationForm.customFields' | translate }}
-                  </app-typography>
-
-                  @for (field of customFields(); track field.id) {
-                    <div class="form-group">
-                      @switch (field.field_type) {
-                        @case ('short_text') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('long_text') {
-                          <app-textarea
-                            [label]="field.name"
-                            [rows]="3"
-                            [formControlName]="field.id.toString()">
-                          </app-textarea>
-                        }
-                        @case ('date') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            type="date"
-                            leftIcon="calendar"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('number') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            type="number"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('list') {
-                          <app-select
-                            [label]="field.name"
-                            [options]="getCustomFieldOptions(field)"
-                            [formControlName]="field.id.toString()">
-                          </app-select>
-                        }
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
+          <div class="form-group">
+            <app-user-search-select
+              [label]="'consultationForm.selectBeneficiary' | translate"
+              [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+              [temporary]="false"
+              formControlName="beneficiary_id"
+              (userSelected)="onBeneficiarySelected($event)">
+            </app-user-search-select>
           </div>
-        }
 
-        @if (currentStep() === 1) {
-          <div class="step-content">
-            <div class="form-card">
-              <app-typography [variant]="TypographyTypeEnum['body-l-bold']" style="margin-bottom: 8px; display: block;">
-                {{ 'consultationForm.practitionerAssignment' | translate }}
-              </app-typography>
-              <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)" class="step-description">
-                {{ 'consultationForm.practitionerAssignmentDescription' | translate }}
-              </app-typography>
-
-              <div class="form-group">
-                <app-user-search-select
-                  [label]="'consultationForm.selectPractitioner' | translate"
-                  [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
-                  [temporary]="false"
-                  [hasGroupPermissions]="true"
-                  (userSelected)="onOwnerSelected($event)">
-                </app-user-search-select>
-              </div>
-
-              <div class="form-group">
-                <app-select
-                  [label]="'consultationForm.selectGroup' | translate"
-                  [options]="queueOptions()"
-                  [placeholder]="'consultationForm.selectGroupPlaceholder' | translate"
-                  formControlName="group_id">
-                </app-select>
-              </div>
-            </div>
+          <div class="form-group">
+            <app-input
+              [label]="'consultationForm.reason' | translate"
+              [required]="true"
+              [placeholder]="'consultationForm.reasonPlaceholder' | translate"
+              formControlName="title"
+              [invalid]="isFieldInvalid('title')"
+              [invalidMessage]="getFieldError('title')">
+            </app-input>
           </div>
-        }
 
-        @if (currentStep() === 2) {
-          <div class="step-content">
-            <div class="step-header">
-              <app-typography [variant]="TypographyTypeEnum['body-l-bold']" style="margin-bottom: 8px; display: block;">
-                {{ 'consultationForm.scheduleAppointment' | translate }}
-              </app-typography>
-              <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)" style="display: block;">
-                {{ 'consultationForm.scheduleOptional' | translate }}
-              </app-typography>
-            </div>
-
-            <div class="appointments-container" formArrayName="appointments">
-              @if (formReady() && appointmentsFormArray && appointmentsFormArray.length > 0) {
-                @for (appointment of appointmentsFormArray.controls; track $index; let i = $index) {
-                  <div class="form-card appointment-card" [formGroupName]="i">
-                    <div class="appointment-header">
-                      <app-typography [variant]="TypographyTypeEnum['body-semibold']">
-                        {{ 'consultationForm.appointment' | translate }}
-                        @if (hasAppointmentId(i)) {
-                          <span class="saved-badge">({{ 'consultationForm.saved' | translate }})</span>
-                        }
-                      </app-typography>
-                      <div class="appointment-actions">
-                        @if (mode === 'edit') {
-                          <app-button
-                            [text]="hasAppointmentId(i) ? ('consultationForm.update' | translate) : ('consultationForm.save' | translate)"
-                            [style]="ButtonStyleEnum.text"
-                            [size]="ButtonSizeEnum.small"
-                            [disabled]="isAppointmentSaving(i)"
-                            (buttonClick)="saveAppointment(i)">
-                          </app-button>
-                        }
-                        <app-button
-                          [text]="'consultationForm.remove' | translate"
-                          [style]="ButtonStyleEnum.text"
-                          [state]="ButtonStateEnum.error"
-                          [size]="ButtonSizeEnum.small"
-                          (buttonClick)="removeAppointment(i)">
-                        </app-button>
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">{{ 'consultationForm.appointmentType' | translate }}</label>
-                      <div class="type-toggle">
-                        <button type="button" class="type-btn"
-                          [class.active]="getAppointmentType(i) === AppointmentType.ONLINE"
-                          (click)="setAppointmentType(i, AppointmentType.ONLINE)">
-                          <app-svg src="video" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                          {{ 'consultationForm.online' | translate }}
-                        </button>
-                        <button type="button" class="type-btn"
-                          [class.active]="getAppointmentType(i) === AppointmentType.INPERSON"
-                          (click)="setAppointmentType(i, AppointmentType.INPERSON)">
-                          <app-svg src="map-pin" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                          {{ 'consultationForm.inPerson' | translate }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div class="appointment-grid">
-                      <div class="form-group">
-                        <app-input
-                          [label]="'consultationForm.date' | translate"
-                          [required]="true"
-                          type="date"
-                          leftIcon="calendar"
-                          formControlName="date">
-                        </app-input>
-                      </div>
-                      <div class="form-group">
-                        <app-input
-                          [label]="'consultationForm.time' | translate"
-                          [required]="true"
-                          type="time"
-                          leftIcon="clock"
-                          formControlName="time">
-                        </app-input>
-                      </div>
-                    </div>
-
-                    @if (mode === 'create') {
-                      <div class="invite-flags-section">
-                        <div class="invite-flags">
-                          <app-checkbox
-                            [label]="'consultationForm.dontInvitePatient' | translate"
-                            formControlName="dont_invite_beneficiary">
-                          </app-checkbox>
-                          <app-checkbox
-                            [label]="'consultationForm.dontInvitePractitioner' | translate"
-                            formControlName="dont_invite_practitioner">
-                          </app-checkbox>
-                          <app-checkbox
-                            [label]="'consultationForm.dontInviteMe' | translate"
-                            formControlName="dont_invite_me">
-                          </app-checkbox>
-                        </div>
-
-                        <div class="invite-preview">
-                          <span class="preview-label">{{ 'consultationForm.willBeInvited' | translate }}</span>
-                          <div class="invite-preview-list">
-                            @if (getBeneficiaryUser(); as beneficiary) {
-                              <app-participant-item
-                                [class.excluded]="getAppointmentControl(i, 'dont_invite_beneficiary').value"
-                                [participant]="{id: 0, user: {id: beneficiary.pk, email: beneficiary.email, first_name: beneficiary.first_name, last_name: beneficiary.last_name}, is_active: true}">
-                                <span class="role-label">{{ 'consultationForm.rolePatient' | translate }}</span>
-                                <app-switch
-                                  [ngModel]="!getAppointmentControl(i, 'dont_invite_beneficiary').value"
-                                  [ngModelOptions]="{standalone: true}"
-                                  (ngModelChange)="toggleInvite(i, 'dont_invite_beneficiary', $event)">
-                                </app-switch>
-                              </app-participant-item>
-                            }
-                            @if (getOwnerUser(); as owner) {
-                              <app-participant-item
-                                [class.excluded]="getAppointmentControl(i, 'dont_invite_practitioner').value"
-                                [participant]="{id: 0, user: {id: owner.pk, email: owner.email, first_name: owner.first_name, last_name: owner.last_name}, is_active: true}">
-                                <span class="role-label">{{ 'consultationForm.rolePractitioner' | translate }}</span>
-                                <app-switch
-                                  [ngModel]="!getAppointmentControl(i, 'dont_invite_practitioner').value"
-                                  [ngModelOptions]="{standalone: true}"
-                                  (ngModelChange)="toggleInvite(i, 'dont_invite_practitioner', $event)">
-                                </app-switch>
-                              </app-participant-item>
-                            }
-                            @if (getCurrentUserForInvite(); as user) {
-                              <app-participant-item
-                                [class.excluded]="getAppointmentControl(i, 'dont_invite_me').value"
-                                [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}">
-                                <span class="role-label">{{ 'consultationForm.roleYou' | translate }}</span>
-                                <app-switch
-                                  [ngModel]="!getAppointmentControl(i, 'dont_invite_me').value"
-                                  [ngModelOptions]="{standalone: true}"
-                                  (ngModelChange)="toggleInvite(i, 'dont_invite_me', $event)">
-                                </app-switch>
-                              </app-participant-item>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    }
-
-                    <div class="participants-section" formArrayName="participants">
-                      <div class="guest-form">
-                        @for (participant of getParticipantsFormArray(i).controls; track $index; let j = $index) {
-                          <div class="participant-form" [formGroupName]="j">
-                            <div class="participant-header">
-                              <span class="participant-number">{{ 'consultationForm.participantNumber' | translate: { number: j + 1 } }}</span>
-                              <app-button
-                                [text]="'consultationForm.remove' | translate"
-                                [style]="ButtonStyleEnum.text"
-                                [state]="ButtonStateEnum.error"
-                                [size]="ButtonSizeEnum.small"
-                                (buttonClick)="removeParticipantFromAppointment(i, j)">
-                              </app-button>
-                            </div>
-
-                            <div class="form-group">
-                              <label class="form-label">{{ 'consultationForm.participantType' | translate }}</label>
-                              <div class="type-toggle">
-                                <button type="button" class="type-btn"
-                                  [class.active]="isParticipantExistingUser(i, j)"
-                                  (click)="setParticipantType(i, j, true)">
-                                  {{ 'consultationForm.existingUser' | translate }}
-                                </button>
-                                <button type="button" class="type-btn"
-                                  [class.active]="!isParticipantExistingUser(i, j)"
-                                  (click)="setParticipantType(i, j, false)">
-                                  {{ 'consultationForm.externalGuest' | translate }}
-                                </button>
-                              </div>
-                            </div>
-
-                            @if (isParticipantExistingUser(i, j)) {
-                              <div class="form-group">
-                                <app-user-search-select
-                                  [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
-                                  (userSelected)="onParticipantUserSelected(i, j, $event)">
-                                </app-user-search-select>
-                              </div>
-                            } @else {
-                              <div class="form-group">
-                                <label class="form-label">{{ 'consultationForm.contactMethod' | translate }}</label>
-                                <div class="contact-toggle">
-                                  <app-button
-                                    [text]="'consultationForm.email' | translate"
-                                    leftIcon="email"
-                                    [block]="true"
-                                    [style]="getParticipantContactType(i, j) === 'email' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                                    [size]="ButtonSizeEnum.small"
-                                    (buttonClick)="setParticipantContactType(i, j, 'email')">
-                                  </app-button>
-                                  <app-button
-                                    [text]="'consultationForm.phone' | translate"
-                                    leftIcon="phone"
-                                    [block]="true"
-                                    [style]="getParticipantContactType(i, j) === 'phone' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                                    [size]="ButtonSizeEnum.small"
-                                    (buttonClick)="setParticipantContactType(i, j, 'phone')">
-                                  </app-button>
-                                </div>
-                              </div>
-
-                              <div class="form-group">
-                                <app-input
-                                  [label]="getParticipantContactType(i, j) === 'email' ? ('consultationForm.emailAddress' | translate) : ('consultationForm.phoneNumber' | translate)"
-                                  [type]="getParticipantContactType(i, j) === 'email' ? 'email' : 'tel'"
-                                  [leftIcon]="getParticipantContactType(i, j) === 'email' ? 'email' : 'phone'"
-                                  [placeholder]="getParticipantContactType(i, j) === 'email' ? ('consultationForm.emailPlaceholder' | translate) : ('consultationForm.phonePlaceholder' | translate)"
-                                  formControlName="email">
-                                </app-input>
-                              </div>
-
-                              <div class="name-row">
-                                <div class="form-group">
-                                  <app-input
-                                    [label]="'consultationForm.firstName' | translate"
-                                    leftIcon="user"
-                                    [placeholder]="'consultationForm.firstNamePlaceholder' | translate"
-                                    formControlName="first_name">
-                                  </app-input>
-                                </div>
-                                <div class="form-group">
-                                  <app-input
-                                    [label]="'consultationForm.lastName' | translate"
-                                    [placeholder]="'consultationForm.lastNamePlaceholder' | translate"
-                                    formControlName="last_name">
-                                  </app-input>
-                                </div>
-                              </div>
-
-                              <div class="participant-settings">
-                                <div class="form-group">
-                                  <app-select
-                                    [label]="'consultationForm.timezone' | translate"
-                                    formControlName="timezone"
-                                    [options]="timezoneOptions"
-                                    [placeholder]="'consultationForm.selectTimezone' | translate">
-                                  </app-select>
-                                </div>
-                                <div class="form-group">
-                                  <app-select
-                                    [label]="'consultationForm.communicationMethod' | translate"
-                                    formControlName="communication_method"
-                                    [options]="communicationMethods"
-                                    [placeholder]="'consultationForm.selectMethod' | translate">
-                                  </app-select>
-                                </div>
-                                <div class="form-group">
-                                  <app-select
-                                    [label]="'consultationForm.preferredLanguage' | translate"
-                                    formControlName="preferred_language"
-                                    [options]="languageOptions"
-                                    [placeholder]="'consultationForm.selectLanguage' | translate">
-                                  </app-select>
-                                </div>
-                              </div>
-                            }
-                          </div>
-                        }
-                        <app-button
-                          [text]="'consultationForm.addParticipant' | translate"
-                          leftIcon="plus"
-                          [style]="ButtonStyleEnum.text"
-                          [size]="ButtonSizeEnum.small"
-                          (buttonClick)="addParticipantToAppointment(i)">
-                        </app-button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              } @else {
-                <div class="form-card empty-appointments">
-                  <app-button
-                    [text]="'consultationForm.addAppointment' | translate"
-                    leftIcon="plus"
-                    [style]="ButtonStyleEnum.stroke"
-                    (buttonClick)="addAppointment()">
-                  </app-button>
-                  <p class="empty-text">{{ 'consultationForm.clickToSchedule' | translate }}</p>
-                </div>
-              }
-            </div>
+          <div class="form-group">
+            <app-textarea
+              [label]="'consultationForm.description' | translate"
+              [placeholder]="'consultationForm.descriptionPlaceholder' | translate"
+              [rows]="4"
+              formControlName="description">
+            </app-textarea>
           </div>
-        }
 
-        <div class="stepper-actions">
-          <app-button
-            [text]="'consultationForm.back' | translate"
-            leftIcon="arrow-left"
-            [style]="ButtonStyleEnum.stroke"
-            [size]="ButtonSizeEnum.medium"
-            [disabled]="currentStep() === 0"
-            (buttonClick)="previousStep()">
-          </app-button>
+          @if (customFields().length > 0) {
+          <div class="custom-fields-section" formGroupName="custom_fields">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-l-bold']"
+              style="margin-top: 24px; margin-bottom: 16px; display: block">
+              {{ 'consultationForm.customFields' | translate }}
+            </app-typography>
 
-          <div class="action-right">
-            @if (mode === 'edit' && isAutoSaving()) {
-              <div class="auto-save-indicator">
-                <app-svg src="check" [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--emerald-500)'}"></app-svg>
-                <span>{{ 'consultationForm.saving' | translate }}</span>
-              </div>
+            @for (field of customFields(); track field.id) {
+            <div class="form-group">
+              @switch (field.field_type) { @case ('short_text') {
+              <app-input
+                [label]="field.name"
+                [required]="field.required"
+                [formControlName]="field.id.toString()">
+              </app-input>
+              } @case ('long_text') {
+              <app-textarea
+                [label]="field.name"
+                [rows]="3"
+                [formControlName]="field.id.toString()">
+              </app-textarea>
+              } @case ('date') {
+              <app-input
+                [label]="field.name"
+                [required]="field.required"
+                type="date"
+                leftIcon="calendar"
+                [formControlName]="field.id.toString()">
+              </app-input>
+              } @case ('number') {
+              <app-input
+                [label]="field.name"
+                [required]="field.required"
+                type="number"
+                [formControlName]="field.id.toString()">
+              </app-input>
+              } @case ('list') {
+              <app-select
+                [label]="field.name"
+                [options]="getCustomFieldOptions(field)"
+                [formControlName]="field.id.toString()">
+              </app-select>
+              } }
+            </div>
             }
+          </div>
+          }
+        </div>
+      </div>
+      } @if (currentStep() === 1) {
+      <div class="step-content">
+        <div class="form-card">
+          <app-typography
+            [variant]="TypographyTypeEnum['body-l-bold']"
+            style="margin-bottom: 8px; display: block">
+            {{ 'consultationForm.practitionerAssignment' | translate }}
+          </app-typography>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-s-regular']"
+            color="var(--slate-500)"
+            class="step-description">
+            {{ 'consultationForm.practitionerAssignmentDescription' | translate
+            }}
+          </app-typography>
 
-            @if (currentStep() < 2) {
-              <app-button
-                [text]="'consultationForm.next' | translate"
-                rightIcon="arrow-right"
-                [style]="ButtonStyleEnum.primary"
-                [size]="ButtonSizeEnum.medium"
-                [disabled]="!canProceedToNextStep()"
-                (buttonClick)="nextStep()">
-              </app-button>
-            } @else {
-              @if (mode === 'create') {
-                <app-button
-                  [text]="'consultationForm.createConsultation' | translate"
-                  [style]="ButtonStyleEnum.primary"
-                  [size]="ButtonSizeEnum.medium"
-                  [disabled]="isSaving()"
-                  [loading]="isSaving()"
-                  (buttonClick)="onSubmit()">
-                </app-button>
-              } @else {
-                <app-button
-                  [text]="'consultationForm.saveChanges' | translate"
-                  [style]="ButtonStyleEnum.primary"
-                  [size]="ButtonSizeEnum.medium"
-                  [disabled]="isSaving()"
-                  [loading]="isSaving()"
-                  (buttonClick)="onSubmit()">
-                </app-button>
-              }
-            }
+          <div class="form-group">
+            <app-user-search-select
+              [label]="'consultationForm.selectPractitioner' | translate"
+              [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+              [temporary]="false"
+              [isPractitioner]="true"
+              (userSelected)="onOwnerSelected($event)">
+            </app-user-search-select>
+          </div>
+
+          <div class="form-group">
+            <app-select
+              [label]="'consultationForm.selectGroup' | translate"
+              [options]="queueOptions()"
+              [placeholder]="'consultationForm.selectGroupPlaceholder' | translate"
+              formControlName="group_id">
+            </app-select>
           </div>
         </div>
-      </form>
+      </div>
+      } @if (currentStep() === 2) {
+      <div class="step-content">
+        <div class="step-header">
+          <app-typography
+            [variant]="TypographyTypeEnum['body-l-bold']"
+            style="margin-bottom: 8px; display: block">
+            {{ 'consultationForm.scheduleAppointment' | translate }}
+          </app-typography>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-s-regular']"
+            color="var(--slate-500)"
+            style="display: block">
+            {{ 'consultationForm.scheduleOptional' | translate }}
+          </app-typography>
+        </div>
+
+        <div class="appointments-container" formArrayName="appointments">
+          @if (formReady() && appointmentsFormArray &&
+          appointmentsFormArray.length > 0) { @for (appointment of
+          appointmentsFormArray.controls; track $index; let i = $index) {
+          <div class="form-card appointment-card" [formGroupName]="i">
+            <div class="appointment-header">
+              <app-typography [variant]="TypographyTypeEnum['body-semibold']">
+                {{ 'consultationForm.appointment' | translate }} @if
+                (hasAppointmentId(i)) {
+                <span class="saved-badge"
+                  >({{ 'consultationForm.saved' | translate }})</span
+                >
+                }
+              </app-typography>
+              <div class="appointment-actions">
+                @if (mode === 'edit') {
+                <app-button
+                  [text]="hasAppointmentId(i) ? ('consultationForm.update' | translate) : ('consultationForm.save' | translate)"
+                  [style]="ButtonStyleEnum.text"
+                  [size]="ButtonSizeEnum.small"
+                  [disabled]="isAppointmentSaving(i)"
+                  (buttonClick)="saveAppointment(i)">
+                </app-button>
+                }
+                <app-button
+                  [text]="'consultationForm.remove' | translate"
+                  [style]="ButtonStyleEnum.text"
+                  [state]="ButtonStateEnum.error"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="removeAppointment(i)">
+                </app-button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >{{ 'consultationForm.appointmentType' | translate }}</label
+              >
+              <div class="type-toggle">
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.active]="getAppointmentType(i) === AppointmentType.ONLINE"
+                  (click)="setAppointmentType(i, AppointmentType.ONLINE)">
+                  <app-svg
+                    src="video"
+                    [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+                  {{ 'consultationForm.online' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.active]="getAppointmentType(i) === AppointmentType.INPERSON"
+                  (click)="setAppointmentType(i, AppointmentType.INPERSON)">
+                  <app-svg
+                    src="map-pin"
+                    [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+                  {{ 'consultationForm.inPerson' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="appointment-grid">
+              <div class="form-group">
+                <app-input
+                  [label]="'consultationForm.date' | translate"
+                  [required]="true"
+                  type="date"
+                  leftIcon="calendar"
+                  formControlName="date">
+                </app-input>
+              </div>
+              <div class="form-group">
+                <app-input
+                  [label]="'consultationForm.time' | translate"
+                  [required]="true"
+                  type="time"
+                  leftIcon="clock"
+                  formControlName="time">
+                </app-input>
+              </div>
+            </div>
+
+            @if (mode === 'create') {
+            <div class="invite-flags-section">
+              <div class="invite-flags">
+                <app-checkbox
+                  [label]="'consultationForm.dontInvitePatient' | translate"
+                  formControlName="dont_invite_beneficiary">
+                </app-checkbox>
+                <app-checkbox
+                  [label]="'consultationForm.dontInvitePractitioner' | translate"
+                  formControlName="dont_invite_practitioner">
+                </app-checkbox>
+                <app-checkbox
+                  [label]="'consultationForm.dontInviteMe' | translate"
+                  formControlName="dont_invite_me">
+                </app-checkbox>
+              </div>
+
+              <div class="invite-preview">
+                <span class="preview-label"
+                  >{{ 'consultationForm.willBeInvited' | translate }}</span
+                >
+                <div class="invite-preview-list">
+                  @if (getBeneficiaryUser(); as beneficiary) {
+                  <app-participant-item
+                    [class.excluded]="getAppointmentControl(i, 'dont_invite_beneficiary').value"
+                    [participant]="{id: 0, user: {id: beneficiary.pk, email: beneficiary.email, first_name: beneficiary.first_name, last_name: beneficiary.last_name}, is_active: true}">
+                    <span class="role-label"
+                      >{{ 'consultationForm.rolePatient' | translate }}</span
+                    >
+                    <app-switch
+                      [ngModel]="!getAppointmentControl(i, 'dont_invite_beneficiary').value"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="toggleInvite(i, 'dont_invite_beneficiary', $event)">
+                    </app-switch>
+                  </app-participant-item>
+                  } @if (getOwnerUser(); as owner) {
+                  <app-participant-item
+                    [class.excluded]="getAppointmentControl(i, 'dont_invite_practitioner').value"
+                    [participant]="{id: 0, user: {id: owner.pk, email: owner.email, first_name: owner.first_name, last_name: owner.last_name}, is_active: true}">
+                    <span class="role-label"
+                      >{{ 'consultationForm.rolePractitioner' | translate
+                      }}</span
+                    >
+                    <app-switch
+                      [ngModel]="!getAppointmentControl(i, 'dont_invite_practitioner').value"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="toggleInvite(i, 'dont_invite_practitioner', $event)">
+                    </app-switch>
+                  </app-participant-item>
+                  } @if (getCurrentUserForInvite(); as user) {
+                  <app-participant-item
+                    [class.excluded]="getAppointmentControl(i, 'dont_invite_me').value"
+                    [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}">
+                    <span class="role-label"
+                      >{{ 'consultationForm.roleYou' | translate }}</span
+                    >
+                    <app-switch
+                      [ngModel]="!getAppointmentControl(i, 'dont_invite_me').value"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="toggleInvite(i, 'dont_invite_me', $event)">
+                    </app-switch>
+                  </app-participant-item>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+
+            <div class="participants-section" formArrayName="participants">
+              <div class="guest-form">
+                @for (participant of getParticipantsFormArray(i).controls; track
+                $index; let j = $index) {
+                <div class="participant-form" [formGroupName]="j">
+                  <div class="participant-header">
+                    <span class="participant-number"
+                      >{{ 'consultationForm.participantNumber' | translate: {
+                      number: j + 1 } }}</span
+                    >
+                    <app-button
+                      [text]="'consultationForm.remove' | translate"
+                      [style]="ButtonStyleEnum.text"
+                      [state]="ButtonStateEnum.error"
+                      [size]="ButtonSizeEnum.small"
+                      (buttonClick)="removeParticipantFromAppointment(i, j)">
+                    </app-button>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >{{ 'consultationForm.participantType' | translate
+                      }}</label
+                    >
+                    <div class="type-toggle">
+                      <button
+                        type="button"
+                        class="type-btn"
+                        [class.active]="isParticipantExistingUser(i, j)"
+                        (click)="setParticipantType(i, j, true)">
+                        {{ 'consultationForm.existingUser' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        class="type-btn"
+                        [class.active]="!isParticipantExistingUser(i, j)"
+                        (click)="setParticipantType(i, j, false)">
+                        {{ 'consultationForm.externalGuest' | translate }}
+                      </button>
+                    </div>
+                  </div>
+
+                  @if (isParticipantExistingUser(i, j)) {
+                  <div class="form-group">
+                    <app-user-search-select
+                      [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+                      (userSelected)="onParticipantUserSelected(i, j, $event)">
+                    </app-user-search-select>
+                  </div>
+                  } @else {
+                  <div class="form-group">
+                    <label class="form-label"
+                      >{{ 'consultationForm.contactMethod' | translate }}</label
+                    >
+                    <div class="contact-toggle">
+                      <app-button
+                        [text]="'consultationForm.email' | translate"
+                        leftIcon="email"
+                        [block]="true"
+                        [style]="getParticipantContactType(i, j) === 'email' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+                        [size]="ButtonSizeEnum.small"
+                        (buttonClick)="setParticipantContactType(i, j, 'email')">
+                      </app-button>
+                      <app-button
+                        [text]="'consultationForm.phone' | translate"
+                        leftIcon="phone"
+                        [block]="true"
+                        [style]="getParticipantContactType(i, j) === 'phone' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+                        [size]="ButtonSizeEnum.small"
+                        (buttonClick)="setParticipantContactType(i, j, 'phone')">
+                      </app-button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <app-input
+                      [label]="getParticipantContactType(i, j) === 'email' ? ('consultationForm.emailAddress' | translate) : ('consultationForm.phoneNumber' | translate)"
+                      [type]="getParticipantContactType(i, j) === 'email' ? 'email' : 'tel'"
+                      [leftIcon]="getParticipantContactType(i, j) === 'email' ? 'email' : 'phone'"
+                      [placeholder]="getParticipantContactType(i, j) === 'email' ? ('consultationForm.emailPlaceholder' | translate) : ('consultationForm.phonePlaceholder' | translate)"
+                      formControlName="email">
+                    </app-input>
+                  </div>
+
+                  <div class="name-row">
+                    <div class="form-group">
+                      <app-input
+                        [label]="'consultationForm.firstName' | translate"
+                        leftIcon="user"
+                        [placeholder]="'consultationForm.firstNamePlaceholder' | translate"
+                        formControlName="first_name">
+                      </app-input>
+                    </div>
+                    <div class="form-group">
+                      <app-input
+                        [label]="'consultationForm.lastName' | translate"
+                        [placeholder]="'consultationForm.lastNamePlaceholder' | translate"
+                        formControlName="last_name">
+                      </app-input>
+                    </div>
+                  </div>
+
+                  <div class="participant-settings">
+                    <div class="form-group">
+                      <app-select
+                        [label]="'consultationForm.timezone' | translate"
+                        formControlName="timezone"
+                        [options]="timezoneOptions"
+                        [placeholder]="'consultationForm.selectTimezone' | translate">
+                      </app-select>
+                    </div>
+                    <div class="form-group">
+                      <app-select
+                        [label]="'consultationForm.communicationMethod' | translate"
+                        formControlName="communication_method"
+                        [options]="communicationMethods"
+                        [placeholder]="'consultationForm.selectMethod' | translate">
+                      </app-select>
+                    </div>
+                    <div class="form-group">
+                      <app-select
+                        [label]="'consultationForm.preferredLanguage' | translate"
+                        formControlName="preferred_language"
+                        [options]="languageOptions"
+                        [placeholder]="'consultationForm.selectLanguage' | translate">
+                      </app-select>
+                    </div>
+                  </div>
+                  }
+                </div>
+                }
+                <app-button
+                  [text]="'consultationForm.addParticipant' | translate"
+                  leftIcon="plus"
+                  [style]="ButtonStyleEnum.text"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="addParticipantToAppointment(i)">
+                </app-button>
+              </div>
+            </div>
+          </div>
+          } } @else {
+          <div class="form-card empty-appointments">
+            <app-button
+              [text]="'consultationForm.addAppointment' | translate"
+              leftIcon="plus"
+              [style]="ButtonStyleEnum.stroke"
+              (buttonClick)="addAppointment()">
+            </app-button>
+            <p class="empty-text">
+              {{ 'consultationForm.clickToSchedule' | translate }}
+            </p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <div class="stepper-actions">
+        <app-button
+          [text]="'consultationForm.back' | translate"
+          leftIcon="arrow-left"
+          [style]="ButtonStyleEnum.stroke"
+          [size]="ButtonSizeEnum.medium"
+          [disabled]="currentStep() === 0"
+          (buttonClick)="previousStep()">
+        </app-button>
+
+        <div class="action-right">
+          @if (mode === 'edit' && isAutoSaving()) {
+          <div class="auto-save-indicator">
+            <app-svg
+              src="check"
+              [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--emerald-500)'}"></app-svg>
+            <span>{{ 'consultationForm.saving' | translate }}</span>
+          </div>
+          } @if (currentStep() < 2) {
+          <app-button
+            [text]="'consultationForm.next' | translate"
+            rightIcon="arrow-right"
+            [style]="ButtonStyleEnum.primary"
+            [size]="ButtonSizeEnum.medium"
+            [disabled]="!canProceedToNextStep()"
+            (buttonClick)="nextStep()">
+          </app-button>
+          } @else { @if (mode === 'create') {
+          <app-button
+            [text]="'consultationForm.createConsultation' | translate"
+            [style]="ButtonStyleEnum.primary"
+            [size]="ButtonSizeEnum.medium"
+            [disabled]="isSaving()"
+            [loading]="isSaving()"
+            (buttonClick)="onSubmit()">
+          </app-button>
+          } @else {
+          <app-button
+            [text]="'consultationForm.saveChanges' | translate"
+            [style]="ButtonStyleEnum.primary"
+            [size]="ButtonSizeEnum.medium"
+            [disabled]="isSaving()"
+            [loading]="isSaving()"
+            (buttonClick)="onSubmit()">
+          </app-button>
+          } }
+        </div>
+      </div>
+    </form>
     }
   </div>
 </app-page>

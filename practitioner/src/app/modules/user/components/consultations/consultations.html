@@ -14,7 +14,10 @@
           <app-svg
             src="settings"
             [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-          <span>{{ showFilters() ? ('consultations.hideFilters' | translate) : ('consultations.advancedFilters' | translate) }}</span>
+          <span
+            >{{ showFilters() ? ('consultations.hideFilters' | translate) :
+            ('consultations.advancedFilters' | translate) }}</span
+          >
           @if (activeFilterCount() > 0) {
           <span class="filter-count">{{ activeFilterCount() }}</span>
           }
@@ -41,16 +44,20 @@
           <app-user-search-select
             [label]="'consultations.ownedBy' | translate"
             [placeholder]="'consultations.searchPractitioner' | translate"
-            [hasGroupPermissions]="true"
+            [isPractitioner]="true"
             [meUser]="currentUser()"
             (userSelected)="onOwnedByChange($event)">
           </app-user-search-select>
         </div>
         <div class="filter-item">
-          <label class="filter-label">{{ 'consultations.group' | translate }}</label>
+          <label class="filter-label"
+            >{{ 'consultations.group' | translate }}</label
+          >
           <div class="filter-select-wrapper">
             <select class="filter-select" (change)="onGroupChange($event)">
-              <option value="">{{ 'consultations.allGroups' | translate }}</option>
+              <option value="">
+                {{ 'consultations.allGroups' | translate }}
+              </option>
               @for (queue of queues(); track queue.id) {
               <option [value]="queue.id">{{ queue.name }}</option>
               }

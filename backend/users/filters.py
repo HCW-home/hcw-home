@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import FilterSet, BooleanFilter
+from django_filters.rest_framework import BooleanFilter, FilterSet
 
 User = get_user_model()
 
 
 class UserFilter(FilterSet):
-    has_group_permissions = BooleanFilter(method='filter_has_group_permissions')
+    has_group_permissions = BooleanFilter(method="filter_has_group_permissions")
+    is_practitioner = BooleanFilter(field_name="is_practitioner")
 
     class Meta:
         model = User

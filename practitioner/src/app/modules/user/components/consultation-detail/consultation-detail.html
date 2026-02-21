@@ -68,7 +68,7 @@
                   <app-user-search-select
                     [label]="'consultationDetail.practitioner' | translate"
                     [placeholder]="'consultationDetail.searchPractitioner' | translate"
-                    [hasGroupPermissions]="true"
+                    [isPractitioner]="true"
                     [initialUser]="selectedOwner()"
                     (userSelected)="onOwnerSelected($event)">
                   </app-user-search-select>
@@ -86,51 +86,45 @@
               </div>
 
               @if (customFields().length > 0 && editForm.get('custom_fields')) {
-                <div formGroupName="custom_fields" class="custom-fields-edit">
-                  @for (field of customFields(); track field.id) {
-                    <div class="form-group">
-                      @switch (field.field_type) {
-                        @case ('short_text') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('long_text') {
-                          <app-textarea
-                            [label]="field.name"
-                            [rows]="3"
-                            [formControlName]="field.id.toString()">
-                          </app-textarea>
-                        }
-                        @case ('date') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            type="date"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('number') {
-                          <app-input
-                            [label]="field.name"
-                            [required]="field.required"
-                            type="number"
-                            [formControlName]="field.id.toString()">
-                          </app-input>
-                        }
-                        @case ('list') {
-                          <app-select
-                            [label]="field.name"
-                            [options]="getCustomFieldOptions(field)"
-                            [formControlName]="field.id.toString()">
-                          </app-select>
-                        }
-                      }
-                    </div>
-                  }
+              <div formGroupName="custom_fields" class="custom-fields-edit">
+                @for (field of customFields(); track field.id) {
+                <div class="form-group">
+                  @switch (field.field_type) { @case ('short_text') {
+                  <app-input
+                    [label]="field.name"
+                    [required]="field.required"
+                    [formControlName]="field.id.toString()">
+                  </app-input>
+                  } @case ('long_text') {
+                  <app-textarea
+                    [label]="field.name"
+                    [rows]="3"
+                    [formControlName]="field.id.toString()">
+                  </app-textarea>
+                  } @case ('date') {
+                  <app-input
+                    [label]="field.name"
+                    [required]="field.required"
+                    type="date"
+                    [formControlName]="field.id.toString()">
+                  </app-input>
+                  } @case ('number') {
+                  <app-input
+                    [label]="field.name"
+                    [required]="field.required"
+                    type="number"
+                    [formControlName]="field.id.toString()">
+                  </app-input>
+                  } @case ('list') {
+                  <app-select
+                    [label]="field.name"
+                    [options]="getCustomFieldOptions(field)"
+                    [formControlName]="field.id.toString()">
+                  </app-select>
+                  } }
                 </div>
+                }
+              </div>
               }
             </div>
           </form>
@@ -246,16 +240,13 @@
               >
               <span class="info-value">{{ consultation()!.group!.name }}</span>
             </div>
-            }
-
-            @if (consultation()?.custom_fields?.length) {
-              @for (cf of consultation()!.custom_fields!; track cf.field) {
-                <div class="info-item">
-                  <span class="info-label">{{ cf.field_name }}</span>
-                  <span class="info-value">{{ cf.value || '-' }}</span>
-                </div>
-              }
-            }
+            } @if (consultation()?.custom_fields?.length) { @for (cf of
+            consultation()!.custom_fields!; track cf.field) {
+            <div class="info-item">
+              <span class="info-label">{{ cf.field_name }}</span>
+              <span class="info-value">{{ cf.value || '-' }}</span>
+            </div>
+            } }
           </div>
           }
         </div>

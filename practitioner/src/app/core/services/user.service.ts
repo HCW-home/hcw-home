@@ -1,17 +1,17 @@
-import {Injectable, inject} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable, BehaviorSubject, tap} from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
 import {
   IUser,
   ILanguage,
   ISpeciality,
   IUserUpdateRequest,
 } from '../../modules/user/models/user';
-import {environment} from '../../../environments/environment';
-import {PaginatedResponse} from '../models/global';
+import { environment } from '../../../environments/environment';
+import { PaginatedResponse } from '../models/global';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
   private apiUrl = environment.apiUrl;
@@ -25,23 +25,23 @@ export class UserService {
   }
 
   getCurrentUser(): Observable<IUser> {
-    return this.http.get<IUser>(`${this.apiUrl}/auth/user/`).pipe(
-      tap(user => this.currentUserSubject.next(user))
-    );
+    return this.http
+      .get<IUser>(`${this.apiUrl}/auth/user/`)
+      .pipe(tap(user => this.currentUserSubject.next(user)));
   }
 
   updateCurrentUser(data: IUserUpdateRequest): Observable<IUser> {
-    return this.http.patch<IUser>(`${this.apiUrl}/auth/user/`, data).pipe(
-      tap(user => this.currentUserSubject.next(user))
-    );
+    return this.http
+      .patch<IUser>(`${this.apiUrl}/auth/user/`, data)
+      .pipe(tap(user => this.currentUserSubject.next(user)));
   }
 
   uploadProfilePicture(file: File): Observable<IUser> {
     const formData = new FormData();
     formData.append('picture', file);
-    return this.http.patch<IUser>(`${this.apiUrl}/auth/user/`, formData).pipe(
-      tap(user => this.currentUserSubject.next(user))
-    );
+    return this.http
+      .patch<IUser>(`${this.apiUrl}/auth/user/`, formData)
+      .pipe(tap(user => this.currentUserSubject.next(user)));
   }
 
   searchUsers(
@@ -49,15 +49,21 @@ export class UserService {
     page?: number,
     pageSize?: number,
     temporary?: boolean,
-    hasGroupPermissions?: boolean
+    hasGroupPermissions?: boolean,
+    isPractitioner?: boolean
   ): Observable<PaginatedResponse<IUser>> {
-    const params: Record<string, string | number | boolean> = {search: query};
+    const params: Record<string, string | number | boolean> = { search: query };
     if (page) params['page'] = page;
     if (pageSize) params['page_size'] = pageSize;
     if (temporary !== undefined) params['temporary'] = temporary;
-    if (hasGroupPermissions !== undefined) params['has_group_permissions'] = hasGroupPermissions;
+    if (hasGroupPermissions !== undefined)
+      params['has_group_permissions'] = hasGroupPermissions;
+    if (isPractitioner !== undefined)
+      params['is_practitioner'] = isPractitioner;
 
-    return this.http.get<PaginatedResponse<IUser>>(`${this.apiUrl}/users/`, {params});
+    return this.http.get<PaginatedResponse<IUser>>(`${this.apiUrl}/users/`, {
+      params,
+    });
   }
 
   getLanguages(): Observable<ILanguage[]> {

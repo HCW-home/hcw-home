@@ -31,10 +31,12 @@ export class WebSocketService {
   public messages$: Observable<UserIncomingEvent> =
     this.messageSubject.asObservable();
 
-
   connect(config: WebSocketConfig): void {
-    if (this.ws &&
-        (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+    if (
+      this.ws &&
+      (this.ws.readyState === WebSocket.OPEN ||
+        this.ws.readyState === WebSocket.CONNECTING)
+    ) {
       return;
     }
 
@@ -85,7 +87,8 @@ export class WebSocketService {
     return this.messages$.pipe(
       filter(
         (msg): msg is Extract<UserIncomingEvent, { type: T }> =>
-          msg.type === type || (msg as unknown as { event?: string }).event === type
+          msg.type === type ||
+          (msg as unknown as { event?: string }).event === type
       )
     );
   }
@@ -136,9 +139,15 @@ export class WebSocketService {
 
     this.ws.onmessage = (event: MessageEvent) => {
       try {
-        const message: UserIncomingEvent = JSON.parse(
-          event.data
-        ) as UserIncomingEvent;
+        const raw = JSON.parse(event.data) as { type: string };
+
+        // Reply to server-side heartbeat pings immediately
+        if (raw.type === 'ping') {
+          this.ws?.send(JSON.stringify({ type: 'pong' }));
+          return;
+        }
+
+        const message = raw as UserIncomingEvent;
         console.log('[WS] Received message:', message);
         this.messageSubject.next(message);
       } catch (error) {
@@ -167,7 +176,8 @@ export class WebSocketService {
   private attemptReconnect(): void {
     if (!this.config) return;
 
-    const maxAttempts = this.config.reconnectAttempts ?? this.maxReconnectAttempts;
+    const maxAttempts =
+      this.config.reconnectAttempts ?? this.maxReconnectAttempts;
 
     if (this.reconnectAttempts >= maxAttempts) {
       console.error('Max reconnection attempts reached');

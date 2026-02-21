@@ -23,20 +23,29 @@ export class ConsultationWebSocketService implements OnDestroy {
 
   private messagesSubject = new Subject<ConsultationMessageEvent>();
   private messageUpdatedSubject = new Subject<WsMessageEvent>();
-  private participantsSubject = new BehaviorSubject<ConsultationParticipant[]>([]);
+  private participantsSubject = new BehaviorSubject<ConsultationParticipant[]>(
+    []
+  );
   private participantJoinedSubject = new Subject<ParticipantJoinedEvent>();
   private participantLeftSubject = new Subject<ParticipantLeftEvent>();
   private appointmentUpdatedSubject = new Subject<AppointmentUpdatedEvent>();
   private allEventsSubject = new Subject<ConsultationIncomingEvent>();
 
   public state$: Observable<WebSocketState>;
-  public messages$: Observable<ConsultationMessageEvent> = this.messagesSubject.asObservable();
-  public messageUpdated$: Observable<WsMessageEvent> = this.messageUpdatedSubject.asObservable();
-  public participants$: Observable<ConsultationParticipant[]> = this.participantsSubject.asObservable();
-  public participantJoined$: Observable<ParticipantJoinedEvent> = this.participantJoinedSubject.asObservable();
-  public participantLeft$: Observable<ParticipantLeftEvent> = this.participantLeftSubject.asObservable();
-  public appointmentUpdated$: Observable<AppointmentUpdatedEvent> = this.appointmentUpdatedSubject.asObservable();
-  public allEvents$: Observable<ConsultationIncomingEvent> = this.allEventsSubject.asObservable();
+  public messages$: Observable<ConsultationMessageEvent> =
+    this.messagesSubject.asObservable();
+  public messageUpdated$: Observable<WsMessageEvent> =
+    this.messageUpdatedSubject.asObservable();
+  public participants$: Observable<ConsultationParticipant[]> =
+    this.participantsSubject.asObservable();
+  public participantJoined$: Observable<ParticipantJoinedEvent> =
+    this.participantJoinedSubject.asObservable();
+  public participantLeft$: Observable<ParticipantLeftEvent> =
+    this.participantLeftSubject.asObservable();
+  public appointmentUpdated$: Observable<AppointmentUpdatedEvent> =
+    this.appointmentUpdatedSubject.asObservable();
+  public allEvents$: Observable<ConsultationIncomingEvent> =
+    this.allEventsSubject.asObservable();
 
   constructor(
     private userWsService: UserWebSocketService,
@@ -68,11 +77,9 @@ export class ConsultationWebSocketService implements OnDestroy {
   }
 
   private setupEventListeners(): void {
-    this.wsService.messages$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((event) => {
-        this.handleMessage(event as unknown as ConsultationIncomingEvent);
-      });
+    this.wsService.messages$.pipe(takeUntil(this.destroy$)).subscribe(event => {
+      this.handleMessage(event as unknown as ConsultationIncomingEvent);
+    });
   }
 
   private handleMessage(message: ConsultationIncomingEvent): void {
@@ -81,7 +88,11 @@ export class ConsultationWebSocketService implements OnDestroy {
     const msgAny = message as unknown as Record<string, unknown>;
     const consultationId = msgAny['consultation_id'] as number | undefined;
 
-    if (consultationId && this.consultationId && consultationId !== this.consultationId) {
+    if (
+      consultationId &&
+      this.consultationId &&
+      consultationId !== this.consultationId
+    ) {
       return;
     }
 
@@ -99,7 +110,7 @@ export class ConsultationWebSocketService implements OnDestroy {
 
     if (eventType === 'appointment') {
       const state = msgAny['state'] as string | undefined;
-      if (state && state !== 'participant_joined') {
+      if (state && state !== 'participant_joined' && state !== 'created') {
         this.appointmentUpdatedSubject.next(message as AppointmentUpdatedEvent);
       }
       return;
@@ -119,7 +130,9 @@ export class ConsultationWebSocketService implements OnDestroy {
         break;
 
       case 'participants':
-        this.participantsSubject.next((message as { data: ConsultationParticipant[] }).data);
+        this.participantsSubject.next(
+          (message as { data: ConsultationParticipant[] }).data
+        );
         break;
     }
   }

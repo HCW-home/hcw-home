@@ -241,6 +241,14 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.consultationId = +params['id'];
+
+      // If an appointmentId is in the URL, switch filters to "all" so the appointment is visible
+      const queryParams = this.route.snapshot.queryParams;
+      if (queryParams['appointmentId']) {
+        this.appointmentStatusFilter.set('all');
+        this.appointmentTimeFilter.set('all');
+      }
+
       this.loadConsultation();
       this.loadAppointments();
       this.loadMessages();

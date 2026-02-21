@@ -61,11 +61,21 @@
             }">
         </app-svg>
         @if (!isCollapsed) {
-        <app-typography
-          class="menu-label"
-          [variant]="TypographyTypeEnum['body-s-medium']">
-          {{ menuItem.name | translate }}
-        </app-typography>
+        <div class="menu-text">
+          <app-typography
+            class="menu-label"
+            [variant]="TypographyTypeEnum['body-s-medium']">
+            {{ menuItem.name | translate }}
+          </app-typography>
+          @if (menuItem.subtitle) {
+          <app-typography
+            class="menu-subtitle"
+            [variant]="TypographyTypeEnum['body-xs-medium']"
+            color="var(--slate-400)">
+            {{ menuItem.subtitle | translate }}
+          </app-typography>
+          }
+        </div>
         }
       </div>
     </a>

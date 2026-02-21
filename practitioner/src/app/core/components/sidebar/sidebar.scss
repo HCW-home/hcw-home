@@ -63,7 +63,8 @@
       align-items: center;
       gap: 12px;
 
-      app-svg, .logo-custom-img {
+      app-svg,
+      .logo-custom-img {
         flex-shrink: 0;
         object-fit: contain;
       }
@@ -153,12 +154,25 @@
         transition: transform 0.2s ease;
       }
 
+      .menu-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
       .menu-label {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: var(--slate-600);
         transition: color 0.2s ease;
+      }
+
+      .menu-subtitle {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
       }
 
       &:hover:not(.active) {
@@ -172,7 +186,6 @@
         .menu-label {
           color: var(--slate-800);
         }
-
       }
 
       &.active {

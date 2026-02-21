@@ -467,6 +467,19 @@
     "accept": "Accepter",
     "decline": "Refuser"
   },
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "dashboardSubtitle": "Vue d'ensemble",
+    "consultations": "Consultations",
+    "consultationsSubtitle": "Gérer les consultations",
+    "patients": "Contacts",
+    "patientsSubtitle": "Patients & collaborateurs",
+    "appointments": "Rendez-vous",
+    "appointmentsSubtitle": "Planifier et gérer",
+    "configuration": "Configuration",
+    "configurationSubtitle": "Paramètres système",
+    "practitioner": "Praticien"
+  },
   "websocket": {
     "disconnected": "Connexion perdue",
     "disconnectedMessage": "La connexion au serveur a été perdue. Certaines fonctionnalités peuvent ne pas fonctionner.",

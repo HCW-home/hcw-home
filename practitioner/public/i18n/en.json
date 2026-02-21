@@ -333,10 +333,15 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "dashboardSubtitle": "Overview & activity",
     "consultations": "Consultations",
-    "patients": "Patients",
+    "consultationsSubtitle": "Manage consultations",
+    "patients": "Contacts",
+    "patientsSubtitle": "Patients & collaborators",
     "appointments": "Appointments",
+    "appointmentsSubtitle": "Schedule & manage",
     "configuration": "Configuration",
+    "configurationSubtitle": "System settings",
     "practitioner": "Practitioner"
   },
   "footer": {

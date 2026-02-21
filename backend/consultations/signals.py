@@ -1,13 +1,13 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from messaging.models import Message as NotificationMessage
 from users.services import user_online_service
-from django.db import transaction
 
 from .models import (
     Appointment,
@@ -95,7 +95,10 @@ def message_saved(sender, instance: Message, created, **kwargs):
         if created and not user_online_service.is_user_online(user_pk):
             user_to_notify = User.objects.get(pk=user_pk)
 
-            if user_to_notify.last_login and user_to_notify.last_login < user_to_notify.last_notification:
+            if (
+                user_to_notify.last_login
+                and user_to_notify.last_login < user_to_notify.last_notification
+            ):
                 continue
 
             user_to_notify.last_notification = timezone.now()
@@ -106,8 +109,8 @@ def message_saved(sender, instance: Message, created, **kwargs):
                 template_system_name="new_message_notification",
                 sent_to=user_to_notify,
                 sent_by=instance.created_by,
-                object_model="consultations.Message",
-                object_pk=instance.pk,
+                content_type=ContentType.objects.get_for_model(instance),
+                object_id=instance.pk,
             )
 
 
@@ -212,6 +215,6 @@ def participant_cancelling(sender, instance: Participant, **kwargs):
         NotificationMessage.objects.create(
             template_system_name="appointment_cancelled",
             sent_to=instance.user,
-            object_model="consultations.Participant",
-            object_pk=instance.pk,
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.pk,
         )

@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from consultations.models import Participant
 from django.conf import settings as django_settings
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -15,7 +16,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from users.models import User
 
 MAX_VERIFICATION_ATTEMPTS = getattr(django_settings, "MAX_VERIFICATION_ATTEMPTS", 3)
-TOKEN_GRACE_PERIOD = timedelta(minutes=getattr(django_settings, "TOKEN_GRACE_PERIOD_MINUTES", 5))
+TOKEN_GRACE_PERIOD = timedelta(
+    minutes=getattr(django_settings, "TOKEN_GRACE_PERIOD_MINUTES", 5)
+)
 
 
 class AnonymousTokenAuthView(APIView):
@@ -143,13 +146,15 @@ class AnonymousTokenAuthView(APIView):
                 if not verification_code:
                     user.verification_code = secrets.randbelow(1000000)
                     user.verification_attempts = 0
-                    user.save(update_fields=["verification_code", "verification_attempts"])
+                    user.save(
+                        update_fields=["verification_code", "verification_attempts"]
+                    )
 
                     Message.objects.create(
                         sent_to=user,
                         template_system_name="your_authentication_code",
-                        object_pk=user.pk,
-                        object_model="users.User",
+                        content_type=ContentType.objects.get_for_model(user),
+                        object_id=user.pk,
                     )
 
                     return Response(
@@ -163,13 +168,19 @@ class AnonymousTokenAuthView(APIView):
                 if user.verification_attempts >= MAX_VERIFICATION_ATTEMPTS:
                     user.verification_code = None
                     user.verification_attempts = 0
-                    user.save(update_fields=["verification_code", "verification_attempts"])
+                    user.save(
+                        update_fields=["verification_code", "verification_attempts"]
+                    )
                     return Response(
-                        {"error": "Too many verification attempts. Please request a new code."},
+                        {
+                            "error": "Too many verification attempts. Please request a new code."
+                        },
                         status=status.HTTP_429_TOO_MANY_REQUESTS,
                     )
 
-                if str(user.verification_code).zfill(6) != str(verification_code).zfill(6):
+                if str(user.verification_code).zfill(6) != str(verification_code).zfill(
+                    6
+                ):
                     user.verification_attempts += 1
                     user.save(update_fields=["verification_attempts"])
                     return Response(
@@ -181,7 +192,13 @@ class AnonymousTokenAuthView(APIView):
                 user.verification_code = None
                 user.verification_attempts = 0
                 user.verification_code_created_at = now
-                user.save(update_fields=["verification_code", "verification_attempts", "verification_code_created_at"])
+                user.save(
+                    update_fields=[
+                        "verification_code",
+                        "verification_attempts",
+                        "verification_code_created_at",
+                    ]
+                )
 
             refresh = RefreshToken.for_user(user)
 

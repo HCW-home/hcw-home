@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
+import json
 from typing import DefaultDict
 
 from django.conf import settings
@@ -27,9 +28,8 @@ from .models import (
     TemplateValidation,
     TemplateValidationStatus,
 )
-import json
-from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
 from .tasks import send_message
+from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
 
 # admin.site.register(MessagingProvider, ModelAdmin)
 
@@ -107,10 +107,10 @@ class MessageAdmin(ModelAdmin):
     list_display = [
         "recipient",
         "display_status",
+        "communication_method",
         "sent_by",
         "created_at",
         "display_template_is_valid",
-        "error_message",
     ]
     list_filter = ["communication_method", "status", "created_at", "provider_name"]
     search_fields = [
@@ -121,24 +121,97 @@ class MessageAdmin(ModelAdmin):
         "celery_task_id",
     ]
     readonly_fields = [
+        "display_render_subject",
+        "display_render_content",
+        "display_render_content_html",
+        "display_template_is_valid",
+        "status",
         "sent_at",
         "delivered_at",
         "read_at",
         "failed_at",
-        "status",
         "error_message",
+        "provider_name",
         "external_message_id",
         "celery_task_id",
+        "task_logs",
         "created_at",
         "updated_at",
-        "provider_name",
-        "display_template_is_valid",
-        "display_render_content",
-        "display_render_subject",
-        "display_render_content_html",
         "action",
         "action_label",
         "access_link",
+    ]
+
+    fieldsets = [
+        (
+            _("Sender & Recipient"),
+            {
+                "fields": [
+                    "sent_by",
+                    "sent_to",
+                    "recipient_email",
+                    "recipient_phone",
+                    "communication_method",
+                ],
+            },
+        ),
+        (
+            _("Content"),
+            {
+                "fields": [
+                    "template_system_name",
+                    "display_render_subject",
+                    "display_render_content",
+                    "display_render_content_html",
+                    "display_template_is_valid",
+                    "subject",
+                    "content",
+                    "content_html",
+                ],
+            },
+        ),
+        (
+            _("Delivery status"),
+            {
+                "fields": [
+                    "status",
+                    "sent_at",
+                    "delivered_at",
+                    "read_at",
+                    "failed_at",
+                    "error_message",
+                ],
+            },
+        ),
+        (
+            _("Link & Action"),
+            {
+                "fields": [
+                    "action",
+                    "action_label",
+                    "access_link",
+                    "content_type",
+                    "object_id",
+                    "additionnal_link_args",
+                    "in_notification",
+                ],
+                "classes": ["collapse"],
+            },
+        ),
+        (
+            _("Technical"),
+            {
+                "fields": [
+                    "provider_name",
+                    "external_message_id",
+                    "celery_task_id",
+                    "task_logs",
+                    "created_at",
+                    "updated_at",
+                ],
+                "classes": ["collapse"],
+            },
+        ),
     ]
 
     actions = ["send_message"]
@@ -172,24 +245,26 @@ class MessageAdmin(ModelAdmin):
         for message in queryset.all():
             send_message.delay(message.pk)
 
-    def display_render_content(self, instance):
-        try:
-            return instance.render_content
-        except Exception as e:
-            return f"Unable to render the message content: {e}"
-
-    @display(description=_("Rendered HTML Content"))
-    def display_render_content_html(self, instance):
-        try:
-            return format_html(instance.render_content_html)
-        except Exception as e:
-            return f"Unable to render the message content: {e}"
-
+    @display(description=_("Rendered subject"))
     def display_render_subject(self, instance):
         try:
             return instance.render_subject
         except Exception as e:
-            return f"Unable to render the message content: {e}"
+            return f"Unable to render: {e}"
+
+    @display(description=_("Rendered text content"))
+    def display_render_content(self, instance):
+        try:
+            return instance.render_content
+        except Exception as e:
+            return f"Unable to render: {e}"
+
+    @display(description=_("Rendered HTML content"))
+    def display_render_content_html(self, instance):
+        try:
+            return format_html(instance.render_content_html)
+        except Exception as e:
+            return f"Unable to render: {e}"
 
     send_message.short_description = "Send or resend message"
 
@@ -216,8 +291,8 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
         js = ("messaging/js/template_prefill.js",)
 
     def get_urls(self):
-        from django.urls import path
         from django.http import JsonResponse
+        from django.urls import path
 
         def template_defaults_view(request):
             from django.utils import translation
@@ -231,9 +306,15 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
                 # Translated fields: render in each language
                 for lang in languages:
                     with translation.override(lang):
-                        entry[f"template_subject_{lang}"] = str(v.get("template_subject", ""))
-                        entry[f"template_content_{lang}"] = str(v.get("template_content", ""))
-                        entry[f"template_content_html_{lang}"] = str(v.get("template_content_html", ""))
+                        entry[f"template_subject_{lang}"] = str(
+                            v.get("template_subject", "")
+                        )
+                        entry[f"template_content_{lang}"] = str(
+                            v.get("template_content", "")
+                        )
+                        entry[f"template_content_html_{lang}"] = str(
+                            v.get("template_content_html", "")
+                        )
                 defaults[key] = entry
             return JsonResponse(defaults)
 
@@ -254,7 +335,11 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
         (
             "Template Content",
             {
-                "fields": ["template_subject", "template_content", "template_content_html"],
+                "fields": [
+                    "template_subject",
+                    "template_content",
+                    "template_content_html",
+                ],
                 "description": "Use Jinja2 template syntax. Example: Hello {{ user.name }}!",
             },
         ),

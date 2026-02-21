@@ -9,11 +9,18 @@ from channels.layers import get_channel_layer
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from messaging.models import Message
 
 from .assignments import AssignmentManager
-from .models import Appointment, AppointmentRecording, AppointmentStatus, Request, Participant
+from .models import (
+    Appointment,
+    AppointmentRecording,
+    AppointmentStatus,
+    Participant,
+    Request,
+)
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -39,11 +46,13 @@ def handle_request(request_id):
 @shared_task
 def handle_invites(appointment_id):
     appointment = Appointment.objects.get(pk=appointment_id)
-    participants = Participant.objects.filter(
-        is_invited=True, appointment=appointment)
+    participants = Participant.objects.filter(is_invited=True, appointment=appointment)
 
     if appointment.status == AppointmentStatus.scheduled:
-        if appointment.previous_scheduled_at and appointment.previous_scheduled_at != appointment.scheduled_at:
+        if (
+            appointment.previous_scheduled_at
+            and appointment.previous_scheduled_at != appointment.scheduled_at
+        ):
             template_system_name = "appointment_updated"
             participants = participants.filter(is_active=True)
         else:
@@ -56,7 +65,6 @@ def handle_invites(appointment_id):
         return
 
     for participant in participants:
-
         if not participant.is_active:
             template_system_name = "appointment_cancelled"
 
@@ -67,11 +75,11 @@ def handle_invites(appointment_id):
             sent_to=participant.user,
             sent_by=appointment.consultation.created_by,
             template_system_name=template_system_name,
-            object_pk=participant.pk,
-            object_model="consultations.Participant",
+            content_type=ContentType.objects.get_for_model(participant),
+            object_id=participant.pk,
         )
         participant.is_notified = True
-        participant.save(update_fields=['is_notified'])
+        participant.save(update_fields=["is_notified"])
 
 
 @shared_task
@@ -84,12 +92,14 @@ def handle_reminders():
         for appointment in Appointment.objects.filter(
             scheduled_at=reminder_datetime, status=AppointmentStatus.scheduled
         ):
-            for participant in Participant.objects.filter(appointment=appointment, is_active=True):
+            for participant in Participant.objects.filter(
+                appointment=appointment, is_active=True
+            ):
                 message = Message.objects.create(
                     sent_to=participant.user,
                     template_system_name=reminder,
-                    object_pk=participant.pk,
-                    object_model="consultations.Participant",
+                    content_type=ContentType.objects.get_for_model(participant),
+                    object_id=participant.pk,
                 )
 
 
@@ -120,18 +130,18 @@ def check_recording_ready(self, recording_id):
 
     # Check if file exists in S3
     s3 = boto3.client(
-        's3',
+        "s3",
         endpoint_url=settings.LIVEKIT_S3_ENDPOINT_URL,
         aws_access_key_id=settings.LIVEKIT_S3_ACCESS_KEY,
         aws_secret_access_key=settings.LIVEKIT_S3_SECRET_KEY,
         region_name=settings.LIVEKIT_S3_REGION,
-        config=boto3.session.Config(signature_version='s3v4'),
+        config=boto3.session.Config(signature_version="s3v4"),
     )
 
     try:
         s3.head_object(Bucket=settings.LIVEKIT_S3_BUCKET_NAME, Key=recording.filepath)
     except ClientError as e:
-        if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
+        if e.response["Error"]["Code"] in ("404", "NoSuchKey"):
             logger.info(f"Recording {recording.filepath} not in S3 yet, retrying...")
             raise self.retry()
         raise
@@ -143,12 +153,12 @@ def check_recording_ready(self, recording_id):
         created_by=appointment.consultation.created_by,
         content=f"Recording: Appointment on {appointment.scheduled_at.strftime('%Y-%m-%d %H:%M')}",
         event="recording_available",
-        recording_url=recording.filepath
+        recording_url=recording.filepath,
     )
 
     # Link message to recording row
     recording.message = message
-    recording.save(update_fields=['message'])
+    recording.save(update_fields=["message"])
 
     # WebSocket notification
     channel_layer = get_channel_layer()
@@ -162,8 +172,10 @@ def check_recording_ready(self, recording_id):
                 "consultation_id": appointment.consultation.pk,
                 "message_id": message.id,
                 "state": "created",
-                "data": message_data
-            }
+                "data": message_data,
+            },
         )
 
-    logger.info(f"Recording message created for AppointmentRecording {recording_id}: message {message.id}")
+    logger.info(
+        f"Recording message created for AppointmentRecording {recording_id}: message {message.id}"
+    )

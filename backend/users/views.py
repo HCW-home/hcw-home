@@ -1,8 +1,8 @@
 import logging
 import mimetypes
 import os
-import uuid
 import random
+import uuid
 
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.openid_connect.views import (
@@ -10,8 +10,15 @@ from allauth.socialaccount.providers.openid_connect.views import (
 )
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from consultations.models import Appointment, Consultation, Participant, Request, RequestStatus
+from consultations.models import (
+    Appointment,
+    Consultation,
+    Participant,
+    Request,
+    RequestStatus,
+)
 from consultations.models import Message as ConsultationMessage
+from consultations.permissions import IsPractitioner
 from consultations.serializers import (
     AppointmentDetailSerializer,
     AppointmentSerializer,
@@ -25,12 +32,12 @@ from dj_rest_auth.registration.serializers import SocialLoginSerializer
 from dj_rest_auth.registration.views import RegisterView as DjRestAuthRegisterView
 from dj_rest_auth.registration.views import SocialLoginView
 from django.conf import settings
-from django.db.models import Q
 from django.contrib.auth import get_user_model
-from django.utils import translation
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.http import FileResponse
 from django.shortcuts import render
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.views.generic import View
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -46,11 +53,7 @@ from messaging.serializers import MessageSerializer
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    IsAuthenticated,
-    AllowAny
-)
-from consultations.permissions import IsPractitioner
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -826,8 +829,8 @@ class RegisterView(DjRestAuthRegisterView):
                 Message.objects.create(
                     sent_to=user,
                     template_system_name="email_verification",
-                    object_pk=user.pk,
-                    object_model="users.User",
+                    content_type=ContentType.objects.get_for_model(user),
+                    object_id=user.pk,
                     in_notification=False,
                     additionnal_link_args={"token": user.email_verification_token},
                 )
@@ -948,20 +951,24 @@ class UserDashboardView(APIView):
         user = request.user
         now = timezone.now()
 
-        user_requests = Request.objects.filter(
-            created_by=user,
-        ).filter(
-            Q(status__in=[RequestStatus.requested, RequestStatus.refused])
-            | Q(
-                status=RequestStatus.accepted,
-                consultation__closed_at__isnull=True,
+        user_requests = (
+            Request.objects.filter(
+                created_by=user,
             )
-            | Q(
-                status=RequestStatus.accepted,
-                appointment__scheduled_at__gte=now,
-                appointment__status="scheduled",
+            .filter(
+                Q(status__in=[RequestStatus.requested, RequestStatus.refused])
+                | Q(
+                    status=RequestStatus.accepted,
+                    consultation__closed_at__isnull=True,
+                )
+                | Q(
+                    status=RequestStatus.accepted,
+                    appointment__scheduled_at__gte=now,
+                    appointment__status="scheduled",
+                )
             )
-        ).order_by("-id")
+            .order_by("-id")
+        )
 
         consultations = (
             Consultation.objects.exclude(request__in=user_requests)
@@ -1001,12 +1008,20 @@ class UserDashboardView(APIView):
 
         return Response(
             {
-                "next_appointment": AppointmentSerializer(next_appointment, context=serializer_context).data
+                "next_appointment": AppointmentSerializer(
+                    next_appointment, context=serializer_context
+                ).data
                 if next_appointment
                 else None,
-                "requests": RequestSerializer(user_requests, many=True, context=serializer_context).data,
-                "consultations": ConsultationSerializer(consultations, many=True, context=serializer_context).data,
-                "appointments": AppointmentSerializer(appointments, many=True, context=serializer_context).data,
+                "requests": RequestSerializer(
+                    user_requests, many=True, context=serializer_context
+                ).data,
+                "consultations": ConsultationSerializer(
+                    consultations, many=True, context=serializer_context
+                ).data,
+                "appointments": AppointmentSerializer(
+                    appointments, many=True, context=serializer_context
+                ).data,
             }
         )
 
@@ -1040,18 +1055,14 @@ class SendVerificationCodeView(APIView):
                 "description": "Verification code sent successfully",
                 "content": {
                     "application/json": {
-                        "example": {
-                            "detail": "Verification code sent successfully"
-                        }
+                        "example": {"detail": "Verification code sent successfully"}
                     }
                 },
             },
             400: {
                 "description": "Bad request",
                 "content": {
-                    "application/json": {
-                        "example": {"error": "email is required"}
-                    }
+                    "application/json": {"example": {"error": "email is required"}}
                 },
             },
         },
@@ -1084,22 +1095,28 @@ class SendVerificationCodeView(APIView):
 
         user_instance.one_time_auth_token = str(uuid.uuid4())
         user_instance.verification_attempts = 0
-        user_instance.save(update_fields=["verification_code", "verification_code_created_at", "verification_attempts", "one_time_auth_token"])
+        user_instance.save(
+            update_fields=[
+                "verification_code",
+                "verification_code_created_at",
+                "verification_attempts",
+                "one_time_auth_token",
+            ]
+        )
 
         # Render HTML template
         with translation.override(user_instance.preferred_language):
-
             Message.objects.create(
                 sent_to=user_instance,
                 template_system_name="your_authentication_code",
-                object_pk=user_instance.pk,
-                object_model="users.User",
+                content_type=ContentType.objects.get_for_model(user_instance),
+                object_id=user_instance.pk,
             )
 
         return Response(
             {
                 "detail": "Verification code sent successfully",
-                "auth_token": user_instance.one_time_auth_token
+                "auth_token": user_instance.one_time_auth_token,
             },
             status=status.HTTP_200_OK,
         )

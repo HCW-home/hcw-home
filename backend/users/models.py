@@ -1,10 +1,11 @@
 import uuid
-from zoneinfo import available_timezones, ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.fields import BLANK_CHOICE_DASH
@@ -61,17 +62,23 @@ class Organisation(models.Model):
     country = models.CharField(max_length=50, blank=True, null=True)
     footer = models.TextField(blank=True, null=True)
 
-    is_main = models.BooleanField(default=False, help_text="Define is this organisation will be default for patient")
+    is_main = models.BooleanField(
+        default=False,
+        help_text="Define is this organisation will be default for patient",
+    )
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
         if self.is_main:
-            domain_list = self.__class__.objects.filter(is_main=True).exclude(pk=self.pk)
+            domain_list = self.__class__.objects.filter(is_main=True).exclude(
+                pk=self.pk
+            )
             domain_list.update(is_main=False)
 
         return super().save(*args, **kwargs)
+
 
 class Language(models.Model):
     name = models.CharField(max_length=100)
@@ -193,6 +200,8 @@ class User(AbstractUser):
         help_text="Whether this user is a practitioner",
     )
 
+    notification_messages = GenericRelation("messaging.Message")
+
     @property
     def is_patient(self):
         return not self.is_practitioner
@@ -232,7 +241,8 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     class Meta:
-        ordering = ['first_name', 'last_name', 'email']
+        ordering = ["first_name", "last_name", "email"]
+
 
 class HealthMetric(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

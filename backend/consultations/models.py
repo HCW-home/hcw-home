@@ -5,7 +5,7 @@ from enum import Enum
 from zoneinfo import available_timezones
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -118,7 +118,7 @@ class Appointment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name=_("created by"),
-        related_name="appointments_created"
+        related_name="appointments_created",
     )
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
@@ -143,17 +143,11 @@ class AppointmentRecording(models.Model):
         Appointment,
         on_delete=models.CASCADE,
         related_name="recordings",
-        verbose_name=_("appointment")
+        verbose_name=_("appointment"),
     )
-    egress_id = models.CharField(
-        _("egress ID"),
-        max_length=255,
-        unique=True
-    )
+    egress_id = models.CharField(_("egress ID"), max_length=255, unique=True)
     filepath = models.CharField(
-        _("S3 filepath"),
-        max_length=500,
-        help_text=_("S3 key set at recording start")
+        _("S3 filepath"), max_length=500, help_text=_("S3 key set at recording start")
     )
     started_at = models.DateTimeField(_("started at"), auto_now_add=True)
     stopped_at = models.DateTimeField(_("stopped at"), null=True, blank=True)
@@ -163,7 +157,7 @@ class AppointmentRecording(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="recording",
-        verbose_name=_("message")
+        verbose_name=_("message"),
     )
 
     class Meta:
@@ -173,24 +167,18 @@ class AppointmentRecording(models.Model):
 
 
 class ParticipantStatus(Enum):
-    draft = 'draft'
-    invited = 'invited'
-    confirmed = 'confirmed'
-    unavailable = 'unavailable'
-    cancelled = 'cancelled'
+    draft = "draft"
+    invited = "invited"
+    confirmed = "confirmed"
+    unavailable = "unavailable"
+    cancelled = "cancelled"
 
 
 class Participant(models.Model):
     appointment = models.ForeignKey(
-        Appointment,
-        on_delete=models.CASCADE,
-        verbose_name=_("appointment")
+        Appointment, on_delete=models.CASCADE, verbose_name=_("appointment")
     )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name=_("user")
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_("user"))
 
     is_active = models.BooleanField(default=True)
     is_invited = models.BooleanField(default=True)
@@ -221,8 +209,11 @@ class Participant(models.Model):
         """Get display name of the participant"""
         return self.user.name or self.user.email
 
+    notification_messages = GenericRelation("messaging.Message")
+
     class Meta:
-        unique_together = ['user', 'appointment']
+        unique_together = ["user", "appointment"]
+
 
 class Message(models.Model):
     consultation = models.ForeignKey(
@@ -232,8 +223,11 @@ class Message(models.Model):
         verbose_name=_("consultation"),
     )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("created by"),
-        blank=True, null=True
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name=_("created by"),
+        blank=True,
+        null=True,
     )
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
@@ -255,8 +249,10 @@ class Message(models.Model):
         max_length=500,
         null=True,
         blank=True,
-        help_text=_("S3 key/path for call recordings")
+        help_text=_("S3 key/path for call recordings"),
     )
+
+    notification_messages = GenericRelation("messaging.Message")
 
     class Meta:
         verbose_name = _("message")

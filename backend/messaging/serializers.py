@@ -16,6 +16,8 @@ class MessageSerializer(serializers.ModelSerializer):
     sent_by = MessageSenderSerializer(read_only=True)
     content = serializers.SerializerMethodField()
     subject = serializers.SerializerMethodField()
+    object_model = serializers.SerializerMethodField()
+    object_pk = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -46,3 +48,9 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_subject(self, obj):
         """Get rendered subject from the model property."""
         return obj.render_subject
+
+    def get_object_model(self, obj):
+        return obj.object_model
+
+    def get_object_pk(self, obj):
+        return obj.object_pk

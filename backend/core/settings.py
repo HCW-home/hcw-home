@@ -250,7 +250,7 @@ REST_FRAMEWORK = {
 
 SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = "none"  # Disable email verification for social auth
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 AUTH_USER_MODEL = "users.User"
 
 REST_AUTH = {
@@ -653,6 +653,13 @@ UNFOLD = {
                         "icon": "event",
                         "link": reverse_lazy(
                             "admin:django_celery_beat_solarschedule_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Task results"),
+                        "icon": "checklist",
+                        "link": reverse_lazy(
+                            "admin:django_celery_results_taskresult_changelist"
                         ),
                     },
                 ],

@@ -6,6 +6,8 @@ from typing import DefaultDict
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -458,6 +460,7 @@ class TemplateValidationAdmin(ModelAdmin):
     ]
 
     actions = ["validate_templates", "check_validation_status"]
+    actions_list = ["generate_whatsapp_validations"]
 
     @display(
         description=_("Status"),
@@ -523,3 +526,45 @@ class TemplateValidationAdmin(ModelAdmin):
             _("Checking status for %(count)d template(s).")
             % {"count": queryset.count()},
         )
+
+    @action(
+        description=_("Generate WhatsApp validations"),
+        url_path="generate-whatsapp-validations",
+        permissions=["generate_whatsapp_validations"],
+    )
+    def generate_whatsapp_validations(self, request):
+        """Create a TemplateValidation for each event type, language and WhatsApp provider."""
+        whatsapp_providers = MessagingProvider.objects.filter(
+            communication_method=CommunicationMethod.whatsapp,
+            is_active=True,
+        )
+        if not whatsapp_providers.exists():
+            messages.warning(request, _("No active WhatsApp provider found."))
+            return redirect(
+                reverse_lazy("admin:messaging_templatevalidation_changelist")
+            )
+
+        created = 0
+        languages = [code for code, _name in settings.LANGUAGES]
+        for provider in whatsapp_providers:
+            for event_type in DEFAULT_NOTIFICATION_MESSAGES:
+                for lang in languages:
+                    _obj, was_created = TemplateValidation.objects.get_or_create(
+                        messaging_provider=provider,
+                        event_type=event_type,
+                        language_code=lang,
+                    )
+                    if was_created:
+                        created += 1
+
+        messages.success(
+            request,
+            _(
+                "%(created)d validation(s) created for %(providers)d WhatsApp provider(s)."
+            )
+            % {"created": created, "providers": whatsapp_providers.count()},
+        )
+        return redirect(reverse_lazy("admin:messaging_templatevalidation_changelist"))
+
+    def has_generate_whatsapp_validations_permission(self, request):
+        return request.user.has_perm("messaging.add_templatevalidation")

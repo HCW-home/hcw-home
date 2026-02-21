@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -7,6 +8,11 @@ from .services import async_user_online_service
 
 logger = logging.getLogger(__name__)
 
+# Server-side heartbeat interval (seconds)
+HEARTBEAT_INTERVAL = 30
+# How long to wait for a pong before considering connection dead
+HEARTBEAT_TIMEOUT = 10
+
 
 class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
     """Mixin for automatic WebSocket user online status tracking."""
@@ -15,6 +21,8 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
         super().__init__(*args, **kwargs)
         self.connection_id = None
         self.user_id = None
+        self._heartbeat_task = None
+        self._pong_received = asyncio.Event()
 
     async def connect(self):
         """Handle WebSocket connection and track user online status."""
@@ -36,6 +44,7 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                 f"User {self.user_id} connected (ID: {self.connection_id}, Total: {connection_count})"
             )
             await self.accept()
+            self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
             await self._on_status_changed(True, connection_count)
         except Exception as e:
             logger.error(f"Error tracking user {self.user_id} connection: {e}")
@@ -43,6 +52,10 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """Handle WebSocket disconnection and update user online status."""
+        if self._heartbeat_task:
+            self._heartbeat_task.cancel()
+            self._heartbeat_task = None
+
         if self.user_id and self.connection_id:
             try:
                 remaining = await async_user_online_service.remove_user_connection(
@@ -57,6 +70,29 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                 logger.error(f"Error removing user {self.user_id} connection: {e}")
 
         await super().disconnect(close_code)
+
+    async def _heartbeat_loop(self):
+        """Server-side heartbeat: periodically ping the client and close if no pong."""
+        try:
+            while True:
+                await asyncio.sleep(HEARTBEAT_INTERVAL)
+                self._pong_received.clear()
+                try:
+                    await self.send_json({"type": "ping"})
+                except Exception:
+                    break
+                try:
+                    await asyncio.wait_for(
+                        self._pong_received.wait(), timeout=HEARTBEAT_TIMEOUT
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning(
+                        f"User {self.user_id} heartbeat timeout (connection {self.connection_id})"
+                    )
+                    await self.close(code=4002)
+                    break
+        except asyncio.CancelledError:
+            pass
 
     async def _on_status_changed(self, is_online, connection_count):
         """Notify client about online status changes."""
@@ -76,27 +112,47 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
     """WebSocket consumer for user communications and online status tracking."""
 
     async def connect(self):
-        """Connect and join user-specific and system broadcast groups."""
-        await super().connect()
+        """Connect: join groups first, then register online status and broadcast."""
+        # Authenticate user before joining groups
+        user = self.scope.get("user")
+        if not user or not user.is_authenticated:
+            await self.close(code=4001)
+            return
 
-        await self.channel_layer.group_add(f"user_{self.user_id}", self.channel_name)
+        # Join groups BEFORE super().connect() so we receive our own status broadcast
+        # and don't miss any messages sent between accept() and group_add
+        await self.channel_layer.group_add(f"user_{user.id}", self.channel_name)
         await self.channel_layer.group_add("broadcast", self.channel_name)
 
+        await super().connect()
+
     async def disconnect(self, close_code):
-        """Disconnect and leave all groups."""
-        await self.channel_layer.group_discard(
-            f"user_{self.user_id}", self.channel_name
-        )
-        await self.channel_layer.group_discard("broadcast", self.channel_name)
+        """Disconnect: broadcast offline status first, then leave groups."""
+        # super().disconnect() broadcasts the offline status — do it while still in groups
         await super().disconnect(close_code)
+
+        # Now leave groups after the broadcast has been sent
+        if self.user_id:
+            await self.channel_layer.group_discard(
+                f"user_{self.user_id}", self.channel_name
+            )
+        await self.channel_layer.group_discard("broadcast", self.channel_name)
 
     async def receive_json(self, content, **kwargs):
         """Handle incoming WebSocket messages."""
         msg_type = content.get("type")
         data = content.get("data", {})
 
+        # Handle pong responses for server-side heartbeat
+        if msg_type == "pong":
+            self._pong_received.set()
+            return
+
         handlers = {
             "ping": self._handle_ping,
+            "get_status": self._handle_get_status,
+            "send_message": self._handle_send_message,
+            "broadcast": self._handle_broadcast,
         }
 
         handler = handlers.get(msg_type)
@@ -221,9 +277,9 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
                 "render_content_html": event["render_content_html"],
                 "access_link": event["access_link"],
                 "render_subject": event["render_subject"],
-                "action_label": event['action_label'],
-                "action": event['action'],
-                "created_at": event['created_at'],
+                "action_label": event["action_label"],
+                "action": event["action"],
+                "created_at": event["created_at"],
             }
         )
 

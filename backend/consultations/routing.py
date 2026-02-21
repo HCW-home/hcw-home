@@ -1,7 +1,3 @@
-from django.urls import re_path
-
-from . import consumers
-
-websocket_urlpatterns = [
-    re_path(r"ws/consultation/(?P<consultation_pk>\w+)/$", consumers.ConsultationConsumer.as_asgi()),
-]
+# Consultation WebSocket routing
+# TODO: Create ConsultationConsumer in consultations/consumers.py before enabling
+websocket_urlpatterns = []

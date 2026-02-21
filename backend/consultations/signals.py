@@ -95,9 +95,12 @@ def message_saved(sender, instance: Message, created, **kwargs):
         if created and not user_online_service.is_user_online(user_pk):
             user_to_notify = User.objects.get(pk=user_pk)
 
+            # Skip if we already sent a notification since the user's last login
+            # (avoid spamming offline users with repeated notifications)
             if (
                 user_to_notify.last_login
-                and user_to_notify.last_login < user_to_notify.last_notification
+                and user_to_notify.last_notification
+                and user_to_notify.last_notification > user_to_notify.last_login
             ):
                 continue
 
@@ -105,7 +108,7 @@ def message_saved(sender, instance: Message, created, **kwargs):
             user_to_notify.save(update_fields=["last_notification"])
 
             # Create notification message
-            notification = NotificationMessage.objects.create(
+            NotificationMessage.objects.create(
                 template_system_name="new_message_notification",
                 sent_to=user_to_notify,
                 sent_by=instance.created_by,

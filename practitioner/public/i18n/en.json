@@ -846,5 +846,15 @@
     "isCalling": "is calling...",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "websocket": {
+    "disconnected": "Connection lost",
+    "disconnectedMessage": "The connection to the server has been lost. Some features may not work.",
+    "reconnecting": "Reconnecting...",
+    "reconnectingMessage": "Attempting to reconnect to the server...",
+    "reconnected": "Connection restored",
+    "reconnectedMessage": "The connection to the server has been restored.",
+    "failed": "Connection failed",
+    "failedMessage": "Unable to connect to the server. Please check your connection and try refreshing the page."
   }
 }

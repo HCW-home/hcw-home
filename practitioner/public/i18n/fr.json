@@ -466,5 +466,15 @@
     "isCalling": "appelle...",
     "accept": "Accepter",
     "decline": "Refuser"
+  },
+  "websocket": {
+    "disconnected": "Connexion perdue",
+    "disconnectedMessage": "La connexion au serveur a été perdue. Certaines fonctionnalités peuvent ne pas fonctionner.",
+    "reconnecting": "Reconnexion...",
+    "reconnectingMessage": "Tentative de reconnexion au serveur...",
+    "reconnected": "Connexion rétablie",
+    "reconnectedMessage": "La connexion au serveur a été rétablie.",
+    "failed": "Échec de connexion",
+    "failedMessage": "Impossible de se connecter au serveur. Veuillez vérifier votre connexion et rafraîchir la page."
   }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Page } from '../../../../core/components/page/page';
@@ -11,24 +11,52 @@ import { Loader } from '../../../../shared/components/loader/loader';
 import { Tabs, TabItem } from '../../../../shared/components/tabs/tabs';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AddEditPatient } from '../add-edit-patient/add-edit-patient';
+import { UserAvatar } from '../../../../shared/components/user-avatar/user-avatar';
 import { TypographyTypeEnum } from '../../../../shared/constants/typography';
-import { ButtonSizeEnum, ButtonStyleEnum } from '../../../../shared/constants/button';
+import {
+  ButtonSizeEnum,
+  ButtonStyleEnum,
+} from '../../../../shared/constants/button';
 import { IHealthMetric, IHealthMetricResponse } from '../../models/patient';
 import { IUser } from '../../models/user';
 import { RoutePaths } from '../../../../core/constants/routes';
 import { PatientService } from '../../../../core/services/patient.service';
 import { ConsultationService } from '../../../../core/services/consultation.service';
-import { Consultation, Appointment, CustomFieldValue } from '../../../../core/models/consultation';
+import {
+  Consultation,
+  Appointment,
+  CustomFieldValue,
+} from '../../../../core/models/consultation';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { Badge } from '../../../../shared/components/badge/badge';
+import { BadgeTypeEnum } from '../../../../shared/constants/badge';
 import { ConsultationRowItem } from '../../../../shared/components/consultation-row-item/consultation-row-item';
-import { getConsultationBadgeType, getAppointmentBadgeType } from '../../../../shared/tools/helper';
+import {
+  getConsultationBadgeType,
+  getAppointmentBadgeType,
+} from '../../../../shared/tools/helper';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
+import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
 
 @Component({
   selector: 'app-patient-detail',
-  imports: [CommonModule, DatePipe, TranslatePipe, Page, Svg, Typography, Button, Loader, Tabs, ModalComponent, AddEditPatient, Badge, ConsultationRowItem],
+  imports: [
+    CommonModule,
+    TranslatePipe,
+    Page,
+    Svg,
+    Typography,
+    Button,
+    Loader,
+    Tabs,
+    ModalComponent,
+    AddEditPatient,
+    Badge,
+    ConsultationRowItem,
+    UserAvatar,
+    LocalDatePipe,
+  ],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-detail.scss',
 })
@@ -46,6 +74,7 @@ export class PatientDetail implements OnInit, OnDestroy {
   protected readonly ButtonStyleEnum = ButtonStyleEnum;
   protected readonly getConsultationBadgeType = getConsultationBadgeType;
   protected readonly getAppointmentBadgeType = getAppointmentBadgeType;
+  protected readonly BadgeTypeEnum = BadgeTypeEnum;
 
   patientId: number | null = null;
   activeTab = signal<'overview' | 'consultations' | 'appointments'>('overview');
@@ -62,14 +91,24 @@ export class PatientDetail implements OnInit, OnDestroy {
   get tabItems(): TabItem[] {
     return [
       { id: 'overview', label: this.t.instant('patientDetail.tabOverview') },
-      { id: 'consultations', label: this.t.instant('patientDetail.tabConsultations') },
-      { id: 'appointments', label: this.t.instant('patientDetail.tabAppointments') }
+      {
+        id: 'consultations',
+        label: this.t.instant('patientDetail.tabConsultations'),
+      },
+      {
+        id: 'appointments',
+        label: this.t.instant('patientDetail.tabAppointments'),
+      },
     ];
   }
 
   ngOnInit(): void {
     this.route.fragment.pipe(takeUntil(this.destroy$)).subscribe(fragment => {
-      if (fragment === 'overview' || fragment === 'consultations' || fragment === 'appointments') {
+      if (
+        fragment === 'overview' ||
+        fragment === 'consultations' ||
+        fragment === 'appointments'
+      ) {
         this.activeTab.set(fragment);
       }
     });
@@ -95,19 +134,23 @@ export class PatientDetail implements OnInit, OnDestroy {
     this.loading.set(true);
     forkJoin({
       patient: this.patientService.getPatient(this.patientId),
-    }).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: ({ patient }) => {
-        this.patient.set(patient);
-        // this.healthMetrics.set(this.transformHealthMetrics(healthMetrics.results));
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.toasterService.show('error', this.t.instant('patientDetail.errorLoadingPatient'), getErrorMessage(err));
-        this.loading.set(false);
-      }
-    });
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ patient }) => {
+          this.patient.set(patient);
+          // this.healthMetrics.set(this.transformHealthMetrics(healthMetrics.results));
+          this.loading.set(false);
+        },
+        error: err => {
+          this.toasterService.show(
+            'error',
+            this.t.instant('patientDetail.errorLoadingPatient'),
+            getErrorMessage(err)
+          );
+          this.loading.set(false);
+        },
+      });
   }
 
   loadConsultations(): void {
@@ -122,10 +165,14 @@ export class PatientDetail implements OnInit, OnDestroy {
           this.consultations.set(response.results);
           this.loadingConsultations.set(false);
         },
-        error: (err) => {
-          this.toasterService.show('error', this.t.instant('patientDetail.errorLoadingConsultations'), getErrorMessage(err));
+        error: err => {
+          this.toasterService.show(
+            'error',
+            this.t.instant('patientDetail.errorLoadingConsultations'),
+            getErrorMessage(err)
+          );
           this.loadingConsultations.set(false);
-        }
+        },
       });
   }
 
@@ -141,10 +188,14 @@ export class PatientDetail implements OnInit, OnDestroy {
           this.appointments.set(response.results);
           this.loadingAppointments.set(false);
         },
-        error: (err) => {
-          this.toasterService.show('error', this.t.instant('patientDetail.errorLoadingAppointments'), getErrorMessage(err));
+        error: err => {
+          this.toasterService.show(
+            'error',
+            this.t.instant('patientDetail.errorLoadingAppointments'),
+            getErrorMessage(err)
+          );
           this.loadingAppointments.set(false);
-        }
+        },
       });
   }
 
@@ -155,7 +206,10 @@ export class PatientDetail implements OnInit, OnDestroy {
   }
 
   getFullName(patient: IUser): string {
-    return `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || patient.email;
+    return (
+      `${patient.first_name || ''} ${patient.last_name || ''}`.trim() ||
+      patient.email
+    );
   }
 
   setActiveTab(tab: string): void {
@@ -178,11 +232,16 @@ export class PatientDetail implements OnInit, OnDestroy {
   getAppointmentType(type: string): string {
     const appointmentType = type?.toLowerCase();
     switch (appointmentType) {
-      case 'online': return this.t.instant('patientDetail.videoCall');
-      case 'inperson': return this.t.instant('patientDetail.inPerson');
-      case 'in_person': return this.t.instant('patientDetail.inPerson');
-      case 'phone': return this.t.instant('patientDetail.phoneCall');
-      default: return type;
+      case 'online':
+        return this.t.instant('patientDetail.videoCall');
+      case 'inperson':
+        return this.t.instant('patientDetail.inPerson');
+      case 'in_person':
+        return this.t.instant('patientDetail.inPerson');
+      case 'phone':
+        return this.t.instant('patientDetail.phoneCall');
+      default:
+        return type;
     }
   }
 
@@ -201,13 +260,57 @@ export class PatientDetail implements OnInit, OnDestroy {
 
   getTrendClass(trend: string): string {
     switch (trend) {
-      case 'up': return 'trend-up';
-      case 'down': return 'trend-down';
-      default: return 'trend-stable';
+      case 'up':
+        return 'trend-up';
+      case 'down':
+        return 'trend-down';
+      default:
+        return 'trend-stable';
     }
   }
 
   getMetricColorClass(color: string): string {
     return `metric-${color}`;
+  }
+
+  getCommunicationMethodLabel(method: string): string {
+    switch (method) {
+      case 'sms':
+        return 'SMS';
+      case 'email':
+        return 'Email';
+      case 'whatsapp':
+        return 'WhatsApp';
+      case 'push':
+        return this.t.instant('patientDetail.pushNotification');
+      case 'manual':
+        return this.t.instant('patientDetail.manualContact');
+      default:
+        return method || '-';
+    }
+  }
+
+  getLanguageName(patient: IUser): string {
+    if (patient.languages && patient.languages.length > 0) {
+      return patient.languages.map(l => l.name).join(', ');
+    }
+    return '-';
+  }
+
+  getAppointmentStatusLabel(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return this.t.instant('patientDetail.statusScheduled');
+      case 'cancelled':
+        return this.t.instant('patientDetail.statusCancelled');
+      case 'completed':
+        return this.t.instant('patientDetail.statusCompleted');
+      case 'draft':
+        return this.t.instant('patientDetail.statusDraft');
+      case 'in_progress':
+        return this.t.instant('patientDetail.statusInProgress');
+      default:
+        return status;
+    }
   }
 }

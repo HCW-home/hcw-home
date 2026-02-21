@@ -1,273 +1,384 @@
 <app-page>
   <div class="patient-detail-container">
     @if (loading()) {
-      <div class="loading-state">
-        <app-loader></app-loader>
-      </div>
+    <div class="loading-state">
+      <app-loader></app-loader>
+    </div>
     } @else if (patient()) {
-      <div class="patient-header">
-        <div class="header-left">
-          <div class="patient-avatar-large">
-            {{ getInitials(patient()!) }}
+    <div class="patient-header">
+      <div class="header-left">
+        <app-user-avatar
+          [firstName]="patient()!.first_name"
+          [lastName]="patient()!.last_name"
+          [email]="patient()!.email"
+          [picture]="patient()!.picture || ''"
+          [isOnline]="patient()!.is_online"
+          size="lg">
+        </app-user-avatar>
+        <div class="patient-info">
+          <div class="name-row">
+            <app-typography
+              [variant]="TypographyTypeEnum['h5-bold']"
+              color="var(--slate-800)">
+              {{ getFullName(patient()!) }}
+            </app-typography>
+            @if (patient()!.temporary) {
+            <app-badge [type]="BadgeTypeEnum.orange"
+              >{{ 'patientDetail.temporary' | translate }}</app-badge
+            >
+            } @if (patient()!.is_practitioner) {
+            <app-badge [type]="BadgeTypeEnum.blue"
+              >{{ 'patientDetail.practitioner' | translate }}</app-badge
+            >
+            }
+            <app-button
+              leftIcon="edit"
+              [style]="ButtonStyleEnum.text"
+              [size]="ButtonSizeEnum.small"
+              buttonClass="edit-icon-btn"
+              (buttonClick)="openEditModal()">
+            </app-button>
           </div>
-          <div class="patient-info">
-            <div class="name-row">
-              <app-typography [variant]="TypographyTypeEnum['h5-bold']" color="var(--slate-800)">
-                {{ getFullName(patient()!) }}
-              </app-typography>
-              <app-button
-                leftIcon="edit"
-                [style]="ButtonStyleEnum.text"
-                [size]="ButtonSizeEnum.small"
-                buttonClass="edit-icon-btn"
-                (buttonClick)="openEditModal()">
-              </app-button>
+          <div class="patient-contact">
+            <div class="contact-item">
+              <app-svg
+                src="email"
+                [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+              <span>{{ patient()!.email }}</span>
             </div>
-            <div class="patient-contact">
-              <div class="contact-item">
-                <app-svg src="email" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                <span>{{ patient()!.email }}</span>
-              </div>
-              @if (patient()!.mobile_phone_number) {
-                <div class="contact-item">
-                  <app-svg src="phone" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                  <span>{{ patient()!.mobile_phone_number }}</span>
-                </div>
-              }
+            @if (patient()!.mobile_phone_number) {
+            <div class="contact-item">
+              <app-svg
+                src="phone"
+                [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+              <span>{{ patient()!.mobile_phone_number }}</span>
             </div>
+            }
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="detail-card">
-        <app-tabs
-          [tabs]="tabItems"
-          [activeTab]="activeTab()"
-          (tabChange)="setActiveTab($event)">
-        </app-tabs>
+    <div class="detail-card">
+      <app-tabs
+        [tabs]="tabItems"
+        [activeTab]="activeTab()"
+        (tabChange)="setActiveTab($event)">
+      </app-tabs>
 
-        <div class="tab-content">
+      <div class="tab-content">
         @if (activeTab() === 'overview') {
-          <div class="overview-section">
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-icon primary">
-                  <app-svg src="video" [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
-                </div>
-                <div class="stat-content">
-                  <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-700)">
-                    {{ 'patientDetail.totalConsultations' | translate }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['h2-bold']" color="var(--slate-800)">
-                    {{ consultations().length }}
-                  </app-typography>
-                </div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-icon amber">
-                  <app-svg src="clock" [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
-                </div>
-                <div class="stat-content">
-                  <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-700)">
-                    {{ 'patientDetail.lastLogin' | translate }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ patient()!.last_login ? (patient()!.last_login! | date:'MMM d, y') : ('patientDetail.never' | translate) }}
-                  </app-typography>
-                </div>
-              </div>
+        <div class="overview-section">
+          <div class="section-header">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-l-bold']"
+              color="var(--slate-800)">
+              {{ 'patientDetail.personalInfo' | translate }}
+            </app-typography>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.emailLabel' | translate }}</span
+              >
+              <span class="info-value">{{ patient()!.email }}</span>
             </div>
+            @if (patient()!.mobile_phone_number) {
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.phoneLabel' | translate }}</span
+              >
+              <span class="info-value"
+                >{{ patient()!.mobile_phone_number }}</span
+              >
+            </div>
+            }
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.communicationMethod' | translate }}</span
+              >
+              <span class="info-value"
+                >{{ getCommunicationMethodLabel(patient()!.communication_method)
+                }}</span
+              >
+            </div>
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.language' | translate }}</span
+              >
+              <span class="info-value">{{ getLanguageName(patient()!) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.timezone' | translate }}</span
+              >
+              <span class="info-value">{{ patient()!.timezone || '-' }}</span>
+            </div>
+            @if (patient()!.main_organisation) {
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.organisation' | translate }}</span
+              >
+              <span class="info-value"
+                >{{ patient()!.main_organisation!.name }}</span
+              >
+            </div>
+            }
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.dateJoined' | translate }}</span
+              >
+              <span class="info-value"
+                >{{ patient()!.date_joined | localDate:'MMM d, y' }}</span
+              >
+            </div>
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.lastLogin' | translate }}</span
+              >
+              <span class="info-value"
+                >{{ patient()!.last_login ? (patient()!.last_login! |
+                localDate:'MMM d, y, HH:mm') : ('patientDetail.never' |
+                translate) }}</span
+              >
+            </div>
+            <div class="info-item">
+              <span class="info-label"
+                >{{ 'patientDetail.totalConsultations' | translate }}</span
+              >
+              <span class="info-value">{{ consultations().length }}</span>
+            </div>
+          </div>
 
-            @if (patient()!.custom_fields && patient()!.custom_fields!.length > 0) {
-              <div class="section-header">
-                <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                  {{ 'patientDetail.customFields' | translate }}
+          @if (patient()!.custom_fields && patient()!.custom_fields!.length > 0)
+          {
+          <div class="section-header">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-l-bold']"
+              color="var(--slate-800)">
+              {{ 'patientDetail.customFields' | translate }}
+            </app-typography>
+          </div>
+          <div class="info-grid">
+            @for (cf of patient()!.custom_fields!; track cf.field) {
+            <div class="info-item">
+              <span class="info-label">{{ cf.field_name }}</span>
+              <span class="info-value">{{ cf.value || '-' }}</span>
+            </div>
+            }
+          </div>
+          }
+
+          <div class="section-header">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-l-bold']"
+              color="var(--slate-800)">
+              {{ 'patientDetail.recentConsultations' | translate }}
+            </app-typography>
+            @if (consultations().length > 3) {
+            <app-button
+              [text]="'patientDetail.viewAll' | translate"
+              [style]="ButtonStyleEnum.text"
+              [size]="ButtonSizeEnum.small"
+              (buttonClick)="setActiveTab('consultations')">
+            </app-button>
+            }
+          </div>
+          <div class="consultations-preview">
+            @if (loadingConsultations()) {
+            <div class="loading-state small">
+              <app-loader></app-loader>
+            </div>
+            } @else if (consultations().length === 0) {
+            <div class="empty-state">
+              <app-svg
+                src="video"
+                [svgStyle]="{'width.px': 40, 'height.px': 40, 'opacity': 0.3}"></app-svg>
+              <app-typography
+                [variant]="TypographyTypeEnum['body-regular']"
+                color="var(--slate-500)">
+                {{ 'patientDetail.noConsultationsFound' | translate }}
+              </app-typography>
+            </div>
+            } @else { @for (consultation of consultations().slice(0, 3); track
+            consultation.id) {
+            <app-consultation-row-item
+              [consultation]="consultation"
+              [showClosedDate]="!!consultation.closed_at"
+              (rowClick)="viewConsultation($event)">
+            </app-consultation-row-item>
+            } }
+          </div>
+        </div>
+        } @if (activeTab() === 'consultations') {
+        <div class="consultations-section">
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-l-bold']"
+                  color="var(--slate-800)">
+                  {{ 'patientDetail.consultationHistory' | translate }}
+                </app-typography>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-s-regular']"
+                  color="var(--slate-500)">
+                  {{ 'patientDetail.totalConsultationsCount' | translate:{
+                  count: consultations().length } }}
                 </app-typography>
               </div>
-              <div class="custom-fields-grid">
-                @for (cf of patient()!.custom_fields!; track cf.field) {
-                  <div class="custom-field-item">
-                    <app-typography [variant]="TypographyTypeEnum['body-s-semibold']" color="var(--slate-500)">
-                      {{ cf.field_name }}
-                    </app-typography>
-                    <app-typography [variant]="TypographyTypeEnum['body-regular']" color="var(--slate-800)">
-                      {{ cf.value || '-' }}
-                    </app-typography>
-                  </div>
-                }
-              </div>
-            }
-
-            <div class="section-header">
-              <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                {{ 'patientDetail.recentConsultations' | translate }}
-              </app-typography>
-              @if (consultations().length > 3) {
-                <app-button
-                  [text]="'patientDetail.viewAll' | translate"
-                  [style]="ButtonStyleEnum.text"
-                  [size]="ButtonSizeEnum.small"
-                  (buttonClick)="setActiveTab('consultations')">
-                </app-button>
-              }
             </div>
-            <div class="consultations-preview">
+            <div class="consultations-list">
               @if (loadingConsultations()) {
-                <div class="loading-state small">
-                  <app-loader></app-loader>
-                </div>
+              <div class="loading-state">
+                <app-loader></app-loader>
+              </div>
               } @else if (consultations().length === 0) {
-                <div class="no-consultations">
-                  <app-typography [variant]="TypographyTypeEnum['body-regular']" color="var(--slate-500)">
-                    {{ 'patientDetail.noConsultationsFound' | translate }}
-                  </app-typography>
-                </div>
-              } @else {
-                @for (consultation of consultations().slice(0, 3); track consultation.id) {
-                  <app-consultation-row-item
-                    [consultation]="consultation"
-                    [showClosedDate]="!!consultation.closed_at"
-                    (rowClick)="viewConsultation($event)">
-                  </app-consultation-row-item>
-                }
-              }
+              <div class="empty-state">
+                <app-svg
+                  src="video"
+                  [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-regular']"
+                  color="var(--slate-500)">
+                  {{ 'patientDetail.noConsultationsForPatient' | translate }}
+                </app-typography>
+              </div>
+              } @else { @for (consultation of consultations(); track
+              consultation.id) {
+              <app-consultation-row-item
+                [consultation]="consultation"
+                [showClosedDate]="!!consultation.closed_at"
+                (rowClick)="viewConsultation($event)">
+              </app-consultation-row-item>
+              } }
             </div>
           </div>
-        }
-
-        @if (activeTab() === 'consultations') {
-          <div class="consultations-section">
-            <div class="section-card">
-              <div class="card-header">
-                <div>
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ 'patientDetail.consultationHistory' | translate }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                    {{ 'patientDetail.totalConsultationsCount' | translate:{ count: consultations().length } }}
-                  </app-typography>
-                </div>
-              </div>
-              <div class="consultations-list">
-                @if (loadingConsultations()) {
-                  <div class="loading-state">
-                    <app-loader></app-loader>
-                  </div>
-                } @else if (consultations().length === 0) {
-                  <div class="no-consultations">
-                    <app-svg src="video" [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
-                    <app-typography [variant]="TypographyTypeEnum['body-regular']" color="var(--slate-500)">
-                      {{ 'patientDetail.noConsultationsForPatient' | translate }}
-                    </app-typography>
-                  </div>
-                } @else {
-                  @for (consultation of consultations(); track consultation.id) {
-                    <app-consultation-row-item
-                      [consultation]="consultation"
-                      [showClosedDate]="!!consultation.closed_at"
-                      (rowClick)="viewConsultation($event)">
-                    </app-consultation-row-item>
-                  }
-                }
-              </div>
-            </div>
-          </div>
-        }
-
-        @if (activeTab() === 'appointments') {
-          <div class="appointments-section">
-            <div class="section-card">
-              <div class="card-header">
-                <div>
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ 'patientDetail.upcomingAppointments' | translate }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                    {{ 'patientDetail.scheduledCount' | translate:{ count: appointments().length } }}
-                  </app-typography>
-                </div>
-              </div>
-              <div class="appointments-list">
-                @if (loadingAppointments()) {
-                  <div class="loading-state">
-                    <app-loader></app-loader>
-                  </div>
-                } @else if (appointments().length === 0) {
-                  <div class="no-consultations">
-                    <app-svg src="calendar" [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
-                    <app-typography [variant]="TypographyTypeEnum['body-regular']" color="var(--slate-500)">
-                      {{ 'patientDetail.noAppointmentsForPatient' | translate }}
-                    </app-typography>
-                  </div>
-                } @else {
-                  @for (appointment of appointments(); track appointment.id) {
-                    <div class="appointment-item">
-                      <div class="appointment-main">
-                        <div class="appointment-header">
-                          <app-typography [variant]="TypographyTypeEnum['body-l-semibold']" color="var(--slate-800)">
-                            {{ getAppointmentType(appointment.type) }}
-                          </app-typography>
-                          <app-badge [type]="getAppointmentBadgeType(appointment.status)">
-                            {{ appointment.status }}
-                          </app-badge>
-                        </div>
-                        <div class="appointment-meta">
-                          <span>
-                            <app-svg src="calendar" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                            {{ appointment.scheduled_at | date:'MMM d, y' }}
-                          </span>
-                          <span>
-                            <app-svg src="clock" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-                            {{ appointment.scheduled_at | date:'h:mm a' }}
-                          </span>
-                          @if (appointment.created_by) {
-                            <span>{{ 'patientDetail.with' | translate }} {{ appointment.created_by.first_name }} {{ appointment.created_by.last_name }}</span>
-                          }
-                        </div>
-                        @if (appointment.participants && appointment.participants.length > 0) {
-                          <div class="participants-info">
-                            <app-typography [variant]="TypographyTypeEnum['body-s-semibold']" color="var(--slate-700)">
-                              {{ 'patientDetail.participantsCount' | translate:{ count: appointment.participants.length } }}
-                            </app-typography>
-                            <div class="participants-list">
-                              @for (participant of appointment.participants; track participant.id) {
-                                <span class="participant-badge">
-                                  @if (participant.user) {
-                                    {{ participant.user.first_name || '' }} {{ participant.user.last_name || '' }}
-                                    @if (!participant.user.first_name && !participant.user.last_name) {
-                                      {{ participant.user.email || ('patientDetail.unknown' | translate) }}
-                                    }
-                                  } @else {
-                                    {{ 'patientDetail.unknown' | translate }}
-                                  }
-                                </span>
-                              }
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            </div>
-          </div>
-        }
         </div>
+        } @if (activeTab() === 'appointments') {
+        <div class="appointments-section">
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-l-bold']"
+                  color="var(--slate-800)">
+                  {{ 'patientDetail.upcomingAppointments' | translate }}
+                </app-typography>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-s-regular']"
+                  color="var(--slate-500)">
+                  {{ 'patientDetail.scheduledCount' | translate:{ count:
+                  appointments().length } }}
+                </app-typography>
+              </div>
+            </div>
+            <div class="appointments-list">
+              @if (loadingAppointments()) {
+              <div class="loading-state">
+                <app-loader></app-loader>
+              </div>
+              } @else if (appointments().length === 0) {
+              <div class="empty-state">
+                <app-svg
+                  src="calendar"
+                  [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
+                <app-typography
+                  [variant]="TypographyTypeEnum['body-regular']"
+                  color="var(--slate-500)">
+                  {{ 'patientDetail.noAppointmentsForPatient' | translate }}
+                </app-typography>
+              </div>
+              } @else { @for (appointment of appointments(); track
+              appointment.id) {
+              <div class="appointment-item">
+                <div class="appointment-date">
+                  <span class="day"
+                    >{{ appointment.scheduled_at | localDate:'dd' }}</span
+                  >
+                  <span class="month"
+                    >{{ appointment.scheduled_at | localDate:'MMM' }}</span
+                  >
+                </div>
+                <div class="appointment-main">
+                  <div class="appointment-header">
+                    <app-typography
+                      [variant]="TypographyTypeEnum['body-semibold']"
+                      color="var(--slate-800)">
+                      {{ getAppointmentType(appointment.type) }}
+                    </app-typography>
+                    <app-badge
+                      [type]="getAppointmentBadgeType(appointment.status)">
+                      {{ getAppointmentStatusLabel(appointment.status) }}
+                    </app-badge>
+                  </div>
+                  <div class="appointment-meta">
+                    <span>
+                      <app-svg
+                        src="clock"
+                        [svgStyle]="{'width.px': 14, 'height.px': 14}"></app-svg>
+                      {{ appointment.scheduled_at | localDate:'HH:mm' }} @if
+                      (appointment.end_expected_at) { - {{
+                      appointment.end_expected_at | localDate:'HH:mm' }} }
+                    </span>
+                    @if (appointment.created_by) {
+                    <span>
+                      <app-svg
+                        src="user"
+                        [svgStyle]="{'width.px': 14, 'height.px': 14}"></app-svg>
+                      {{ appointment.created_by.first_name }} {{
+                      appointment.created_by.last_name }}
+                    </span>
+                    }
+                  </div>
+                  @if (appointment.participants &&
+                  appointment.participants.length > 0) {
+                  <div class="participants-info">
+                    <span class="participants-title"
+                      >{{ 'patientDetail.participantsCount' | translate:{ count:
+                      appointment.participants.length } }}</span
+                    >
+                    <div class="participants-list">
+                      @for (participant of appointment.participants; track
+                      participant.id) {
+                      <span class="participant-badge">
+                        @if (participant.user) { {{ participant.user.first_name
+                        || '' }} {{ participant.user.last_name || '' }} @if
+                        (!participant.user.first_name &&
+                        !participant.user.last_name) { {{ participant.user.email
+                        || ('patientDetail.unknown' | translate) }} } } @else {
+                        {{ 'patientDetail.unknown' | translate }} }
+                      </span>
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+              } }
+            </div>
+          </div>
+        </div>
+        }
       </div>
+    </div>
     } @else {
-      <div class="not-found">
-        <app-svg src="user" [svgStyle]="{'width.px': 48, 'height.px': 48, 'color': 'var(--slate-300)'}"></app-svg>
-        <app-typography [variant]="TypographyTypeEnum['body-l-medium']" color="var(--slate-600)">
-          {{ 'patientDetail.patientNotFound' | translate }}
-        </app-typography>
-        <app-button
-          [text]="'patientDetail.backToPatientsList' | translate"
-          [style]="ButtonStyleEnum.primary"
-          [size]="ButtonSizeEnum.medium"
-          (buttonClick)="goBack()">
-        </app-button>
-      </div>
+    <div class="not-found">
+      <app-svg
+        src="user"
+        [svgStyle]="{'width.px': 48, 'height.px': 48, 'color': 'var(--slate-300)'}"></app-svg>
+      <app-typography
+        [variant]="TypographyTypeEnum['body-l-medium']"
+        color="var(--slate-600)">
+        {{ 'patientDetail.patientNotFound' | translate }}
+      </app-typography>
+      <app-button
+        [text]="'patientDetail.backToPatientsList' | translate"
+        [style]="ButtonStyleEnum.primary"
+        [size]="ButtonSizeEnum.medium"
+        (buttonClick)="goBack()">
+      </app-button>
+    </div>
     }
   </div>
 

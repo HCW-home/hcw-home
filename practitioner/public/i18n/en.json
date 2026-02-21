@@ -261,7 +261,14 @@
     "declineSuccess": "Appointment Declined",
     "declineSuccessMessage": "You have declined the appointment",
     "declineError": "Decline Failed",
-    "declineErrorMessage": "Could not decline the appointment"
+    "declineErrorMessage": "Could not decline the appointment",
+    "participants": "Participants",
+    "unknownParticipant": "Unknown",
+    "statusConfirmed": "Confirmed",
+    "statusPending": "Pending",
+    "statusDeclined": "Declined",
+    "statusCancelled": "Cancelled",
+    "statusDraft": "Draft"
   },
   "verifyInvite": {
     "verifyingCode": "Verifying your code...",
@@ -778,7 +785,24 @@
     "participantCancelled": "Cancelled",
     "participantDraft": "Draft",
     "participantUnknown": "Unknown",
-    "errorLoadingAppointments": "Error Loading Appointments"
+    "errorLoadingAppointments": "Error Loading Appointments",
+    "confirmPresence": "Confirm Presence"
+  },
+  "confirmPresenceModal": {
+    "title": "Confirm Your Presence",
+    "videoConsultation": "Video Consultation",
+    "inPersonVisit": "In-Person Visit",
+    "confirm": "Confirm",
+    "decline": "Decline",
+    "loadError": "Failed to load appointment details",
+    "confirmSuccess": "Presence Confirmed",
+    "confirmSuccessMessage": "Your presence has been confirmed",
+    "confirmError": "Confirmation Failed",
+    "confirmErrorMessage": "Could not confirm your presence",
+    "declineSuccess": "Appointment Declined",
+    "declineSuccessMessage": "You have declined the appointment",
+    "declineError": "Decline Failed",
+    "declineErrorMessage": "Could not decline the appointment"
   },
   "userProfile": {
     "loadingProfile": "Loading profile...",

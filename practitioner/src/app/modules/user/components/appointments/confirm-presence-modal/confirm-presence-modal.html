@@ -1,0 +1,115 @@
+<app-modal
+  [isOpen]="isOpen"
+  [title]="modalTitle"
+  size="small"
+  (closed)="onClose()">
+  @if (loading()) {
+  <div class="modal-loading">
+    <app-loader></app-loader>
+  </div>
+  } @else if (errorMessage()) {
+  <div class="modal-error">
+    <app-svg
+      src="error"
+      [svgStyle]="{ 'width.px': 40, 'height.px': 40, color: 'var(--error-500)' }">
+    </app-svg>
+    <app-typography
+      [variant]="TypographyTypeEnum['body-regular']"
+      color="var(--slate-500)">
+      {{ errorMessage() }}
+    </app-typography>
+  </div>
+  } @else if (participant()) {
+  <div class="modal-content">
+    <div class="appointment-details">
+      <div class="info-row">
+        <app-svg
+          [src]="participant()!.appointment.type === AppointmentType.ONLINE ? 'video' : 'calendar'"
+          [svgStyle]="{ 'width.px': 18, 'height.px': 18, color: 'var(--slate-500)' }">
+        </app-svg>
+        <span class="info-text">
+          {{ participant()!.appointment.type === AppointmentType.ONLINE ?
+          ('confirmPresenceModal.videoConsultation' | translate) :
+          ('confirmPresenceModal.inPersonVisit' | translate) }}
+        </span>
+      </div>
+      <div class="info-row">
+        <app-svg
+          src="calendar"
+          [svgStyle]="{ 'width.px': 18, 'height.px': 18, color: 'var(--slate-500)' }">
+        </app-svg>
+        <span class="info-text">
+          {{ participant()!.appointment.scheduled_at | localDate : 'EEEE, MMM d,
+          y' }}
+        </span>
+      </div>
+      <div class="info-row">
+        <app-svg
+          src="clock"
+          [svgStyle]="{ 'width.px': 18, 'height.px': 18, color: 'var(--slate-500)' }">
+        </app-svg>
+        <span class="info-text">
+          {{ participant()!.appointment.scheduled_at | localDate : 'HH:mm' }}
+          @if (participant()!.appointment.end_expected_at) { - {{
+          participant()!.appointment.end_expected_at | localDate : 'HH:mm' }} }
+        </span>
+      </div>
+      @if (getDoctorName()) {
+      <div class="info-row">
+        <app-svg
+          src="user"
+          [svgStyle]="{ 'width.px': 18, 'height.px': 18, color: 'var(--slate-500)' }">
+        </app-svg>
+        <span class="info-text">{{ getDoctorName() }}</span>
+      </div>
+      }
+    </div>
+
+    @if (participant()!.appointment.participants &&
+    participant()!.appointment.participants.length > 0) {
+    <div class="participants-section">
+      <span class="participants-title">
+        {{ 'confirmPresenceModal.participants' | translate }} ({{
+        participant()!.appointment.participants.length }})
+      </span>
+      <div class="participants-list">
+        @for (p of participant()!.appointment.participants; track p.id) {
+        <div class="participant-row">
+          <span class="participant-name">{{ getParticipantName(p) }}</span>
+          <span
+            class="participant-status"
+            [style.color]="getParticipantStatusColor(p.status)">
+            {{ getParticipantStatusLabel(p.status) }}
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <div modal-footer class="modal-actions">
+    <app-button
+      [block]="true"
+      [size]="ButtonSizeEnum.medium"
+      [style]="ButtonStyleEnum.stroke"
+      [state]="ButtonStateEnum.error"
+      [text]="'confirmPresenceModal.decline' | translate"
+      leftIcon="close"
+      [disabled]="isConfirming() || isDeclining() || loading()"
+      [loading]="isDeclining()"
+      (buttonClick)="declinePresence()">
+    </app-button>
+    <app-button
+      [block]="true"
+      [size]="ButtonSizeEnum.medium"
+      [style]="ButtonStyleEnum.primary"
+      [text]="'confirmPresenceModal.confirm' | translate"
+      leftIcon="check"
+      [disabled]="isConfirming() || isDeclining() || loading()"
+      [loading]="isConfirming()"
+      (buttonClick)="confirmPresence()">
+    </app-button>
+  </div>
+</app-modal>

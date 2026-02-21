@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { RoutePaths } from './core/constants/routes';
 import {
   redirectIfAuthenticated,
@@ -15,17 +17,37 @@ export const routes: Routes = [
   {
     path: RoutePaths.CONFIRM_PRESENCE,
     loadComponent: () =>
-      import('./pages/confirm-presence/confirm-presence').then(c => c.ConfirmPresence),
+      import('./pages/confirm-presence/confirm-presence').then(
+        c => c.ConfirmPresence
+      ),
   },
   {
     path: `${RoutePaths.CONFIRM_PRESENCE}/:id`,
+    canActivate: [
+      () => {
+        const router = inject(Router);
+        const url = router.getCurrentNavigation()?.extractedUrl;
+        const segments = url?.root.children['primary']?.segments;
+        const participantId = segments?.[segments.length - 1]?.path;
+        if (participantId) {
+          return router.createUrlTree(
+            [`/${RoutePaths.USER}/${RoutePaths.APPOINTMENTS}`],
+            { queryParams: { participantId } }
+          );
+        }
+        return router.createUrlTree([
+          `/${RoutePaths.USER}/${RoutePaths.APPOINTMENTS}`,
+        ]);
+      },
+    ],
     loadComponent: () =>
-      import('./pages/confirm-presence/confirm-presence').then(c => c.ConfirmPresence),
+      import('./pages/confirm-presence/confirm-presence').then(
+        c => c.ConfirmPresence
+      ),
   },
   {
     path: RoutePaths.CGU,
-    loadComponent: () =>
-      import('./pages/cgu/cgu').then(c => c.CguPage),
+    loadComponent: () => import('./pages/cgu/cgu').then(c => c.CguPage),
     canMatch: [redirectIfUnauthenticated],
   },
   {

@@ -340,15 +340,20 @@
   }
 }
 
-.appointment-status {
+.appointment-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-
-
 :host ::ng-deep {
   .fc {
-    font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      'Source Sans Pro',
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
   }
 
   .fc-theme-standard td,
@@ -401,7 +406,9 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
     overflow: hidden;
 
     &:hover {

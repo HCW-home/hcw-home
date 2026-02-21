@@ -9,7 +9,7 @@ import {
   ElementRef,
   HostListener,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -45,11 +45,16 @@ import {
   ParticipantStatus,
 } from '../../../../core/models/consultation';
 import { RoutePaths } from '../../../../core/constants/routes';
-import { getAppointmentBadgeType, parseDateWithoutTimezone } from '../../../../shared/tools/helper';
+import {
+  getAppointmentBadgeType,
+  parseDateWithoutTimezone,
+} from '../../../../shared/tools/helper';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
 import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { UserService } from '../../../../core/services/user.service';
+import { ConfirmPresenceModal } from './confirm-presence-modal/confirm-presence-modal';
 
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
 
@@ -65,6 +70,7 @@ type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
     FullCalendarModule,
     LocalDatePipe,
     TranslatePipe,
+    ConfirmPresenceModal,
   ],
   templateUrl: './appointments.html',
   styleUrl: './appointments.scss',
@@ -72,8 +78,10 @@ type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
 export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private consultationService = inject(ConsultationService);
   private toasterService = inject(ToasterService);
+  private userService = inject(UserService);
   private el = inject(ElementRef);
   private t = inject(TranslationService);
 
@@ -93,6 +101,9 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   calendarEvents = signal<EventInput[]>([]);
   currentView = signal<CalendarView>('timeGridWeek');
   currentTitle = signal<string>('');
+
+  confirmPresenceModalOpen = signal(false);
+  confirmPresenceParticipantId = signal<number | null>(null);
 
   private readonly pageSize = 20;
   private listCurrentPage = 1;
@@ -133,7 +144,19 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.updateCalendarHeight();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const participantId = params['participantId'];
+      if (participantId) {
+        this.openConfirmPresenceModal(Number(participantId));
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -148,12 +171,20 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     const calendarApi = this.calendarComponent()?.getApi();
     if (!calendarApi) return;
 
-    const userContent = this.el.nativeElement.closest('.user-content') as HTMLElement;
+    const userContent = this.el.nativeElement.closest(
+      '.user-content'
+    ) as HTMLElement;
     if (!userContent) return;
 
-    const containerEl = this.el.nativeElement.querySelector('.appointments-container') as HTMLElement;
-    const headerEl = this.el.nativeElement.querySelector('.calendar-header') as HTMLElement;
-    const wrapperEl = this.el.nativeElement.querySelector('.calendar-wrapper') as HTMLElement;
+    const containerEl = this.el.nativeElement.querySelector(
+      '.appointments-container'
+    ) as HTMLElement;
+    const headerEl = this.el.nativeElement.querySelector(
+      '.calendar-header'
+    ) as HTMLElement;
+    const wrapperEl = this.el.nativeElement.querySelector(
+      '.calendar-wrapper'
+    ) as HTMLElement;
     if (!containerEl || !headerEl || !wrapperEl) return;
 
     const contentHeight = userContent.clientHeight;
@@ -298,8 +329,12 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     return appointments.map(appointment => ({
       id: appointment.id.toString(),
       title: this.getEventTitle(appointment),
-      start: parseDateWithoutTimezone(appointment.scheduled_at) || appointment.scheduled_at,
-      end: appointment.end_expected_at ? parseDateWithoutTimezone(appointment.end_expected_at) || undefined : undefined,
+      start:
+        parseDateWithoutTimezone(appointment.scheduled_at) ||
+        appointment.scheduled_at,
+      end: appointment.end_expected_at
+        ? parseDateWithoutTimezone(appointment.end_expected_at) || undefined
+        : undefined,
       backgroundColor: this.getStatusColor(appointment.status),
       borderColor: this.getStatusColor(appointment.status),
       textColor: '#ffffff',
@@ -463,7 +498,11 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
       const firstName = participant.user.first_name || '';
       const lastName = participant.user.last_name || '';
       const fullName = `${firstName} ${lastName}`.trim();
-      return fullName || participant.user.email || this.t.instant('appointments.participantUnknown');
+      return (
+        fullName ||
+        participant.user.email ||
+        this.t.instant('appointments.participantUnknown')
+      );
     }
     return this.t.instant('appointments.participantUnknown');
   }
@@ -537,5 +576,41 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
       default:
         return 'scheduled';
     }
+  }
+
+  getMyParticipant(appointment: Appointment): Participant | undefined {
+    const currentUser = this.userService.currentUserValue;
+    if (!currentUser || !appointment.participants) return undefined;
+    return appointment.participants.find(p => p.user?.id === currentUser.pk);
+  }
+
+  canConfirmPresence(appointment: Appointment): boolean {
+    const myParticipant = this.getMyParticipant(appointment);
+    return !!myParticipant && myParticipant.status === 'invited';
+  }
+
+  openConfirmPresenceModal(participantId: number): void {
+    this.confirmPresenceParticipantId.set(participantId);
+    this.confirmPresenceModalOpen.set(true);
+  }
+
+  openConfirmPresenceForAppointment(
+    appointment: Appointment,
+    event: MouseEvent
+  ): void {
+    event.stopPropagation();
+    const myParticipant = this.getMyParticipant(appointment);
+    if (myParticipant) {
+      this.openConfirmPresenceModal(myParticipant.id);
+    }
+  }
+
+  onConfirmPresenceModalClosed(): void {
+    this.confirmPresenceModalOpen.set(false);
+    this.confirmPresenceParticipantId.set(null);
+  }
+
+  onPresenceConfirmed(): void {
+    this.loadAppointments();
   }
 }

@@ -1,0 +1,94 @@
+.modal-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 24px;
+}
+
+.modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.modal-content {
+  padding: 20px 24px;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .info-text {
+      font-size: 14px;
+      color: var(--slate-700);
+      font-weight: 500;
+    }
+  }
+}
+
+.participants-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--slate-100);
+
+  .participants-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .participants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .participant-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+    background: var(--slate-50);
+    border-radius: 8px;
+
+    .participant-name {
+      font-size: 13px;
+      color: var(--slate-700);
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .participant-status {
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+
+  app-button {
+    flex: 1;
+  }
+}

@@ -226,7 +226,31 @@
     "participantCancelled": "Annule",
     "participantDraft": "Brouillon",
     "participantUnknown": "Inconnu",
-    "errorLoadingAppointments": "Erreur de chargement des rendez-vous"
+    "errorLoadingAppointments": "Erreur de chargement des rendez-vous",
+    "confirmPresence": "Confirmer la presence"
+  },
+  "confirmPresenceModal": {
+    "title": "Confirmer votre presence",
+    "videoConsultation": "Consultation video",
+    "inPersonVisit": "Visite en personne",
+    "confirm": "Confirmer",
+    "decline": "Refuser",
+    "loadError": "Impossible de charger les details du rendez-vous",
+    "confirmSuccess": "Presence confirmee",
+    "confirmSuccessMessage": "Votre presence a ete confirmee",
+    "confirmError": "Echec de la confirmation",
+    "confirmErrorMessage": "Impossible de confirmer votre presence",
+    "declineSuccess": "Rendez-vous refuse",
+    "declineSuccessMessage": "Vous avez refuse le rendez-vous",
+    "declineError": "Echec du refus",
+    "declineErrorMessage": "Impossible de refuser le rendez-vous",
+    "participants": "Participants",
+    "unknownParticipant": "Inconnu",
+    "statusConfirmed": "Confirme",
+    "statusPending": "En attente",
+    "statusDeclined": "Refuse",
+    "statusCancelled": "Annule",
+    "statusDraft": "Brouillon"
   },
   "userProfile": {
     "loadingProfile": "Chargement du profil...",

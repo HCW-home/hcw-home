@@ -1,13 +1,18 @@
 <app-page>
   <div class="appointments-container">
     <div class="calendar-header">
-      <span class="total-count">{{ 'appointments.appointmentsCount' | translate:{ count: appointments().length } }}</span>
+      <span class="total-count"
+        >{{ 'appointments.appointmentsCount' | translate:{ count:
+        appointments().length } }}</span
+      >
       <div class="header-controls">
         <div class="nav-controls">
           <button class="nav-btn" (click)="navigatePrev()">
             <span class="nav-icon">&lt;</span>
           </button>
-          <button class="today-btn" (click)="goToToday()">{{ 'appointments.today' | translate }}</button>
+          <button class="today-btn" (click)="goToToday()">
+            {{ 'appointments.today' | translate }}
+          </button>
           <button class="nav-btn" (click)="navigateNext()">
             <span class="nav-icon">&gt;</span>
           </button>
@@ -59,8 +64,12 @@
       } @else { @for (appointment of appointments(); track appointment.id) {
       <div class="appointment-item" (click)="viewAppointment(appointment)">
         <div class="appointment-date">
-          <span class="day">{{ appointment.scheduled_at | localDate:'dd' }}</span>
-          <span class="month">{{ appointment.scheduled_at | localDate:'MMM' }}</span>
+          <span class="day"
+            >{{ appointment.scheduled_at | localDate:'dd' }}</span
+          >
+          <span class="month"
+            >{{ appointment.scheduled_at | localDate:'MMM' }}</span
+          >
         </div>
         <div class="appointment-info">
           <div class="appointment-title">
@@ -86,7 +95,16 @@
             }
           </div>
         </div>
-        <div class="appointment-status">
+        <div class="appointment-actions-row">
+          @if (canConfirmPresence(appointment)) {
+          <app-button
+            [text]="'appointments.confirmPresence' | translate"
+            [style]="ButtonStyleEnum.stroke"
+            [size]="ButtonSizeEnum.small"
+            leftIcon="check"
+            (buttonClick)="openConfirmPresenceForAppointment(appointment, $event)">
+          </app-button>
+          }
           <app-badge [type]="getAppointmentBadgeType(appointment.status)">
             {{ getAppointmentStatusLabel(appointment.status) }}
           </app-badge>
@@ -160,7 +178,8 @@
       hoveredAppointment()!.participants.length > 0) {
       <div class="tooltip-participants">
         <span class="participants-title"
-          >{{ 'appointments.participantsCount' | translate:{ count: hoveredAppointment()!.participants.length } }}</span
+          >{{ 'appointments.participantsCount' | translate:{ count:
+          hoveredAppointment()!.participants.length } }}</span
         >
         <div class="participants-list">
           @for (participant of hoveredAppointment()!.participants; track
@@ -185,5 +204,12 @@
       }
     </div>
     }
+
+    <app-confirm-presence-modal
+      [isOpen]="confirmPresenceModalOpen()"
+      [participantId]="confirmPresenceParticipantId()"
+      (closed)="onConfirmPresenceModalClosed()"
+      (presenceConfirmed)="onPresenceConfirmed()">
+    </app-confirm-presence-modal>
   </div>
 </app-page>

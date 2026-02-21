@@ -436,6 +436,57 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       .subscribe(() => {
         this.loadAppointments();
       });
+
+    this.wsService.userOnlineStatus$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        const userId = event.user_id;
+        const isOnline = event.data.is_online;
+        const current = this.consultation();
+        if (!current) return;
+
+        let updated = false;
+        const patch = { ...current };
+
+        if (current.created_by?.id === userId) {
+          patch.created_by = { ...current.created_by, is_online: isOnline };
+          updated = true;
+        }
+        if (current.owned_by?.id === userId) {
+          patch.owned_by = { ...current.owned_by, is_online: isOnline };
+          updated = true;
+        }
+        if (current.beneficiary?.id === userId) {
+          patch.beneficiary = { ...current.beneficiary, is_online: isOnline };
+          updated = true;
+        }
+
+        if (updated) {
+          this.consultation.set(patch);
+        }
+
+        // Update participant online status in appointments
+        const currentAppointments = this.appointments();
+        let appointmentsUpdated = false;
+        const updatedAppointments = currentAppointments.map(appointment => {
+          const hasUser = appointment.participants.some(
+            p => p.user?.id === userId
+          );
+          if (!hasUser) return appointment;
+          appointmentsUpdated = true;
+          return {
+            ...appointment,
+            participants: appointment.participants.map(p =>
+              p.user?.id === userId
+                ? { ...p, user: { ...p.user, is_online: isOnline } }
+                : p
+            ),
+          };
+        });
+        if (appointmentsUpdated) {
+          this.appointments.set(updatedAppointments);
+        }
+      });
   }
 
   onSendMessage(data: SendMessageData): void {

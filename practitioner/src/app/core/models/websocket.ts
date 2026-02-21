@@ -259,6 +259,14 @@ export interface AppointmentUpdatedEvent {
   };
 }
 
+export interface UserOnlineStatusEvent {
+  event: 'user';
+  user_id: number;
+  data: {
+    is_online: boolean;
+  };
+}
+
 export interface JanusEventData {
   type: 'janus_event';
   payload: {

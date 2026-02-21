@@ -10,6 +10,7 @@ import {
   ParticipantJoinedEvent,
   ParticipantLeftEvent,
   AppointmentUpdatedEvent,
+  UserOnlineStatusEvent,
   ConsultationParticipant,
   ConsultationIncomingEvent,
 } from '../models/websocket';
@@ -29,6 +30,7 @@ export class ConsultationWebSocketService implements OnDestroy {
   private participantJoinedSubject = new Subject<ParticipantJoinedEvent>();
   private participantLeftSubject = new Subject<ParticipantLeftEvent>();
   private appointmentUpdatedSubject = new Subject<AppointmentUpdatedEvent>();
+  private userOnlineStatusSubject = new Subject<UserOnlineStatusEvent>();
   private allEventsSubject = new Subject<ConsultationIncomingEvent>();
 
   public state$: Observable<WebSocketState>;
@@ -44,6 +46,8 @@ export class ConsultationWebSocketService implements OnDestroy {
     this.participantLeftSubject.asObservable();
   public appointmentUpdated$: Observable<AppointmentUpdatedEvent> =
     this.appointmentUpdatedSubject.asObservable();
+  public userOnlineStatus$: Observable<UserOnlineStatusEvent> =
+    this.userOnlineStatusSubject.asObservable();
   public allEvents$: Observable<ConsultationIncomingEvent> =
     this.allEventsSubject.asObservable();
 
@@ -113,6 +117,13 @@ export class ConsultationWebSocketService implements OnDestroy {
       if (state && state !== 'participant_joined' && state !== 'created') {
         this.appointmentUpdatedSubject.next(message as AppointmentUpdatedEvent);
       }
+      return;
+    }
+
+    if (eventType === 'user') {
+      this.userOnlineStatusSubject.next(
+        message as unknown as UserOnlineStatusEvent
+      );
       return;
     }
 

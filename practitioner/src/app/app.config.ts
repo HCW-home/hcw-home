@@ -1,13 +1,21 @@
-import {ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
-import {provideHttpClient, withFetch, withInterceptors} from '@angular/common/http';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  provideZoneChangeDetection,
+} from '@angular/core';
+import { provideRouter } from '@angular/router';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
 
-import {provideTranslateService} from "@ngx-translate/core";
-import {provideTranslateHttpLoader} from "@ngx-translate/http-loader";
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
-import {routes} from './app.routes';
-import {provideEnvironmentNgxMask} from 'ngx-mask';
-import {provideIcons} from '@ng-icons/core';
+import { routes } from './app.routes';
+import { provideEnvironmentNgxMask } from 'ngx-mask';
+import { provideIcons } from '@ng-icons/core';
 import {
   heroCalendar,
   heroUser,
@@ -58,6 +66,8 @@ import {
   heroPaperClip,
   heroPhoto,
   heroShieldCheck,
+  heroLink,
+  heroClipboard,
 } from '@ng-icons/heroicons/outline';
 import {
   lucideVideoOff,
@@ -76,13 +86,13 @@ import {
   lucideCircleDot,
   lucideSquare,
 } from '@ng-icons/lucide';
-import {authInterceptor} from './core/interceptors/auth.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideEnvironmentNgxMask(),
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({eventCoalescing: true}),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideIcons({
       heroCalendar,
@@ -134,6 +144,8 @@ export const appConfig: ApplicationConfig = {
       heroPaperClip,
       heroPhoto,
       heroShieldCheck,
+      heroLink,
+      heroClipboard,
       lucideVideoOff,
       lucideMicOff,
       lucidePhoneOff,
@@ -159,7 +171,6 @@ export const appConfig: ApplicationConfig = {
       }),
       fallbackLang: 'en',
       lang: 'en',
-    })
-
-  ]
+    }),
+  ],
 };

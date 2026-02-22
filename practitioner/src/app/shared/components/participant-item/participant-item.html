@@ -38,7 +38,15 @@
     }
   </div>
   <ng-content></ng-content>
-  @if (isPending) {
+  @if (hasAuthToken()) {
+  <app-button
+    leftIcon="link"
+    [text]="'participantItem.copyLink' | translate"
+    [size]="ButtonSizeEnum.small"
+    [style]="ButtonStyleEnum.stroke"
+    (buttonClick)="openLinkModal()">
+  </app-button>
+  } @if (isPending) {
   <app-badge [type]="BadgeTypeEnum.gray"
     >{{ 'participantItem.pending' | translate }}</app-badge
   >
@@ -56,3 +64,28 @@
   </app-button>
   }
 </div>
+
+<app-modal
+  [isOpen]="showLinkModal()"
+  [title]="'participantItem.inviteLink' | translate"
+  size="small"
+  (closed)="closeLinkModal()">
+  <div class="link-modal-content">
+    <div class="link-box">
+      <code class="link-text">{{ getInviteLink() }}</code>
+      <app-button
+        [leftIcon]="linkCopied() ? 'check' : 'copy'"
+        [text]="(linkCopied() ? 'participantItem.copied' : 'participantItem.copyLink') | translate"
+        [size]="ButtonSizeEnum.small"
+        [style]="linkCopied() ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+        (buttonClick)="copyLink()">
+      </app-button>
+    </div>
+    <div class="link-warning">
+      <app-svg
+        src="info"
+        [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+      <span>{{ 'participantItem.singleUseWarning' | translate }}</span>
+    </div>
+  </div>
+</app-modal>

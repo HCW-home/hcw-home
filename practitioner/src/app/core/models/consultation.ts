@@ -28,6 +28,7 @@ export interface User {
   preferred_language?: string;
   communication_method?: string;
   timezone?: string;
+  one_time_auth_token?: string;
 }
 
 export interface Queue {
@@ -43,17 +44,22 @@ export interface Participant {
   status?: ParticipantStatus;
 }
 
-export type ParticipantStatus = 'draft' | 'invited' | 'confirmed' | 'unavailable' | 'cancelled';
+export type ParticipantStatus =
+  | 'draft'
+  | 'invited'
+  | 'confirmed'
+  | 'unavailable'
+  | 'cancelled';
 
 export enum AppointmentStatus {
   DRAFT = 'draft',
   SCHEDULED = 'scheduled',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
 }
 
 export enum AppointmentType {
   ONLINE = 'online',
-  INPERSON = 'inPerson'
+  INPERSON = 'inPerson',
 }
 
 export interface Appointment {
@@ -127,12 +133,12 @@ export enum RequestStatus {
   REQUESTED = 'requested',
   ACCEPTED = 'accepted',
   CANCELLED = 'cancelled',
-  REFUSED = 'refused'
+  REFUSED = 'refused',
 }
 
 export enum RequestType {
   ONLINE = 'online',
-  INPERSON = 'inPerson'
+  INPERSON = 'inPerson',
 }
 
 export interface ConsultationRequest {

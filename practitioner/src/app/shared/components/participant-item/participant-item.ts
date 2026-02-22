@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -7,11 +14,13 @@ import {
   CreateParticipantRequest,
 } from '../../../core/models/consultation';
 import { TranslationService } from '../../../core/services/translation.service';
+import { ToasterService } from '../../../core/services/toaster.service';
 
 import { Svg } from '../../ui-components/svg/svg';
 import { Button } from '../../ui-components/button/button';
 import { Badge } from '../badge/badge';
 import { UserAvatar } from '../user-avatar/user-avatar';
+import { ModalComponent } from '../modal/modal.component';
 import {
   ButtonStyleEnum,
   ButtonSizeEnum,
@@ -24,10 +33,19 @@ import { getParticipantBadgeType } from '../../tools/helper';
   selector: 'app-participant-item',
   templateUrl: './participant-item.html',
   styleUrl: './participant-item.scss',
-  imports: [CommonModule, Svg, Button, Badge, UserAvatar, TranslatePipe],
+  imports: [
+    CommonModule,
+    Svg,
+    Button,
+    Badge,
+    UserAvatar,
+    ModalComponent,
+    TranslatePipe,
+  ],
 })
 export class ParticipantItem {
   private t = inject(TranslationService);
+  private toasterService = inject(ToasterService);
 
   @Input() participant: Participant | null = null;
   @Input() pendingParticipant: CreateParticipantRequest | null = null;
@@ -165,5 +183,39 @@ export class ParticipantItem {
       cancelled: 'participantItem.statusCancelled',
     };
     return status ? map[status] || status : '';
+  }
+
+  showLinkModal = signal(false);
+  linkCopied = signal(false);
+
+  hasAuthToken(): boolean {
+    return !!this.participant?.user?.one_time_auth_token;
+  }
+
+  getInviteLink(): string {
+    const token = this.participant?.user?.one_time_auth_token;
+    if (!token) return '';
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/verify-invite?token=${token}`;
+  }
+
+  openLinkModal(): void {
+    this.linkCopied.set(false);
+    this.showLinkModal.set(true);
+  }
+
+  closeLinkModal(): void {
+    this.showLinkModal.set(false);
+  }
+
+  copyLink(): void {
+    const link = this.getInviteLink();
+    navigator.clipboard.writeText(link).then(() => {
+      this.linkCopied.set(true);
+      this.toasterService.show(
+        'success',
+        this.t.instant('participantItem.linkCopied')
+      );
+    });
   }
 }

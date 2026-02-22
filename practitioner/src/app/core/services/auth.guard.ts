@@ -28,6 +28,31 @@ export const redirectIfUnauthenticated: CanMatchFn = () => {
   return true;
 };
 
+export const redirectIfFirstLogin: CanActivateFn = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return true;
+  }
+
+  const userService = inject(UserService);
+  const router = inject(Router);
+
+  try {
+    let user = userService.currentUserValue;
+    if (!user) {
+      user = await firstValueFrom(userService.getCurrentUser());
+    }
+
+    if (user?.is_first_login) {
+      return router.createUrlTree([`/${RoutePaths.ONBOARDING}`]);
+    }
+  } catch {
+    return true;
+  }
+
+  return true;
+};
+
 export const redirectIfTermsNotAccepted: CanActivateFn = async () => {
   const token = localStorage.getItem('token');
   if (!token) {

@@ -1,15 +1,22 @@
 <header class="header">
   <div class="header-left">
     @if (showBackButton()) {
-      <button class="back-button" (click)="goBack()">
-        <app-svg src="svg/arrow-left.svg" [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
-      </button>
+    <button class="back-button" (click)="goBack()">
+      <app-svg
+        src="svg/arrow-left.svg"
+        [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+    </button>
     }
     <div class="page-info">
-      <app-typography [variant]="TypographyTypeEnum['h4-bold']" color="var(--slate-800)">
+      <app-typography
+        [variant]="TypographyTypeEnum['h4-bold']"
+        color="var(--slate-800)">
         {{ pageTitle() }}
       </app-typography>
-      <app-typography class="page-subtitle" [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+      <app-typography
+        class="page-subtitle"
+        [variant]="TypographyTypeEnum['body-s-regular']"
+        color="var(--slate-500)">
         {{ pageSubtitle() }}
       </app-typography>
     </div>
@@ -18,195 +25,251 @@
   <div class="header-actions-mobile">
     <div class="notification-section">
       <button class="notification-btn" (click)="toggleNotifications()">
-        <app-svg src="bell" [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
+        <app-svg
+          src="bell"
+          [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
         @if (notificationService.unreadCount() > 0) {
-          <span class="notification-badge">{{ notificationService.unreadCount() > 9 ? '9+' : notificationService.unreadCount() }}</span>
+        <span class="notification-badge"
+          >{{ notificationService.unreadCount() > 9 ? '9+' :
+          notificationService.unreadCount() }}</span
+        >
         }
       </button>
 
       @if (showNotifications()) {
-        <div class="notification-dropdown">
-          <div class="dropdown-header">
-            <app-typography [variant]="TypographyTypeEnum['body-bold']" color="var(--slate-800)">
-              {{ 'header.notifications' | translate }}
-            </app-typography>
-            @if (notificationService.unreadCount() > 0) {
-              <button class="mark-all-read" (click)="markAllNotificationsRead()">
-                {{ 'header.markAllRead' | translate }}
-              </button>
-            }
-          </div>
-          <div class="notification-list">
-            @if (notificationService.isLoading()) {
-              <div class="notification-loading">
-                <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                  {{ 'common.loading' | translate }}
-                </app-typography>
-              </div>
-            } @else if (notificationService.notifications().length === 0) {
-              <div class="notification-empty">
-                <app-svg src="bell"
-                         [svgStyle]="{'width.px': 32, 'height.px': 32, 'color': 'var(--slate-300)'}"></app-svg>
-                <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-400)">
-                  {{ 'header.noNotifications' | translate }}
-                </app-typography>
-              </div>
-            } @else {
-              @for (notification of notificationService.notifications(); track notification.id) {
-                <div
-                  class="notification-item"
-                  [ngClass]="{'unread': isNotificationUnread(notification)}"
-                  (click)="onNotificationClick(notification)">
-                  <div class="notification-indicator" [ngClass]="{'visible': isNotificationUnread(notification)}"></div>
-                  <div class="notification-content">
-                    <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                      {{ notification.subject }}
-                    </app-typography>
-                    <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                      <span [innerHTML]="notification.content"></span>
-                    </app-typography>
-                    @if (notification.action_label && notification.access_link) {
-                      <button class="notification-action-btn" (click)="onNotificationClick(notification); $event.stopPropagation()">
-                        {{ notification.action_label }}
-                      </button>
-                    }
-                    @if (notification.sent_by) {
-                      <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-500)">
-                        {{ 'header.from' | translate }} {{ notification.sent_by.first_name }} {{ notification.sent_by.last_name }}
-                      </app-typography>
-                    }
-                    <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-400)">
-                      {{ notificationService.getRelativeTime(notification.created_at) }}
-                    </app-typography>
-                  </div>
-                </div>
-              }
-              @if (notificationService.hasMore()) {
-                <div class="notification-load-more">
-                  <app-button
-                    [text]="'header.viewMore' | translate"
-                    [style]="ButtonStyleEnum.text"
-                    [size]="ButtonSizeEnum.small"
-                    [loading]="notificationService.isLoadingMore()"
-                    [disabled]="notificationService.isLoadingMore()"
-                    (buttonClick)="loadMoreNotifications()">
-                  </app-button>
-                </div>
-              }
-            }
-          </div>
+      <div class="notification-dropdown">
+        <div class="dropdown-header">
+          <app-typography
+            [variant]="TypographyTypeEnum['body-bold']"
+            color="var(--slate-800)">
+            {{ 'header.notifications' | translate }}
+          </app-typography>
+          @if (notificationService.unreadCount() > 0) {
+          <button class="mark-all-read" (click)="markAllNotificationsRead()">
+            {{ 'header.markAllRead' | translate }}
+          </button>
+          }
         </div>
+        <div class="notification-list">
+          @if (notificationService.isLoading()) {
+          <div class="notification-loading">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-s-regular']"
+              color="var(--slate-500)">
+              {{ 'common.loading' | translate }}
+            </app-typography>
+          </div>
+          } @else if (notificationService.notifications().length === 0) {
+          <div class="notification-empty">
+            <app-svg
+              src="bell"
+              [svgStyle]="{'width.px': 32, 'height.px': 32, 'color': 'var(--slate-300)'}"></app-svg>
+            <app-typography
+              [variant]="TypographyTypeEnum['body-s-regular']"
+              color="var(--slate-400)">
+              {{ 'header.noNotifications' | translate }}
+            </app-typography>
+          </div>
+          } @else { @for (notification of notificationService.notifications();
+          track notification.id) {
+          <div
+            class="notification-item"
+            [ngClass]="{'unread': isNotificationUnread(notification)}"
+            (click)="onNotificationClick(notification)">
+            <div
+              class="notification-indicator"
+              [ngClass]="{'visible': isNotificationUnread(notification)}"></div>
+            <div class="notification-content">
+              <app-typography
+                [variant]="TypographyTypeEnum['body-semibold']"
+                color="var(--slate-800)">
+                {{ notification.subject }}
+              </app-typography>
+              <app-typography
+                [variant]="TypographyTypeEnum['body-s-regular']"
+                color="var(--slate-500)">
+                <span [innerHTML]="notification.content"></span>
+              </app-typography>
+              @if (notification.action_label && notification.access_link) {
+              <button
+                class="notification-action-btn"
+                (click)="onNotificationClick(notification); $event.stopPropagation()">
+                {{ notification.action_label }}
+              </button>
+              } @if (notification.sent_by) {
+              <app-typography
+                [variant]="TypographyTypeEnum['body-xs-regular']"
+                color="var(--slate-500)">
+                {{ 'header.from' | translate }} {{
+                notification.sent_by.first_name }} {{
+                notification.sent_by.last_name }}
+              </app-typography>
+              }
+              <app-typography
+                [variant]="TypographyTypeEnum['body-xs-regular']"
+                color="var(--slate-400)">
+                {{ notificationService.getRelativeTime(notification.created_at)
+                }}
+              </app-typography>
+            </div>
+          </div>
+          } @if (notificationService.hasMore()) {
+          <div class="notification-load-more">
+            <app-button
+              [text]="'header.viewMore' | translate"
+              [style]="ButtonStyleEnum.text"
+              [size]="ButtonSizeEnum.small"
+              [loading]="notificationService.isLoadingMore()"
+              [disabled]="notificationService.isLoadingMore()"
+              (buttonClick)="loadMoreNotifications()">
+            </app-button>
+          </div>
+          } }
+        </div>
+      </div>
       }
     </div>
 
     <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
-      <app-svg [src]="showMobileMenu() ? 'svg/x.svg' : 'svg/menu.svg'" [svgStyle]="{'width.px': 24, 'height.px': 24, 'color': 'var(--slate-600)'}"></app-svg>
+      <app-svg
+        [src]="showMobileMenu() ? 'svg/x.svg' : 'svg/menu.svg'"
+        [svgStyle]="{'width.px': 24, 'height.px': 24, 'color': 'var(--slate-600)'}"></app-svg>
     </button>
   </div>
 
   <div class="header-actions desktop-only">
     @if (showNewConsultationButton()) {
-      <app-button [text]="'header.newConsultation' | translate" leftIcon="plus" [size]="ButtonSizeEnum.medium"
-                  [style]="ButtonStyleEnum.stroke"
-                  (click)="navigateToNewConsultation()">
+    <div class="new-consultation-wrapper" #newConsultationBtn>
+      <app-button
+        [text]="'header.newConsultation' | translate"
+        leftIcon="plus"
+        [size]="ButtonSizeEnum.medium"
+        [style]="ButtonStyleEnum.stroke"
+        (click)="navigateToNewConsultation()">
       </app-button>
+    </div>
     }
 
     <div class="notification-section">
       <button class="notification-btn" (click)="toggleNotifications()">
-        <app-svg src="bell" [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
+        <app-svg
+          src="bell"
+          [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
         @if (notificationService.unreadCount() > 0) {
-          <span
-            class="notification-badge">{{ notificationService.unreadCount() > 9 ? '9+' : notificationService.unreadCount() }}</span>
+        <span class="notification-badge"
+          >{{ notificationService.unreadCount() > 9 ? '9+' :
+          notificationService.unreadCount() }}</span
+        >
         }
       </button>
 
       @if (showNotifications()) {
-        <div class="notification-dropdown">
-          <div class="dropdown-header">
-            <app-typography [variant]="TypographyTypeEnum['body-bold']" color="var(--slate-800)">
-              {{ 'header.notifications' | translate }}
-            </app-typography>
-            @if (notificationService.unreadCount() > 0) {
-              <button class="mark-all-read" (click)="markAllNotificationsRead()">
-                {{ 'header.markAllRead' | translate }}
-              </button>
-            }
-          </div>
-          <div class="notification-list">
-            @if (notificationService.isLoading()) {
-              <div class="notification-loading">
-                <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                  {{ 'common.loading' | translate }}
-                </app-typography>
-              </div>
-            } @else if (notificationService.notifications().length === 0) {
-              <div class="notification-empty">
-                <app-svg src="bell"
-                         [svgStyle]="{'width.px': 32, 'height.px': 32, 'color': 'var(--slate-300)'}"></app-svg>
-                <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-400)">
-                  {{ 'header.noNotifications' | translate }}
-                </app-typography>
-              </div>
-            } @else {
-              @for (notification of notificationService.notifications(); track notification.id) {
-                <div
-                  class="notification-item"
-                  [ngClass]="{'unread': isNotificationUnread(notification)}"
-                  (click)="onNotificationClick(notification)">
-                  <div class="notification-indicator" [ngClass]="{'visible': isNotificationUnread(notification)}"></div>
-                  <div class="notification-content">
-                    <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                      {{ notification.subject }}
-                    </app-typography>
-                    <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                      <span [innerHTML]="notification.content"></span>
-                    </app-typography>
-                    @if (notification.action_label && notification.access_link) {
-                      <button class="notification-action-btn" (click)="onNotificationClick(notification); $event.stopPropagation()">
-                        {{ notification.action_label }}
-                      </button>
-                    }
-                    @if (notification.sent_by) {
-                      <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-500)">
-                        {{ 'header.from' | translate }} {{ notification.sent_by.first_name }} {{ notification.sent_by.last_name }}
-                      </app-typography>
-                    }
-                    <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-400)">
-                      {{ notificationService.getRelativeTime(notification.created_at) }}
-                    </app-typography>
-                  </div>
-                </div>
-              }
-              @if (notificationService.hasMore()) {
-                <div class="notification-load-more">
-                  <app-button
-                    [text]="'header.viewMore' | translate"
-                    [style]="ButtonStyleEnum.text"
-                    [size]="ButtonSizeEnum.small"
-                    [loading]="notificationService.isLoadingMore()"
-                    [disabled]="notificationService.isLoadingMore()"
-                    (buttonClick)="loadMoreNotifications()">
-                  </app-button>
-                </div>
-              }
-            }
-          </div>
+      <div class="notification-dropdown">
+        <div class="dropdown-header">
+          <app-typography
+            [variant]="TypographyTypeEnum['body-bold']"
+            color="var(--slate-800)">
+            {{ 'header.notifications' | translate }}
+          </app-typography>
+          @if (notificationService.unreadCount() > 0) {
+          <button class="mark-all-read" (click)="markAllNotificationsRead()">
+            {{ 'header.markAllRead' | translate }}
+          </button>
+          }
         </div>
+        <div class="notification-list">
+          @if (notificationService.isLoading()) {
+          <div class="notification-loading">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-s-regular']"
+              color="var(--slate-500)">
+              {{ 'common.loading' | translate }}
+            </app-typography>
+          </div>
+          } @else if (notificationService.notifications().length === 0) {
+          <div class="notification-empty">
+            <app-svg
+              src="bell"
+              [svgStyle]="{'width.px': 32, 'height.px': 32, 'color': 'var(--slate-300)'}"></app-svg>
+            <app-typography
+              [variant]="TypographyTypeEnum['body-s-regular']"
+              color="var(--slate-400)">
+              {{ 'header.noNotifications' | translate }}
+            </app-typography>
+          </div>
+          } @else { @for (notification of notificationService.notifications();
+          track notification.id) {
+          <div
+            class="notification-item"
+            [ngClass]="{'unread': isNotificationUnread(notification)}"
+            (click)="onNotificationClick(notification)">
+            <div
+              class="notification-indicator"
+              [ngClass]="{'visible': isNotificationUnread(notification)}"></div>
+            <div class="notification-content">
+              <app-typography
+                [variant]="TypographyTypeEnum['body-semibold']"
+                color="var(--slate-800)">
+                {{ notification.subject }}
+              </app-typography>
+              <app-typography
+                [variant]="TypographyTypeEnum['body-s-regular']"
+                color="var(--slate-500)">
+                <span [innerHTML]="notification.content"></span>
+              </app-typography>
+              @if (notification.action_label && notification.access_link) {
+              <button
+                class="notification-action-btn"
+                (click)="onNotificationClick(notification); $event.stopPropagation()">
+                {{ notification.action_label }}
+              </button>
+              } @if (notification.sent_by) {
+              <app-typography
+                [variant]="TypographyTypeEnum['body-xs-regular']"
+                color="var(--slate-500)">
+                {{ 'header.from' | translate }} {{
+                notification.sent_by.first_name }} {{
+                notification.sent_by.last_name }}
+              </app-typography>
+              }
+              <app-typography
+                [variant]="TypographyTypeEnum['body-xs-regular']"
+                color="var(--slate-400)">
+                {{ notificationService.getRelativeTime(notification.created_at)
+                }}
+              </app-typography>
+            </div>
+          </div>
+          } @if (notificationService.hasMore()) {
+          <div class="notification-load-more">
+            <app-button
+              [text]="'header.viewMore' | translate"
+              [style]="ButtonStyleEnum.text"
+              [size]="ButtonSizeEnum.small"
+              [loading]="notificationService.isLoadingMore()"
+              [disabled]="notificationService.isLoadingMore()"
+              (buttonClick)="loadMoreNotifications()">
+            </app-button>
+          </div>
+          } }
+        </div>
+      </div>
       }
     </div>
 
     <div class="profile-section" (click)="toggleProfileMenu()">
       <div class="profile-info">
-        <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
+        <app-typography
+          [variant]="TypographyTypeEnum['body-semibold']"
+          color="var(--slate-800)">
           {{ getUserDisplayName() }}
         </app-typography>
       </div>
       <div class="profile-avatar">
         @if (getUserPicture()) {
-          <img [src]="getUserPicture()" alt="" class="avatar-image">
+        <img [src]="getUserPicture()" alt="" class="avatar-image" />
         } @else {
-          <span>{{ getUserInitials() }}</span>
+        <span>{{ getUserInitials() }}</span>
         }
       </div>
       <app-svg
@@ -217,96 +280,128 @@
     </div>
 
     @if (showProfileMenu()) {
-      <div class="profile-dropdown">
-        <div class="dropdown-header">
-          <app-typography [variant]="TypographyTypeEnum['body-bold']" color="var(--slate-800)">
-            {{ getUserDisplayName() }}
-          </app-typography>
-          <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-            {{ currentUser?.email }}
-          </app-typography>
-        </div>
-        <div class="dropdown-items">
-          <button class="dropdown-item" (click)="openProfile()">
-            <app-svg src="svg/profile.svg"
-                     [svgStyle]="{'width.px': 18, 'height.px': 18, 'color': 'var(--slate-500)'}"></app-svg>
-            <app-typography [variant]="TypographyTypeEnum['body-regular']" color="var(--slate-700)">
-              {{ 'header.myProfile' | translate }}
-            </app-typography>
-          </button>
-          <button class="dropdown-item logout" (click)="onLogout()">
-            <app-svg src="svg/log-out.svg"
-                     [svgStyle]="{'width.px': 18, 'height.px': 18, 'color': 'var(--rose-500)'}"></app-svg>
-            <app-typography [variant]="TypographyTypeEnum['body-medium']" color="var(--rose-500)">
-              {{ 'header.signOut' | translate }}
-            </app-typography>
-          </button>
-        </div>
+    <div class="profile-dropdown">
+      <div class="dropdown-header">
+        <app-typography
+          [variant]="TypographyTypeEnum['body-bold']"
+          color="var(--slate-800)">
+          {{ getUserDisplayName() }}
+        </app-typography>
+        <app-typography
+          [variant]="TypographyTypeEnum['body-s-regular']"
+          color="var(--slate-500)">
+          {{ currentUser?.email }}
+        </app-typography>
       </div>
+      <div class="dropdown-items">
+        <button class="dropdown-item" (click)="openProfile()">
+          <app-svg
+            src="svg/profile.svg"
+            [svgStyle]="{'width.px': 18, 'height.px': 18, 'color': 'var(--slate-500)'}"></app-svg>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-regular']"
+            color="var(--slate-700)">
+            {{ 'header.myProfile' | translate }}
+          </app-typography>
+        </button>
+        <button class="dropdown-item logout" (click)="onLogout()">
+          <app-svg
+            src="svg/log-out.svg"
+            [svgStyle]="{'width.px': 18, 'height.px': 18, 'color': 'var(--rose-500)'}"></app-svg>
+          <app-typography
+            [variant]="TypographyTypeEnum['body-medium']"
+            color="var(--rose-500)">
+            {{ 'header.signOut' | translate }}
+          </app-typography>
+        </button>
+      </div>
+    </div>
     }
   </div>
 </header>
 
 @if (showMobileMenu()) {
-  <div class="mobile-menu-overlay" (click)="closeMobileMenu()"></div>
-  <div class="mobile-menu">
-    <div class="mobile-menu-header">
-      <div class="mobile-profile">
-        <div class="profile-avatar">
-          @if (getUserPicture()) {
-            <img [src]="getUserPicture()" alt="" class="avatar-image">
-          } @else {
-            <span>{{ getUserInitials() }}</span>
-          }
-        </div>
-        <div class="profile-details">
-          <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-            {{ getUserDisplayName() }}
-          </app-typography>
-          <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-            {{ currentUser?.email }}
-          </app-typography>
-        </div>
-      </div>
-    </div>
-
-    <div class="mobile-menu-content">
-      @if (showNewConsultationButton()) {
-        <button class="mobile-menu-item primary" (click)="navigateToNewConsultation()">
-          <app-svg src="plus" [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
-          <span>{{ 'header.newConsultation' | translate }}</span>
-        </button>
-      }
-
-      <div class="mobile-nav-section">
-        @for (menuItem of menuItems; track menuItem.path) {
-          <a
-            class="mobile-menu-item nav-item"
-            [routerLink]="'/' + RoutePaths.USER + menuItem.path"
-            [routerLinkActive]="'active'"
-            (click)="closeMobileMenu()">
-            <app-svg
-              [src]="'svg/' + menuItem.icon"
-              [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--slate-600)'}">
-            </app-svg>
-            <span>{{ menuItem.name | translate }}</span>
-          </a>
+<div class="mobile-menu-overlay" (click)="closeMobileMenu()"></div>
+<div class="mobile-menu">
+  <div class="mobile-menu-header">
+    <div class="mobile-profile">
+      <div class="profile-avatar">
+        @if (getUserPicture()) {
+        <img [src]="getUserPicture()" alt="" class="avatar-image" />
+        } @else {
+        <span>{{ getUserInitials() }}</span>
         }
       </div>
-
-      <div class="mobile-menu-divider"></div>
-
-      <button class="mobile-menu-item" (click)="openProfile()">
-        <app-svg src="svg/profile.svg" [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--slate-600)'}"></app-svg>
-        <span>{{ 'header.myProfile' | translate }}</span>
-      </button>
-    </div>
-
-    <div class="mobile-menu-footer">
-      <button class="mobile-menu-item logout" (click)="onLogout()">
-        <app-svg src="svg/log-out.svg" [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--rose-500)'}"></app-svg>
-        <span>{{ 'header.signOut' | translate }}</span>
-      </button>
+      <div class="profile-details">
+        <app-typography
+          [variant]="TypographyTypeEnum['body-semibold']"
+          color="var(--slate-800)">
+          {{ getUserDisplayName() }}
+        </app-typography>
+        <app-typography
+          [variant]="TypographyTypeEnum['body-s-regular']"
+          color="var(--slate-500)">
+          {{ currentUser?.email }}
+        </app-typography>
+      </div>
     </div>
   </div>
+
+  <div class="mobile-menu-content">
+    @if (showNewConsultationButton()) {
+    <button
+      class="mobile-menu-item primary"
+      (click)="navigateToNewConsultation()">
+      <app-svg
+        src="plus"
+        [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+      <span>{{ 'header.newConsultation' | translate }}</span>
+    </button>
+    }
+
+    <div class="mobile-nav-section">
+      @for (menuItem of menuItems; track menuItem.path) {
+      <a
+        class="mobile-menu-item nav-item"
+        [routerLink]="'/' + RoutePaths.USER + menuItem.path"
+        [routerLinkActive]="'active'"
+        (click)="closeMobileMenu()">
+        <app-svg
+          [src]="'svg/' + menuItem.icon"
+          [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--slate-600)'}">
+        </app-svg>
+        <span>{{ menuItem.name | translate }}</span>
+      </a>
+      }
+    </div>
+
+    <div class="mobile-menu-divider"></div>
+
+    <button class="mobile-menu-item" (click)="openProfile()">
+      <app-svg
+        src="svg/profile.svg"
+        [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--slate-600)'}"></app-svg>
+      <span>{{ 'header.myProfile' | translate }}</span>
+    </button>
+  </div>
+
+  <div class="mobile-menu-footer">
+    <button class="mobile-menu-item logout" (click)="onLogout()">
+      <app-svg
+        src="svg/log-out.svg"
+        [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--rose-500)'}"></app-svg>
+      <span>{{ 'header.signOut' | translate }}</span>
+    </button>
+  </div>
+</div>
+} @if (showOnboardingHint()) {
+<div class="onboarding-overlay" (click)="dismissOnboardingHint()"></div>
+<div
+  class="onboarding-hint"
+  [style.top.px]="hintTop()"
+  [style.left.px]="hintLeft()">
+  <div class="hint-arrow"></div>
+  <span>{{ 'onboarding.welcomeMessage' | translate }}</span>
+  <button class="hint-close" (click)="dismissOnboardingHint()">&times;</button>
+</div>
 }

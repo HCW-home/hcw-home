@@ -1,22 +1,35 @@
-import {Component, inject, signal, OnInit, OnDestroy} from '@angular/core';
-import {Router, NavigationEnd, RouterLink, RouterLinkActive} from '@angular/router';
-import {Location} from '@angular/common';
-import {RoutePaths} from '../../constants/routes';
-import {MenuItems} from '../../constants/sidebar';
-import {Typography} from '../../../shared/ui-components/typography/typography';
-import {TypographyTypeEnum} from '../../../shared/constants/typography';
-import {Svg} from '../../../shared/ui-components/svg/svg';
-import {filter, Subject, takeUntil} from 'rxjs';
-import {NgClass} from '@angular/common';
-import {UserService} from '../../services/user.service';
-import {NotificationService} from '../../services/notification.service';
-import {UserWebSocketService} from '../../services/user-websocket.service';
-import {BrowserNotificationService} from '../../services/browser-notification.service';
-import {ActionHandlerService} from '../../services/action-handler.service';
-import {ConsultationService} from '../../services/consultation.service';
-import {ToasterService} from '../../services/toaster.service';
-import {IUser} from '../../../modules/user/models/user';
-import {INotification, NotificationStatus} from '../../models/notification';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  OnDestroy,
+  viewChild,
+  ElementRef,
+} from '@angular/core';
+import {
+  Router,
+  NavigationEnd,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
+import { Location } from '@angular/common';
+import { RoutePaths } from '../../constants/routes';
+import { MenuItems } from '../../constants/sidebar';
+import { Typography } from '../../../shared/ui-components/typography/typography';
+import { TypographyTypeEnum } from '../../../shared/constants/typography';
+import { Svg } from '../../../shared/ui-components/svg/svg';
+import { filter, Subject, takeUntil } from 'rxjs';
+import { NgClass } from '@angular/common';
+import { UserService } from '../../services/user.service';
+import { NotificationService } from '../../services/notification.service';
+import { UserWebSocketService } from '../../services/user-websocket.service';
+import { BrowserNotificationService } from '../../services/browser-notification.service';
+import { ActionHandlerService } from '../../services/action-handler.service';
+import { ConsultationService } from '../../services/consultation.service';
+import { ToasterService } from '../../services/toaster.service';
+import { IUser } from '../../../modules/user/models/user';
+import { INotification, NotificationStatus } from '../../models/notification';
 import { Button } from '../../../shared/ui-components/button/button';
 import {
   ButtonSizeEnum,
@@ -27,7 +40,15 @@ import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-header',
-  imports: [Typography, Svg, NgClass, Button, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [
+    Typography,
+    Svg,
+    NgClass,
+    Button,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+  ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
@@ -48,6 +69,10 @@ export class Header implements OnInit, OnDestroy {
   showNotifications = signal(false);
   showMobileMenu = signal(false);
   showNewConsultationButton = signal(false);
+  showOnboardingHint = signal(false);
+  hintTop = signal(0);
+  hintLeft = signal(0);
+  newConsultationBtn = viewChild<ElementRef>('newConsultationBtn');
   showBackButton = signal(false);
   pageTitle = signal('Dashboard');
   pageSubtitle = signal('Welcome back');
@@ -71,8 +96,10 @@ export class Header implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.updatePageInfo();
+        this.checkOnboardingHint();
       });
     this.updatePageInfo();
+    this.checkOnboardingHint();
     this.notificationService.loadNotifications();
 
     this.userWsService.notifications$
@@ -93,23 +120,46 @@ export class Header implements OnInit, OnDestroy {
                   const id = url.searchParams.get('id');
                   if (action === 'join' && id) {
                     this.consultationService.getParticipantById(id).subscribe({
-                      next: (participant) => {
-                        const consultation = participant.appointment.consultation;
-                        const consultationId = typeof consultation === 'object' ? (consultation as {id: number}).id : consultation;
+                      next: participant => {
+                        const consultation =
+                          participant.appointment.consultation;
+                        const consultationId =
+                          typeof consultation === 'object'
+                            ? (consultation as { id: number }).id
+                            : consultation;
                         this.router.navigate(
-                          ['/', RoutePaths.USER, RoutePaths.CONSULTATIONS, consultationId],
-                          { queryParams: { join: 'true', appointmentId: participant.appointment.id } }
+                          [
+                            '/',
+                            RoutePaths.USER,
+                            RoutePaths.CONSULTATIONS,
+                            consultationId,
+                          ],
+                          {
+                            queryParams: {
+                              join: 'true',
+                              appointmentId: participant.appointment.id,
+                            },
+                          }
                         );
                       },
                       error: () => {
-                        this.router.navigate(['/', RoutePaths.CONFIRM_PRESENCE, id]);
-                      }
+                        this.router.navigate([
+                          '/',
+                          RoutePaths.CONFIRM_PRESENCE,
+                          id,
+                        ]);
+                      },
                     });
                   } else if (action && id) {
-                    const route = this.actionHandler.getRouteForAction(action, id);
+                    const route = this.actionHandler.getRouteForAction(
+                      action,
+                      id
+                    );
                     this.router.navigateByUrl(route);
                   }
-                } catch { /* invalid URL */ }
+                } catch {
+                  /* invalid URL */
+                }
               }
             }
           );
@@ -120,6 +170,29 @@ export class Header implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private checkOnboardingHint(): void {
+    if (localStorage.getItem('show_onboarding_hint') === 'true') {
+      this.showOnboardingHint.set(true);
+      this.updateHintPosition();
+    }
+  }
+
+  private updateHintPosition(): void {
+    setTimeout(() => {
+      const el = this.newConsultationBtn()?.nativeElement;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        this.hintTop.set(rect.bottom + 12);
+        this.hintLeft.set(rect.left + rect.width / 2);
+      }
+    });
+  }
+
+  dismissOnboardingHint(): void {
+    this.showOnboardingHint.set(false);
+    localStorage.removeItem('show_onboarding_hint');
   }
 
   private updatePageInfo() {
@@ -142,7 +215,9 @@ export class Header implements OnInit, OnDestroy {
       this.showBackButton.set(true);
     } else if (url.includes('/consultations/')) {
       this.pageTitle.set(this.t.instant('header.consultationDetailsTitle'));
-      this.pageSubtitle.set(this.t.instant('header.consultationDetailsSubtitle'));
+      this.pageSubtitle.set(
+        this.t.instant('header.consultationDetailsSubtitle')
+      );
       this.showBackButton.set(true);
     } else if (url.includes('/consultations')) {
       this.pageTitle.set(this.t.instant('header.consultationsTitle'));
@@ -280,41 +355,66 @@ export class Header implements OnInit, OnDestroy {
         id = url.searchParams.get('id');
         email = url.searchParams.get('email');
         model = url.searchParams.get('model');
-      } catch { /* invalid URL, fall through */ }
+      } catch {
+        /* invalid URL, fall through */
+      }
     }
 
     if (email && this.currentUser && this.currentUser.email !== email) {
-      this.toasterService.show('warning', this.t.instant('header.emailMismatch'),
-        this.t.instant('header.emailMismatchMessage', { email }));
+      this.toasterService.show(
+        'warning',
+        this.t.instant('header.emailMismatch'),
+        this.t.instant('header.emailMismatchMessage', { email })
+      );
     }
 
     if (action === 'join' && id) {
       this.consultationService.getParticipantById(id).subscribe({
-        next: (participant) => {
+        next: participant => {
           const consultation = participant.appointment.consultation;
-          const consultationId = typeof consultation === 'object' ? (consultation as {id: number}).id : consultation;
+          const consultationId =
+            typeof consultation === 'object'
+              ? (consultation as { id: number }).id
+              : consultation;
           this.router.navigate(
             ['/', RoutePaths.USER, RoutePaths.CONSULTATIONS, consultationId],
-            { queryParams: { join: 'true', appointmentId: participant.appointment.id } }
+            {
+              queryParams: {
+                join: 'true',
+                appointmentId: participant.appointment.id,
+              },
+            }
           );
         },
         error: () => {
           this.router.navigate(['/', RoutePaths.CONFIRM_PRESENCE, id]);
-        }
+        },
       });
       return;
     }
 
     if (action === 'message' && id && model === 'consultations.Participant') {
       this.consultationService.getParticipantById(id).subscribe({
-        next: (participant) => {
+        next: participant => {
           const consultation = participant.appointment.consultation;
-          const consultationId = typeof consultation === 'object' ? (consultation as {id: number}).id : consultation;
-          this.router.navigate(['/', RoutePaths.USER, RoutePaths.CONSULTATIONS, consultationId]);
+          const consultationId =
+            typeof consultation === 'object'
+              ? (consultation as { id: number }).id
+              : consultation;
+          this.router.navigate([
+            '/',
+            RoutePaths.USER,
+            RoutePaths.CONSULTATIONS,
+            consultationId,
+          ]);
         },
         error: () => {
-          this.router.navigate(['/', RoutePaths.USER, RoutePaths.CONSULTATIONS]);
-        }
+          this.router.navigate([
+            '/',
+            RoutePaths.USER,
+            RoutePaths.CONSULTATIONS,
+          ]);
+        },
       });
       return;
     }
@@ -324,7 +424,6 @@ export class Header implements OnInit, OnDestroy {
       this.router.navigateByUrl(route);
       return;
     }
-
   }
 
   isNotificationUnread(notification: INotification): boolean {

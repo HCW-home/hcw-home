@@ -1,0 +1,151 @@
+.onboarding-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: linear-gradient(
+    135deg,
+    var(--slate-100) 0%,
+    var(--primary-50) 50%,
+    var(--slate-100) 100%
+  );
+}
+
+.onboarding-card {
+  display: flex;
+  width: 90%;
+  max-width: 900px;
+  min-height: 520px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  background: var(--White);
+}
+
+.left-side {
+  flex: 1;
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-500));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  .left-content {
+    text-align: center;
+    color: var(--White);
+
+    .logo-img {
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      line-height: 1.5;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+  }
+}
+
+.right-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  .right-content {
+    width: 100%;
+    max-width: 380px;
+
+    .onboarding-description {
+      margin-top: 8px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: var(--slate-500);
+      line-height: 1.5;
+    }
+  }
+}
+
+.onboarding-form {
+  gap: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 16px;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-700);
+
+      .required {
+        color: var(--rose-500);
+      }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .onboarding-page {
+    padding: 0;
+    background: var(--White);
+  }
+
+  .onboarding-card {
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .left-side {
+    padding: 32px 24px;
+    min-height: auto;
+
+    .left-content {
+      .logo-img {
+        max-width: 56px;
+        max-height: 56px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+
+      p {
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  .right-side {
+    padding: 24px;
+
+    .right-content {
+      max-width: 100%;
+    }
+  }
+}

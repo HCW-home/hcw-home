@@ -131,12 +131,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin, ImportExportModelAdmin):
         ),
         (
             "Authentication",
-            {
-                "fields": (
-                    "one_time_auth_token",
-                    "verification_code",
-                )
-            },
+            {"fields": ("one_time_auth_token", "verification_code", "is_first_login")},
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
@@ -449,7 +444,6 @@ class OrganisationAdmin(ModelAdmin):
 class HealthMetricAdmin(ModelAdmin):
     date_hierarchy = "measured_at"
     ordering = ["-measured_at"]
-
 
 
 from django.contrib import admin

@@ -76,7 +76,11 @@
       padding: 10px 20px;
       border: none;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--primary-500) 0%,
+        var(--primary-600) 100%
+      );
       color: var(--White);
       font-size: 14px;
       font-weight: 600;
@@ -85,7 +89,11 @@
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
 
       &:hover {
-        background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--primary-600) 0%,
+          var(--primary-700) 100%
+        );
         transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
       }
@@ -93,6 +101,10 @@
       &:active {
         transform: translateY(0);
       }
+    }
+
+    .new-consultation-wrapper {
+      position: relative;
     }
 
     .notification-section {
@@ -154,7 +166,11 @@
           justify-content: space-between;
           padding: 16px 20px;
           border-bottom: 1px solid var(--slate-100);
-          background: linear-gradient(to right, var(--primary-50), var(--White));
+          background: linear-gradient(
+            to right,
+            var(--primary-50),
+            var(--White)
+          );
 
           .mark-all-read {
             border: none;
@@ -253,7 +269,9 @@
                 border: 1px solid var(--primary-600, #4f46e5);
                 border-radius: 6px;
                 cursor: pointer;
-                transition: background 0.15s, color 0.15s;
+                transition:
+                  background 0.15s,
+                  color 0.15s;
 
                 &:hover {
                   background: var(--primary-600, #4f46e5);
@@ -299,7 +317,11 @@
         width: 40px;
         height: 40px;
         border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-600) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--primary-400) 0%,
+          var(--primary-600) 100%
+        );
         display: flex;
         align-items: center;
         justify-content: center;
@@ -611,7 +633,6 @@
   }
 }
 
-
 .page-subtitle {
   display: none;
 
@@ -667,7 +688,11 @@
         width: 48px;
         height: 48px;
         border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-600) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--primary-400) 0%,
+          var(--primary-600) 100%
+        );
         display: flex;
         align-items: center;
         justify-content: center;
@@ -734,14 +759,22 @@
     }
 
     &.primary {
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--primary-500) 0%,
+        var(--primary-600) 100%
+      );
       color: var(--White);
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
       margin-bottom: 8px;
 
       &:hover {
-        background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--primary-600) 0%,
+          var(--primary-700) 100%
+        );
       }
     }
 
@@ -807,5 +840,73 @@
         font-weight: 600;
       }
     }
+  }
+}
+
+.onboarding-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1100;
+  cursor: pointer;
+}
+
+.onboarding-hint {
+  position: fixed;
+  transform: translateX(-50%);
+  background: var(--White);
+  color: var(--slate-700);
+  border: 1.5px solid var(--slate-200);
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  min-width: 340px;
+  max-width: 400px;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 1200;
+  animation: hintBounce 2s ease-in-out infinite;
+
+  .hint-arrow {
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: var(--White);
+    border-top: 1.5px solid var(--slate-200);
+    border-left: 1.5px solid var(--slate-200);
+    border-radius: 2px;
+  }
+
+  .hint-close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--slate-400);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      color: var(--slate-600);
+    }
+  }
+}
+
+@keyframes hintBounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
   }
 }

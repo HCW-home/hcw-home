@@ -1,0 +1,80 @@
+<div class="onboarding-page">
+  @if (loading) {
+  <app-loader></app-loader>
+  } @else {
+  <div class="onboarding-card">
+    <div class="left-side">
+      <div class="left-content">
+        @if (siteLogoWhite) {
+        <img [src]="siteLogoWhite" alt="Logo" class="logo-img" />
+        } @else {
+        <img src="/images/logo.svg" alt="Logo" class="logo-img" />
+        }
+        <h1>{{ branding }}</h1>
+        <p>{{ 'onboarding.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <div class="right-side">
+      <div class="right-content">
+        <app-typography
+          color="var(--slate-800)"
+          [variant]="TypographyTypeEnum['h6-semibold']">
+          {{ 'onboarding.title' | translate }}
+        </app-typography>
+        <p class="onboarding-description">
+          {{ 'onboarding.description' | translate }}
+        </p>
+
+        <form
+          [formGroup]="onboardingForm"
+          (ngSubmit)="save()"
+          class="onboarding-form">
+          <div class="form-group">
+            <label class="form-label"
+              >{{ 'onboarding.preferredLanguage' | translate }}</label
+            >
+            <app-select
+              formControlName="preferred_language"
+              [options]="preferredLanguageOptions()"
+              [placeholder]="'onboarding.selectLanguage' | translate">
+            </app-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              {{ 'onboarding.communicationMethod' | translate }}
+              <span class="required">*</span>
+            </label>
+            <app-select
+              formControlName="communication_method"
+              [options]="communicationMethods"
+              [invalid]="(onboardingForm.get('communication_method')?.invalid && onboardingForm.get('communication_method')?.touched) || false">
+            </app-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              {{ 'onboarding.timezone' | translate }}
+              <span class="required">*</span>
+            </label>
+            <app-select
+              formControlName="timezone"
+              [options]="timezoneOptions"
+              [invalid]="(onboardingForm.get('timezone')?.invalid && onboardingForm.get('timezone')?.touched) || false">
+            </app-select>
+          </div>
+
+          <app-button
+            [type]="ButtonTypeEnum.submit"
+            [block]="true"
+            [style]="ButtonStyleEnum.primary"
+            [text]="'onboarding.save' | translate"
+            [loading]="saving()"
+            [disabled]="onboardingForm.invalid">
+          </app-button>
+        </form>
+      </div>
+    </div>
+  </div>
+  }
+</div>

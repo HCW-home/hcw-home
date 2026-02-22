@@ -513,6 +513,20 @@
     "fieldTooShort": "{{field}} est trop court",
     "fieldTooLong": "{{field}} est trop long"
   },
+  "onboarding": {
+    "title": "Bienvenue !",
+    "subtitle": "Avant de commencer, veuillez configurer vos préférences.",
+    "description": "Configurez vos préférences de communication pour que nous puissions mieux vous accompagner.",
+    "communicationMethod": "Méthode de communication préférée",
+    "timezone": "Fuseau horaire",
+    "preferredLanguage": "Langue préférée",
+    "selectLanguage": "Sélectionner une langue",
+    "save": "Enregistrer et continuer",
+    "welcomeTitle": "Vous êtes prêt !",
+    "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "errorTitle": "Erreur",
+    "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
+  },
   "header": {
     "notifications": "Notifications",
     "markAllRead": "Tout marquer comme lu",
@@ -926,6 +940,20 @@
     "fieldTooShort": "{{field}} est trop court",
     "fieldTooLong": "{{field}} est trop long"
   },
+  "onboarding": {
+    "title": "Bienvenue !",
+    "subtitle": "Avant de commencer, veuillez configurer vos préférences.",
+    "description": "Configurez vos préférences de communication pour que nous puissions mieux vous accompagner.",
+    "communicationMethod": "Méthode de communication préférée",
+    "timezone": "Fuseau horaire",
+    "preferredLanguage": "Langue préférée",
+    "selectLanguage": "Sélectionner une langue",
+    "save": "Enregistrer et continuer",
+    "welcomeTitle": "Vous êtes prêt !",
+    "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "errorTitle": "Erreur",
+    "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
+  },
   "header": {
     "notifications": "Notifications",
     "markAllRead": "Tout marquer comme lu",
@@ -1338,6 +1366,20 @@
     "fieldRequired": "{{field}} est obligatoire",
     "fieldTooShort": "{{field}} est trop court",
     "fieldTooLong": "{{field}} est trop long"
+  },
+  "onboarding": {
+    "title": "Bienvenue !",
+    "subtitle": "Avant de commencer, veuillez configurer vos préférences.",
+    "description": "Configurez vos préférences de communication pour que nous puissions mieux vous accompagner.",
+    "communicationMethod": "Méthode de communication préférée",
+    "timezone": "Fuseau horaire",
+    "preferredLanguage": "Langue préférée",
+    "selectLanguage": "Sélectionner une langue",
+    "save": "Enregistrer et continuer",
+    "welcomeTitle": "Vous êtes prêt !",
+    "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "errorTitle": "Erreur",
+    "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
   },
   "header": {
     "notifications": "Notifications",

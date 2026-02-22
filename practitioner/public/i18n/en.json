@@ -303,6 +303,20 @@
     "loadError": "Failed to load terms",
     "acceptError": "Failed to accept terms"
   },
+  "onboarding": {
+    "title": "Welcome!",
+    "subtitle": "Before you begin, please configure your preferences.",
+    "description": "Set up your communication preferences so we can best assist you.",
+    "communicationMethod": "Preferred communication method",
+    "timezone": "Timezone",
+    "preferredLanguage": "Preferred language",
+    "selectLanguage": "Select a language",
+    "save": "Save and continue",
+    "welcomeTitle": "You're all set!",
+    "welcomeMessage": "Start by creating a new follow-up to begin a consultation or an appointment.",
+    "errorTitle": "Error",
+    "errorMessage": "Failed to save your preferences. Please try again."
+  },
   "header": {
     "notifications": "Notifications",
     "markAllRead": "Mark all read",

@@ -12,4 +12,5 @@ export enum RoutePaths {
   VERIFY_INVITE = 'verify-invite',
   CONFIRM_PRESENCE = 'confirm-presence',
   CGU = 'cgu',
+  ONBOARDING = 'onboarding',
 }

@@ -64,6 +64,7 @@ export interface IUser {
   is_online?: boolean;
   temporary?: boolean;
   is_practitioner?: boolean;
+  is_first_login?: boolean;
   custom_fields?: import('../../../core/models/consultation').CustomFieldValue[];
 }
 
@@ -75,4 +76,5 @@ export interface IUserUpdateRequest {
   preferred_language?: number | null;
   timezone?: string;
   language_ids?: number[];
+  is_first_login?: boolean;
 }

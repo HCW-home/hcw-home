@@ -93,7 +93,6 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         read_only_fields = [
             "is_online",
             "is_practitioner",
-            "is_first_login",
             UserModel.EMAIL_FIELD,
         ]
 

@@ -6,6 +6,7 @@ import {
   redirectIfAuthenticated,
   redirectIfUnauthenticated,
   redirectIfTermsNotAccepted,
+  redirectIfFirstLogin,
 } from './core/services/auth.guard';
 
 export const routes: Routes = [
@@ -51,6 +52,12 @@ export const routes: Routes = [
     canMatch: [redirectIfUnauthenticated],
   },
   {
+    path: RoutePaths.ONBOARDING,
+    loadComponent: () =>
+      import('./pages/onboarding/onboarding').then(c => c.OnboardingPage),
+    canMatch: [redirectIfUnauthenticated],
+  },
+  {
     path: RoutePaths.AUTH,
     loadChildren: () =>
       import('./modules/auth/auth-module').then(c => c.AuthModule),
@@ -61,7 +68,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./modules/user/user-module').then(c => c.UserModule),
     canMatch: [redirectIfUnauthenticated],
-    canActivate: [redirectIfTermsNotAccepted],
+    canActivate: [redirectIfTermsNotAccepted, redirectIfFirstLogin],
   },
   {
     path: '',

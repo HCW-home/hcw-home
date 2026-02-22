@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormGroup,
   Validators,
@@ -34,13 +34,15 @@ interface SetPasswordForm {
 
 @Component({
   selector: 'app-reset-password',
-  imports: [Button, Input, Typography, ReactiveFormsModule, ErrorMessage, TranslatePipe, LanguageSelector],
+  imports: [Button, Input, Typography, ReactiveFormsModule, ErrorMessage, TranslatePipe, LanguageSelector, RouterLink],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss',
 })
 export class ResetPassword implements OnInit {
   loadingButton = false;
   errorMessage = '';
+  branding = 'HCW@Home';
+  siteLogoWhite: string | null = null;
   public mode: 'set' | 'reset' = 'reset';
   private formBuilder = inject(FormBuilder);
   private adminAuthService = inject(Auth);
@@ -51,6 +53,11 @@ export class ResetPassword implements OnInit {
   private t = inject(TranslationService);
   token = this.route.snapshot.params['token'];
   uid = this.route.snapshot.params['uid'];
+
+  protected readonly TypographyTypeEnum = TypographyTypeEnum;
+  protected readonly ButtonTypeEnum = ButtonTypeEnum;
+  protected readonly ButtonStyleEnum = ButtonStyleEnum;
+  protected readonly RoutePaths = RoutePaths;
 
   form: FormGroup<SetPasswordForm> = this.formBuilder.nonNullable.group({
     password: ['', [Validators.required]],
@@ -70,6 +77,18 @@ export class ResetPassword implements OnInit {
     } else {
       this.mode = 'reset';
     }
+
+    this.adminAuthService.getOpenIDConfig().subscribe({
+      next: config => {
+        this.siteLogoWhite = config.site_logo_white || null;
+        if (config.branding) {
+          this.branding = config.branding;
+        }
+        if (config.languages?.length) {
+          this.t.loadLanguages(config.languages);
+        }
+      },
+    });
   }
 
   onSubmit() {
@@ -123,8 +142,4 @@ export class ResetPassword implements OnInit {
   getFormErrorMessage(): string {
     return this.t.instant('resetPassword.fieldRequired');
   }
-
-  protected readonly TypographyTypeEnum = TypographyTypeEnum;
-  protected readonly ButtonTypeEnum = ButtonTypeEnum;
-  protected readonly ButtonStyleEnum = ButtonStyleEnum;
 }

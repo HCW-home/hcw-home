@@ -102,8 +102,12 @@
               <input
                 type="tel"
                 class="form-input"
+                [class.invalid]="profileForm.get('mobile_phone_number')?.errors && profileForm.get('mobile_phone_number')?.touched"
                 formControlName="mobile_phone_number"
                 placeholder="+1 234 567 8900" />
+              @if (profileForm.get('mobile_phone_number')?.errors?.['serverError'] && profileForm.get('mobile_phone_number')?.touched) {
+                <span class="field-error">{{ profileForm.get('mobile_phone_number')?.errors?.['serverError'] }}</span>
+              }
             </div>
 
             <div class="form-group">
@@ -115,7 +119,7 @@
                 formControlName="communication_method"
                 [options]="communicationMethods"
                 [invalid]="(profileForm.get('communication_method')?.invalid && profileForm.get('communication_method')?.touched) || false"
-                [invalidMessage]="'userProfile.communicationMethodRequired' | translate">
+                [invalidMessage]="profileForm.get('communication_method')?.errors?.['serverError'] || ('userProfile.communicationMethodRequired' | translate)">
               </app-select>
             </div>
           </div>
@@ -135,7 +139,7 @@
                 formControlName="timezone"
                 [options]="timezoneOptions"
                 [invalid]="(profileForm.get('timezone')?.invalid && profileForm.get('timezone')?.touched) || false"
-                [invalidMessage]="'userProfile.timezoneRequired' | translate">
+                [invalidMessage]="profileForm.get('timezone')?.errors?.['serverError'] || ('userProfile.timezoneRequired' | translate)">
               </app-select>
             </div>
 

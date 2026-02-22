@@ -50,7 +50,10 @@
     "passwordRequirements": "Password must be at least 8 characters and contain at least 1 capital, 1 lowercase and 1 special character.",
     "successTitle": "Success!",
     "successMessage": "Your password has been reset",
-    "errorTitle": "Error!"
+    "errorTitle": "Error!",
+    "subtitle": "Enter your new password below",
+    "setSubtitle": "Create a password for your account",
+    "backToLogin": "Back to Sign In"
   },
   "forgotPassword": {
     "title": "Forgot Your Password?",

@@ -246,10 +246,13 @@
   }
 }
 
-.error-message {
+.error-message,
+.field-error {
   font-size: 12px;
   color: var(--rose-500);
   font-weight: 500;
+  margin-top: 4px;
+  display: block;
 }
 
 .page-toolbar {

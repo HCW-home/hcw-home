@@ -156,7 +156,11 @@ export class ProfilePage implements OnInit {
 
   saveProfile() {
     this.isSaving = true;
-    this.authService.updateProfile(this.editedUser).subscribe({
+    const payload = {
+      ...this.editedUser,
+      mobile_phone_number: this.editedUser.mobile_phone_number || '',
+    };
+    this.authService.updateProfile(payload).subscribe({
       next: (updatedUser) => {
         this.currentUser = updatedUser;
         this.isSaving = false;

@@ -68,6 +68,13 @@ export class App implements OnInit, OnDestroy {
     const action = urlParams.get('action');
     const id = urlParams.get('id');
     const email = urlParams.get('email');
+    const uid = urlParams.get('uid');
+    const token = urlParams.get('token');
+
+    if (action === 'reset' && uid && token) {
+      this.router.navigate([`/${RoutePaths.AUTH}`, 'reset', uid, token], { replaceUrl: true });
+      return;
+    }
 
     if (authToken) {
       this.router.navigate([`/${RoutePaths.VERIFY_INVITE}`], {

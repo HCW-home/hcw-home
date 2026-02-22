@@ -219,7 +219,7 @@ export class UserProfile implements OnInit, OnDestroy {
 
       const formValue = this.profileForm.value;
       const updateData: IUserUpdateRequest = {
-        mobile_phone_number: formValue.mobile_phone_number || undefined,
+        mobile_phone_number: formValue.mobile_phone_number || '',
         communication_method: formValue.communication_method,
         preferred_language: formValue.preferred_language,
         timezone: formValue.timezone,
@@ -244,11 +244,24 @@ export class UserProfile implements OnInit, OnDestroy {
           },
           error: error => {
             this.isSaving.set(false);
-            this.toasterService.show(
-              'error',
-              this.t.instant('userProfile.errorUpdatingProfile'),
-              getErrorMessage(error)
-            );
+            if (error.error && typeof error.error === 'object') {
+              for (const [field, messages] of Object.entries(error.error)) {
+                const control = this.profileForm.get(field);
+                if (control) {
+                  const msg = Array.isArray(messages) ? messages[0] : messages;
+                  control.setErrors({ serverError: msg });
+                  control.markAsTouched();
+                } else {
+                  this.toasterService.show('error', this.t.instant('userProfile.errorUpdatingProfile'), String(Array.isArray(messages) ? messages[0] : messages));
+                }
+              }
+            } else {
+              this.toasterService.show(
+                'error',
+                this.t.instant('userProfile.errorUpdatingProfile'),
+                getErrorMessage(error)
+              );
+            }
           },
         });
     } else {

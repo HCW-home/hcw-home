@@ -2,16 +2,18 @@ from allauth.account import app_settings
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from allauth.socialaccount.models import EmailAddress
+from consultations.models import Participant
+from consultations.serializers import AppointmentDetailSerializer, CustomFieldsMixin
+from dj_rest_auth.serializers import PasswordResetSerializer
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers, status
 from rest_framework.response import Response
-from dj_rest_auth.serializers import PasswordResetSerializer
-from .models import HealthMetric, Language, Organisation, Speciality, Term
+
 from .forms import CustomAllAuthPasswordResetForm
-from consultations.serializers import AppointmentDetailSerializer, CustomFieldsMixin
-from consultations.models import Participant
+from .models import HealthMetric, Language, Organisation, Speciality, Term
+
 UserModel = get_user_model()
 
 
@@ -86,8 +88,14 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "accepted_term",
             "temporary",
             "is_practitioner",
+            "is_first_login",
         ]
-        read_only_fields = ["is_online", "is_practitioner", UserModel.EMAIL_FIELD]
+        read_only_fields = [
+            "is_online",
+            "is_practitioner",
+            "is_first_login",
+            UserModel.EMAIL_FIELD,
+        ]
 
     def validate_temporary(self, value):
         if self.instance and not self.instance.temporary and value:
@@ -112,9 +120,7 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if attrs.get("password1") != attrs.get("password2"):
-            raise serializers.ValidationError(
-                {"password2": "Passwords do not match."}
-            )
+            raise serializers.ValidationError({"password2": "Passwords do not match."})
         return attrs
 
     def get_cleaned_data(self):
@@ -227,17 +233,16 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
 
 
 class UserParticipantDetailSerializer(serializers.ModelSerializer):
-
     appointment = AppointmentDetailSerializer(read_only=True)
 
     class Meta:
         model = Participant
         fields = [
-            'is_confirmed',
-            'appointment',
-            'status',
+            "is_confirmed",
+            "appointment",
+            "status",
         ]
         read_only_field = [
             "status",
-            'appointment',
+            "appointment",
         ]

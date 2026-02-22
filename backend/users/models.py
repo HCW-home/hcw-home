@@ -199,6 +199,10 @@ class User(AbstractUser):
         default=False,
         help_text="Whether this user is a practitioner",
     )
+    is_first_login = models.BooleanField(
+        default=True,
+        help_text="Whether this is the user's first login",
+    )
 
     notification_messages = GenericRelation("messaging.Message")
 

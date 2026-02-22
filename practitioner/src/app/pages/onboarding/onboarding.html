@@ -53,6 +53,17 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label"
+              >{{ 'onboarding.mobilePhone' | translate }}</label
+            >
+            <input
+              type="tel"
+              class="form-input"
+              formControlName="mobile_phone_number"
+              placeholder="+1 234 567 8900" />
+          </div>
+
+          <div class="form-group">
             <label class="form-label">
               {{ 'onboarding.timezone' | translate }}
               <span class="required">*</span>

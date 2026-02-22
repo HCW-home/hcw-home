@@ -314,6 +314,7 @@
     "save": "Save and continue",
     "welcomeTitle": "You're all set!",
     "welcomeMessage": "Start by creating a new follow-up to begin a consultation or an appointment.",
+    "mobilePhone": "Mobile phone number",
     "errorTitle": "Error",
     "errorMessage": "Failed to save your preferences. Please try again."
   },

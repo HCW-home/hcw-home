@@ -524,6 +524,7 @@
     "save": "Enregistrer et continuer",
     "welcomeTitle": "Vous êtes prêt !",
     "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "mobilePhone": "Numéro de téléphone mobile",
     "errorTitle": "Erreur",
     "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
   },
@@ -951,6 +952,7 @@
     "save": "Enregistrer et continuer",
     "welcomeTitle": "Vous êtes prêt !",
     "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "mobilePhone": "Numéro de téléphone mobile",
     "errorTitle": "Erreur",
     "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
   },
@@ -1378,6 +1380,7 @@
     "save": "Enregistrer et continuer",
     "welcomeTitle": "Vous êtes prêt !",
     "welcomeMessage": "Commencez par créer un nouveau suivi pour démarrer une consultation ou un rendez-vous.",
+    "mobilePhone": "Numéro de téléphone mobile",
     "errorTitle": "Erreur",
     "errorMessage": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
   },

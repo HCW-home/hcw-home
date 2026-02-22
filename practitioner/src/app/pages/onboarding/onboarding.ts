@@ -96,6 +96,7 @@ export class OnboardingPage implements OnInit, OnDestroy {
         [Validators.required],
       ],
       preferred_language: [null],
+      mobile_phone_number: [''],
     });
 
     this.onboardingForm
@@ -145,6 +146,7 @@ export class OnboardingPage implements OnInit, OnDestroy {
               Intl.DateTimeFormat().resolvedOptions().timeZone ||
               'UTC',
             preferred_language: user.preferred_language || null,
+            mobile_phone_number: user.mobile_phone_number || '',
           });
           this.loading = false;
         },
@@ -166,6 +168,7 @@ export class OnboardingPage implements OnInit, OnDestroy {
       communication_method: formValue.communication_method,
       timezone: formValue.timezone,
       preferred_language: formValue.preferred_language,
+      mobile_phone_number: formValue.mobile_phone_number || undefined,
       is_first_login: false,
     };
 

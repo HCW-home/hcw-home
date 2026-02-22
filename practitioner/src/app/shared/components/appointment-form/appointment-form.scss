@@ -171,7 +171,6 @@
       border-radius: 4px;
     }
   }
-
 }
 
 .add-participant-form {
@@ -233,6 +232,25 @@
 
     app-button {
       flex: 1;
+    }
+  }
+
+  .manual-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+    background: var(--amber-50);
+    border: 1px solid var(--amber-200);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--amber-800);
+    line-height: 1.4;
+
+    app-svg {
+      flex-shrink: 0;
+      margin-top: 1px;
     }
   }
 

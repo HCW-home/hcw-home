@@ -3,14 +3,19 @@
     <div class="appointment-form-section">
       <form [formGroup]="appointmentForm">
         <div class="form-group">
-          <label class="form-label">{{ 'appointmentForm.appointmentType' | translate }} <span class="required">*</span></label>
+          <label class="form-label"
+            >{{ 'appointmentForm.appointmentType' | translate }}
+            <span class="required">*</span></label
+          >
           <div class="type-toggle">
             <button
               type="button"
               class="type-btn"
               [class.active]="appointmentForm.get('type')?.value === AppointmentType.ONLINE"
               (click)="setAppointmentType(AppointmentType.ONLINE)">
-              <app-svg src="video" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              <app-svg
+                src="video"
+                [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
               {{ 'appointmentForm.online' | translate }}
             </button>
             <button
@@ -18,7 +23,9 @@
               class="type-btn"
               [class.active]="appointmentForm.get('type')?.value === AppointmentType.INPERSON"
               (click)="setAppointmentType(AppointmentType.INPERSON)">
-              <app-svg src="users" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              <app-svg
+                src="users"
+                [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
               {{ 'appointmentForm.inPerson' | translate }}
             </button>
           </div>
@@ -53,42 +60,47 @@
         </div>
 
         @if (!isEditMode) {
-          <div class="invite-flags-section">
-            <div class="invite-flags">
-              <app-checkbox
-                [label]="'appointmentForm.dontInvitePatient' | translate"
-                formControlName="dont_invite_beneficiary">
-              </app-checkbox>
-              <app-checkbox
-                [label]="'appointmentForm.dontInvitePractitioner' | translate"
-                formControlName="dont_invite_practitioner">
-              </app-checkbox>
-              <app-checkbox
-                [label]="'appointmentForm.dontInviteMe' | translate"
-                formControlName="dont_invite_me">
-              </app-checkbox>
-            </div>
+        <div class="invite-flags-section">
+          <div class="invite-flags">
+            <app-checkbox
+              [label]="'appointmentForm.dontInvitePatient' | translate"
+              formControlName="dont_invite_beneficiary">
+            </app-checkbox>
+            <app-checkbox
+              [label]="'appointmentForm.dontInvitePractitioner' | translate"
+              formControlName="dont_invite_practitioner">
+            </app-checkbox>
+            <app-checkbox
+              [label]="'appointmentForm.dontInviteMe' | translate"
+              formControlName="dont_invite_me">
+            </app-checkbox>
           </div>
+        </div>
         }
       </form>
     </div>
 
-  <div class="participants-section">
-    <div class="section-header">
-      <span class="section-title">{{ 'appointmentForm.participantsCount' | translate: { count: getTotalParticipantsCount() } }}</span>
-      <app-button
-        [text]="showAddParticipantForm() ? ('appointmentForm.cancelLabel' | translate) : ('appointmentForm.addParticipant' | translate)"
-        [leftIcon]="showAddParticipantForm() ? 'close' : 'plus'"
-        [size]="ButtonSizeEnum.small"
-        [style]="ButtonStyleEnum.text"
-        (buttonClick)="toggleAddParticipantForm()">
-      </app-button>
-    </div>
+    <div class="participants-section">
+      <div class="section-header">
+        <span class="section-title"
+          >{{ 'appointmentForm.participantsCount' | translate: { count:
+          getTotalParticipantsCount() } }}</span
+        >
+        <app-button
+          [text]="showAddParticipantForm() ? ('appointmentForm.cancelLabel' | translate) : ('appointmentForm.addParticipant' | translate)"
+          [leftIcon]="showAddParticipantForm() ? 'close' : 'plus'"
+          [size]="ButtonSizeEnum.small"
+          [style]="ButtonStyleEnum.text"
+          (buttonClick)="toggleAddParticipantForm()">
+        </app-button>
+      </div>
 
-    @if (showAddParticipantForm()) {
+      @if (showAddParticipantForm()) {
       <div class="add-participant-form">
         <div class="form-group">
-          <label class="form-label">{{ 'appointmentForm.participantType' | translate }}</label>
+          <label class="form-label"
+            >{{ 'appointmentForm.participantType' | translate }}</label
+          >
           <div class="type-toggle compact">
             <button
               type="button"
@@ -109,200 +121,213 @@
 
         <form [formGroup]="participantForm">
           @if (isExistingUser()) {
-            <div class="form-group">
-              <app-user-search-select
-                [placeholder]="'appointmentForm.searchByNameOrEmail' | translate"
-                (userSelected)="onParticipantUserSelected($event)">
-              </app-user-search-select>
-            </div>
+          <div class="form-group">
+            <app-user-search-select
+              [placeholder]="'appointmentForm.searchByNameOrEmail' | translate"
+              (userSelected)="onParticipantUserSelected($event)">
+            </app-user-search-select>
+          </div>
           } @else {
-            <div class="form-group">
-              <label class="form-label">{{ 'appointmentForm.contactMethod' | translate }}</label>
-              <div class="contact-toggle">
-                <app-button
-                  [text]="'appointmentForm.email' | translate"
-                  leftIcon="email"
-                  [block]="true"
-                  [style]="participantForm.get('contact_type')?.value === 'email' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                  [size]="ButtonSizeEnum.small"
-                  (buttonClick)="setParticipantMessageType('email')">
-                </app-button>
-                <app-button
-                  [text]="'appointmentForm.phone' | translate"
-                  leftIcon="phone"
-                  [block]="true"
-                  [style]="participantForm.get('contact_type')?.value === 'sms' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                  [size]="ButtonSizeEnum.small"
-                  (buttonClick)="setParticipantMessageType('sms')">
-                </app-button>
-              </div>
+          <div class="form-group">
+            <label class="form-label"
+              >{{ 'appointmentForm.contactMethod' | translate }}</label
+            >
+            <div class="contact-toggle">
+              <app-button
+                [text]="'appointmentForm.email' | translate"
+                leftIcon="email"
+                [block]="true"
+                [style]="participantForm.get('contact_type')?.value === 'email' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+                [size]="ButtonSizeEnum.small"
+                (buttonClick)="setParticipantMessageType('email')">
+              </app-button>
+              <app-button
+                [text]="'appointmentForm.phone' | translate"
+                leftIcon="phone"
+                [block]="true"
+                [style]="participantForm.get('contact_type')?.value === 'sms' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+                [size]="ButtonSizeEnum.small"
+                (buttonClick)="setParticipantMessageType('sms')">
+              </app-button>
+              <app-button
+                [text]="'appointmentForm.manual' | translate"
+                leftIcon="link"
+                [block]="true"
+                [style]="participantForm.get('contact_type')?.value === 'manual' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
+                [size]="ButtonSizeEnum.small"
+                (buttonClick)="setParticipantMessageType('manual')">
+              </app-button>
             </div>
+          </div>
 
-            @if (participantForm.get('contact_type')?.value === 'email') {
-              <div class="form-group">
-                <app-input
-                  type="email"
-                  [label]="'appointmentForm.emailAddress' | translate"
-                  leftIcon="email"
-                  [placeholder]="'appointmentForm.emailPlaceholder' | translate"
-                  formControlName="email">
-                </app-input>
-              </div>
-            } @else {
-              <div class="form-group">
-                <app-input
-                  type="tel"
-                  [label]="'appointmentForm.phoneNumber' | translate"
-                  leftIcon="phone"
-                  [placeholder]="'appointmentForm.phonePlaceholder' | translate"
-                  formControlName="phone">
-                </app-input>
-              </div>
-            }
-
-            <div class="name-row">
-              <div class="form-group">
-                <app-input
-                  type="text"
-                  [label]="'appointmentForm.firstName' | translate"
-                  leftIcon="user"
-                  [placeholder]="'appointmentForm.firstNamePlaceholder' | translate"
-                  formControlName="first_name">
-                </app-input>
-              </div>
-              <div class="form-group">
-                <app-input
-                  type="text"
-                  [label]="'appointmentForm.lastName' | translate"
-                  [placeholder]="'appointmentForm.lastNamePlaceholder' | translate"
-                  formControlName="last_name">
-                </app-input>
-              </div>
-            </div>
-
-            <div class="participant-settings">
-              <div class="form-group">
-                <app-select
-                  [label]="'appointmentForm.timezone' | translate"
-                  formControlName="timezone"
-                  [options]="timezoneOptions"
-                  [placeholder]="'appointmentForm.selectTimezone' | translate">
-                </app-select>
-              </div>
-              <div class="form-group">
-                <app-select
-                  [label]="'appointmentForm.communicationMethod' | translate"
-                  formControlName="communication_method"
-                  [options]="communicationMethods"
-                  [placeholder]="'appointmentForm.selectMethod' | translate">
-                </app-select>
-              </div>
-              <div class="form-group">
-                <app-select
-                  [label]="'appointmentForm.preferredLanguage' | translate"
-                  formControlName="preferred_language"
-                  [options]="languageOptions"
-                  [placeholder]="'appointmentForm.selectLanguage' | translate">
-                </app-select>
-              </div>
-            </div>
+          @if (participantForm.get('contact_type')?.value === 'email') {
+          <div class="form-group">
+            <app-input
+              type="email"
+              [label]="'appointmentForm.emailAddress' | translate"
+              leftIcon="email"
+              [placeholder]="'appointmentForm.emailPlaceholder' | translate"
+              formControlName="email">
+            </app-input>
+          </div>
+          } @else if (participantForm.get('contact_type')?.value === 'sms') {
+          <div class="form-group">
+            <app-input
+              type="tel"
+              [label]="'appointmentForm.phoneNumber' | translate"
+              leftIcon="phone"
+              [placeholder]="'appointmentForm.phonePlaceholder' | translate"
+              formControlName="phone">
+            </app-input>
+          </div>
+          } @else if (participantForm.get('contact_type')?.value === 'manual') {
+          <div class="manual-notice">
+            <app-svg
+              src="info"
+              [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+            <span>{{ 'appointmentForm.manualNotice' | translate }}</span>
+          </div>
           }
 
-          @if (!isExistingUser()) {
-            <app-button
-              [text]="'appointmentForm.addParticipant' | translate"
-              leftIcon="plus"
-              [style]="ButtonStyleEnum.primary"
-              [size]="ButtonSizeEnum.small"
-              [disabled]="isAddingParticipant()"
-              [loading]="isAddingParticipant()"
-              (buttonClick)="addParticipant()">
-            </app-button>
+          <div class="name-row">
+            <div class="form-group">
+              <app-input
+                type="text"
+                [label]="'appointmentForm.firstName' | translate"
+                leftIcon="user"
+                [placeholder]="'appointmentForm.firstNamePlaceholder' | translate"
+                formControlName="first_name">
+              </app-input>
+            </div>
+            <div class="form-group">
+              <app-input
+                type="text"
+                [label]="'appointmentForm.lastName' | translate"
+                [placeholder]="'appointmentForm.lastNamePlaceholder' | translate"
+                formControlName="last_name">
+              </app-input>
+            </div>
+          </div>
+
+          <div class="participant-settings">
+            <div class="form-group">
+              <app-select
+                [label]="'appointmentForm.timezone' | translate"
+                formControlName="timezone"
+                [options]="timezoneOptions"
+                [placeholder]="'appointmentForm.selectTimezone' | translate">
+              </app-select>
+            </div>
+            <div class="form-group">
+              <app-select
+                [label]="'appointmentForm.communicationMethod' | translate"
+                formControlName="communication_method"
+                [options]="communicationMethods"
+                [placeholder]="'appointmentForm.selectMethod' | translate">
+              </app-select>
+            </div>
+            <div class="form-group">
+              <app-select
+                [label]="'appointmentForm.preferredLanguage' | translate"
+                formControlName="preferred_language"
+                [options]="languageOptions"
+                [placeholder]="'appointmentForm.selectLanguage' | translate">
+              </app-select>
+            </div>
+          </div>
+          } @if (!isExistingUser()) {
+          <app-button
+            [text]="'appointmentForm.addParticipant' | translate"
+            leftIcon="plus"
+            [style]="ButtonStyleEnum.primary"
+            [size]="ButtonSizeEnum.small"
+            [disabled]="isAddingParticipant()"
+            [loading]="isAddingParticipant()"
+            (buttonClick)="addParticipant()">
+          </app-button>
           }
         </form>
       </div>
-    }
-
-    @if (isEditMode && isLoadingParticipants()) {
+      } @if (isEditMode && isLoadingParticipants()) {
       <div class="loading-container">
         <app-loader></app-loader>
       </div>
-    } @else {
+      } @else {
       <div class="participants-list">
-        @if (!isEditMode) {
-          @if (getBeneficiaryUser(); as beneficiary) {
-            <app-participant-item
-              [class.excluded]="appointmentForm.get('dont_invite_beneficiary')?.value"
-              [participant]="{id: 0, user: beneficiary, is_active: true}">
-              <span class="role-tag">{{ 'appointmentForm.rolePatient' | translate }}</span>
-              <app-switch
-                [ngModel]="!appointmentForm.get('dont_invite_beneficiary')?.value"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="toggleInvite('dont_invite_beneficiary', $event)">
-              </app-switch>
-            </app-participant-item>
-          }
-          @if (getOwnerUser(); as owner) {
-            <app-participant-item
-              [class.excluded]="appointmentForm.get('dont_invite_practitioner')?.value"
-              [participant]="{id: 0, user: owner, is_active: true}">
-              <span class="role-tag">{{ 'appointmentForm.rolePractitioner' | translate }}</span>
-              <app-switch
-                [ngModel]="!appointmentForm.get('dont_invite_practitioner')?.value"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="toggleInvite('dont_invite_practitioner', $event)">
-              </app-switch>
-            </app-participant-item>
-          }
-          @if (getCurrentUserForInvite(); as user) {
-            <app-participant-item
-              [class.excluded]="appointmentForm.get('dont_invite_me')?.value"
-              [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}">
-              <span class="role-tag">{{ 'appointmentForm.roleYou' | translate }}</span>
-              <app-switch
-                [ngModel]="!appointmentForm.get('dont_invite_me')?.value"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="toggleInvite('dont_invite_me', $event)">
-              </app-switch>
-            </app-participant-item>
-          }
-        }
-        @for (participant of participants(); track participant.id) {
-          <app-participant-item
-            [participant]="participant"
-            [showRemoveAction]="true"
-            (remove)="removeParticipant(participant)">
-          </app-participant-item>
-        }
-        @for (pending of pendingParticipants(); track $index) {
-          <app-participant-item
-            [pendingParticipant]="pending"
-            [isPending]="true"
-            [showRemoveAction]="true"
-            (remove)="removePendingParticipant($index)">
-          </app-participant-item>
+        @if (!isEditMode) { @if (getBeneficiaryUser(); as beneficiary) {
+        <app-participant-item
+          [class.excluded]="appointmentForm.get('dont_invite_beneficiary')?.value"
+          [participant]="{id: 0, user: beneficiary, is_active: true}">
+          <span class="role-tag"
+            >{{ 'appointmentForm.rolePatient' | translate }}</span
+          >
+          <app-switch
+            [ngModel]="!appointmentForm.get('dont_invite_beneficiary')?.value"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="toggleInvite('dont_invite_beneficiary', $event)">
+          </app-switch>
+        </app-participant-item>
+        } @if (getOwnerUser(); as owner) {
+        <app-participant-item
+          [class.excluded]="appointmentForm.get('dont_invite_practitioner')?.value"
+          [participant]="{id: 0, user: owner, is_active: true}">
+          <span class="role-tag"
+            >{{ 'appointmentForm.rolePractitioner' | translate }}</span
+          >
+          <app-switch
+            [ngModel]="!appointmentForm.get('dont_invite_practitioner')?.value"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="toggleInvite('dont_invite_practitioner', $event)">
+          </app-switch>
+        </app-participant-item>
+        } @if (getCurrentUserForInvite(); as user) {
+        <app-participant-item
+          [class.excluded]="appointmentForm.get('dont_invite_me')?.value"
+          [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}">
+          <span class="role-tag"
+            >{{ 'appointmentForm.roleYou' | translate }}</span
+          >
+          <app-switch
+            [ngModel]="!appointmentForm.get('dont_invite_me')?.value"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="toggleInvite('dont_invite_me', $event)">
+          </app-switch>
+        </app-participant-item>
+        } } @for (participant of participants(); track participant.id) {
+        <app-participant-item
+          [participant]="participant"
+          [showRemoveAction]="true"
+          (remove)="removeParticipant(participant)">
+        </app-participant-item>
+        } @for (pending of pendingParticipants(); track $index) {
+        <app-participant-item
+          [pendingParticipant]="pending"
+          [isPending]="true"
+          [showRemoveAction]="true"
+          (remove)="removePendingParticipant($index)">
+        </app-participant-item>
         }
       </div>
-    }
-  </div>
+      }
+    </div>
   </div>
 
   @if (showActions) {
-    <div class="form-actions">
-      <app-button
-        [text]="'appointmentForm.cancelButton' | translate"
-        [size]="ButtonSizeEnum.medium"
-        [style]="ButtonStyleEnum.stroke"
-        (buttonClick)="onCancel()">
-      </app-button>
-      <app-button
-        [text]="submitButtonText"
-        [size]="ButtonSizeEnum.medium"
-        [style]="ButtonStyleEnum.primary"
-        [disabled]="appointmentForm.invalid || isSubmitting()"
-        [loading]="isSubmitting()"
-        (buttonClick)="submit()">
-      </app-button>
-    </div>
+  <div class="form-actions">
+    <app-button
+      [text]="'appointmentForm.cancelButton' | translate"
+      [size]="ButtonSizeEnum.medium"
+      [style]="ButtonStyleEnum.stroke"
+      (buttonClick)="onCancel()">
+    </app-button>
+    <app-button
+      [text]="submitButtonText"
+      [size]="ButtonSizeEnum.medium"
+      [style]="ButtonStyleEnum.primary"
+      [disabled]="appointmentForm.invalid || isSubmitting()"
+      [loading]="isSubmitting()"
+      (buttonClick)="submit()">
+    </app-button>
+  </div>
   }
 </div>

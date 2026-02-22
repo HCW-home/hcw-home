@@ -716,6 +716,8 @@
     "appointmentCreatedMessage": "Appointment created successfully",
     "errorCreatingAppointment": "Error Creating Appointment",
     "errorUpdatingAppointment": "Error Updating Appointment",
+    "manual": "Manual",
+    "manualNotice": "The invitation link will be available to copy once the appointment is saved.",
     "sms": "SMS",
     "whatsApp": "WhatsApp",
     "pushNotification": "Push Notification",
@@ -879,7 +881,12 @@
     "statusInvited": "Invited",
     "statusConfirmed": "Confirmed",
     "statusUnavailable": "Unavailable",
-    "statusCancelled": "Cancelled"
+    "statusCancelled": "Cancelled",
+    "inviteLink": "Invitation Link",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "linkCopied": "Link copied to clipboard",
+    "singleUseWarning": "This link can only be used once. Once the participant opens it, a new link will need to be generated."
   },
   "messageList": {
     "messages": "Messages",

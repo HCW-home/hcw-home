@@ -1,13 +1,15 @@
 from datetime import timedelta
+from zoneinfo import available_timezones
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Q
 from users.models import CommunicationMethod, Language
-from zoneinfo import available_timezones
-from django.conf import settings
 
 from .models import (
     Appointment,
@@ -22,7 +24,6 @@ from .models import (
     Reason,
     Request,
 )
-from django.contrib.contenttypes.models import ContentType
 
 User = get_user_model()
 
@@ -43,12 +44,23 @@ class CustomFieldValueWriteSerializer(serializers.Serializer):
 class CustomFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomField
-        fields = ["id", "name", "field_type", "target_model", "required", "options", "ordering"]
+        fields = [
+            "id",
+            "name",
+            "field_type",
+            "target_model",
+            "required",
+            "options",
+            "ordering",
+        ]
 
 
 class CustomFieldsMixin(serializers.Serializer):
     """Mixin to add custom_fields read/write support to any model serializer."""
-    custom_fields = CustomFieldValueReadSerializer(many=True, read_only=True, source="custom_field_values")
+
+    custom_fields = CustomFieldValueReadSerializer(
+        many=True, read_only=True, source="custom_field_values"
+    )
 
     def _get_content_type(self, model_class):
         return ContentType.objects.get_for_model(model_class)
@@ -68,7 +80,9 @@ class CustomFieldsMixin(serializers.Serializer):
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)
         if "custom_fields" in data:
-            write_serializer = CustomFieldValueWriteSerializer(data=data["custom_fields"], many=True)
+            write_serializer = CustomFieldValueWriteSerializer(
+                data=data["custom_fields"], many=True
+            )
             write_serializer.is_valid(raise_exception=True)
             ret["_custom_fields_data"] = write_serializer.validated_data
         return ret
@@ -98,8 +112,20 @@ class CustomFieldsMixin(serializers.Serializer):
 class ConsultationUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "mobile_phone_number",
-                  "last_name", "picture", "is_online", "languages", "preferred_language", "communication_method", "timezone"]
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "mobile_phone_number",
+            "last_name",
+            "picture",
+            "is_online",
+            "languages",
+            "preferred_language",
+            "communication_method",
+            "timezone",
+            "one_time_auth_token",
+        ]
         read_only_field = fields
 
 
@@ -117,22 +143,50 @@ class ParticipantReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ["id", "user", "status", "is_active", "is_confirmed", "is_invited", "is_notified"]
+        fields = [
+            "id",
+            "user",
+            "status",
+            "is_active",
+            "is_confirmed",
+            "is_invited",
+            "is_notified",
+        ]
         read_only_fields = fields
 
 
 class ParticipantSerializer(serializers.Serializer):
-    first_name = serializers.CharField(write_only=True, required=False,)
-    last_name = serializers.CharField(write_only=True, required=False,)
-    email = serializers.EmailField(write_only=True, required=False,)
+    first_name = serializers.CharField(
+        write_only=True,
+        required=False,
+    )
+    last_name = serializers.CharField(
+        write_only=True,
+        required=False,
+    )
+    email = serializers.EmailField(
+        write_only=True,
+        required=False,
+    )
     mobile_phone_number = serializers.CharField(
-        write_only=True, required=False,)
+        write_only=True,
+        required=False,
+    )
     communication_method = serializers.ChoiceField(
-        choices=CommunicationMethod.values, write_only=True, required=False,)
+        choices=CommunicationMethod.values,
+        write_only=True,
+        required=False,
+    )
     preferred_language = serializers.ChoiceField(
-        choices=settings.LANGUAGES, write_only=True, required=False,)
+        choices=settings.LANGUAGES,
+        write_only=True,
+        required=False,
+    )
     timezone = serializers.ChoiceField(
-        choices=[(tz, tz) for tz in sorted(available_timezones())], write_only=True, required=False,)
+        choices=[(tz, tz) for tz in sorted(available_timezones())],
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         fields = [
@@ -144,15 +198,15 @@ class ParticipantSerializer(serializers.Serializer):
             "first_name",
             "last_name",
             "communication_method",
-            "preferred_language"
+            "preferred_language",
         ]
 
         read_only_fields = ["status", "is_active"]
 
     def validate(self, attrs):
         provided_fields = [
-            attrs.get('mobile_phone_number'),
-            attrs.get('email'),
+            attrs.get("mobile_phone_number"),
+            attrs.get("email"),
         ]
         provided_count = sum(1 for field in provided_fields if field)
 
@@ -164,32 +218,31 @@ class ParticipantSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 
-
 class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     owned_by = ConsultationUserSerializer(read_only=True)
     owned_by_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        source='owned_by',
+        source="owned_by",
         write_only=True,
         required=False,
-        allow_null=True
+        allow_null=True,
     )
     beneficiary = ConsultationUserSerializer(read_only=True)
     beneficiary_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        source='beneficiary',
+        source="beneficiary",
         write_only=True,
         required=False,
-        allow_null=True
+        allow_null=True,
     )
     group = QueueSerializer(read_only=True)
     group_id = serializers.PrimaryKeyRelatedField(
         queryset=Queue.objects.all(),
-        source='group',
+        source="group",
         write_only=True,
         required=False,
-        allow_null=True
+        allow_null=True,
     )
     next_appointment = serializers.SerializerMethodField()
 
@@ -222,11 +275,12 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
 
     def get_next_appointment(self, obj):
         """Get the next non-cancelled appointment for this consultation."""
-        next_appt = obj.appointments.exclude(
-            status=AppointmentStatus.cancelled
-        ).filter(
-            scheduled_at__gte=timezone.now()
-        ).order_by('scheduled_at').first()
+        next_appt = (
+            obj.appointments.exclude(status=AppointmentStatus.cancelled)
+            .filter(scheduled_at__gte=timezone.now())
+            .order_by("scheduled_at")
+            .first()
+        )
 
         if next_appt:
             return AppointmentSerializer(next_appt, context=self.context).data
@@ -237,14 +291,15 @@ class AppointmentSerializer(serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     consultation_id = serializers.IntegerField(required=False, allow_null=True)
     participants = ParticipantReadSerializer(
-        many=True, read_only=True, required=False, source='participant_set')
+        many=True, read_only=True, required=False, source="participant_set"
+    )
     participants_ids = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=User.objects.all(),
-        required=False
+        many=True, queryset=User.objects.all(), required=False
     )
 
-    temporary_participants = ParticipantSerializer(many=True, allow_null=True, write_only=True, required=False)
+    temporary_participants = ParticipantSerializer(
+        many=True, allow_null=True, write_only=True, required=False
+    )
 
     class Meta:
         model = Appointment
@@ -259,34 +314,40 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "created_at",
             "participants",
             "participants_ids",
-            "temporary_participants"
+            "temporary_participants",
         ]
         read_only_fields = ["id", "created_by", "created_at"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        request = self.context.get('request')
+        request = self.context.get("request")
 
         if request and request.user.is_authenticated:
             user_tz = request.user.user_tz
 
             # Convert datetime fields to user timezone
-            if data.get('scheduled_at'):
-                dt = timezone.datetime.fromisoformat(data['scheduled_at'].replace('Z', '+00:00'))
-                data['scheduled_at'] = dt.astimezone(user_tz).isoformat()
+            if data.get("scheduled_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["scheduled_at"].replace("Z", "+00:00")
+                )
+                data["scheduled_at"] = dt.astimezone(user_tz).isoformat()
 
-            if data.get('end_expected_at'):
-                dt = timezone.datetime.fromisoformat(data['end_expected_at'].replace('Z', '+00:00'))
-                data['end_expected_at'] = dt.astimezone(user_tz).isoformat()
+            if data.get("end_expected_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["end_expected_at"].replace("Z", "+00:00")
+                )
+                data["end_expected_at"] = dt.astimezone(user_tz).isoformat()
 
-            if data.get('created_at'):
-                dt = timezone.datetime.fromisoformat(data['created_at'].replace('Z', '+00:00'))
-                data['created_at'] = dt.astimezone(user_tz).isoformat()
+            if data.get("created_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["created_at"].replace("Z", "+00:00")
+                )
+                data["created_at"] = dt.astimezone(user_tz).isoformat()
 
         return data
 
     def validate_scheduled_at(self, value):
-        user = self.context['request'].user
+        user = self.context["request"].user
 
         # Convert naive datetime from user timezone to UTC
         value = value.replace(tzinfo=user.user_tz)
@@ -300,7 +361,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return value
 
     def end_expected_at_at(self, value):
-        user = self.context['request'].user
+        user = self.context["request"].user
 
         # Convert naive datetime from user timezone to UTC
         value = value.replace(tzinfo=user.user_tz)
@@ -314,18 +375,19 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
-        temporary_participants_data = validated_data.pop('temporary_participants', None)
-        participants_ids = validated_data.pop('participants_ids', None)
+        temporary_participants_data = validated_data.pop("temporary_participants", None)
+        participants_ids = validated_data.pop("participants_ids", None)
 
         appointment = super().update(instance, validated_data)
 
         if participants_ids is not None:
             # Get existing active participants
             existing_participants = Participant.objects.filter(
-                appointment=appointment,
-                is_active=True
+                appointment=appointment, is_active=True
             )
-            existing_users = set(existing_participants.values_list('user_id', flat=True))
+            existing_users = set(
+                existing_participants.values_list("user_id", flat=True)
+            )
             new_users = set(user.id for user in participants_ids)
 
             # Add new participants or reactivate existing ones
@@ -333,54 +395,56 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 participant, created = Participant.objects.get_or_create(
                     appointment=appointment,
                     user_id=user_id,
-                    defaults={'is_active': True}
+                    defaults={"is_active": True},
                 )
 
                 if not created and not participant.is_active:
                     participant.is_active = True
                     participant.is_notified = False
-                    participant.save(
-                        update_fields=['is_active', 'is_notified'])
+                    participant.save(update_fields=["is_active", "is_notified"])
 
             # Deactivate removed participants
             removed_users = existing_users - new_users
             if removed_users:
                 participants_to_deactivate = Participant.objects.filter(
-                    appointment=appointment,
-                    user_id__in=removed_users,
-                    is_active=True
+                    appointment=appointment, user_id__in=removed_users, is_active=True
                 )
                 for participant in participants_to_deactivate:
                     participant.is_active = False
-                    participant.save(update_fields=['is_active'])
+                    participant.save(update_fields=["is_active"])
 
         if temporary_participants_data is not None:
             for temp_participant in temporary_participants_data:
-                attr = 'mobile_phone_number' if temp_participant.get('mobile_phone_number') else 'email'
+                attr = (
+                    "mobile_phone_number"
+                    if temp_participant.get("mobile_phone_number")
+                    else "email"
+                )
 
                 user, _ = User.objects.get_or_create(
                     **{attr: temp_participant[attr]},
                     defaults={
-                        'first_name': temp_participant.get('first_name', ''),
-                        'last_name': temp_participant.get('last_name', ''),
-                        'communication_method': temp_participant.get('communication_method', CommunicationMethod.email),
-                        'preferred_language': temp_participant.get('preferred_language'),
-                        'timezone': temp_participant.get('timezone', 'UTC'),
-                        'temporary': True
-                    }
+                        "first_name": temp_participant.get("first_name", ""),
+                        "last_name": temp_participant.get("last_name", ""),
+                        "communication_method": temp_participant.get(
+                            "communication_method", CommunicationMethod.email
+                        ),
+                        "preferred_language": temp_participant.get(
+                            "preferred_language"
+                        ),
+                        "timezone": temp_participant.get("timezone", "UTC"),
+                        "temporary": True,
+                    },
                 )
 
                 participant, created = Participant.objects.get_or_create(
-                    appointment=appointment,
-                    user=user,
-                    defaults={'is_active': True}
+                    appointment=appointment, user=user, defaults={"is_active": True}
                 )
 
                 if not created and not participant.is_active:
                     participant.is_active = True
                     participant.is_notified = False
-                    participant.save(
-                        update_fields=['is_active', 'is_notified'])
+                    participant.save(update_fields=["is_active", "is_notified"])
 
         return appointment
 
@@ -404,23 +468,23 @@ class AppointmentCreateSerializer(AppointmentSerializer):
     @property
     def consultation(self) -> Consultation:
         if not self._consultation:
-            consultation_id = self.validated_data.get('consultation_id', None)
+            consultation_id = self.validated_data.get("consultation_id", None)
             try:
-                self._consultation = Consultation.objects.get(
-                    id=consultation_id)
+                self._consultation = Consultation.objects.get(id=consultation_id)
             except Consultation.DoesNotExist:
                 # TODO : make this optional when presential consultation is handled
                 raise serializers.ValidationError(
-                    {"consultation_id": "Consultation not found."})
+                    {"consultation_id": "Consultation not found."}
+                )
         return self._consultation
 
     def validate(self, attrs):
-        dont_invite_beneficiary = attrs.get('dont_invite_beneficiary', False)
-        dont_invite_practitioner = attrs.get('dont_invite_practitioner', False)
-        dont_invite_me = attrs.get('dont_invite_me', False)
-        status = attrs.get('status', AppointmentStatus.draft)
-        participants_ids = attrs.get('participants_ids', [])
-        temporary_participants = attrs.get('temporary_participants', [])
+        dont_invite_beneficiary = attrs.get("dont_invite_beneficiary", False)
+        dont_invite_practitioner = attrs.get("dont_invite_practitioner", False)
+        dont_invite_me = attrs.get("dont_invite_me", False)
+        status = attrs.get("status", AppointmentStatus.draft)
+        participants_ids = attrs.get("participants_ids", [])
+        temporary_participants = attrs.get("temporary_participants", [])
 
         # Count auto-invited users
         invited_count = 0
@@ -443,14 +507,14 @@ class AppointmentCreateSerializer(AppointmentSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        temporary_participants_data = validated_data.pop('temporary_participants', [])
-        participants_ids = validated_data.pop('participants_ids', [])
-        dont_invite_beneficiary = validated_data.pop('dont_invite_beneficiary', False)
-        dont_invite_practitioner = validated_data.pop('dont_invite_practitioner', False)
-        dont_invite_me = validated_data.pop('dont_invite_me', False)
+        temporary_participants_data = validated_data.pop("temporary_participants", [])
+        participants_ids = validated_data.pop("participants_ids", [])
+        dont_invite_beneficiary = validated_data.pop("dont_invite_beneficiary", False)
+        dont_invite_practitioner = validated_data.pop("dont_invite_practitioner", False)
+        dont_invite_me = validated_data.pop("dont_invite_me", False)
 
-        validated_data['created_by'] = self.context['request'].user
-        validated_data['status'] = AppointmentStatus.draft
+        validated_data["created_by"] = self.context["request"].user
+        validated_data["status"] = AppointmentStatus.draft
 
         appointment = Appointment.objects.create(**validated_data)
 
@@ -464,7 +528,7 @@ class AppointmentCreateSerializer(AppointmentSerializer):
             participant_users.add(self.consultation.owned_by)
 
         if not dont_invite_me:
-            participant_users.add(self.context['request'].user)
+            participant_users.add(self.context["request"].user)
 
         # Create participants from consultation
         for participant_user in participant_users:
@@ -476,37 +540,42 @@ class AppointmentCreateSerializer(AppointmentSerializer):
         # Users from participants_ids
         for user in participants_ids:
             if user not in participant_users:
-                Participant.objects.create(
-                    appointment=appointment,
-                    user=user
-                )
+                Participant.objects.create(appointment=appointment, user=user)
                 participant_users.add(user)
 
         # Users from temporary_participants
         for temp_participant in temporary_participants_data:
-            attr = 'mobile_phone_number' if temp_participant.get('mobile_phone_number') else 'email'
+            user_defaults = {
+                "first_name": temp_participant.get("first_name", ""),
+                "last_name": temp_participant.get("last_name", ""),
+                "communication_method": temp_participant.get(
+                    "communication_method", CommunicationMethod.email
+                ),
+                "preferred_language": temp_participant.get("preferred_language"),
+                "timezone": temp_participant.get("timezone", "UTC"),
+                "temporary": True,
+            }
 
-            user, _ = User.objects.get_or_create(
-                **{attr: temp_participant[attr]},
-                defaults={
-                    'first_name': temp_participant.get('first_name', ''),
-                    'last_name': temp_participant.get('last_name', ''),
-                    'communication_method': temp_participant.get('communication_method', CommunicationMethod.email),
-                    'preferred_language': temp_participant.get('preferred_language'),
-                    'timezone': temp_participant.get('timezone', 'UTC'),
-                    'temporary': True
-                }
-            )
+            if temp_participant.get("mobile_phone_number"):
+                user, _ = User.objects.get_or_create(
+                    mobile_phone_number=temp_participant["mobile_phone_number"],
+                    defaults=user_defaults,
+                )
+            elif temp_participant.get("email"):
+                user, _ = User.objects.get_or_create(
+                    email=temp_participant["email"],
+                    defaults=user_defaults,
+                )
+            else:
+                # Manual contact: create user directly (no lookup key)
+                user = User.objects.create(**user_defaults)
 
             if user not in participant_users:
-                Participant.objects.create(
-                    appointment=appointment,
-                    user=user
-                )
+                Participant.objects.create(appointment=appointment, user=user)
                 participant_users.add(user)
 
         appointment.status = AppointmentStatus.scheduled
-        appointment.save(update_fields=['status'])
+        appointment.save(update_fields=["status"])
 
         return appointment
 
@@ -569,7 +638,6 @@ class ConsultationMessageCreateSerializer(ConsultationMessageSerializer):
         ]
 
 
-
 class ConsultationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consultation
@@ -616,7 +684,9 @@ class BookingSlotSerializer(serializers.ModelSerializer):
 class AppointmentDetailSerializer(serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     consultation = ConsultationSerializer(read_only=True)
-    participants = ParticipantReadSerializer(many=True, read_only=True, source='participant_set')
+    participants = ParticipantReadSerializer(
+        many=True, read_only=True, source="participant_set"
+    )
 
     class Meta:
         model = Appointment
@@ -764,4 +834,4 @@ class ParticipantDetailSerializer(ParticipantSerializer):
 
     class Meta:
         model = Participant
-        fields = ParticipantSerializer.Meta.fields + ['appointment']
+        fields = ParticipantSerializer.Meta.fields + ["appointment"]

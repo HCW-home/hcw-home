@@ -44,7 +44,11 @@ import { Svg } from '../../ui-components/svg/svg';
 import { Loader } from '../loader/loader';
 import { UserSearchSelect } from '../user-search-select/user-search-select';
 import { ParticipantItem } from '../participant-item/participant-item';
-import { ButtonStyleEnum, ButtonSizeEnum, ButtonStateEnum } from '../../constants/button';
+import {
+  ButtonStyleEnum,
+  ButtonSizeEnum,
+  ButtonStateEnum,
+} from '../../constants/button';
 import { SelectOption } from '../../models/select';
 import { extractDateFromISO, extractTimeFromISO } from '../../tools/helper';
 import { getErrorMessage } from '../../../core/utils/error-helper';
@@ -110,7 +114,10 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       { value: 'email', label: this.t.instant('appointmentForm.email') },
       { value: 'sms', label: this.t.instant('appointmentForm.sms') },
       { value: 'whatsapp', label: this.t.instant('appointmentForm.whatsApp') },
-      { value: 'push', label: this.t.instant('appointmentForm.pushNotification') },
+      {
+        value: 'push',
+        label: this.t.instant('appointmentForm.pushNotification'),
+      },
     ];
   }
 
@@ -132,7 +139,9 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   get submitButtonText(): string {
-    return this.isEditMode ? this.t.instant('appointmentForm.saveChanges') : this.t.instant('appointmentForm.createAppointment');
+    return this.isEditMode
+      ? this.t.instant('appointmentForm.saveChanges')
+      : this.t.instant('appointmentForm.createAppointment');
   }
 
   ngOnInit(): void {
@@ -143,11 +152,16 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadCurrentUser(): void {
-    this.userService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(user => {
-      this.currentUser.set(user);
-    });
+    this.userService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser.set(user);
+      });
     if (!this.currentUser()) {
-      this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe();
+      this.userService
+        .getCurrentUser()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
     }
   }
 
@@ -185,8 +199,12 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   updateInviteCheckboxStates(): void {
-    const beneficiaryControl = this.appointmentForm.get('dont_invite_beneficiary');
-    const practitionerControl = this.appointmentForm.get('dont_invite_practitioner');
+    const beneficiaryControl = this.appointmentForm.get(
+      'dont_invite_beneficiary'
+    );
+    const practitionerControl = this.appointmentForm.get(
+      'dont_invite_practitioner'
+    );
 
     if (this.isBeneficiaryCheckboxDisabled()) {
       beneficiaryControl?.disable();
@@ -282,7 +300,9 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   loadParticipants(): void {
     if (!this.editingAppointment) return;
 
-    this.participants.set(this.editingAppointment.participants.filter(p => p.is_active));
+    this.participants.set(
+      this.editingAppointment.participants.filter(p => p.is_active)
+    );
   }
 
   setAppointmentType(type: AppointmentType): void {
@@ -348,8 +368,14 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       data.email = formValue.email;
     } else if (formValue.contact_type === 'sms' && formValue.phone) {
       data.mobile_phone_number = formValue.phone;
+    } else if (formValue.contact_type === 'manual') {
+      // Manual contact: no email/phone required, link will be shared manually
     } else {
-      this.toasterService.show('error', this.t.instant('appointmentForm.missingInfo'), this.t.instant('appointmentForm.provideContact'));
+      this.toasterService.show(
+        'error',
+        this.t.instant('appointmentForm.missingInfo'),
+        this.t.instant('appointmentForm.provideContact')
+      );
       return;
     }
 
@@ -404,7 +430,8 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       endExpectedAt = `${formValue.end_date}T${formValue.end_time}`;
     }
 
-    const { participants_ids, temporary_participants } = this.getParticipantsForRequest();
+    const { participants_ids, temporary_participants } =
+      this.getParticipantsForRequest();
 
     if (this.isEditMode && this.editingAppointment) {
       const updateData: UpdateAppointmentRequest = {
@@ -483,13 +510,17 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       .updateAppointment(this.editingAppointment.id, appointmentData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (updatedAppointment) => {
+        next: updatedAppointment => {
           this.isSubmitting.set(false);
           this.appointmentUpdated.emit(updatedAppointment);
         },
-        error: (error) => {
+        error: error => {
           this.isSubmitting.set(false);
-          this.toasterService.show('error', this.t.instant('appointmentForm.errorUpdatingAppointment'), getErrorMessage(error));
+          this.toasterService.show(
+            'error',
+            this.t.instant('appointmentForm.errorUpdatingAppointment'),
+            getErrorMessage(error)
+          );
         },
       });
   }
@@ -499,14 +530,22 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       .createConsultationAppointment(this.consultationId, appointmentData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (appointment) => {
+        next: appointment => {
           this.isSubmitting.set(false);
-          this.toasterService.show('success', this.t.instant('appointmentForm.appointmentCreated'), this.t.instant('appointmentForm.appointmentCreatedMessage'));
+          this.toasterService.show(
+            'success',
+            this.t.instant('appointmentForm.appointmentCreated'),
+            this.t.instant('appointmentForm.appointmentCreatedMessage')
+          );
           this.appointmentCreated.emit(appointment);
         },
-        error: (error) => {
+        error: error => {
           this.isSubmitting.set(false);
-          this.toasterService.show('error', this.t.instant('appointmentForm.errorCreatingAppointment'), getErrorMessage(error));
+          this.toasterService.show(
+            'error',
+            this.t.instant('appointmentForm.errorCreatingAppointment'),
+            getErrorMessage(error)
+          );
         },
       });
   }

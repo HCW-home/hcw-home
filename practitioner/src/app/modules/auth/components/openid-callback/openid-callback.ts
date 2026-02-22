@@ -45,17 +45,18 @@ export class OpenIdCallback implements OnInit {
 
       if (code) {
         this.authService.loginWithOpenID(code).subscribe({
-          next: (response) => {
+          next: response => {
             this.authService.setToken(response.access);
-            localStorage.setItem('refreshToken', response.refresh);
+            this.authService.setRefreshToken(response.refresh);
             this.router.navigate([`/${RoutePaths.USER}`, RoutePaths.DASHBOARD]);
           },
-          error: (err) => {
-            const message = err.error?.non_field_errors?.[0]
-              || err.error?.detail
-              || this.t.instant('openIdCallback.authFailed');
+          error: err => {
+            const message =
+              err.error?.non_field_errors?.[0] ||
+              err.error?.detail ||
+              this.t.instant('openIdCallback.authFailed');
             this.handleError(message);
-          }
+          },
         });
       } else {
         this.handleError(this.t.instant('openIdCallback.noCode'));

@@ -1,5 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -60,7 +65,10 @@ export class VerifyInvite implements OnInit, OnDestroy {
     private t: TranslationService
   ) {
     this.verificationForm = this.fb.group({
-      verification_code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+      verification_code: [
+        '',
+        [Validators.required, Validators.minLength(6), Validators.maxLength(6)],
+      ],
     });
   }
 
@@ -86,13 +94,15 @@ export class VerifyInvite implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.authService.loginWithToken({ auth_token: this.authToken! })
+    this.authService
+      .loginWithToken({ auth_token: this.authToken! })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: response => {
           this.isLoading = false;
           if (response.access && response.refresh) {
             this.authService.setToken(response.access);
+            this.authService.setRefreshToken(response.refresh);
             this.onAuthenticationSuccess();
           } else if (response.requires_verification) {
             this.requiresVerification = true;
@@ -100,16 +110,18 @@ export class VerifyInvite implements OnInit, OnDestroy {
             this.errorMessage = response.error;
           }
         },
-        error: (error) => {
+        error: error => {
           this.isLoading = false;
           if (error.status === 202) {
             this.requiresVerification = true;
           } else if (error.status === 401) {
-            this.errorMessage = error.error?.error || this.t.instant('verifyInvite.invalidOrExpired');
+            this.errorMessage =
+              error.error?.error ||
+              this.t.instant('verifyInvite.invalidOrExpired');
           } else {
             this.errorMessage = this.t.instant('verifyInvite.genericError');
           }
-        }
+        },
       });
   }
 
@@ -121,37 +133,49 @@ export class VerifyInvite implements OnInit, OnDestroy {
     this.loadingButton = true;
     this.errorMessage = null;
 
-    const verificationCode = this.verificationForm.get('verification_code')?.value;
+    const verificationCode =
+      this.verificationForm.get('verification_code')?.value;
 
-    this.authService.loginWithToken({
-      auth_token: this.authToken,
-      verification_code: verificationCode
-    })
+    this.authService
+      .loginWithToken({
+        auth_token: this.authToken,
+        verification_code: verificationCode,
+      })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: response => {
           this.loadingButton = false;
           if (response.access && response.refresh) {
             this.authService.setToken(response.access);
+            this.authService.setRefreshToken(response.refresh);
             this.onAuthenticationSuccess();
           } else if (response.error) {
             this.errorMessage = response.error;
           }
         },
-        error: (error) => {
+        error: error => {
           this.loadingButton = false;
           if (error.status === 401) {
-            this.errorMessage = error.error?.error || this.t.instant('verifyInvite.invalidVerificationCode');
+            this.errorMessage =
+              error.error?.error ||
+              this.t.instant('verifyInvite.invalidVerificationCode');
           } else {
             this.errorMessage = this.t.instant('verifyInvite.genericError');
           }
-        }
+        },
       });
   }
 
   private onAuthenticationSuccess(): void {
-    this.toasterService.show('success', this.t.instant('verifyInvite.authTitle'), this.t.instant('verifyInvite.authSuccess'));
-    const route = this.actionHandler.getRouteForAction(this.action, this.actionId);
+    this.toasterService.show(
+      'success',
+      this.t.instant('verifyInvite.authTitle'),
+      this.t.instant('verifyInvite.authSuccess')
+    );
+    const route = this.actionHandler.getRouteForAction(
+      this.action,
+      this.actionId
+    );
     this.router.navigateByUrl(route);
   }
 
@@ -163,26 +187,40 @@ export class VerifyInvite implements OnInit, OnDestroy {
     this.isResending = true;
     this.errorMessage = null;
 
-    this.authService.loginWithToken({ auth_token: this.authToken })
+    this.authService
+      .loginWithToken({ auth_token: this.authToken })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: response => {
           this.isResending = false;
           if (response.access && response.refresh) {
             this.authService.setToken(response.access);
+            this.authService.setRefreshToken(response.refresh);
             this.onAuthenticationSuccess();
           } else {
-            this.toasterService.show('success', this.t.instant('verifyInvite.codeSentTitle'), this.t.instant('verifyInvite.codeSentSuccess'));
+            this.toasterService.show(
+              'success',
+              this.t.instant('verifyInvite.codeSentTitle'),
+              this.t.instant('verifyInvite.codeSentSuccess')
+            );
           }
         },
-        error: (error) => {
+        error: error => {
           this.isResending = false;
           if (error.status === 202) {
-            this.toasterService.show('success', this.t.instant('verifyInvite.codeSentTitle'), this.t.instant('verifyInvite.codeSentSuccess'));
+            this.toasterService.show(
+              'success',
+              this.t.instant('verifyInvite.codeSentTitle'),
+              this.t.instant('verifyInvite.codeSentSuccess')
+            );
           } else {
-            this.toasterService.show('error', this.t.instant('verifyInvite.resendFailedTitle'), this.t.instant('verifyInvite.resendFailedMessage'));
+            this.toasterService.show(
+              'error',
+              this.t.instant('verifyInvite.resendFailedTitle'),
+              this.t.instant('verifyInvite.resendFailedMessage')
+            );
           }
-        }
+        },
       });
   }
 

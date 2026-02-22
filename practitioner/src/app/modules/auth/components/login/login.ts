@@ -115,7 +115,10 @@ export class Login implements OnInit {
       };
       this.adminAuthService.login(body).subscribe({
         next: res => {
-          localStorage.setItem('token', res.access);
+          this.adminAuthService.setToken(res.access);
+          if (res.refresh) {
+            this.adminAuthService.setRefreshToken(res.refresh);
+          }
           this.loadingButton = false;
 
           this.userService.getCurrentUser().subscribe({

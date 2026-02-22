@@ -310,6 +310,7 @@ export class Header implements OnInit, OnDestroy {
   onLogout() {
     this.closeProfileMenu();
     this.closeMobileMenu();
+    this.userWsService.disconnect();
     const savedLanguage = localStorage.getItem('app_language');
     localStorage.clear();
     if (savedLanguage) {

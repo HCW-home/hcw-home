@@ -80,6 +80,9 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   disconnect(): void {
+    this.wasConnected = false;
+    this.hadConnectionIssue = false;
+    this.clearErrorToastTimer();
     this.wsService.disconnect();
     this.isOnlineSubject.next(false);
     this.connectionCountSubject.next(0);

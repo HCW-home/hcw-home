@@ -362,8 +362,8 @@
     "patientsSubtitle": "Patients & collaborators",
     "appointments": "Appointments",
     "appointmentsSubtitle": "Schedule & manage",
-    "configuration": "Configuration",
-    "configurationSubtitle": "System settings",
+    "availability": "Availability",
+    "availabilitySubtitle": "Manage your schedule",
     "practitioner": "Practitioner"
   },
   "footer": {
@@ -875,7 +875,9 @@
     "commEmail": "Email",
     "commWhatsApp": "WhatsApp",
     "commPush": "Push Notification",
-    "commManual": "Manual Contact"
+    "commManual": "Manual Contact",
+    "tabProfile": "Profile",
+    "tabSystemTest": "System Test"
   },
   "consultationRowItem": {
     "untitledConsultation": "Untitled Follow-up",

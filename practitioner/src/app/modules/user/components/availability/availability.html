@@ -1,0 +1,83 @@
+<app-page>
+  <div class="availability-page">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <app-loader></app-loader>
+        <span>{{ 'configuration.loadingAvailability' | translate }}</span>
+      </div>
+    } @else {
+      <div class="slots-card">
+        <div class="card-header">
+          <div class="header-left">
+            <app-svg src="clock" [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+            <span>{{ 'configuration.availabilitySlots' | translate }}</span>
+          </div>
+          <app-button [text]="'configuration.addSlot' | translate" leftIcon="plus" [size]="ButtonSizeEnum.small" [style]="ButtonStyleEnum.primary" (buttonClick)="openSlotModal('create')"></app-button>
+        </div>
+
+        <div class="slots-list">
+          @for (slot of bookingSlots(); track slot.id) {
+            <div class="slot-item">
+              <div class="slot-info">
+                <div class="slot-time">{{ getSlotTimeRange(slot) }}</div>
+                <div class="slot-break">{{ 'configuration.break' | translate }}: {{ getBreakTimeRange(slot) }}</div>
+                <div class="slot-days">
+                  @for (day of getActiveDaysForSlot(slot); track day) {
+                    <span class="day-tag">{{ day }}</span>
+                  } @empty {
+                    <span class="no-days">{{ 'configuration.noActiveDays' | translate }}</span>
+                  }
+                </div>
+                <div class="slot-validity" [class.infinite]="!slot.valid_until">
+                  @if (slot.valid_until) {
+                    {{ 'configuration.validUntil' | translate: { date: slot.valid_until } }}
+                  } @else {
+                    {{ 'configuration.noExpiration' | translate }}
+                  }
+                </div>
+              </div>
+              <div class="slot-actions">
+                <app-button
+                  leftIcon="edit"
+                  [size]="ButtonSizeEnum.small"
+                  [style]="ButtonStyleEnum.stroke"
+                  [state]="ButtonStateEnum.secondary"
+                  (buttonClick)="openSlotModal('edit', slot)">
+                </app-button>
+                <app-button
+                  leftIcon="delete"
+                  [size]="ButtonSizeEnum.small"
+                  [style]="ButtonStyleEnum.stroke"
+                  [state]="ButtonStateEnum.error"
+                  (buttonClick)="confirmDeleteSlot(slot)">
+                </app-button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <app-svg src="calendar" [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
+              <span class="empty-title">{{ 'configuration.noSlotsTitle' | translate }}</span>
+              <span class="empty-description">{{ 'configuration.noSlotsDescription' | translate }}</span>
+              <app-button [text]="'configuration.createFirstSlot' | translate" leftIcon="plus" [size]="ButtonSizeEnum.medium" [style]="ButtonStyleEnum.primary" (buttonClick)="openSlotModal('create')"></app-button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <app-modal
+    [isOpen]="showSlotModal()"
+    [showCloseButton]="false"
+    (closed)="closeSlotModal()">
+    <app-slot-modal
+      [modalTitle]="modalTitle()"
+      [modalMode]="modalMode()"
+      [slotForm]="slotForm"
+      [weekDays]="weekDays"
+      [isSaving]="isSaving()"
+      (closeModal)="closeSlotModal()"
+      (save)="saveSlot()">
+    </app-slot-modal>
+  </app-modal>
+</app-page>

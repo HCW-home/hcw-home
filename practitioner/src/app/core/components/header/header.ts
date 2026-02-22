@@ -233,9 +233,6 @@ export class Header implements OnInit, OnDestroy {
     } else if (url.includes('/appointments')) {
       this.pageTitle.set(this.t.instant('header.appointmentsTitle'));
       this.pageSubtitle.set(this.t.instant('header.appointmentsSubtitle'));
-    } else if (url.includes('/configuration')) {
-      this.pageTitle.set(this.t.instant('header.configurationTitle'));
-      this.pageSubtitle.set(this.t.instant('header.configurationSubtitle'));
     } else if (url.includes('/availability')) {
       this.pageTitle.set(this.t.instant('header.availabilityTitle'));
       this.pageSubtitle.set(this.t.instant('header.availabilitySubtitle'));

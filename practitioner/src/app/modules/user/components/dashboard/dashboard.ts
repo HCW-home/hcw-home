@@ -11,10 +11,19 @@ import { Badge } from '../../../../shared/components/badge/badge';
 import { ConsultationRowItem } from '../../../../shared/components/consultation-row-item/consultation-row-item';
 import { TypographyTypeEnum } from '../../../../shared/constants/typography';
 import { BadgeTypeEnum } from '../../../../shared/constants/badge';
-import { ButtonSizeEnum, ButtonStyleEnum } from '../../../../shared/constants/button';
+import {
+  ButtonSizeEnum,
+  ButtonStyleEnum,
+} from '../../../../shared/constants/button';
 import { ConsultationService } from '../../../../core/services/consultation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
-import { Consultation, Appointment, DashboardNextAppointment, AppointmentType, AppointmentStatus } from '../../../../core/models/consultation';
+import {
+  Consultation,
+  Appointment,
+  DashboardNextAppointment,
+  AppointmentType,
+  AppointmentStatus,
+} from '../../../../core/models/consultation';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
 import { getAppointmentBadgeType } from '../../../../shared/tools/helper';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -59,7 +68,9 @@ export class Dashboard implements OnInit, OnDestroy {
 
   hasValidNextAppointment(): boolean {
     const apt = this.nextAppointment();
-    return apt !== null && apt.scheduled_at !== null && apt.consultation_id !== null;
+    return (
+      apt !== null && apt.scheduled_at !== null && apt.consultation_id !== null
+    );
   }
 
   protected readonly TypographyTypeEnum = TypographyTypeEnum;
@@ -80,20 +91,25 @@ export class Dashboard implements OnInit, OnDestroy {
     this.loading.set(true);
     this.error.set(null);
 
-    this.consultationService.getDashboard()
+    this.consultationService
+      .getDashboard()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: data => {
           this.nextAppointment.set(data.next_appointment);
           this.upcomingAppointments.set(data.upcoming_appointments || []);
           this.overdueConsultations.set(data.overdue_consultations || []);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: err => {
           this.error.set(this.t.instant('dashboard.failedToLoad'));
-          this.toasterService.show('error', this.t.instant('dashboard.errorLoading'), getErrorMessage(err));
+          this.toasterService.show(
+            'error',
+            this.t.instant('dashboard.errorLoading'),
+            getErrorMessage(err)
+          );
           this.loading.set(false);
-        }
+        },
       });
   }
 
@@ -132,7 +148,9 @@ export class Dashboard implements OnInit, OnDestroy {
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays > 0) {
-      return diffDays === 1 ? this.t.instant('dashboard.tomorrow') : this.t.instant('dashboard.inDays', { count: String(diffDays) });
+      return diffDays === 1
+        ? this.t.instant('dashboard.tomorrow')
+        : this.t.instant('dashboard.inDays', { count: String(diffDays) });
     } else if (diffHours > 0) {
       return this.t.instant('dashboard.inHours', { count: String(diffHours) });
     } else {
@@ -149,11 +167,11 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   navigateToAvailability(): void {
-    this.router.navigate(['/app/configuration'], { fragment: 'availability' });
+    this.router.navigate(['/app/availability']);
   }
 
   navigateToSystemTest(): void {
-    this.router.navigate(['/app/configuration'], { fragment: 'system-test' });
+    this.router.navigate(['/app/profile'], { fragment: 'system-test' });
   }
 
   viewConsultation(consultation: Consultation): void {
@@ -162,7 +180,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   viewAppointment(appointment: Appointment): void {
     this.router.navigate(['/app/consultations', appointment.consultation_id], {
-      queryParams: { appointmentId: appointment.id }
+      queryParams: { appointmentId: appointment.id },
     });
   }
 
@@ -171,7 +189,7 @@ export class Dashboard implements OnInit, OnDestroy {
     const apt = this.nextAppointment();
     if (apt && apt.id && apt.consultation_id) {
       this.router.navigate(['/app/consultations', apt.consultation_id], {
-        queryParams: { join: true, appointmentId: apt.id }
+        queryParams: { join: true, appointmentId: apt.id },
       });
     }
   }
@@ -180,7 +198,7 @@ export class Dashboard implements OnInit, OnDestroy {
     const apt = this.nextAppointment();
     if (apt && apt.consultation_id) {
       this.router.navigate(['/app/consultations', apt.consultation_id], {
-        queryParams: { appointmentId: apt.id }
+        queryParams: { appointmentId: apt.id },
       });
     }
   }

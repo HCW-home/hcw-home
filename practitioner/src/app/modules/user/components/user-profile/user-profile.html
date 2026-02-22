@@ -1,9 +1,17 @@
 <app-page>
   <div class="user-profile">
-    @if (isLoadingUser()) {
+    <app-tabs
+      [tabs]="tabItems()"
+      [activeTab]="activeTab()"
+      (tabChange)="setActiveTab($event)">
+    </app-tabs>
+
+    @if (activeTab() === 'profile') { @if (isLoadingUser()) {
     <div class="loading-container">
       <app-loader></app-loader>
-      <span class="loading-text">{{ 'userProfile.loadingProfile' | translate }}</span>
+      <span class="loading-text"
+        >{{ 'userProfile.loadingProfile' | translate }}</span
+      >
     </div>
     } @else if (user()) {
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
@@ -43,10 +51,14 @@
         </div>
 
         <div class="profile-section">
-          <h3 class="section-title">{{ 'userProfile.personalInformation' | translate }}</h3>
+          <h3 class="section-title">
+            {{ 'userProfile.personalInformation' | translate }}
+          </h3>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">{{ 'userProfile.firstName' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.firstName' | translate }}</label
+              >
               <input
                 type="text"
                 class="form-input readonly"
@@ -55,7 +67,9 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">{{ 'userProfile.lastName' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.lastName' | translate }}</label
+              >
               <input
                 type="text"
                 class="form-input readonly"
@@ -64,7 +78,9 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">{{ 'userProfile.emailAddress' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.emailAddress' | translate }}</label
+              >
               <input
                 type="email"
                 class="form-input readonly"
@@ -75,10 +91,14 @@
         </div>
 
         <div class="profile-section">
-          <h3 class="section-title">{{ 'userProfile.contactInformation' | translate }}</h3>
+          <h3 class="section-title">
+            {{ 'userProfile.contactInformation' | translate }}
+          </h3>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">{{ 'userProfile.mobilePhone' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.mobilePhone' | translate }}</label
+              >
               <input
                 type="tel"
                 class="form-input"
@@ -88,7 +108,8 @@
 
             <div class="form-group">
               <label class="form-label"
-                >{{ 'userProfile.preferredCommunication' | translate }} <span class="required">*</span></label
+                >{{ 'userProfile.preferredCommunication' | translate }}
+                <span class="required">*</span></label
               >
               <app-select
                 formControlName="communication_method"
@@ -101,11 +122,14 @@
         </div>
 
         <div class="profile-section">
-          <h3 class="section-title">{{ 'userProfile.preferences' | translate }}</h3>
+          <h3 class="section-title">
+            {{ 'userProfile.preferences' | translate }}
+          </h3>
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label"
-                >{{ 'userProfile.timezone' | translate }} <span class="required">*</span></label
+                >{{ 'userProfile.timezone' | translate }}
+                <span class="required">*</span></label
               >
               <app-select
                 formControlName="timezone"
@@ -116,7 +140,9 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">{{ 'userProfile.preferredLanguage' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.preferredLanguage' | translate }}</label
+              >
               <app-select
                 formControlName="preferred_language"
                 [options]="preferredLanguageOptions()"
@@ -125,7 +151,9 @@
             </div>
 
             <div class="form-group full-width">
-              <label class="form-label">{{ 'userProfile.availableLanguages' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.availableLanguages' | translate }}</label
+              >
               <app-select
                 formControlName="language_ids"
                 [options]="languageOptions()"
@@ -138,10 +166,14 @@
 
         @if (user()!.specialities?.length) {
         <div class="profile-section">
-          <h3 class="section-title">{{ 'userProfile.professionalInformation' | translate }}</h3>
+          <h3 class="section-title">
+            {{ 'userProfile.professionalInformation' | translate }}
+          </h3>
           <div class="form-grid">
             <div class="form-group full-width">
-              <label class="form-label">{{ 'userProfile.specialities' | translate }}</label>
+              <label class="form-label"
+                >{{ 'userProfile.specialities' | translate }}</label
+              >
               <div class="badges-list">
                 @for (speciality of user()!.specialities; track speciality.id) {
                 <app-badge [type]="BadgeTypeEnum.green"
@@ -163,6 +195,192 @@
         </div>
       </div>
     </form>
+    } } @if (activeTab() === 'system-test') {
+    <div class="page-toolbar">
+      <div class="connection-status">
+        <div
+          class="status-dot"
+          [style.background-color]="getConnectionStatusColor()"></div>
+        <span class="status-text">{{ getConnectionStatusText() }}</span>
+      </div>
+    </div>
+
+    <div class="system-test-section">
+      <div class="test-layout">
+        <div class="video-preview-card">
+          <div class="card-header">
+            <app-svg
+              src="video"
+              [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+            <span>{{ 'configuration.cameraPreview' | translate }}</span>
+          </div>
+          <div
+            class="video-container"
+            [class.active]="cameraStatus() === 'working'">
+            <video
+              #videoElement
+              autoplay
+              muted
+              playsinline
+              class="video-element"
+              [class.visible]="cameraStatus() === 'working'"></video>
+            @if (cameraStatus() !== 'working') {
+            <div class="video-placeholder">
+              <div class="placeholder-icon">
+                <app-svg
+                  src="video-off"
+                  [svgStyle]="{'width.px': 48, 'height.px': 48}"></app-svg>
+              </div>
+              <span class="placeholder-text"
+                >{{ getCameraPlaceholderText() }}</span
+              >
+            </div>
+            }
+          </div>
+          <div class="audio-visualizer">
+            @for (bar of volumeBars(); track $index) {
+            <div
+              class="bar"
+              [style.height.%]="bar + 10"
+              [class.active]="microphoneStatus() === 'working'"></div>
+            }
+          </div>
+        </div>
+
+        <div class="test-controls-card">
+          <div class="card-header">
+            <app-svg
+              src="settings"
+              [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+            <span>{{ 'configuration.deviceTests' | translate }}</span>
+          </div>
+
+          <div class="test-items">
+            <div class="test-item">
+              <div class="test-item-icon camera">
+                <app-svg
+                  src="video"
+                  [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+              </div>
+              <div class="test-item-info">
+                <span class="test-item-name"
+                  >{{ 'configuration.camera' | translate }}</span
+                >
+                <span
+                  class="test-item-status"
+                  [class.working]="cameraStatus() === 'working'"
+                  [class.error]="cameraStatus() === 'error'">
+                  {{ getCameraStatusText() }}
+                </span>
+              </div>
+              <div class="test-item-action">
+                @if (cameraStatus() === 'working') {
+                <app-button
+                  [text]="'configuration.stop' | translate"
+                  [style]="ButtonStyleEnum.stroke"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="stopCamera()"></app-button>
+                } @else {
+                <app-button
+                  [text]="cameraStatus() === 'testing' ? ('configuration.testing' | translate) : ('configuration.test' | translate)"
+                  [style]="ButtonStyleEnum.primary"
+                  [size]="ButtonSizeEnum.small"
+                  [disabled]="cameraStatus() === 'testing'"
+                  (buttonClick)="testCamera()"></app-button>
+                }
+              </div>
+            </div>
+
+            <div class="test-item">
+              <div class="test-item-icon microphone">
+                <app-svg
+                  src="microphone"
+                  [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+              </div>
+              <div class="test-item-info">
+                <span class="test-item-name"
+                  >{{ 'configuration.microphone' | translate }}</span
+                >
+                <span
+                  class="test-item-status"
+                  [class.working]="microphoneStatus() === 'working'"
+                  [class.error]="microphoneStatus() === 'error'">
+                  {{ getMicrophoneStatusText() }}
+                </span>
+              </div>
+              <div class="test-item-action">
+                @if (microphoneStatus() === 'working') {
+                <app-button
+                  [text]="'configuration.stop' | translate"
+                  [style]="ButtonStyleEnum.stroke"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="stopMicrophone()"></app-button>
+                } @else {
+                <app-button
+                  [text]="microphoneStatus() === 'testing' ? ('configuration.testing' | translate) : ('configuration.test' | translate)"
+                  [style]="ButtonStyleEnum.primary"
+                  [size]="ButtonSizeEnum.small"
+                  [disabled]="microphoneStatus() === 'testing'"
+                  (buttonClick)="testMicrophone()"></app-button>
+                }
+              </div>
+            </div>
+
+            <div class="test-item">
+              <div class="test-item-icon speaker">
+                <app-svg
+                  src="speaker"
+                  [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+              </div>
+              <div class="test-item-info">
+                <span class="test-item-name"
+                  >{{ 'configuration.speakers' | translate }}</span
+                >
+                <span
+                  class="test-item-status"
+                  [class.working]="speakerStatus() === 'working'"
+                  [class.error]="speakerStatus() === 'error'">
+                  {{ getSpeakerStatusText() }}
+                </span>
+              </div>
+              <div class="test-item-action">
+                @if (speakerStatus() === 'playing') {
+                <app-button
+                  [text]="'configuration.iHearIt' | translate"
+                  [style]="ButtonStyleEnum['filled-stroke']"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="confirmSpeakers()"></app-button>
+                } @else {
+                <app-button
+                  [text]="speakerStatus() === 'working' ? ('configuration.testAgain' | translate) : ('configuration.test' | translate)"
+                  [style]="speakerStatus() === 'working' ? ButtonStyleEnum.stroke : ButtonStyleEnum.primary"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="testSpeakers()"></app-button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="test-actions">
+            @if (allTestsCompleted()) {
+            <div class="all-tests-passed">
+              <app-svg
+                src="check"
+                [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
+              <span>{{ 'configuration.allSystemsReady' | translate }}</span>
+            </div>
+            } @else {
+            <app-button
+              [text]="'configuration.testAllSystems' | translate"
+              leftIcon="check"
+              [style]="ButtonStyleEnum.stroke"
+              [size]="ButtonSizeEnum.medium"
+              (buttonClick)="testAllSystems()"></app-button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
     }
   </div>
 </app-page>

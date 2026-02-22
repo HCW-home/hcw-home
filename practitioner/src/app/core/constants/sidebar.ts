@@ -27,9 +27,9 @@ export const MenuItems: Sidebar[] = [
     icon: 'clock.svg',
   },
   {
-    name: 'sidebar.configuration',
-    subtitle: 'sidebar.configurationSubtitle',
-    path: `/${RoutePaths.CONFIGURATION}`,
-    icon: 'settings.svg',
+    name: 'sidebar.availability',
+    subtitle: 'sidebar.availabilitySubtitle',
+    path: `/${RoutePaths.AVAILABILITY}`,
+    icon: 'calendar-days.svg',
   },
 ];

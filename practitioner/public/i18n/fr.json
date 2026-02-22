@@ -306,7 +306,9 @@
     "commEmail": "Email",
     "commWhatsApp": "WhatsApp",
     "commPush": "Notification push",
-    "commManual": "Contact manuel"
+    "commManual": "Contact manuel",
+    "tabProfile": "Profil",
+    "tabSystemTest": "Test système"
   },
   "consultationRowItem": {
     "untitledConsultation": "Suivi sans titre",
@@ -577,8 +579,8 @@
     "patientsSubtitle": "Patients & collaborateurs",
     "appointments": "Rendez-vous",
     "appointmentsSubtitle": "Planifier et gérer",
-    "configuration": "Configuration",
-    "configurationSubtitle": "Paramètres système",
+    "availability": "Disponibilités",
+    "availabilitySubtitle": "Gérer vos créneaux",
     "practitioner": "Praticien"
   },
   "consultationDetail": {
@@ -1005,8 +1007,8 @@
     "patientsSubtitle": "Patients & collaborateurs",
     "appointments": "Rendez-vous",
     "appointmentsSubtitle": "Planifier et gérer",
-    "configuration": "Configuration",
-    "configurationSubtitle": "Paramètres système",
+    "availability": "Disponibilités",
+    "availabilitySubtitle": "Gérer vos créneaux",
     "practitioner": "Praticien"
   },
   "consultationDetail": {
@@ -1433,8 +1435,8 @@
     "patientsSubtitle": "Patients & collaborateurs",
     "appointments": "Rendez-vous",
     "appointmentsSubtitle": "Planifier et gérer",
-    "configuration": "Configuration",
-    "configurationSubtitle": "Paramètres système",
+    "availability": "Disponibilités",
+    "availabilitySubtitle": "Gérer vos créneaux",
     "practitioner": "Praticien"
   },
   "consultationDetail": {

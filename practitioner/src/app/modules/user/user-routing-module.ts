@@ -10,7 +10,7 @@ import { UserProfile } from './components/user-profile/user-profile';
 import { Patients } from './components/patients/patients';
 import { PatientDetail } from './components/patient-detail/patient-detail';
 import { Appointments } from './components/appointments/appointments';
-import { Configuration } from './components/configuration/configuration';
+import { Availability } from './components/availability/availability';
 
 const routes: Routes = [
   {
@@ -65,9 +65,9 @@ const routes: Routes = [
         component: Appointments,
       },
       {
-        path: RoutePaths.CONFIGURATION,
+        path: RoutePaths.AVAILABILITY,
         pathMatch: 'full',
-        component: Configuration,
+        component: Availability,
       },
     ],
   },

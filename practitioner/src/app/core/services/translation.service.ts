@@ -14,6 +14,23 @@ const DEFAULT_FALLBACK: AppLanguage[] = [
   { code: 'en', name: 'English', nativeName: 'English' },
 ];
 
+const NATIVE_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  de: 'Deutsch',
+  it: 'Italiano',
+  es: 'Español',
+  pt: 'Português',
+  nl: 'Nederlands',
+  ar: 'العربية',
+  hy: 'Հայերեն',
+  tr: 'Türkçe',
+  ru: 'Русский',
+  zh: '中文',
+  ja: '日本語',
+  ko: '한국어',
+};
+
 const STORAGE_KEY = 'app_language';
 const DEFAULT_LANGUAGE = 'en';
 
@@ -52,7 +69,7 @@ export class TranslationService {
       const mapped = languages.map(l => ({
         code: l.code,
         name: l.name,
-        nativeName: l.name,
+        nativeName: NATIVE_NAMES[l.code] || l.name,
       }));
       this.availableLanguagesSignal.set(mapped);
       this.translate.addLangs(mapped.map(l => l.code));

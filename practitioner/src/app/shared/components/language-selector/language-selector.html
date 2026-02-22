@@ -7,7 +7,7 @@
     (keydown.enter)="toggleDropdown()"
     (keydown.escape)="isOpen.set(false)">
     <app-svg src="svg/globe.svg" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
-    <span class="current-lang">{{ currentLanguage?.code?.toUpperCase() }}</span>
+    <span class="current-lang">{{ currentLanguage?.nativeName }}</span>
     <app-svg src="svg/chevron-down.svg" [svgStyle]="{'width.px': 14, 'height.px': 14}" class="chevron" [class.rotated]="isOpen()"></app-svg>
   </button>
 

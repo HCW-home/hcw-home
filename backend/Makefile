@@ -16,7 +16,7 @@ ${STATIC}/${PROJECT}/${COMPONENT}/venv:
 
 install: ${STATIC}/${PROJECT}/${COMPONENT}/venv
 	mkdir -p $(DESTDIR)/${STATIC}/${PROJECT}/${COMPONENT}
-	cp -a manage.py api consultations core mediaserver messaging statics users $(DESTDIR)/${STATIC}/${PROJECT}/${COMPONENT}
+	cp -a manage.py api translations consultations core mediaserver messaging statics users $(DESTDIR)/${STATIC}/${PROJECT}/${COMPONENT}
 	mkdir -p $(DESTDIR)/etc/${PROJECT}
 	cp .env-dist $(DESTDIR)/etc/${PROJECT}/${COMPONENT}.conf
 	mkdir -p $(DESTDIR)/${VAR}/${PROJECT}

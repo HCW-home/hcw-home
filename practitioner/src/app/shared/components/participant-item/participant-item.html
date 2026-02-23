@@ -13,7 +13,7 @@
     }
     @if (participant?.user?.temporary || participant?.user?.timezone ||
     participant?.user?.preferred_language ||
-    (participant?.user?.communication_method && !participant?.user?.temporary)) {
+    participant?.user?.communication_method) {
     <div class="participant-meta">
       @if (participant!.user!.temporary) {
       <span class="meta-item temporary-tag">
@@ -36,7 +36,7 @@
           [svgStyle]="{'width.px': 12, 'height.px': 12}"></app-svg>
         {{ getLanguageLabel(participant!.user!.preferred_language!) }}
       </span>
-      } @if (participant!.user!.communication_method && !participant!.user!.temporary) {
+      } @if (participant!.user!.communication_method) {
       <span class="meta-item">
         <app-svg
           src="message-square"

@@ -1,3 +1,76 @@
+hcw (0.9.37) bookworm; urgency=medium
+
+  [ Gor Grigoryan ]
+  * fix appointment page height
+  * implement Translation overrides
+  * improve appointment form
+  * add backend todo
+  * update lanugae selector
+  * remove todo
+  * use available languages from config
+  * update shaduled date value everywhere to use localDate pipe
+  * build fix
+
+  [ Olivier Bitsch ]
+  * Fix issue with openid email mapping when account already exists
+  * Fix patient edit form
+  * Fix slot modal
+  * Fix back button on patient details
+  * Fix active / overdue wording$
+  * Handing temporary patient convert to non-temporary
+  * Add temporary in table
+  * Fix temporary icon
+  * Fix timezone in dashboard
+  * Adding new endpoint to issue one time password
+  * Update auth process
+  * Add one time password auth for patient
+  * Password lost login
+  * Add small animation
+  * Remove the underline effect on language selector
+  * Harmonize texte size
+  * Fix patient Dashboard
+  * Fix search on consultation
+  * Big refactor of permission with role is_practitionner
+  * Fix over effect on various items
+  * Fix some animation and remove useless back on new consultation
+  * Adding custom field in practitioner frontend
+  * Fix in Patient Dashboard
+  * Add practitionner and custom field in pdf
+  * Add temporary
+  * Repository cleanup
+  * Fix OVH SMS (now get 403)
+  * Improve relation in Message system
+  * Adding taks result in sidebar
+  * Fix render
+  * Fix template send
+  * Add bulk template validation adding
+  * Update online fixes and add disconnect message
+  * Fix websocket heartbeat
+  * Fix practitioner select in practitioner
+  * Fix duplicated message on consultation updates, cancel, create...
+  * Show user online status in created_by etc..
+  * Implement live update of online status
+  * Add avatar image in patient list
+  * Fix appointment click to toggle on all tab
+  * Ajout des traductions
+  * Update confimr presence modal
+  * Fix missing accent
+  * Rewrite patient page
+  * Change consultation to Follow-up
+  * Add manual method
+  * Copy link
+  * Refresh token
+  * Adding first login field
+  * First time setup and tips
+  * Adding phone number on first setup screen
+  * Properly disconnect websocket on logout
+  * Remove configuration area
+  * Fix feeding empty phone
+  * Add password lost page
+  * Show language bar in language name
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Mon, 23 Feb 2026 07:41:16 +0100
+
 hcw (0.9.36) bookworm; urgency=medium
 
   [ Gor Grigoryan ]

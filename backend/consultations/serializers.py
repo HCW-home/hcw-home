@@ -124,7 +124,6 @@ class ConsultationUserSerializer(serializers.ModelSerializer):
             "preferred_language",
             "communication_method",
             "timezone",
-            "one_time_auth_token",
         ]
         read_only_field = fields
 
@@ -140,6 +139,7 @@ class QueueSerializer(serializers.ModelSerializer):
 class ParticipantReadSerializer(serializers.ModelSerializer):
     user = ConsultationUserSerializer(read_only=True)
     status = serializers.CharField(read_only=True)
+    access_url = serializers.CharField(read_only=True)
 
     class Meta:
         model = Participant
@@ -151,6 +151,7 @@ class ParticipantReadSerializer(serializers.ModelSerializer):
             "is_confirmed",
             "is_invited",
             "is_notified",
+            "access_url",
         ]
         read_only_fields = fields
 
@@ -415,27 +416,32 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         if temporary_participants_data is not None:
             for temp_participant in temporary_participants_data:
-                attr = (
-                    "mobile_phone_number"
-                    if temp_participant.get("mobile_phone_number")
-                    else "email"
-                )
+                user_defaults = {
+                    "first_name": temp_participant.get("first_name", ""),
+                    "last_name": temp_participant.get("last_name", ""),
+                    "communication_method": temp_participant.get(
+                        "communication_method", CommunicationMethod.email
+                    ),
+                    "preferred_language": temp_participant.get(
+                        "preferred_language"
+                    ),
+                    "timezone": temp_participant.get("timezone", "UTC"),
+                    "temporary": True,
+                }
 
-                user, _ = User.objects.get_or_create(
-                    **{attr: temp_participant[attr]},
-                    defaults={
-                        "first_name": temp_participant.get("first_name", ""),
-                        "last_name": temp_participant.get("last_name", ""),
-                        "communication_method": temp_participant.get(
-                            "communication_method", CommunicationMethod.email
-                        ),
-                        "preferred_language": temp_participant.get(
-                            "preferred_language"
-                        ),
-                        "timezone": temp_participant.get("timezone", "UTC"),
-                        "temporary": True,
-                    },
-                )
+                if temp_participant.get("mobile_phone_number"):
+                    user, _ = User.objects.get_or_create(
+                        mobile_phone_number=temp_participant["mobile_phone_number"],
+                        defaults=user_defaults,
+                    )
+                elif temp_participant.get("email"):
+                    user, _ = User.objects.get_or_create(
+                        email=temp_participant["email"],
+                        defaults=user_defaults,
+                    )
+                else:
+                    # Manual contact: create user directly (no lookup key)
+                    user = User.objects.create(**user_defaults)
 
                 participant, created = Participant.objects.get_or_create(
                     appointment=appointment, user=user, defaults={"is_active": True}

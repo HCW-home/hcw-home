@@ -28,7 +28,6 @@ export interface User {
   preferred_language?: string;
   communication_method?: string;
   timezone?: string;
-  one_time_auth_token?: string;
 }
 
 export interface Queue {
@@ -42,6 +41,7 @@ export interface Participant {
   user: User | null;
   is_active: boolean;
   status?: ParticipantStatus;
+  access_url?: string | null;
 }
 
 export type ParticipantStatus =

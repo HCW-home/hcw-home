@@ -188,15 +188,12 @@ export class ParticipantItem {
   showLinkModal = signal(false);
   linkCopied = signal(false);
 
-  hasAuthToken(): boolean {
-    return !!this.participant?.user?.one_time_auth_token;
+  hasAccessUrl(): boolean {
+    return !!this.participant?.access_url;
   }
 
   getInviteLink(): string {
-    const token = this.participant?.user?.one_time_auth_token;
-    if (!token) return '';
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/verify-invite?token=${token}`;
+    return this.participant?.access_url || '';
   }
 
   openLinkModal(): void {

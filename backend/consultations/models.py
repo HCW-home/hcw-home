@@ -4,6 +4,7 @@ from datetime import time
 from enum import Enum
 from zoneinfo import available_timezones
 
+from constance import config
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.core.exceptions import ValidationError
@@ -203,6 +204,15 @@ class Participant(models.Model):
     def auth_token(self):
         """Get one_time_auth_token from associated User"""
         return self.user.one_time_auth_token if self.user else None
+
+    @property
+    def access_url(self):
+        """Generate patient access URL for participants without email or phone."""
+        if not self.user or not self.user.one_time_auth_token:
+            return None
+        if self.user.email or self.user.mobile_phone_number:
+            return None
+        return f"{config.patient_base_url}/verify-invite?auth={self.user.one_time_auth_token}"
 
     @property
     def name(self) -> str:

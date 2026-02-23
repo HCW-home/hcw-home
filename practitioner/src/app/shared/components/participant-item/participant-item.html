@@ -38,7 +38,7 @@
     }
   </div>
   <ng-content></ng-content>
-  @if (hasAuthToken()) {
+  @if (hasAccessUrl()) {
   <app-button
     leftIcon="link"
     [text]="'participantItem.copyLink' | translate"

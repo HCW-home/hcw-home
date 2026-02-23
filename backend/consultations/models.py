@@ -212,7 +212,7 @@ class Participant(models.Model):
             return None
         if self.user.email or self.user.mobile_phone_number:
             return None
-        return f"{config.patient_base_url}/verify-invite?auth={self.user.one_time_auth_token}"
+        return f"{config.patient_base_url}/?auth={self.user.one_time_auth_token}"
 
     @property
     def name(self) -> str:

@@ -111,23 +111,26 @@ export class ParticipantItem {
   }
 
   getContact(): string {
+    let contact = '';
+
     if (this.participant?.user) {
-      return (
+      contact =
         this.participant.user.email ||
         this.participant.user.mobile_phone_number ||
-        ''
-      );
-    }
-
-    if (this.pendingParticipant) {
-      return (
+        '';
+    } else if (this.pendingParticipant) {
+      contact =
         this.pendingParticipant.email ||
         this.pendingParticipant.mobile_phone_number ||
-        ''
-      );
+        '';
     }
 
-    return '';
+    // Don't show contact if it's already displayed as the name
+    if (contact && contact === this.getDisplayName()) {
+      return '';
+    }
+
+    return contact;
   }
 
   isOnline(): boolean {

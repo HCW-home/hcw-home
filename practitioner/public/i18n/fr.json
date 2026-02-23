@@ -334,7 +334,8 @@
     "copyLink": "Copier le lien",
     "copied": "Copié !",
     "linkCopied": "Lien copié dans le presse-papiers",
-    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré."
+    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré.",
+    "temporary": "temporaire"
   },
   "messageList": {
     "messages": "Messages",
@@ -762,7 +763,8 @@
     "copyLink": "Copier le lien",
     "copied": "Copié !",
     "linkCopied": "Lien copié dans le presse-papiers",
-    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré."
+    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré.",
+    "temporary": "temporaire"
   },
   "messageList": {
     "messages": "Messages",
@@ -1190,7 +1192,8 @@
     "copyLink": "Copier le lien",
     "copied": "Copié !",
     "linkCopied": "Lien copié dans le presse-papiers",
-    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré."
+    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré.",
+    "temporary": "temporaire"
   },
   "messageList": {
     "messages": "Messages",
@@ -1618,7 +1621,8 @@
     "copyLink": "Copier le lien",
     "copied": "Copié !",
     "linkCopied": "Lien copié dans le presse-papiers",
-    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré."
+    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré.",
+    "temporary": "temporaire"
   },
   "websocket": {
     "disconnected": "Connexion perdue",

@@ -133,6 +133,7 @@
               >{{ 'appointmentForm.contactMethod' | translate }}</label
             >
             <div class="contact-toggle">
+              @if (hasEmailMethod) {
               <app-button
                 [text]="'appointmentForm.email' | translate"
                 leftIcon="email"
@@ -141,6 +142,8 @@
                 [size]="ButtonSizeEnum.small"
                 (buttonClick)="setParticipantMessageType('email')">
               </app-button>
+              }
+              @if (hasPhoneMethod) {
               <app-button
                 [text]="'appointmentForm.phone' | translate"
                 leftIcon="phone"
@@ -149,6 +152,7 @@
                 [size]="ButtonSizeEnum.small"
                 (buttonClick)="setParticipantMessageType('sms')">
               </app-button>
+              }
               <app-button
                 [text]="'appointmentForm.manual' | translate"
                 leftIcon="link"
@@ -218,6 +222,7 @@
                 [placeholder]="'appointmentForm.selectTimezone' | translate">
               </app-select>
             </div>
+            @if (participantForm.get('contact_type')?.value !== 'email' && participantForm.get('contact_type')?.value !== 'manual') {
             <div class="form-group">
               <app-select
                 [label]="'appointmentForm.communicationMethod' | translate"
@@ -226,6 +231,7 @@
                 [placeholder]="'appointmentForm.selectMethod' | translate">
               </app-select>
             </div>
+            }
             <div class="form-group">
               <app-select
                 [label]="'appointmentForm.preferredLanguage' | translate"

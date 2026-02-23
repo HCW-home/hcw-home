@@ -906,7 +906,8 @@
     "copyLink": "Copy link",
     "copied": "Copied!",
     "linkCopied": "Link copied to clipboard",
-    "singleUseWarning": "This link can only be used once. Once the participant opens it, a new link will need to be generated."
+    "singleUseWarning": "This link can only be used once. Once the participant opens it, a new link will need to be generated.",
+    "temporary": "temporary"
   },
   "messageList": {
     "messages": "Messages",

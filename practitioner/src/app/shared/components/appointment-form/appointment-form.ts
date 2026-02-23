@@ -20,6 +20,7 @@ import {
 } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
+import { Auth } from '../../../core/services/auth';
 import { ConsultationService } from '../../../core/services/consultation.service';
 import { ToasterService } from '../../../core/services/toaster.service';
 import { UserService } from '../../../core/services/user.service';
@@ -89,6 +90,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
   private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
+  private authService = inject(Auth);
   private consultationService = inject(ConsultationService);
   private toasterService = inject(ToasterService);
   private userService = inject(UserService);
@@ -96,6 +98,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
   isSubmitting = signal(false);
   currentUser = signal<IUser | null>(null);
+  availableCommunicationMethods = signal<string[]>([]);
   appointmentForm!: FormGroup;
 
   participants = signal<Participant[]>([]);
@@ -109,16 +112,31 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
   timezoneOptions: SelectOption[] = TIMEZONE_OPTIONS;
 
+  get hasEmailMethod(): boolean {
+    return this.availableCommunicationMethods().includes('email');
+  }
+
+  get hasPhoneMethod(): boolean {
+    const methods = this.availableCommunicationMethods();
+    return methods.includes('sms') || methods.includes('whatsapp');
+  }
+
   get communicationMethods(): SelectOption[] {
-    return [
-      { value: 'email', label: this.t.instant('appointmentForm.email') },
-      { value: 'sms', label: this.t.instant('appointmentForm.sms') },
-      { value: 'whatsapp', label: this.t.instant('appointmentForm.whatsApp') },
-      {
-        value: 'push',
-        label: this.t.instant('appointmentForm.pushNotification'),
-      },
-    ];
+    const methods = this.availableCommunicationMethods();
+    const options: SelectOption[] = [];
+    if (methods.includes('sms')) {
+      options.push({
+        value: 'sms',
+        label: this.t.instant('appointmentForm.sms'),
+      });
+    }
+    if (methods.includes('whatsapp')) {
+      options.push({
+        value: 'whatsapp',
+        label: this.t.instant('appointmentForm.whatsApp'),
+      });
+    }
+    return options;
   }
 
   get languageOptions(): SelectOption[] {
@@ -148,6 +166,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     this.initForm();
     this.initParticipantForm();
     this.loadCurrentUser();
+    this.loadConfig();
     this.updateInviteCheckboxStates();
   }
 
@@ -163,6 +182,27 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
         .pipe(takeUntil(this.destroy$))
         .subscribe();
     }
+  }
+
+  private loadConfig(): void {
+    this.authService
+      .getOpenIDConfig()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: config => {
+          this.availableCommunicationMethods.set(
+            config.communication_methods || []
+          );
+          // Set default contact_type based on available methods
+          if (this.hasEmailMethod) {
+            this.participantForm.patchValue({ contact_type: 'email' });
+          } else if (this.hasPhoneMethod) {
+            this.participantForm.patchValue({ contact_type: 'sms' });
+          } else {
+            this.participantForm.patchValue({ contact_type: 'manual' });
+          }
+        },
+      });
   }
 
   isBeneficiaryCheckboxDisabled(): boolean {
@@ -322,7 +362,10 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   setParticipantMessageType(type: string): void {
-    this.participantForm.patchValue({ contact_type: type });
+    this.participantForm.patchValue({
+      contact_type: type,
+      communication_method: type === 'email' ? 'email' : type === 'manual' ? 'manual' : '',
+    });
   }
 
   onParticipantUserSelected(user: IUser | null): void {

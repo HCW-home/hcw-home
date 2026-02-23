@@ -28,6 +28,7 @@ export interface User {
   preferred_language?: string;
   communication_method?: string;
   timezone?: string;
+  temporary?: boolean;
 }
 
 export interface Queue {

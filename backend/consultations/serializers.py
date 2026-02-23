@@ -124,6 +124,7 @@ class ConsultationUserSerializer(serializers.ModelSerializer):
             "preferred_language",
             "communication_method",
             "timezone",
+            "temporary",
         ]
         read_only_field = fields
 
@@ -214,6 +215,27 @@ class ParticipantSerializer(serializers.Serializer):
         if provided_count > 1:
             raise serializers.ValidationError(
                 _("Only one of phone or email can be provided.")
+            )
+
+        communication_method = attrs.get("communication_method")
+        if communication_method == "email" and not attrs.get("email"):
+            raise serializers.ValidationError(
+                {
+                    "email": _(
+                        "An email is required when communication method is Email."
+                    )
+                }
+            )
+
+        if communication_method in ("sms", "whatsapp") and not attrs.get(
+            "mobile_phone_number"
+        ):
+            raise serializers.ValidationError(
+                {
+                    "mobile_phone_number": _(
+                        "A phone number is required when communication method is SMS or WhatsApp."
+                    )
+                }
             )
 
         return super().validate(attrs)

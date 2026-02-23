@@ -794,6 +794,14 @@ class AppConfigView(APIView):
             {"code": code, "name": str(name)} for code, name in settings.LANGUAGES
         ]
 
+        from messaging.models import MessagingProvider
+
+        communication_methods = list(
+            MessagingProvider.objects.filter(is_active=True)
+            .values_list("communication_method", flat=True)
+            .distinct()
+        )
+
         return Response(
             {
                 **openid,
@@ -804,6 +812,7 @@ class AppConfigView(APIView):
                 "site_logo_white": _file_url(constance_config.site_logo_white),
                 "site_favicon": _file_url(constance_config.site_favicon),
                 "languages": languages,
+                "communication_methods": communication_methods,
             }
         )
 

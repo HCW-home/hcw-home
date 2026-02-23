@@ -59,6 +59,7 @@ export interface IOpenIDConfig {
   site_logo_white: string | null;
   site_favicon: string | null;
   main_organization: IOrganization | null;
+  communication_methods: string[];
 }
 
 export interface IOpenIDLoginBody {

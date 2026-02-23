@@ -52,6 +52,14 @@
       app-svg {
         color: var(--slate-400);
       }
+
+      &.temporary-tag {
+        color: var(--amber-600);
+
+        app-svg {
+          color: var(--amber-500);
+        }
+      }
     }
   }
 }

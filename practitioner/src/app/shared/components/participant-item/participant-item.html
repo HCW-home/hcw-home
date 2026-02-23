@@ -8,11 +8,21 @@
   </app-user-avatar>
   <div class="participant-details">
     <span class="participant-name">{{ getDisplayName() }}</span>
+    @if (getContact()) {
     <span class="participant-contact">{{ getContact() }}</span>
-    @if (participant?.user?.timezone || participant?.user?.preferred_language ||
-    participant?.user?.communication_method) {
+    }
+    @if (participant?.user?.temporary || participant?.user?.timezone ||
+    participant?.user?.preferred_language ||
+    (participant?.user?.communication_method && !participant?.user?.temporary)) {
     <div class="participant-meta">
-      @if (participant!.user!.timezone) {
+      @if (participant!.user!.temporary) {
+      <span class="meta-item temporary-tag">
+        <app-svg
+          src="clock"
+          [svgStyle]="{'width.px': 12, 'height.px': 12}"></app-svg>
+        {{ 'participantItem.temporary' | translate }}
+      </span>
+      } @if (participant!.user!.timezone) {
       <span class="meta-item">
         <app-svg
           src="clock"
@@ -26,7 +36,7 @@
           [svgStyle]="{'width.px': 12, 'height.px': 12}"></app-svg>
         {{ getLanguageLabel(participant!.user!.preferred_language!) }}
       </span>
-      } @if (participant!.user!.communication_method) {
+      } @if (participant!.user!.communication_method && !participant!.user!.temporary) {
       <span class="meta-item">
         <app-svg
           src="message-square"

@@ -127,6 +127,20 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
                 }
             )
 
+        email = attrs.get(
+            "email",
+            getattr(self.instance, "email", None),
+        )
+
+        if communication_method == "email" and not email:
+            raise serializers.ValidationError(
+                {
+                    "email": _(
+                        "An email is required when communication method is Email."
+                    )
+                }
+            )
+
         return attrs
 
 

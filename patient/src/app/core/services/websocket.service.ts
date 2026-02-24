@@ -164,10 +164,20 @@ export class WebSocketService implements OnDestroy {
     this.reconnectAttempts++;
     const interval = this.config.reconnectInterval ?? this.reconnectInterval;
 
-    this.reconnectTimer = setTimeout(() => {
-      if (this.config) {
-        this.connect(this.config);
+    this.reconnectTimer = setTimeout(async () => {
+      if (!this.config) return;
+
+      if (this.config.urlProvider) {
+        const freshUrl = await this.config.urlProvider();
+        if (freshUrl) {
+          this.config = { ...this.config, url: freshUrl };
+        } else {
+          this.stateSubject.next(WebSocketState.FAILED);
+          return;
+        }
       }
+
+      this.connect(this.config);
     }, interval);
   }
 

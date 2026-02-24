@@ -6,6 +6,8 @@ import { AuthService } from '../services/auth.service';
 import { TranslationService } from '../services/translation.service';
 import { NavController } from '@ionic/angular';
 
+let isRefreshing = false;
+
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(
@@ -27,11 +29,45 @@ export class AuthInterceptor implements HttpInterceptor {
         }
         return next.handle(request).pipe(
           catchError(error => {
-            if (error instanceof HttpErrorResponse && error.status === 401) {
-              if (error.error?.code === 'token_not_valid') {
-                this.forceLogout();
-              }
+            if (
+              error instanceof HttpErrorResponse &&
+              error.status === 401 &&
+              error.error?.code === 'token_not_valid' &&
+              !isRefreshing &&
+              !request.url.includes('/auth/token/refresh/')
+            ) {
+              return from(this.authService.getRefreshToken()).pipe(
+                switchMap(refreshToken => {
+                  if (!refreshToken) {
+                    this.forceLogout();
+                    return throwError(() => error);
+                  }
+
+                  isRefreshing = true;
+                  return this.authService.refreshToken().pipe(
+                    switchMap(response => {
+                      isRefreshing = false;
+                      const retryReq = this.addToken(request, response.access);
+                      return next.handle(retryReq);
+                    }),
+                    catchError(refreshError => {
+                      isRefreshing = false;
+                      this.forceLogout();
+                      return throwError(() => refreshError);
+                    })
+                  );
+                })
+              );
             }
+
+            if (
+              error instanceof HttpErrorResponse &&
+              error.status === 401 &&
+              error.error?.code === 'token_not_valid'
+            ) {
+              this.forceLogout();
+            }
+
             return throwError(() => error);
           })
         );

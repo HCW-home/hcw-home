@@ -305,6 +305,7 @@ export type ConsultationIncomingEvent =
 
 export interface WebSocketConfig {
   url: string;
+  urlProvider?: () => Promise<string | null>;
   reconnect?: boolean;
   reconnectInterval?: number;
   reconnectAttempts?: number;

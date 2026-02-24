@@ -141,15 +141,21 @@ export class AuthService {
     return await this.storage.get('access_token');
   }
 
-  async refreshToken(): Promise<Observable<any>> {
-    const refresh = await this.storage.get('refresh_token');
-    return this.http.post(`${this.apiUrl}/auth/token/refresh/`, { refresh })
-      .pipe(
-        tap(async (response: any) => {
-          if (response.access) {
-            await this.storage.set('access_token', response.access);
-          }
-        })
-      );
+  async getRefreshToken(): Promise<string | null> {
+    return await this.storage.get('refresh_token');
+  }
+
+  refreshToken(): Observable<{ access: string }> {
+    return from(this.storage.get('refresh_token')).pipe(
+      switchMap(refresh =>
+        this.http.post<{ access: string }>(`${this.apiUrl}/auth/token/refresh/`, { refresh })
+      ),
+      switchMap(async (response) => {
+        if (response.access) {
+          await this.storage.set('access_token', response.access);
+        }
+        return response;
+      })
+    );
   }
 }

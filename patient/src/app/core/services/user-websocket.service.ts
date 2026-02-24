@@ -46,6 +46,10 @@ export class UserWebSocketService implements OnDestroy {
     const wsUrl = `${environment.wsUrl}/user/?token=${token}`;
     this.wsService.connect({
       url: wsUrl,
+      urlProvider: async () => {
+        const freshToken = await this.authService.getToken();
+        return freshToken ? `${environment.wsUrl}/user/?token=${freshToken}` : null;
+      },
       reconnect: true,
       reconnectAttempts: 10,
       reconnectInterval: 3000,

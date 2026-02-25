@@ -62,7 +62,7 @@ import {
   hourglassOutline, ellipsisVerticalOutline, chatbubbleEllipsesOutline, closeCircleOutline,
   sendOutline, attachOutline, imageOutline, wifiOutline, cloudOfflineOutline, closeOutline,
   atOutline, createOutline, close, shieldCheckmarkOutline, keypadOutline, checkmarkOutline,
-  globeOutline, chevronDownOutline
+  globeOutline, chevronDownOutline, flashOutline
 } from 'ionicons/icons';
 
 import { routes } from './app/app.routes';
@@ -179,6 +179,7 @@ addIcons({
   'checkmark-outline': checkmarkOutline,
   'globe-outline': globeOutline,
   'chevron-down-outline': chevronDownOutline,
+  'flash-outline': flashOutline,
 });
 
 bootstrapApplication(AppComponent, {

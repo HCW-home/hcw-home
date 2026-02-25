@@ -58,9 +58,18 @@
                 </div>
                 <div class="reason-details">
                   <p class="reason-name">{{ reason.name }}</p>
-                  @if (reason.duration) {
-                    <p class="reason-duration">{{ 'newRequest.duration' | translate:{ duration: reason.duration } }}</p>
-                  }
+                  <p class="reason-type">
+                    @if (reason.assignment_method === 'appointment') {
+                      <ion-icon name="calendar-outline"></ion-icon>
+                      {{ 'newRequest.scheduled' | translate }}
+                    } @else {
+                      <ion-icon name="flash-outline"></ion-icon>
+                      {{ 'newRequest.immediate' | translate }}
+                    }
+                    @if (reason.duration) {
+                      <span class="reason-duration"> · {{ 'newRequest.duration' | translate:{ duration: reason.duration } }}</span>
+                    }
+                  </p>
                 </div>
                 <ion-icon name="chevron-forward-outline" class="reason-arrow"></ion-icon>
               </div>

@@ -54,6 +54,7 @@ export interface Reason {
   speciality?: Speciality | number;
   duration?: number;
   is_active?: boolean;
+  assignment_method?: string;
 }
 
 export interface Prescription {

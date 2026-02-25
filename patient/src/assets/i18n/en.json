@@ -161,6 +161,8 @@
     "reasonForVisit": "Reason for Visit",
     "selectReasonDesc": "Select the reason for your consultation",
     "duration": "Duration: {{duration}} minutes",
+    "scheduled": "Scheduled",
+    "immediate": "Immediate",
     "noReasons": "No reasons available for this specialty",
     "selectTimeSlotDesc": "Select a preferred time slot (optional)",
     "noSlots": "No slots",

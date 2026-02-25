@@ -186,10 +186,21 @@ ion-header {
       margin: 0 0 4px 0;
     }
 
-    .reason-duration {
+    .reason-type {
       font-size: 0.8125rem;
       color: var(--app-text-secondary);
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+
+      .reason-duration {
+        color: var(--app-text-tertiary);
+      }
     }
   }
 

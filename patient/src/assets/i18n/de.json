@@ -161,6 +161,8 @@
     "reasonForVisit": "Besuchsgrund",
     "selectReasonDesc": "Waehlen Sie den Grund fuer Ihre Konsultation",
     "duration": "Dauer: {{duration}} Minuten",
+    "scheduled": "Geplant",
+    "immediate": "Sofort",
     "noReasons": "Keine Gruende fuer dieses Fachgebiet verfuegbar",
     "selectTimeSlotDesc": "Waehlen Sie ein bevorzugtes Zeitfenster (optional)",
     "noSlots": "Keine Zeitfenster",

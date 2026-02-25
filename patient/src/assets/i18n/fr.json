@@ -161,6 +161,8 @@
     "reasonForVisit": "Motif de la visite",
     "selectReasonDesc": "Selectionnez le motif de votre consultation",
     "duration": "Duree : {{duration}} minutes",
+    "scheduled": "Planifiee",
+    "immediate": "Immediate",
     "noReasons": "Aucun motif disponible pour cette specialite",
     "selectTimeSlotDesc": "Selectionnez un creneau horaire prefere (optionnel)",
     "noSlots": "Aucun creneau",

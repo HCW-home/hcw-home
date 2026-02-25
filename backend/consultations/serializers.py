@@ -676,7 +676,7 @@ class ConsultationCreateSerializer(serializers.ModelSerializer):
 class ReasonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reason
-        fields = ["id", "name", "duration", "queue_assignee", "user_assignee"]
+        fields = ["id", "name", "duration", "assignment_method"]
 
 
 class BookingSlotSerializer(serializers.ModelSerializer):

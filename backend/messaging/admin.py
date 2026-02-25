@@ -360,8 +360,8 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
             if rendered_subject:
                 return rendered_subject, rendered_text
             return rendered_text
-        except Exception:
-            logger.exception("Failed to render message preview")
+        except Exception as e:
+            logger.exception(f"Failed to render message preview: {e}")
             return "-"
 
     @display(description="Recipient")

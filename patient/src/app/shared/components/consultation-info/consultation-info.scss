@@ -9,7 +9,7 @@
 }
 
 .consultation-info-title {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--app-text-primary);
   line-height: 1.3;
@@ -19,12 +19,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   color: var(--app-text-secondary);
 
   .doctor-avatar {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: var(--ion-color-primary-bg);
     color: var(--ion-color-primary);
@@ -32,7 +32,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
   }
 }
@@ -46,7 +46,7 @@
   border-radius: 8px;
   background: var(--app-card-background);
   color: var(--app-text-primary);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
@@ -54,7 +54,7 @@
   margin-top: 2px;
 
   ion-icon {
-    font-size: 15px;
+    font-size: 17px;
     color: var(--ion-color-primary);
   }
 

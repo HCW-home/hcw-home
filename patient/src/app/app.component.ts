@@ -154,16 +154,21 @@ export class AppComponent implements OnInit, OnDestroy {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     const toHex = (v: number) => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, "0");
-    const shade = (v: number) => Math.round(v * 0.85);
-    const tint = (v: number) => Math.round(v + (255 - v) * 0.3);
-    const pastel = (v: number) => Math.round(v + (255 - v) * 0.95);
+    const mix = (v: number, target: number, w: number) => Math.round(v + (target - v) * w);
+    const lighten = (w: number) => `#${toHex(mix(r, 255, w))}${toHex(mix(g, 255, w))}${toHex(mix(b, 255, w))}`;
+    const darken = (w: number) => `#${toHex(mix(r, 0, w))}${toHex(mix(g, 0, w))}${toHex(mix(b, 0, w))}`;
 
     const root = document.documentElement.style;
     root.setProperty("--ion-color-primary", hex);
     root.setProperty("--ion-color-primary-rgb", `${r}, ${g}, ${b}`);
-    root.setProperty("--ion-color-primary-shade", `#${toHex(shade(r))}${toHex(shade(g))}${toHex(shade(b))}`);
-    root.setProperty("--ion-color-primary-tint", `#${toHex(tint(r))}${toHex(tint(g))}${toHex(tint(b))}`);
-    root.setProperty("--app-background", `#${toHex(pastel(r))}${toHex(pastel(g))}${toHex(pastel(b))}`);
+    root.setProperty("--ion-color-primary-shade", darken(0.15));
+    root.setProperty("--ion-color-primary-tint", lighten(0.3));
+    root.setProperty("--ion-color-primary-light", lighten(0.6));
+    root.setProperty("--ion-color-primary-dark", darken(0.15));
+    root.setProperty("--ion-color-primary-bg", lighten(0.95));
+    root.setProperty("--app-primary-bg", lighten(0.95));
+    root.setProperty("--app-background", lighten(0.97));
+    root.setProperty("--app-background-secondary", lighten(0.93));
   }
 
   ngOnDestroy(): void {

@@ -110,11 +110,19 @@
       color: var(--app-text-primary);
       margin: 0;
     }
+  }
 
-    .info-row {
+  .details-card {
+    .details-grid {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .detail-item {
+      display: flex;
       align-items: flex-start;
+      gap: var(--app-spacing-sm);
       padding: var(--app-spacing-sm) 0;
       border-bottom: 1px solid var(--app-border-color);
 
@@ -122,27 +130,67 @@
         border-bottom: none;
       }
 
-      &.comment-row {
+      .detail-icon {
+        font-size: 18px;
+        color: var(--ion-color-primary);
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .detail-content {
+        display: flex;
         flex-direction: column;
-        gap: var(--app-spacing-xs);
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
       }
 
-      .info-label {
-        font-size: 0.875rem;
-        color: var(--app-text-secondary);
+      .detail-label {
+        font-size: 0.75rem;
+        color: var(--app-text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
       }
 
-      .info-value {
+      .detail-value {
         font-size: 0.875rem;
         color: var(--app-text-primary);
         font-weight: 500;
-        text-align: right;
+        line-height: 1.4;
+      }
+    }
 
-        &.comment {
-          text-align: left;
-          font-weight: 400;
-          line-height: 1.5;
+    .detail-comment {
+      margin-top: var(--app-spacing-sm);
+      padding-top: var(--app-spacing-sm);
+      border-top: 1px solid var(--app-border-color);
+
+      .detail-comment-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--app-text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 6px;
+
+        ion-icon {
+          font-size: 16px;
+          color: var(--ion-color-primary);
         }
+      }
+
+      .detail-comment-text {
+        font-size: 0.875rem;
+        color: var(--app-text-primary);
+        line-height: 1.5;
+        margin: 0;
+        padding: var(--app-spacing-sm);
+        background: var(--app-background);
+        border-radius: 8px;
       }
     }
   }

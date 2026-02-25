@@ -19,28 +19,63 @@
         @if (getSpecialityName()) {
           <p class="request-specialty">{{ getSpecialityName() }}</p>
         }
-        <p class="request-type">
-          <ion-icon [name]="request()?.type === 'online' ? 'videocam-outline' : 'location-outline'"></ion-icon>
-          {{ getTypeLabel() }}
-        </p>
       </div>
 
-      <div class="info-card">
-        <h3 class="info-title">{{ 'requestDetail.requestDetails' | translate }}</h3>
-        <div class="info-row">
-          <span class="info-label">{{ 'requestDetail.created' | translate }}</span>
-          <span class="info-value">{{ request()?.created_at | date:'MMM d, yyyy - HH:mm' }}</span>
+      <div class="info-card details-card">
+        <div class="card-header">
+          <ion-icon name="document-text-outline" class="card-icon"></ion-icon>
+          <h3 class="info-title">{{ 'requestDetail.requestDetails' | translate }}</h3>
         </div>
-        @if (request()?.expected_at) {
-          <div class="info-row">
-            <span class="info-label">{{ 'requestDetail.preferredTime' | translate }}</span>
-            <span class="info-value">{{ request()?.expected_at | date:'MMM d, yyyy - HH:mm' }}</span>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <ion-icon name="calendar-outline" class="detail-icon"></ion-icon>
+            <div class="detail-content">
+              <span class="detail-label">{{ 'requestDetail.created' | translate }}</span>
+              <span class="detail-value">{{ request()?.created_at | localDate:'EEEE d MMM yyyy, HH:mm' }}</span>
+            </div>
           </div>
-        }
+
+          <div class="detail-item">
+            <ion-icon [name]="request()?.type === 'online' ? 'videocam-outline' : 'location-outline'" class="detail-icon"></ion-icon>
+            <div class="detail-content">
+              <span class="detail-label">{{ 'requestDetail.consultationType' | translate }}</span>
+              <span class="detail-value">{{ getTypeLabel() }}</span>
+            </div>
+          </div>
+
+          @if (getSpecialityName()) {
+            <div class="detail-item">
+              <ion-icon name="medkit-outline" class="detail-icon"></ion-icon>
+              <div class="detail-content">
+                <span class="detail-label">{{ 'requestDetail.specialty' | translate }}</span>
+                <span class="detail-value">{{ getSpecialityName() }}</span>
+              </div>
+            </div>
+          }
+
+          @if (request()?.custom_fields?.length) {
+            @for (field of request()?.custom_fields; track field.field) {
+              @if (field.value) {
+                <div class="detail-item">
+                  <ion-icon name="create-outline" class="detail-icon"></ion-icon>
+                  <div class="detail-content">
+                    <span class="detail-label">{{ field.field_name }}</span>
+                    <span class="detail-value">{{ field.value }}</span>
+                  </div>
+                </div>
+              }
+            }
+          }
+        </div>
+
         @if (request()?.comment) {
-          <div class="info-row comment-row">
-            <span class="info-label">{{ 'requestDetail.yourComment' | translate }}</span>
-            <span class="info-value comment">{{ request()?.comment }}</span>
+          <div class="detail-comment">
+            <div class="detail-comment-label">
+              <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+              <span>{{ 'requestDetail.yourComment' | translate }}</span>
+            </div>
+            <p class="detail-comment-text">{{ request()?.comment }}</p>
           </div>
         }
       </div>

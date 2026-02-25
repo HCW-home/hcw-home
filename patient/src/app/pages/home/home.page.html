@@ -94,13 +94,18 @@
               }
 
               @if (hasAppointment(request)) {
-                <div class="card-info-row">
-                  <ion-icon name="calendar-outline"></ion-icon>
-                  <span>{{ request.appointment?.scheduled_at | localDate:'EEE, MMM d' }} at {{ request.appointment?.scheduled_at | localDate:'HH:mm' }}</span>
-                  <span class="type-tag">
-                    <ion-icon [name]="getAppointmentTypeIcon(request)"></ion-icon>
-                    {{ getAppointmentTypeLabel(request) }}
-                  </span>
+                <div class="card-info-row card-info-stacked">
+                  <div class="card-info-label">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    <span>{{ 'home.scheduledAppointment' | translate }}</span>
+                  </div>
+                  <div class="card-info-value">
+                    <span>{{ request.appointment?.scheduled_at | localDate:'EEE, MMM d' }} at {{ request.appointment?.scheduled_at | localDate:'HH:mm' }}</span>
+                    <span class="type-tag">
+                      <ion-icon [name]="getAppointmentTypeIcon(request)"></ion-icon>
+                      {{ getAppointmentTypeLabel(request) }}
+                    </span>
+                  </div>
                 </div>
               }
 

@@ -32,7 +32,8 @@ class OrganisationFactory(DjangoModelFactory):
     city = factory.Faker('city')
     postal_code = factory.Faker('postcode')
     country = factory.Faker('country')
-    footer = factory.Faker('text', max_nb_chars=200)
+    footer_patient = factory.Faker('text', max_nb_chars=200)
+    footer_practitioner = factory.Faker('text', max_nb_chars=200)
 
 
 class LanguageFactory(DjangoModelFactory):

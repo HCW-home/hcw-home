@@ -442,8 +442,8 @@ def _add_messages(elements, styles, messages):
 def _add_footer(elements, styles, organisation):
     elements.append(Spacer(1, 10 * mm))
 
-    if organisation and organisation.footer:
-        elements.append(Paragraph(organisation.footer, styles["FooterText"]))
+    if organisation and organisation.footer_practitioner:
+        elements.append(Paragraph(organisation.footer_practitioner, styles["FooterText"]))
         elements.append(Spacer(1, 2 * mm))
 
     generated_at = timezone.localtime(timezone.now()).strftime("%b %d, %Y %H:%M")

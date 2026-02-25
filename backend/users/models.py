@@ -61,7 +61,8 @@ class Organisation(models.Model):
     city = models.CharField(max_length=50, blank=True, null=True)
     postal_code = models.CharField(max_length=10, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
-    footer = models.TextField(blank=True, null=True)
+    footer_patient = models.TextField(blank=True, null=True)
+    footer_practitioner = models.TextField(blank=True, null=True)
 
     is_main = models.BooleanField(
         default=False,

@@ -96,7 +96,8 @@
               @if (hasAppointment(request)) {
                 <app-appointment-info
                   [appointment]="request.appointment!"
-                  [label]="'home.scheduledAppointment' | translate">
+                  [label]="'home.scheduledAppointment' | translate"
+                  [speciality]="getSpecialityName(request)">
                 </app-appointment-info>
               }
 

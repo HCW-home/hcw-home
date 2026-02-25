@@ -42,6 +42,7 @@ export interface User {
   phone: string;
   date_of_birth: string;
   address: string;
+  specialities?: { id: number; name: string }[];
   main_organisation?: IOrganisation | null;
   accepted_term?: number | null;
   one_time_auth_token?: string;

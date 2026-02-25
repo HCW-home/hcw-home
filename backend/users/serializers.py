@@ -52,6 +52,12 @@ class OrganisationSerializer(serializers.ModelSerializer):
         ]
 
 
+class SpecialitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Speciality
+        fields = ["id", "name"]
+
+
 class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     """
     User model w/o password
@@ -60,6 +66,7 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     main_organisation = OrganisationSerializer(read_only=True)
     organisations = OrganisationSerializer(many=True, read_only=True)
     languages = LanguageSerializer(many=True, read_only=True)
+    specialities = SpecialitySerializer(many=True, read_only=True)
 
     mobile_phone_number = serializers.CharField(allow_null=True, allow_blank=True, required=False)
 
@@ -95,6 +102,7 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "temporary",
             "is_practitioner",
             "is_first_login",
+            "specialities",
         ]
         read_only_fields = [
             "is_online",
@@ -235,9 +243,11 @@ class SpecialitySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    specialities = SpecialitySerializer(many=True, read_only=True)
+
     class Meta:
         model = UserModel
-        fields = ["id", "email", "first_name", "last_name"]
+        fields = ["id", "email", "first_name", "last_name", "specialities"]
 
 
 class HealthMetricSerializer(CustomFieldsMixin, serializers.ModelSerializer):

@@ -153,6 +153,7 @@ export interface User {
   first_name: string;
   last_name: string;
   picture?: string;
+  specialities?: Speciality[];
 }
 
 export interface Slot {

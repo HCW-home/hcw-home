@@ -16,6 +16,11 @@
     <div class="appointment-info-participant">
       <div class="participant-avatar">{{ getParticipantName(participant).charAt(0) }}</div>
       <span>{{ getParticipantName(participant) }}</span>
+      @if (speciality) {
+        <span class="participant-speciality">{{ speciality }}</span>
+      } @else if (getParticipantSpecialities(participant)) {
+        <span class="participant-speciality">{{ getParticipantSpecialities(participant) }}</span>
+      }
     </div>
   }
 </div>

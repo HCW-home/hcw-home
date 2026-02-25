@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from users.models import CommunicationMethod, Language
+from users.models import CommunicationMethod, Language, Speciality
 
 from .models import (
     Appointment,
@@ -109,7 +109,15 @@ class CustomFieldsMixin(serializers.Serializer):
         return instance
 
 
+class ConsultationSpecialitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Speciality
+        fields = ["id", "name"]
+
+
 class ConsultationUserSerializer(serializers.ModelSerializer):
+    specialities = ConsultationSpecialitySerializer(many=True, read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -125,6 +133,7 @@ class ConsultationUserSerializer(serializers.ModelSerializer):
             "communication_method",
             "timezone",
             "temporary",
+            "specialities",
         ]
         read_only_field = fields
 

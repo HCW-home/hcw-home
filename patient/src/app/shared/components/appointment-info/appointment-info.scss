@@ -73,4 +73,14 @@
     font-size: 0.7rem;
     flex-shrink: 0;
   }
+
+  .participant-speciality {
+    font-size: 0.75rem;
+    color: var(--app-text-muted);
+
+    &::before {
+      content: "·";
+      margin: 0 4px 0 -2px;
+    }
+  }
 }

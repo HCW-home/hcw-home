@@ -24,6 +24,7 @@ export class AppointmentInfoComponent {
 
   @Input({ required: true }) appointment!: Appointment;
   @Input() label = '';
+  @Input() speciality = '';
 
   get otherParticipants(): Participant[] {
     if (!this.appointment.participants) return [];
@@ -44,6 +45,14 @@ export class AppointmentInfoComponent {
     if (p.user) return `${p.user.first_name} ${p.user.last_name}`;
     if (p.first_name || p.last_name) return `${p.first_name || ''} ${p.last_name || ''}`.trim();
     return p.email || '';
+  }
+
+  getParticipantSpecialities(p: Participant): string {
+    if (this.speciality) return '';
+    if (p.user?.specialities?.length) {
+      return p.user.specialities.map(s => s.name).join(', ');
+    }
+    return '';
   }
 
   get typeIcon(): string {

@@ -142,8 +142,28 @@ export class AppComponent implements OnInit, OnDestroy {
             link.href = config.site_favicon;
             document.head.appendChild(link);
           }
+          if (config?.primary_color_patient) {
+            this.applyPrimaryColor(config.primary_color_patient);
+          }
         },
       });
+  }
+
+  private applyPrimaryColor(hex: string): void {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const toHex = (v: number) => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, "0");
+    const shade = (v: number) => Math.round(v * 0.85);
+    const tint = (v: number) => Math.round(v + (255 - v) * 0.3);
+    const pastel = (v: number) => Math.round(v + (255 - v) * 0.95);
+
+    const root = document.documentElement.style;
+    root.setProperty("--ion-color-primary", hex);
+    root.setProperty("--ion-color-primary-rgb", `${r}, ${g}, ${b}`);
+    root.setProperty("--ion-color-primary-shade", `#${toHex(shade(r))}${toHex(shade(g))}${toHex(shade(b))}`);
+    root.setProperty("--ion-color-primary-tint", `#${toHex(tint(r))}${toHex(tint(g))}${toHex(tint(b))}`);
+    root.setProperty("--app-background", `#${toHex(pastel(r))}${toHex(pastel(g))}${toHex(pastel(b))}`);
   }
 
   ngOnDestroy(): void {

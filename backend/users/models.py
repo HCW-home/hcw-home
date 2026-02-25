@@ -52,7 +52,8 @@ class Organisation(models.Model):
     logo_color = models.ImageField(upload_to="organisations/", blank=True, null=True)
     logo_white = models.ImageField(upload_to="organisations/", blank=True, null=True)
     favicon = models.ImageField(upload_to="organisations/", blank=True, null=True)
-    primary_color = models.CharField(max_length=7, blank=True, null=True)
+    primary_color_patient = models.CharField(max_length=7, default="#0891b2")
+    primary_color_practitioner = models.CharField(max_length=7, default="#0891b2")
     default_term = models.ForeignKey(
         Term, on_delete=models.SET_NULL, null=True, blank=True
     )

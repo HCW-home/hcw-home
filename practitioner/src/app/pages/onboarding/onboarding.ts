@@ -13,6 +13,7 @@ import { UserService } from '../../core/services/user.service';
 import { Auth } from '../../core/services/auth';
 import { ToasterService } from '../../core/services/toaster.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { RoutePaths } from '../../core/constants/routes';
 import { IUserUpdateRequest } from '../../modules/user/models/user';
 import { CommunicationMethodEnum } from '../../modules/user/constants/user';
@@ -47,6 +48,7 @@ export class OnboardingPage implements OnInit, OnDestroy {
   private authService = inject(Auth);
   private toasterService = inject(ToasterService);
   private t = inject(TranslationService);
+  private themeService = inject(ThemeService);
   private destroy$ = new Subject<void>();
 
   TypographyTypeEnum = TypographyTypeEnum;
@@ -127,6 +129,9 @@ export class OnboardingPage implements OnInit, OnDestroy {
           this.siteLogoWhite = config.site_logo_white;
           if (config.branding) {
             this.branding = config.branding;
+          }
+          if (config.primary_color_practitioner) {
+            this.themeService.applyPrimaryColor(config.primary_color_practitioner);
           }
           this.preferredLanguageOptions.set(
             (config.languages || []).map(lang => {

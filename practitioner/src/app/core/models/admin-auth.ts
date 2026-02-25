@@ -60,6 +60,8 @@ export interface IOpenIDConfig {
   site_logo_white: string | null;
   site_favicon: string | null;
   main_organization: IOrganization | null;
+  primary_color_patient: string | null;
+  primary_color_practitioner: string | null;
   communication_methods: string[];
 }
 

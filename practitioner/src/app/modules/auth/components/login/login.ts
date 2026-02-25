@@ -27,6 +27,7 @@ import { ErrorMessage } from '../../../../shared/components/error-message/error-
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
 import { getErrorMessage as getHttpErrorMessage } from '../../../../core/utils/error-helper';
 import { UserService } from '../../../../core/services/user.service';
+import { ThemeService } from '../../../../core/services/theme.service';
 
 interface LoginForm {
   email: FormControl<string>;
@@ -65,6 +66,7 @@ export class Login implements OnInit {
   public validationService = inject(ValidationService);
   private t = inject(TranslationService);
   private userService = inject(UserService);
+  private themeService = inject(ThemeService);
   form: FormGroup<LoginForm> = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
@@ -91,6 +93,9 @@ export class Login implements OnInit {
         }
         if (config.languages?.length) {
           this.t.loadLanguages(config.languages);
+        }
+        if (config.primary_color_practitioner) {
+          this.themeService.applyPrimaryColor(config.primary_color_practitioner);
         }
       },
       error: err => {

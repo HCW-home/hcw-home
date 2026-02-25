@@ -26,7 +26,8 @@ class OrganisationFactory(DjangoModelFactory):
         model = Organisation
 
     name = factory.Faker('company')
-    primary_color = factory.Faker('hex_color')
+    primary_color_patient = factory.Faker('hex_color')
+    primary_color_practitioner = factory.Faker('hex_color')
     default_term = factory.SubFactory(TermFactory)
     street = factory.Faker('street_address')
     city = factory.Faker('city')

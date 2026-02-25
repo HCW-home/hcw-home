@@ -86,7 +86,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
 
       &:hover {
         background: linear-gradient(
@@ -325,7 +324,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+
         overflow: hidden;
 
         span {
@@ -696,7 +695,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+
         flex-shrink: 0;
         overflow: hidden;
 
@@ -766,7 +765,6 @@
       );
       color: var(--White);
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
       margin-bottom: 8px;
 
       &:hover {

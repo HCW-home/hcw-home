@@ -436,7 +436,8 @@ class OrganisationAdmin(ModelAdmin):
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
-        form.base_fields["primary_color"].widget = UnfoldAdminColorInputWidget()
+        form.base_fields["primary_color_patient"].widget = UnfoldAdminColorInputWidget()
+        form.base_fields["primary_color_practitioner"].widget = UnfoldAdminColorInputWidget()
         return form
 
 

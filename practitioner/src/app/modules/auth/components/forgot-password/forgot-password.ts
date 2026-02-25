@@ -21,6 +21,7 @@ import { Auth } from '../../../../core/services/auth';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { ValidationService } from '../../../../core/services/validation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { ThemeService } from '../../../../core/services/theme.service';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
 
 interface ForgotPasswordForm {
@@ -43,6 +44,7 @@ export class ForgotPassword implements OnInit {
   private adminAuthService = inject(Auth);
   public validationService = inject(ValidationService);
   private t = inject(TranslationService);
+  private themeService = inject(ThemeService);
 
   form: FormGroup<ForgotPasswordForm> = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -54,6 +56,9 @@ export class ForgotPassword implements OnInit {
         this.siteLogoWhite = config.site_logo_white;
         if (config.branding) {
           this.branding = config.branding;
+        }
+        if (config.primary_color_practitioner) {
+          this.themeService.applyPrimaryColor(config.primary_color_practitioner);
         }
       },
     });

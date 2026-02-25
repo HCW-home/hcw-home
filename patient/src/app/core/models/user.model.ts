@@ -11,7 +11,8 @@ export interface IOrganisation {
   logo_color?: string;
   logo_white?: string;
   favicon?: string;
-  primary_color?: string;
+  primary_color_patient?: string;
+  primary_color_practitioner?: string;
   default_term?: number | null;
   footer_patient?: string | null;
   footer_practitioner?: string | null;

@@ -197,7 +197,7 @@ def _get_attachment_image(attachment):
 
 def generate_consultation_pdf(consultation, appointments, messages, organisation):
     buffer = io.BytesIO()
-    primary_color = organisation.primary_color if organisation else None
+    primary_color = organisation.primary_color_practitioner if organisation else None
     styles = _build_styles(primary_color)
 
     doc = SimpleDocTemplate(

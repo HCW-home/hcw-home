@@ -44,7 +44,7 @@
     &.primary {
       color: var(--White);
       background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%) border-box;
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+      box-shadow: 0 4px 14px rgba(var(--primary-500-rgb), 0.3);
 
       //::ng-deep svg {
       //  fill: var(--White) !important;
@@ -52,7 +52,7 @@
 
       &:hover {
         background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%) border-box;
-        box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        box-shadow: 0 6px 20px rgba(var(--primary-500-rgb), 0.4);
         transform: translateY(-1px);
       }
 
@@ -239,7 +239,7 @@
       background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
       color: var(--White);
       border: 2px solid var(--primary-500);
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+      box-shadow: 0 4px 14px rgba(var(--primary-500-rgb), 0.3);
 
       &:hover {
         background: transparent;

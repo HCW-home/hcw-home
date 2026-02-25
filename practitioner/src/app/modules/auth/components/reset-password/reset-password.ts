@@ -26,6 +26,7 @@ import { ErrorMessage } from '../../../../shared/components/error-message/error-
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
 import { RoutePaths } from '../../../../core/constants/routes';
+import { ThemeService } from '../../../../core/services/theme.service';
 
 interface SetPasswordForm {
   password: FormControl<string>;
@@ -51,6 +52,7 @@ export class ResetPassword implements OnInit {
   private toaster = inject(ToasterService);
   public validationService = inject(ValidationService);
   private t = inject(TranslationService);
+  private themeService = inject(ThemeService);
   token = this.route.snapshot.params['token'];
   uid = this.route.snapshot.params['uid'];
 
@@ -86,6 +88,9 @@ export class ResetPassword implements OnInit {
         }
         if (config.languages?.length) {
           this.t.loadLanguages(config.languages);
+        }
+        if (config.primary_color_practitioner) {
+          this.themeService.applyPrimaryColor(config.primary_color_practitioner);
         }
       },
     });

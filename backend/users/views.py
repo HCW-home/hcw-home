@@ -808,9 +808,8 @@ class AppConfigView(APIView):
                 "registration_enabled": settings.ENABLE_REGISTRATION,
                 "main_organization": main_organization,
                 "branding": constance_config.site_name,
-                "site_logo": _image_url(main_org.logo_color if main_org else None),
-                "site_logo_white": _image_url(main_org.logo_white if main_org else None),
-                "site_favicon": _image_url(main_org.favicon if main_org else None),
+                "primary_color_patient": main_org.primary_color_patient if main_org else None,
+                "primary_color_practitioner": main_org.primary_color_practitioner if main_org else None,
                 "languages": languages,
                 "communication_methods": communication_methods,
             }

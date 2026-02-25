@@ -36,9 +36,10 @@ class OrganisationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "logo_large",
+            "logo_color",
+            "logo_white",
+            "favicon",
             "footer",
-            "logo_small",
             "primary_color",
             "default_term",
             "location",

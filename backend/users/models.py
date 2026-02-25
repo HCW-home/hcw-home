@@ -49,8 +49,9 @@ class Term(models.Model):
 
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
-    logo_large = models.ImageField(upload_to="organisations/", blank=True, null=True)
-    logo_small = models.ImageField(upload_to="organisations/", blank=True, null=True)
+    logo_color = models.ImageField(upload_to="organisations/", blank=True, null=True)
+    logo_white = models.ImageField(upload_to="organisations/", blank=True, null=True)
+    favicon = models.ImageField(upload_to="organisations/", blank=True, null=True)
     primary_color = models.CharField(max_length=7, blank=True, null=True)
     default_term = models.ForeignKey(
         Term, on_delete=models.SET_NULL, null=True, blank=True

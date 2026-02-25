@@ -20,10 +20,10 @@ from reportlab.platypus import (
 
 
 def _get_logo_path(organisation):
-    if not organisation or not organisation.logo_large:
+    if not organisation or not organisation.logo_color:
         return None
     try:
-        path = organisation.logo_large.path
+        path = organisation.logo_color.path
         if os.path.exists(path):
             return path
     except Exception:

@@ -781,14 +781,14 @@ class AppConfigView(APIView):
 
         # Main organization
         main_org = Organisation.objects.filter(is_main=True).first()
-        main_organization = OrganisationSerializer(main_org).data if main_org else None
+        main_organization = OrganisationSerializer(main_org, context={"request": request}).data if main_org else None
 
         from constance import config as constance_config
 
-        def _file_url(value):
-            if not value:
+        def _image_url(image_field):
+            if not image_field:
                 return None
-            return request.build_absolute_uri(f"{settings.MEDIA_URL}{value}")
+            return request.build_absolute_uri(image_field.url)
 
         languages = [
             {"code": code, "name": str(name)} for code, name in settings.LANGUAGES
@@ -808,9 +808,9 @@ class AppConfigView(APIView):
                 "registration_enabled": settings.ENABLE_REGISTRATION,
                 "main_organization": main_organization,
                 "branding": constance_config.site_name,
-                "site_logo": _file_url(constance_config.site_logo),
-                "site_logo_white": _file_url(constance_config.site_logo_white),
-                "site_favicon": _file_url(constance_config.site_favicon),
+                "site_logo": _image_url(main_org.logo_color if main_org else None),
+                "site_logo_white": _image_url(main_org.logo_white if main_org else None),
+                "site_favicon": _image_url(main_org.favicon if main_org else None),
                 "languages": languages,
                 "communication_methods": communication_methods,
             }

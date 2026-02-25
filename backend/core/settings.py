@@ -688,13 +688,6 @@ UNFOLD = {
 # Default Configuration Values
 CONSTANCE_CONFIG = {
     "site_name": ("HCW@Home", "The name of the application displayed to users"),
-    "site_logo": ("", "Site logo", "image_field"),
-    "site_logo_white": (
-        "",
-        "White version of the site logo (used on dark backgrounds)",
-        "image_field",
-    ),
-    "site_favicon": ("", "Site favicon", "image_field"),
     "patient_base_url": ("https://localhost:8000", "Base URL of patient frontend"),
     "practitioner_base_url": (
         "https://localhost:8000",
@@ -712,7 +705,7 @@ CONSTANCE_CONFIG = {
 
 
 CONSTANCE_CONFIG_FIELDSETS = {
-    "General Options": ("site_name", "site_logo", "site_logo_white", "site_favicon"),
+    "General Options": ("site_name",),
     "URLs": ("patient_base_url", "practitioner_base_url"),
     "Scheduling": ("appointment_first_reminder", "appointment_last_reminder"),
 }

@@ -12,4 +12,10 @@
       {{ typeLabel }}
     </span>
   </div>
+  @for (participant of otherParticipants; track participant.id) {
+    <div class="appointment-info-participant">
+      <div class="participant-avatar">{{ getParticipantName(participant).charAt(0) }}</div>
+      <span>{{ getParticipantName(participant) }}</span>
+    </div>
+  }
 </div>

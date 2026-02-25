@@ -52,3 +52,25 @@
     font-size: 13px;
   }
 }
+
+.appointment-info-participant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--app-text-secondary);
+
+  .participant-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ion-color-primary-bg);
+    color: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+}

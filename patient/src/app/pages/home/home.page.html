@@ -190,13 +190,6 @@
                 [appointment]="appointment"
                 [label]="'home.scheduledAppointment' | translate">
               </app-appointment-info>
-
-              @if (getAppointmentDoctorName(appointment)) {
-                <div class="card-doctor">
-                  <div class="doctor-avatar-sm">{{ getAppointmentDoctorName(appointment).charAt(0) }}</div>
-                  <span>{{ getAppointmentDoctorName(appointment) }}</span>
-                </div>
-              }
             </div>
           }
         </div>

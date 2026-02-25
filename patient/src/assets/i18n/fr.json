@@ -135,7 +135,7 @@
     "myConsultations": "Mes consultations",
     "managedBy": "Géré par {{name}}",
     "nextAppointmentLabel": "Prochain rendez-vous",
-    "myAppointments": "Mes rendez-vous",
+    "myAppointments": "Mes autres rendez-vous",
     "consultation": "Consultation",
     "scheduledAppointment": "Rendez-vous planifié",
     "failedToLoad": "Échec du chargement du tableau de bord",

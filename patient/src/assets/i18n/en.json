@@ -135,7 +135,7 @@
     "myConsultations": "My Consultations",
     "managedBy": "Managed by {{name}}",
     "nextAppointmentLabel": "Next appointment",
-    "myAppointments": "My Appointments",
+    "myAppointments": "My Other Appointments",
     "consultation": "Consultation",
     "scheduledAppointment": "Scheduled appointment",
     "failedToLoad": "Failed to load dashboard",

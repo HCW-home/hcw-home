@@ -208,19 +208,6 @@
                   <span>{{ getAppointmentDoctorName(appointment) }}</span>
                 </div>
               }
-
-              <div class="card-actions">
-                @if (appointment.type === 'online' && appointment.consultation_id) {
-                  <button class="card-btn card-btn-primary" (click)="joinAppointment(appointment); $event.stopPropagation()">
-                    <ion-icon name="videocam"></ion-icon>
-                    <span>{{ 'common.join' | translate }}</span>
-                  </button>
-                }
-                <button class="card-btn card-btn-secondary">
-                  <span>{{ 'common.viewDetails' | translate }}</span>
-                  <ion-icon name="chevron-forward-outline"></ion-icon>
-                </button>
-              </div>
             </div>
           }
         </div>

@@ -1001,8 +1001,7 @@ class UserDashboardView(APIView):
             Appointment.objects.exclude(consultation__in=consultations)
             .exclude(
                 consultation__request__in=user_requests,
-            )
-            .filter(
+            ).filter(
                 participant__user=user,
                 participant__is_active=True,
                 scheduled_at__gte=now,

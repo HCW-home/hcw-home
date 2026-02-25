@@ -135,7 +135,7 @@
     "myConsultations": "Meine Konsultationen",
     "managedBy": "Betreut von {{name}}",
     "nextAppointmentLabel": "Naechster Termin",
-    "myAppointments": "Meine Termine",
+    "myAppointments": "Meine anderen Termine",
     "consultation": "Konsultation",
     "scheduledAppointment": "Geplanter Termin",
     "failedToLoad": "Laden des Dashboards fehlgeschlagen",

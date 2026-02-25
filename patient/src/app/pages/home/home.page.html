@@ -94,19 +94,10 @@
               }
 
               @if (hasAppointment(request)) {
-                <div class="card-info-row card-info-stacked">
-                  <div class="card-info-label">
-                    <ion-icon name="calendar-outline"></ion-icon>
-                    <span>{{ 'home.scheduledAppointment' | translate }}</span>
-                  </div>
-                  <div class="card-info-value">
-                    <span>{{ request.appointment?.scheduled_at | localDate:'EEE, MMM d' }} at {{ request.appointment?.scheduled_at | localDate:'HH:mm' }}</span>
-                    <span class="type-tag">
-                      <ion-icon [name]="getAppointmentTypeIcon(request)"></ion-icon>
-                      {{ getAppointmentTypeLabel(request) }}
-                    </span>
-                  </div>
-                </div>
+                <app-appointment-info
+                  [appointment]="request.appointment!"
+                  [label]="'home.scheduledAppointment' | translate">
+                </app-appointment-info>
               }
 
               @if (isStatusRequested(request)) {
@@ -170,19 +161,10 @@
               }
 
               @if (consultation.next_appointment) {
-                <div class="card-info-row card-info-stacked">
-                  <div class="card-info-label">
-                    <ion-icon name="calendar-outline"></ion-icon>
-                    <span>{{ 'home.nextAppointmentLabel' | translate }}</span>
-                  </div>
-                  <div class="card-info-value">
-                    <span>{{ consultation.next_appointment.scheduled_at | localDate:'EEE, MMM d' }} at {{ consultation.next_appointment.scheduled_at | localDate:'HH:mm' }}</span>
-                    <span class="type-tag">
-                      <ion-icon [name]="consultation.next_appointment.type === 'online' ? 'videocam-outline' : 'location-outline'"></ion-icon>
-                      {{ consultation.next_appointment.type === 'online' ? ('common.video' | translate) : ('common.inPerson' | translate) }}
-                    </span>
-                  </div>
-                </div>
+                <app-appointment-info
+                  [appointment]="consultation.next_appointment"
+                  [label]="'home.nextAppointmentLabel' | translate">
+                </app-appointment-info>
               }
 
               <div class="card-actions">
@@ -213,16 +195,12 @@
                 <span class="status-badge status-{{ getAppointmentStatusConfig(appointment.status).color }}">
                   {{ getAppointmentStatusConfig(appointment.status).label }}
                 </span>
-                <span class="type-tag">
-                  <ion-icon [name]="getAppointmentIcon(appointment)"></ion-icon>
-                  {{ getAppointmentTypeText(appointment) }}
-                </span>
               </div>
 
-              <div class="card-info-row appointment-datetime">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span class="appointment-date-text">{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
-              </div>
+              <app-appointment-info
+                [appointment]="appointment"
+                [label]="'home.scheduledAppointment' | translate">
+              </app-appointment-info>
 
               @if (getAppointmentDoctorName(appointment)) {
                 <div class="card-doctor">

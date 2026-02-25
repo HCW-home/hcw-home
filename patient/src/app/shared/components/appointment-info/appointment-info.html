@@ -1,0 +1,15 @@
+<div class="appointment-info">
+  @if (label) {
+    <div class="appointment-info-label">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span>{{ label }}</span>
+    </div>
+  }
+  <div class="appointment-info-value">
+    <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+    <span class="type-tag">
+      <ion-icon [name]="typeIcon"></ion-icon>
+      {{ typeLabel }}
+    </span>
+  </div>
+</div>

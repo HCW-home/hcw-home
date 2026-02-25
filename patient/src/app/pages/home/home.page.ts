@@ -19,6 +19,7 @@ import { AppFooterComponent } from '../../shared/app-footer/app-footer.component
 import { ConsultationRequest, Consultation, Speciality, Appointment } from '../../core/models/consultation.model';
 import { TranslationService } from '../../core/services/translation.service';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
+import { AppointmentInfoComponent } from '../../shared/components/appointment-info/appointment-info';
 
 interface RequestStatus {
   label: string;
@@ -41,6 +42,7 @@ interface RequestStatus {
     AppHeaderComponent,
     AppFooterComponent,
     TranslatePipe,
+    AppointmentInfoComponent,
   ]
 })
 export class HomePage implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, ViewChild, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
   FormBuilder,
@@ -47,6 +47,8 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
 })
 export class LoginPage implements OnInit {
   private t = inject(TranslationService);
+
+  @ViewChild('passwordInput') passwordInput!: IonInput;
 
   step: 'email' | 'credentials' | 'verification' = 'email';
 
@@ -113,6 +115,7 @@ export class LoginPage implements OnInit {
     if (this.emailForm.valid) {
       this.step = 'credentials';
       this.errorMessage = null;
+      setTimeout(() => this.passwordInput?.setFocus(), 300);
     }
   }
 

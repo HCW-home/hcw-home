@@ -55,6 +55,7 @@
           <ion-item lines="full" class="input-item">
             <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
             <ion-input
+              #passwordInput
               [type]="showPassword ? 'text' : 'password'"
               [placeholder]="'login.passwordPlaceholder' | translate"
               formControlName="password">

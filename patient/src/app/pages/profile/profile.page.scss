@@ -3,7 +3,7 @@
 }
 
 .profile-content {
-  --background: var(--app-background);
+
 
   .profile-header {
     .profile-card {
@@ -154,7 +154,7 @@
           }
 
           ion-input.readonly-input {
-            --background: var(--app-background);
+
             opacity: 0.7;
             pointer-events: none;
           }

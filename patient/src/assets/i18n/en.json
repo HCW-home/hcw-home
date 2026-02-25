@@ -259,6 +259,7 @@
     "later": "Later"
   },
   "requestDetail": {
+    "title": "Request Details",
     "requestDetails": "Request Details",
     "created": "Created",
     "preferredTime": "Preferred Time",

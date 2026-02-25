@@ -15,7 +15,7 @@
   align-items: center;
   padding: var(--app-spacing-md);
   border-bottom: 1px solid var(--app-border-color);
-  background: var(--app-card-background);
+  background: var(--app-background);
 
   .header-title {
     font-size: 1rem;
@@ -56,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-sm);
-  background: var(--app-background);
+  background: var(--app-card-background);
 }
 
 .no-messages {
@@ -368,7 +368,7 @@
   padding: var(--app-spacing-sm) var(--app-spacing-md);
   border-top: 1px solid var(--app-border-color);
   flex-shrink: 0;
-  background: var(--app-card-background);
+  background: var(--app-background);
 
   .attach-btn {
     --padding-start: 8px;
@@ -386,7 +386,7 @@
     border: 1px solid var(--app-border-color);
     border-radius: 20px;
     font-size: 0.875rem;
-    background: var(--app-background);
+    background: var(--app-card-background);
     color: var(--app-text-primary);
     outline: none;
     font-family: inherit;

@@ -1,13 +1,10 @@
-ion-header {
-  ion-toolbar {
-    --background: var(--app-background);
-    --border-width: 0;
-    padding: var(--app-spacing-sm) var(--app-spacing-md);
+:host {
+  ion-content {
+    --background: #ffffff;
   }
 }
 
 .request-detail-content {
-  --background: var(--app-background);
 
   .loading-container {
     display: flex;

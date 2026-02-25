@@ -2,14 +2,9 @@ import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonBackButton,
   IonContent,
   IonSpinner,
+  IonIcon,
   NavController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -23,6 +18,7 @@ import { MessageListComponent, Message, SendMessageData, EditMessageData, Delete
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../core/services/translation.service';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
+import { AppHeaderComponent } from '../../shared/app-header/app-header.component';
 
 interface RequestStatus {
   label: string;
@@ -37,15 +33,12 @@ interface RequestStatus {
   imports: [
     CommonModule,
     LocalDatePipe,
-    IonHeader,
-    IonToolbar,
-    IonButtons,
     IonIcon,
-    IonBackButton,
     IonContent,
     IonSpinner,
     MessageListComponent,
-    TranslatePipe
+    TranslatePipe,
+    AppHeaderComponent
   ]
 })
 export class RequestDetailPage implements OnInit, OnDestroy {

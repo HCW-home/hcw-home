@@ -259,6 +259,7 @@
     "later": "Spaeter"
   },
   "requestDetail": {
+    "title": "Anfragedetails",
     "requestDetails": "Anfragedetails",
     "created": "Erstellt am",
     "preferredTime": "Bevorzugte Zeit",

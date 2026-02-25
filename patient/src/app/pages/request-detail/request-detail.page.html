@@ -1,10 +1,8 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" text="" icon="arrow-back-outline"></ion-back-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  [pageTitle]="'requestDetail.title' | translate"
+  [showBackButton]="true"
+  backHref="/home"
+></app-header>
 
 <ion-content class="request-detail-content">
   @if (isLoading()) {
@@ -109,16 +107,6 @@
           <button class="action-button danger-btn" (click)="cancelRequest()">
             {{ 'requestDetail.cancelRequest' | translate }}
           </button>
-        </div>
-      }
-
-      @if (isStatusAccepted() && !hasAppointment()) {
-        <div class="info-card accepted-card">
-          <div class="card-header">
-            <ion-icon name="checkmark-circle-outline" class="card-icon"></ion-icon>
-            <h3 class="info-title">{{ 'requestDetail.requestAccepted' | translate }}</h3>
-          </div>
-          <p class="accepted-text">{{ 'requestDetail.acceptedText' | translate }}</p>
         </div>
       }
 

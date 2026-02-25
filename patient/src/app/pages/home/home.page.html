@@ -72,15 +72,15 @@
           @for (request of requests(); track request.id) {
             <div class="request-card" (click)="viewRequestDetails(request)">
               <div class="card-top-row">
+                <h3 class="card-title">{{ getReasonName(request) }}</h3>
                 <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
                   {{ getStatusConfig(request.status).label }}
                 </span>
-                @if (request.created_at) {
-                  <span class="card-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
-                }
               </div>
 
-              <h3 class="card-title">{{ getReasonName(request) }}</h3>
+              @if (request.created_at) {
+                <span class="card-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
+              }
 
               @if (getSpecialityName(request)) {
                 <span class="card-subtitle">{{ getSpecialityName(request) }}</span>

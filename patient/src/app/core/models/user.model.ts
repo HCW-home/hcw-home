@@ -8,11 +8,13 @@ export interface ITerm {
 export interface IOrganisation {
   id: number;
   name: string;
-  logo_large?: string;
-  logo_small?: string;
+  logo_color?: string;
+  logo_white?: string;
+  favicon?: string;
   primary_color?: string;
   default_term?: number | null;
-  footer?: string | null;
+  footer_patient?: string | null;
+  footer_practitioner?: string | null;
 }
 
 export interface User {

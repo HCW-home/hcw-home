@@ -44,7 +44,8 @@ export interface IConfigLanguage {
 export interface IOrganization {
   id: number;
   name: string;
-  footer: string | null;
+  footer_patient: string | null;
+  footer_practitioner: string | null;
   [key: string]: unknown;
 }
 

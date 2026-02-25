@@ -26,7 +26,7 @@ export class AppFooterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (config) => {
-          this.footerHtml.set(config?.main_organization?.footer || null);
+          this.footerHtml.set(config?.main_organization?.footer_patient || null);
         }
       });
   }

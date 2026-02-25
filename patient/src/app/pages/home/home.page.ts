@@ -20,6 +20,7 @@ import { ConsultationRequest, Consultation, Speciality, Appointment } from '../.
 import { TranslationService } from '../../core/services/translation.service';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
 import { AppointmentInfoComponent } from '../../shared/components/appointment-info/appointment-info';
+import { ConsultationInfoComponent } from '../../shared/components/consultation-info/consultation-info';
 
 interface RequestStatus {
   label: string;
@@ -43,6 +44,7 @@ interface RequestStatus {
     AppFooterComponent,
     TranslatePipe,
     AppointmentInfoComponent,
+    ConsultationInfoComponent,
   ]
 })
 export class HomePage implements OnInit, OnDestroy {

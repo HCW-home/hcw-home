@@ -1,0 +1,15 @@
+<div class="consultation-info">
+  @if (title) {
+    <span class="consultation-info-title">{{ title }}</span>
+  }
+  @if (doctorName) {
+    <div class="consultation-info-doctor">
+      <div class="doctor-avatar">{{ doctorName.charAt(0) }}</div>
+      <span>{{ doctorName }}</span>
+    </div>
+  }
+  <button class="consultation-info-btn" (click)="onAccess($event)">
+    <ion-icon name="chatbubbles-outline"></ion-icon>
+    <span>{{ 'home.accessConsultation' | translate }}</span>
+  </button>
+</div>

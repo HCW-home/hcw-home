@@ -86,7 +86,7 @@
                 <span class="card-subtitle">{{ getSpecialityName(request) }}</span>
               }
 
-              @if (getDoctorName(request)) {
+              @if (getDoctorName(request) && !hasConsultation(request)) {
                 <div class="card-doctor">
                   <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
                   <span>{{ getDoctorName(request) }}</span>
@@ -114,19 +114,19 @@
                 </div>
               }
 
-              <div class="card-actions">
-                @if (hasConsultation(request)) {
-                  <button class="card-btn card-btn-outline" (click)="viewConsultationFromRequest(request); $event.stopPropagation()">
-                    <ion-icon name="chatbubbles-outline"></ion-icon>
-                    <span>{{ 'home.accessConsultation' | translate }}</span>
-                  </button>
-                } @else {
+              @if (hasConsultation(request)) {
+                <app-consultation-info
+                  [consultation]="request.consultation!"
+                  (access)="viewConsultationFromRequest(request)">
+                </app-consultation-info>
+              } @else {
+                <div class="card-actions">
                   <button class="card-btn card-btn-secondary">
                     <span>{{ 'common.viewDetails' | translate }}</span>
                     <ion-icon name="chevron-forward-outline"></ion-icon>
                   </button>
-                }
-              </div>
+                </div>
+              }
             </div>
           }
         </div>
@@ -151,15 +151,6 @@
                 }
               </div>
 
-              <h3 class="card-title">{{ getConsultationReasonName(consultation) }}</h3>
-
-              @if (getConsultationDoctorName(consultation)) {
-                <div class="card-doctor">
-                  <div class="doctor-avatar-sm">{{ getConsultationDoctorName(consultation).charAt(0) }}</div>
-                  <span>{{ 'home.managedBy' | translate:{ name: getConsultationDoctorName(consultation) } }}</span>
-                </div>
-              }
-
               @if (consultation.next_appointment) {
                 <app-appointment-info
                   [appointment]="consultation.next_appointment"
@@ -167,12 +158,10 @@
                 </app-appointment-info>
               }
 
-              <div class="card-actions">
-                <button class="card-btn card-btn-outline">
-                  <ion-icon name="chatbubbles-outline"></ion-icon>
-                  <span>{{ 'home.accessConsultation' | translate }}</span>
-                </button>
-              </div>
+              <app-consultation-info
+                [consultation]="consultation"
+                (access)="viewConsultationDetails(consultation)">
+              </app-consultation-info>
             </div>
           }
         </div>

@@ -46,6 +46,12 @@
             <span class="section-badge">{{ totalRequests() }} {{ 'common.total' | translate }}</span>
           }
         </div>
+        @if (requests().length > 0) {
+          <button class="card-btn card-btn-outline" (click)="goToNewRequest()">
+            <ion-icon name="add-outline"></ion-icon>
+            <span>{{ 'home.requestConsultation' | translate }}</span>
+          </button>
+        }
       </div>
 
       @if (isLoading()) {

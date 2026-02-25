@@ -15,7 +15,7 @@
           <span class="next-appointment-label">
             {{ 'home.nextAppointment' | translate }} —
             <ion-icon [name]="nextAppointment()!.type === 'online' ? 'videocam-outline' : 'location-outline'"></ion-icon>
-            {{ nextAppointment()!.type === 'online' ? ('common.online' | translate) : ('common.inPerson' | translate) }}
+            {{ nextAppointment()!.type === 'online' ? ('common.video' | translate) : ('common.inPerson' | translate) }}
           </span>
           <span class="next-appointment-date">
             {{ nextAppointment()!.scheduled_at | localDate:'EEEE, MMM d' }} at {{ nextAppointment()!.scheduled_at | localDate:'HH:mm' }}

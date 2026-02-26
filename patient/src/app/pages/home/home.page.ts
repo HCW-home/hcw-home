@@ -87,7 +87,7 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.loadDashboard();
-    this.listenToAppointmentChanges();
+    this.listenToWebSocketChanges();
   }
 
   ngOnDestroy(): void {
@@ -130,8 +130,14 @@ export class HomePage implements OnInit, OnDestroy {
       });
   }
 
-  private listenToAppointmentChanges(): void {
+  private listenToWebSocketChanges(): void {
     this.userWsService.appointmentChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.refreshDashboard();
+      });
+
+    this.userWsService.consultationChanged$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.refreshDashboard();

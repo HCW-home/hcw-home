@@ -10,6 +10,7 @@ import {
   StatusChangedEvent,
   AppointmentJoinedEvent,
   AppointmentChangedEvent,
+  ConsultationChangedEvent,
 } from '../models/websocket.model';
 
 @Injectable({
@@ -22,11 +23,13 @@ export class UserWebSocketService implements OnDestroy {
   private notificationsSubject = new Subject<NotificationEvent>();
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
   private appointmentChangedSubject = new Subject<AppointmentChangedEvent>();
+  private consultationChangedSubject = new Subject<ConsultationChangedEvent>();
 
   public messages$: Observable<UserMessageEvent> = this.messagesSubject.asObservable();
   public notifications$: Observable<NotificationEvent> = this.notificationsSubject.asObservable();
   public appointmentJoined$: Observable<AppointmentJoinedEvent> = this.appointmentJoinedSubject.asObservable();
   public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
+  public consultationChanged$: Observable<ConsultationChangedEvent> = this.consultationChangedSubject.asObservable();
 
   constructor(
     private wsService: WebSocketService,
@@ -116,6 +119,12 @@ export class UserWebSocketService implements OnDestroy {
       } else {
         this.appointmentChangedSubject.next(event as AppointmentChangedEvent);
       }
+    });
+
+    this.wsService.on('consultation').subscribe((raw) => {
+      const event = raw as ConsultationChangedEvent;
+      console.log('[UserWS] Consultation event received:', event);
+      this.consultationChangedSubject.next(event);
     });
 
     this.wsService.on('error').subscribe((event) => {

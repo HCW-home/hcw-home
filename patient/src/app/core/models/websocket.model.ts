@@ -144,6 +144,12 @@ export interface AppointmentChangedEvent {
   state: 'updated' | 'cancelled' | 'created';
 }
 
+export interface ConsultationChangedEvent {
+  type: 'consultation';
+  consultation_id: number;
+  state: 'created' | 'updated' | 'closed';
+}
+
 export type UserIncomingEvent =
   | StatusChangedEvent
   | StatusResponseEvent
@@ -155,7 +161,8 @@ export type UserIncomingEvent =
   | GroupLeftEvent
   | ErrorEvent
   | AppointmentJoinedEvent
-  | AppointmentChangedEvent;
+  | AppointmentChangedEvent
+  | ConsultationChangedEvent;
 
 export interface ConsultationMessageEvent {
   type: 'consultation_message';

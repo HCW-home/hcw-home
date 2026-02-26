@@ -54,6 +54,7 @@ export class HomePage implements OnInit, OnDestroy {
   private t = inject(TranslationService);
 
   currentUser = signal<User | null>(null);
+  hasReasons = signal(false);
   nextAppointment = signal<Appointment | null>(null);
   requests = signal<ConsultationRequest[]>([]);
   consultations = signal<Consultation[]>([]);
@@ -117,6 +118,7 @@ export class HomePage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.hasReasons.set(response.has_reasons);
           this.nextAppointment.set(response.next_appointment);
           this.requests.set(response.requests);
           this.consultations.set(response.consultations);
@@ -149,6 +151,7 @@ export class HomePage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.hasReasons.set(response.has_reasons);
           this.nextAppointment.set(response.next_appointment);
           this.requests.set(response.requests);
           this.consultations.set(response.consultations);

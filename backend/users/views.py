@@ -14,6 +14,7 @@ from consultations.models import (
     Appointment,
     Consultation,
     Participant,
+    Reason,
     Request,
     RequestStatus,
 )
@@ -1013,8 +1014,11 @@ class UserDashboardView(APIView):
 
         serializer_context = {"request": request}
 
+        has_reasons = Reason.objects.filter(is_active=True).exists()
+
         return Response(
             {
+                "has_reasons": has_reasons,
                 "next_appointment": AppointmentSerializer(
                     next_appointment, context=serializer_context
                 ).data

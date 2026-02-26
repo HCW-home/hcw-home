@@ -176,6 +176,7 @@ export interface CreateRequestPayload {
 }
 
 export interface IDashboardResponse {
+  has_reasons: boolean;
   next_appointment: Appointment | null;
   requests: ConsultationRequest[];
   consultations: Consultation[];

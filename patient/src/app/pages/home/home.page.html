@@ -46,7 +46,7 @@
             <span class="section-badge">{{ totalRequests() }} {{ 'common.total' | translate }}</span>
           }
         </div>
-        @if (requests().length > 0) {
+        @if (requests().length > 0 && hasReasons()) {
           <button class="card-btn card-btn-outline" (click)="goToNewRequest()">
             <ion-icon name="add-outline"></ion-icon>
             <span>{{ 'home.requestConsultation' | translate }}</span>
@@ -62,10 +62,12 @@
         <div class="empty-state">
           <ion-icon name="document-text-outline" class="empty-icon"></ion-icon>
           <p class="empty-text">{{ 'home.noPendingRequests' | translate }}</p>
-          <button class="card-btn empty-cta" [class.card-btn-primary]="hasNoItems()" [class.card-btn-outline]="!hasNoItems()" (click)="goToNewRequest()">
-            <ion-icon name="add-outline"></ion-icon>
-            <span>{{ 'home.requestConsultation' | translate }}</span>
-          </button>
+          @if (hasReasons()) {
+            <button class="card-btn empty-cta" [class.card-btn-primary]="hasNoItems()" [class.card-btn-outline]="!hasNoItems()" (click)="goToNewRequest()">
+              <ion-icon name="add-outline"></ion-icon>
+              <span>{{ 'home.requestConsultation' | translate }}</span>
+            </button>
+          }
         </div>
       } @else {
         <div class="cards-grid">

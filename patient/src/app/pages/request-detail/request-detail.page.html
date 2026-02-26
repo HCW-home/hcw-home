@@ -28,22 +28,6 @@
         </div>
 
         <div class="details-grid">
-          <div class="detail-item">
-            <ion-icon name="calendar-outline" class="detail-icon"></ion-icon>
-            <div class="detail-content">
-              <span class="detail-label">{{ 'requestDetail.created' | translate }}</span>
-              <span class="detail-value">{{ request()?.created_at | localDate:'EEEE d MMM yyyy, HH:mm' }}</span>
-            </div>
-          </div>
-
-          <div class="detail-item">
-            <ion-icon [name]="request()?.type === 'online' ? 'videocam-outline' : 'location-outline'" class="detail-icon"></ion-icon>
-            <div class="detail-content">
-              <span class="detail-label">{{ 'requestDetail.consultationType' | translate }}</span>
-              <span class="detail-value">{{ getTypeLabel() }}</span>
-            </div>
-          </div>
-
           @if (getSpecialityName()) {
             <div class="detail-item">
               <ion-icon name="medkit-outline" class="detail-icon"></ion-icon>

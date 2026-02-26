@@ -9,6 +9,7 @@ import {
   NotificationEvent,
   StatusChangedEvent,
   AppointmentJoinedEvent,
+  AppointmentChangedEvent,
 } from '../models/websocket.model';
 
 @Injectable({
@@ -20,10 +21,12 @@ export class UserWebSocketService implements OnDestroy {
   private messagesSubject = new Subject<UserMessageEvent>();
   private notificationsSubject = new Subject<NotificationEvent>();
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
+  private appointmentChangedSubject = new Subject<AppointmentChangedEvent>();
 
   public messages$: Observable<UserMessageEvent> = this.messagesSubject.asObservable();
   public notifications$: Observable<NotificationEvent> = this.notificationsSubject.asObservable();
   public appointmentJoined$: Observable<AppointmentJoinedEvent> = this.appointmentJoinedSubject.asObservable();
+  public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
 
   constructor(
     private wsService: WebSocketService,
@@ -104,11 +107,14 @@ export class UserWebSocketService implements OnDestroy {
       this.notificationsSubject.next(event);
     });
 
-    this.wsService.on('appointment').subscribe((event: AppointmentJoinedEvent) => {
+    this.wsService.on('appointment').subscribe((raw) => {
+      const event = raw as AppointmentJoinedEvent | AppointmentChangedEvent;
       console.log('[UserWS] Appointment event received:', event);
       if (event.state === 'participant_joined') {
         console.log('[UserWS] participant_joined - showing incoming call');
-        this.appointmentJoinedSubject.next(event);
+        this.appointmentJoinedSubject.next(event as AppointmentJoinedEvent);
+      } else {
+        this.appointmentChangedSubject.next(event as AppointmentChangedEvent);
       }
     });
 

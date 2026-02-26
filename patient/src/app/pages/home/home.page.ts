@@ -14,6 +14,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultationService } from '../../core/services/consultation.service';
+import { UserWebSocketService } from '../../core/services/user-websocket.service';
 import { User } from '../../core/models/user.model';
 import { AppHeaderComponent } from '../../shared/app-header/app-header.component';
 import { AppFooterComponent } from '../../shared/app-footer/app-footer.component';
@@ -69,7 +70,8 @@ export class HomePage implements OnInit, OnDestroy {
     private authService: AuthService,
     private consultationService: ConsultationService,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private userWsService: UserWebSocketService
   ) {}
 
   private async showError(message: string): Promise<void> {
@@ -85,6 +87,7 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.loadDashboard();
+    this.listenToAppointmentChanges();
   }
 
   ngOnDestroy(): void {
@@ -106,6 +109,10 @@ export class HomePage implements OnInit, OnDestroy {
 
   loadDashboard(): void {
     this.isLoading.set(true);
+    this.refreshDashboard();
+  }
+
+  private refreshDashboard(): void {
     this.consultationService.getDashboard()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -120,6 +127,14 @@ export class HomePage implements OnInit, OnDestroy {
           this.showError(error?.error?.detail || this.t.instant('home.failedToLoad'));
           this.isLoading.set(false);
         }
+      });
+  }
+
+  private listenToAppointmentChanges(): void {
+    this.userWsService.appointmentChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.refreshDashboard();
       });
   }
 

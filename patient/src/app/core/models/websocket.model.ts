@@ -137,6 +137,13 @@ export interface AppointmentJoinedEvent {
   };
 }
 
+export interface AppointmentChangedEvent {
+  type: 'appointment';
+  consultation_id: number;
+  appointment_id: number;
+  state: 'updated' | 'cancelled' | 'created';
+}
+
 export type UserIncomingEvent =
   | StatusChangedEvent
   | StatusResponseEvent
@@ -147,7 +154,8 @@ export type UserIncomingEvent =
   | GroupJoinedEvent
   | GroupLeftEvent
   | ErrorEvent
-  | AppointmentJoinedEvent;
+  | AppointmentJoinedEvent
+  | AppointmentChangedEvent;
 
 export interface ConsultationMessageEvent {
   type: 'consultation_message';

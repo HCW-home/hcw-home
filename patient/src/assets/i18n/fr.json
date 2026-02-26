@@ -129,6 +129,7 @@
     "nextAppointment": "Prochain rendez-vous",
     "myRequests": "Mes demandes",
     "noPendingRequests": "Aucune demande en attente",
+    "noInvitations": "Vous n'avez reçu aucune invitation",
     "requestConsultation": "Demander une consultation",
     "awaitingAssignment": "En attente d'attribution d'un médecin",
     "accessConsultation": "Accéder à la consultation",

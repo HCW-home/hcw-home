@@ -38,6 +38,7 @@
       </div>
     }
 
+    @if (hasReasons()) {
     <section class="section requests-section">
       <div class="section-header">
         <div class="section-title-group">
@@ -46,7 +47,7 @@
             <span class="section-badge">{{ totalRequests() }} {{ 'common.total' | translate }}</span>
           }
         </div>
-        @if (requests().length > 0 && hasReasons()) {
+        @if (requests().length > 0) {
           <button class="card-btn card-btn-outline" (click)="goToNewRequest()">
             <ion-icon name="add-outline"></ion-icon>
             <span>{{ 'home.requestConsultation' | translate }}</span>
@@ -62,12 +63,10 @@
         <div class="empty-state">
           <ion-icon name="document-text-outline" class="empty-icon"></ion-icon>
           <p class="empty-text">{{ 'home.noPendingRequests' | translate }}</p>
-          @if (hasReasons()) {
-            <button class="card-btn empty-cta" [class.card-btn-primary]="hasNoItems()" [class.card-btn-outline]="!hasNoItems()" (click)="goToNewRequest()">
-              <ion-icon name="add-outline"></ion-icon>
-              <span>{{ 'home.requestConsultation' | translate }}</span>
-            </button>
-          }
+          <button class="card-btn empty-cta" [class.card-btn-primary]="hasNoItems()" [class.card-btn-outline]="!hasNoItems()" (click)="goToNewRequest()">
+            <ion-icon name="add-outline"></ion-icon>
+            <span>{{ 'home.requestConsultation' | translate }}</span>
+          </button>
         </div>
       } @else {
         <div class="cards-grid">
@@ -135,6 +134,14 @@
         </div>
       }
     </section>
+    }
+
+    @if (!hasReasons() && hasNoItems() && !isLoading()) {
+      <div class="empty-state no-invitation-state">
+        <ion-icon name="mail-open-outline" class="empty-icon"></ion-icon>
+        <p class="empty-text">{{ 'home.noInvitations' | translate }}</p>
+      </div>
+    }
 
     @if (consultations().length > 0) {
       <section class="section consultations-section">

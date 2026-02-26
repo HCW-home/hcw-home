@@ -62,7 +62,7 @@ import {
   hourglassOutline, ellipsisVerticalOutline, chatbubbleEllipsesOutline, closeCircleOutline,
   sendOutline, attachOutline, imageOutline, wifiOutline, cloudOfflineOutline, closeOutline,
   atOutline, createOutline, close, shieldCheckmarkOutline, keypadOutline, checkmarkOutline,
-  globeOutline, chevronDownOutline, flashOutline
+  globeOutline, chevronDownOutline, flashOutline, mailOpenOutline
 } from 'ionicons/icons';
 
 import { routes } from './app/app.routes';
@@ -180,6 +180,7 @@ addIcons({
   'globe-outline': globeOutline,
   'chevron-down-outline': chevronDownOutline,
   'flash-outline': flashOutline,
+  'mail-open-outline': mailOpenOutline,
 });
 
 bootstrapApplication(AppComponent, {

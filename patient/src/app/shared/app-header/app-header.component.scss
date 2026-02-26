@@ -55,8 +55,14 @@ ion-header {
     .notification-btn {
       --padding-start: 0;
       --padding-end: 0;
+      --overflow: visible;
+      overflow: visible;
       position: relative;
       margin-right: 18px;
+
+      &::part(native) {
+        overflow: visible;
+      }
 
       ion-icon {
         font-size: 28px;
@@ -65,8 +71,8 @@ ion-header {
 
       .notification-badge {
         position: absolute;
-        top: 0;
-        right: -2px;
+        top: -4px;
+        right: -6px;
         min-width: 18px;
         height: 18px;
         background: var(--ion-color-danger);
@@ -78,6 +84,7 @@ ion-header {
         align-items: center;
         justify-content: center;
         padding: 0 4px;
+        z-index: 1;
       }
     }
 

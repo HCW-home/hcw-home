@@ -132,7 +132,7 @@
     "requestConsultation": "Request a consultation",
     "awaitingAssignment": "Awaiting doctor assignment",
     "accessConsultation": "Access consultation",
-    "myConsultations": "My Consultations",
+    "myConsultations": "My Follow-ups/Consultations",
     "managedBy": "Managed by {{name}}",
     "nextAppointmentLabel": "Next appointment",
     "myAppointments": "My Other Appointments",

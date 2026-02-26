@@ -132,7 +132,7 @@
     "requestConsultation": "Konsultation anfordern",
     "awaitingAssignment": "Warten auf Arztzuweisung",
     "accessConsultation": "Konsultation aufrufen",
-    "myConsultations": "Meine Konsultationen",
+    "myConsultations": "Meine Nachsorgen/Konsultationen",
     "managedBy": "Betreut von {{name}}",
     "nextAppointmentLabel": "Naechster Termin",
     "myAppointments": "Meine anderen Termine",

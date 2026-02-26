@@ -132,7 +132,7 @@
     "requestConsultation": "Demander une consultation",
     "awaitingAssignment": "En attente d'attribution d'un médecin",
     "accessConsultation": "Accéder à la consultation",
-    "myConsultations": "Mes consultations",
+    "myConsultations": "Mes suivis/consultations",
     "managedBy": "Géré par {{name}}",
     "nextAppointmentLabel": "Prochain rendez-vous",
     "myAppointments": "Mes autres rendez-vous",

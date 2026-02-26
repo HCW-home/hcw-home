@@ -7,6 +7,7 @@ import {
   IonSpinner,
   NavController,
   ToastController,
+  AlertController,
 } from "@ionic/angular/standalone";
 import { Subject, takeUntil } from "rxjs";
 import { ConsultationService } from "../../core/services/consultation.service";
@@ -74,6 +75,7 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     private wsService: ConsultationWebSocketService,
     private authService: AuthService,
     private toastController: ToastController,
+    private alertController: AlertController,
   ) {}
 
   ngOnInit(): void {
@@ -470,7 +472,22 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     return this.consultation()?.status?.toLowerCase() === "closed";
   }
 
-  joinAppointment(appointment: Appointment): void {
+  async joinAppointment(appointment: Appointment): Promise<void> {
+    const now = new Date();
+    const scheduledAt = new Date(appointment.scheduled_at);
+    const earliestJoin = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
+
+    if (now < earliestJoin) {
+      const time = scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const alert = await this.alertController.create({
+        header: this.t.instant('home.tooEarlyTitle'),
+        message: this.t.instant('home.tooEarlyMessage', { time }),
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+
     this.navCtrl.navigateForward(
       `/consultation/${appointment.id}/video?type=appointment&consultationId=${this.consultationId}`,
     );

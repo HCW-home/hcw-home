@@ -147,7 +147,9 @@
     "statusRequested": "Demandé",
     "statusActive": "Actif",
     "statusClosed": "Clos",
-    "statusDraft": "Brouillon"
+    "statusDraft": "Brouillon",
+    "tooEarlyTitle": "Réunion pas encore disponible",
+    "tooEarlyMessage": "La réunion est prévue à {{time}}. Vous ne pouvez rejoindre l'appel que 5 minutes avant l'heure prévue."
   },
   "newRequest": {
     "selectSpecialty": "Choisir une spécialité",

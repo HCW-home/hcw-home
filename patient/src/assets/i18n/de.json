@@ -147,7 +147,9 @@
     "statusRequested": "Angefragt",
     "statusActive": "Aktiv",
     "statusClosed": "Geschlossen",
-    "statusDraft": "Entwurf"
+    "statusDraft": "Entwurf",
+    "tooEarlyTitle": "Besprechung noch nicht verfuegbar",
+    "tooEarlyMessage": "Die Besprechung ist fuer {{time}} geplant. Sie koennen erst 5 Minuten vor der geplanten Zeit beitreten."
   },
   "newRequest": {
     "selectSpecialty": "Fachgebiet waehlen",

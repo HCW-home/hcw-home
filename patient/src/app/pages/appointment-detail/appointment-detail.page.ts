@@ -7,6 +7,7 @@ import {
   IonSpinner,
   NavController,
   ToastController,
+  AlertController,
 } from "@ionic/angular/standalone";
 import { Subject, takeUntil } from "rxjs";
 import { ConsultationService } from "../../core/services/consultation.service";
@@ -81,6 +82,7 @@ export class AppointmentDetailPage implements OnInit, OnDestroy {
     private consultationService: ConsultationService,
     private authService: AuthService,
     private toastController: ToastController,
+    private alertController: AlertController,
   ) {}
 
   ngOnInit(): void {
@@ -153,9 +155,25 @@ export class AppointmentDetailPage implements OnInit, OnDestroy {
       : this.t.instant("appointmentDetail.inPersonVisit");
   }
 
-  joinVideoCall(): void {
+  async joinVideoCall(): Promise<void> {
     const apt = this.appointment();
     if (!apt) return;
+
+    const now = new Date();
+    const scheduledAt = new Date(apt.scheduled_at);
+    const earliestJoin = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
+
+    if (now < earliestJoin) {
+      const time = scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const alert = await this.alertController.create({
+        header: this.t.instant('home.tooEarlyTitle'),
+        message: this.t.instant('home.tooEarlyMessage', { time }),
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+
     let url = `/consultation/${apt.id}/video?type=appointment`;
     if (apt.consultation_id) {
       url += `&consultationId=${apt.consultation_id}`;

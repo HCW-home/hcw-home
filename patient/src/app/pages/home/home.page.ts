@@ -7,7 +7,8 @@ import {
   IonRefresherContent,
   IonSpinner,
   NavController,
-  ToastController
+  ToastController,
+  AlertController
 } from '@ionic/angular/standalone';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -67,7 +68,8 @@ export class HomePage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private authService: AuthService,
     private consultationService: ConsultationService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private alertController: AlertController
   ) {}
 
   private async showError(message: string): Promise<void> {
@@ -289,9 +291,7 @@ export class HomePage implements OnInit, OnDestroy {
   joinNextAppointment(): void {
     const appt = this.nextAppointment();
     if (appt) {
-      this.navCtrl.navigateForward(`/consultation/${appt.consultation_id || 0}/video`, {
-        queryParams: { appointmentId: appt.id }
-      });
+      this.tryJoinAppointment(appt);
     }
   }
 
@@ -302,6 +302,25 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   joinAppointment(appointment: Appointment): void {
+    this.tryJoinAppointment(appointment);
+  }
+
+  private async tryJoinAppointment(appointment: Appointment): Promise<void> {
+    const now = new Date();
+    const scheduledAt = new Date(appointment.scheduled_at);
+    const earliestJoin = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
+
+    if (now < earliestJoin) {
+      const time = scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const alert = await this.alertController.create({
+        header: this.t.instant('home.tooEarlyTitle'),
+        message: this.t.instant('home.tooEarlyMessage', { time }),
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+
     this.navCtrl.navigateForward(`/consultation/${appointment.consultation_id || 0}/video`, {
       queryParams: { appointmentId: appointment.id }
     });

@@ -375,13 +375,26 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         if appointment.consultation.closed_at:
             return Response(
-                {"error": _("Cannot join call in closed consultation")},
+                {"detail": _("Cannot join call in closed consultation")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if appointment.type != Type.online:
             return Response(
-                {"error": _("Cannot join consultation if not online")},
+                {"detail": _("Cannot join consultation if not online")},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        earliest_join = appointment.scheduled_at - timedelta(minutes=5)
+        if now < earliest_join:
+            return Response(
+                {
+                    "detail": _("Too early to join. The meeting starts at %(time)s. You can join 5 minutes before the scheduled time.")
+                    % {"time": appointment.scheduled_at.strftime("%H:%M")},
+                    "scheduled_at": appointment.scheduled_at.isoformat(),
+                    "code": "too_early",
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:

@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   IonContent,
-  IonButton,
+  IonFooter,
+  IonIcon,
   IonSpinner,
   NavController,
   ToastController,
@@ -19,7 +21,7 @@ import { ITerm } from '../../core/models/user.model';
   templateUrl: './terms.page.html',
   styleUrls: ['./terms.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonButton, IonSpinner, TranslatePipe],
+  imports: [CommonModule, FormsModule, IonContent, IonFooter, IonIcon, IonSpinner, TranslatePipe],
 })
 export class TermsPage implements OnInit, OnDestroy {
   private t = inject(TranslationService);
@@ -28,6 +30,9 @@ export class TermsPage implements OnInit, OnDestroy {
   term: ITerm | null = null;
   loading = true;
   accepting = false;
+  accepted = false;
+  availableLanguages = this.t.availableLanguages;
+  selectedLanguage = this.t.currentLanguage();
 
   constructor(
     private authService: AuthService,
@@ -46,6 +51,7 @@ export class TermsPage implements OnInit, OnDestroy {
   }
 
   private async loadTerm(): Promise<void> {
+    this.loading = true;
     try {
       const user = this.authService.currentUserValue;
       let termId = user?.main_organisation?.default_term;
@@ -77,6 +83,14 @@ export class TermsPage implements OnInit, OnDestroy {
       });
       await toast.present();
     }
+  }
+
+  onLanguageChange(langCode: string): void {
+    this.t.setLanguage(langCode);
+    this.authService.updateProfile({ preferred_language: langCode })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+    this.loadTerm();
   }
 
   onAccept(): void {

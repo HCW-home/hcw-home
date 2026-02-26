@@ -17,6 +17,25 @@ const DEFAULT_FALLBACK: AppLanguage[] = [
 const STORAGE_KEY = 'app_language';
 const DEFAULT_LANGUAGE = 'en';
 
+const NATIVE_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  it: 'Italiano',
+  pt: 'Português',
+  nl: 'Nederlands',
+  ar: 'العربية',
+  tr: 'Türkçe',
+  ro: 'Română',
+  pl: 'Polski',
+  ru: 'Русский',
+  uk: 'Українська',
+  zh: '中文',
+  ja: '日本語',
+  ko: '한국어',
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -52,7 +71,7 @@ export class TranslationService {
       const mapped = languages.map(l => ({
         code: l.code,
         name: l.name,
-        nativeName: l.name,
+        nativeName: NATIVE_NAMES[l.code] || l.name,
       }));
       this.availableLanguagesSignal.set(mapped);
       this.translate.addLangs(mapped.map(l => l.code));

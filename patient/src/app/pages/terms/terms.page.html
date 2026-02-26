@@ -1,26 +1,40 @@
 <ion-content>
   <div class="terms-container">
-    <ng-container *ngIf="loading; else loaded">
+    @if (loading) {
       <div class="loading-wrapper">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
-    </ng-container>
-
-    <ng-template #loaded>
-      <ng-container *ngIf="term">
-        <h2 class="terms-title">{{ term.name }}</h2>
-
-        <div class="terms-content" [innerHTML]="term.content"></div>
-
-        <ion-button
-          expand="block"
-          shape="round"
-          (click)="onAccept()"
-          [disabled]="accepting">
-          <ion-spinner *ngIf="accepting" name="crescent" slot="start"></ion-spinner>
-          {{ 'terms.accept' | translate }}
-        </ion-button>
-      </ng-container>
-    </ng-template>
+    } @else if (term) {
+      <h2 class="terms-title">{{ term.name }}</h2>
+      <div class="terms-content" [innerHTML]="term.content"></div>
+    }
   </div>
 </ion-content>
+
+@if (!loading && term) {
+  <ion-footer class="terms-footer ion-no-border">
+    <div class="footer-inner">
+      <div class="language-selector">
+        <ion-icon name="globe-outline"></ion-icon>
+        <select [(ngModel)]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
+          @for (lang of availableLanguages(); track lang.code) {
+            <option [value]="lang.code">{{ lang.nativeName }}</option>
+          }
+        </select>
+      </div>
+      <label class="accept-checkbox">
+        <input type="checkbox" [(ngModel)]="accepted" />
+        <span>{{ 'terms.acceptCheckbox' | translate }}</span>
+      </label>
+      <button
+        class="accept-button"
+        [disabled]="!accepted || accepting"
+        (click)="onAccept()">
+        @if (accepting) {
+          <ion-spinner name="crescent"></ion-spinner>
+        }
+        {{ 'terms.accept' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

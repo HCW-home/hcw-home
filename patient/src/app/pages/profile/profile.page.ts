@@ -85,6 +85,7 @@ export class ProfilePage implements OnInit {
   isSaving = false;
 
   timezones: string[] = TIMEZONES;
+  availableLanguages = this.t.availableLanguages;
 
   get profileMenuItems(): ProfileMenuItem[] {
     return [

@@ -386,6 +386,7 @@
   },
   "terms": {
     "accept": "Accepter",
+    "acceptCheckbox": "J'ai lu et j'accepte les conditions d'utilisation",
     "failedLoad": "Échec du chargement des conditions",
     "failedAccept": "Échec de l'acceptation des conditions"
   },

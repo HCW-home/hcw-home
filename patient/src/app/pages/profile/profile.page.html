@@ -132,10 +132,9 @@
           <ion-item>
             <ion-label position="stacked">{{ 'profile.preferredLanguage' | translate }}</ion-label>
             <ion-select [(ngModel)]="editedUser.preferred_language" [placeholder]="'profile.selectLanguage' | translate">
-              <ion-select-option value="en">{{ 'profile.langEnglish' | translate }}</ion-select-option>
-              <ion-select-option value="fr">{{ 'profile.langFrench' | translate }}</ion-select-option>
-              <ion-select-option value="de">{{ 'profile.langGerman' | translate }}</ion-select-option>
-              <ion-select-option value="es">{{ 'profile.langSpanish' | translate }}</ion-select-option>
+              @for (lang of availableLanguages(); track lang.code) {
+                <ion-select-option [value]="lang.code">{{ lang.nativeName }}</ion-select-option>
+              }
             </ion-select>
           </ion-item>
           <ion-item>

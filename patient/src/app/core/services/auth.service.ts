@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom, from, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, LoginRequest, LoginResponse, RegisterRequest, MagicLinkRequest, MagicLinkVerify, TokenAuthRequest, TokenAuthResponse } from '../models/user.model';
 import { StorageService } from './storage.service';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   public authReady: Promise<void>;
+  private translationService = inject(TranslationService);
 
   constructor(
     private http: HttpClient,
@@ -102,7 +104,12 @@ export class AuthService {
   getCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/auth/user/`)
       .pipe(
-        tap(user => this.currentUserSubject.next(user))
+        tap(user => {
+          this.currentUserSubject.next(user);
+          if (user.preferred_language) {
+            this.translationService.setLanguage(user.preferred_language);
+          }
+        })
       );
   }
 

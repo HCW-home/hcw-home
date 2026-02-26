@@ -137,10 +137,12 @@
     }
 
     @if (!hasReasons() && hasNoItems() && !isLoading()) {
-      <div class="empty-state no-invitation-state">
-        <ion-icon name="mail-open-outline" class="empty-icon"></ion-icon>
-        <p class="empty-text">{{ 'home.noInvitations' | translate }}</p>
-      </div>
+      <section class="section">
+        <div class="empty-state">
+          <ion-icon name="mail-open-outline" class="empty-icon"></ion-icon>
+          <p class="empty-text">{{ 'home.noInvitations' | translate }}</p>
+        </div>
+      </section>
     }
 
     @if (consultations().length > 0) {

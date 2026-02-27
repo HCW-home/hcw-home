@@ -52,6 +52,10 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """Handle WebSocket disconnection and update user online status."""
+        logger.info(
+            f"UserOnlineStatusMixin.disconnect called for user {self.user_id} "
+            f"(connection {self.connection_id}, close_code={close_code})"
+        )
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
             self._heartbeat_task = None
@@ -66,8 +70,16 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                 )
                 if remaining == 0:
                     await self._on_status_changed(False, remaining)
+                else:
+                    logger.info(
+                        f"User {self.user_id} still has {remaining} connections, not broadcasting offline"
+                    )
             except Exception as e:
                 logger.error(f"Error removing user {self.user_id} connection: {e}")
+        else:
+            logger.warning(
+                f"disconnect called but user_id={self.user_id}, connection_id={self.connection_id}"
+            )
 
         await super().disconnect(close_code)
 
@@ -95,17 +107,25 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
             pass
 
     async def _on_status_changed(self, is_online, connection_count):
-        """Notify client about online status changes."""
-        await self.channel_layer.group_send(
-            "broadcast",
-            {
-                "type": "user",
-                "user_id": self.user_id,
-                "data": {
-                    "is_online": is_online,
-                },
-            },
+        """Notify all connected clients about online status changes."""
+        logger.info(
+            f"Broadcasting status change: user {self.user_id} is_online={is_online} "
+            f"(connections={connection_count})"
         )
+        try:
+            await self.channel_layer.group_send(
+                "broadcast",
+                {
+                    "type": "user",
+                    "user_id": self.user_id,
+                    "data": {
+                        "is_online": is_online,
+                    },
+                },
+            )
+            logger.info(f"Broadcast sent successfully for user {self.user_id}")
+        except Exception as e:
+            logger.error(f"Failed to broadcast status for user {self.user_id}: {e}")
 
 
 class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
@@ -127,16 +147,19 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
         await super().connect()
 
     async def disconnect(self, close_code):
-        """Disconnect: broadcast offline status first, then leave groups."""
-        # super().disconnect() broadcasts the offline status — do it while still in groups
+        """Disconnect: remove own channel from broadcast first, then broadcast offline."""
+        # Leave broadcast group BEFORE broadcasting so we don't send to our own
+        # dying channel (which can silently swallow the group_send on Redis layer)
+        await self.channel_layer.group_discard("broadcast", self.channel_name)
+
+        # Broadcast offline status and clean up connection tracking
         await super().disconnect(close_code)
 
-        # Now leave groups after the broadcast has been sent
+        # Leave user-specific group last
         if self.user_id:
             await self.channel_layer.group_discard(
                 f"user_{self.user_id}", self.channel_name
             )
-        await self.channel_layer.group_discard("broadcast", self.channel_name)
 
     async def receive_json(self, content, **kwargs):
         """Handle incoming WebSocket messages."""
@@ -295,6 +318,10 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
         await self.send_json(response)
 
     async def user(self, event):
+        logger.info(
+            f"Sending user event to channel {self.channel_name}: "
+            f"user_id={event['user_id']} is_online={event['data'].get('is_online')}"
+        )
         await self.send_json(
             {
                 "event": "user",

@@ -127,9 +127,16 @@ export class WebSocketService implements OnDestroy {
 
     this.ws.onmessage = (event: MessageEvent) => {
       try {
-        const message: UserIncomingEvent = JSON.parse(event.data) as UserIncomingEvent;
+        const message = JSON.parse(event.data);
+
+        // Respond to server-side heartbeat pings automatically
+        if (message.type === 'ping') {
+          this.send({ type: 'pong' } as unknown as UserOutgoingMessage);
+          return;
+        }
+
         console.log('[WS] Received message:', message);
-        this.messageSubject.next(message);
+        this.messageSubject.next(message as UserIncomingEvent);
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
       }

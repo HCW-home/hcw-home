@@ -139,6 +139,7 @@
     "myAppointments": "My Other Appointments",
     "consultation": "Consultation",
     "scheduledAppointment": "Scheduled appointment",
+    "followUp": "Follow-up",
     "failedToLoad": "Failed to load dashboard",
     "statusPending": "Pending",
     "statusAccepted": "Accepted",

@@ -1,4 +1,10 @@
 <div class="consultation-info">
+  @if (label) {
+    <div class="consultation-info-label">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <span>{{ label }}</span>
+    </div>
+  }
   @if (title) {
     <span class="consultation-info-title">{{ title }}</span>
   }

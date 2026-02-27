@@ -127,6 +127,7 @@
               @if (hasConsultation(request)) {
                 <app-consultation-info
                   [consultation]="request.consultation!"
+                  [label]="'home.followUp' | translate"
                   (access)="viewConsultationFromRequest(request)">
                 </app-consultation-info>
               } @else {
@@ -176,6 +177,7 @@
 
               <app-consultation-info
                 [consultation]="consultation"
+                [label]="'home.followUp' | translate"
                 (access)="viewConsultationDetails(consultation)">
               </app-consultation-info>
             </div>

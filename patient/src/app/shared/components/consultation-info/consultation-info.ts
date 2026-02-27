@@ -18,6 +18,7 @@ import { Consultation } from '../../../core/models/consultation.model';
 })
 export class ConsultationInfoComponent {
   @Input({ required: true }) consultation!: Consultation;
+  @Input() label?: string;
   @Output() access = new EventEmitter<Consultation>();
 
   get title(): string {

@@ -139,6 +139,7 @@
     "myAppointments": "Mes autres rendez-vous",
     "consultation": "Consultation",
     "scheduledAppointment": "Rendez-vous planifié",
+    "followUp": "Suivi",
     "failedToLoad": "Échec du chargement du tableau de bord",
     "statusPending": "En attente",
     "statusAccepted": "Accepté",

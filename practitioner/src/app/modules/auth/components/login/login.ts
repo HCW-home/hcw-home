@@ -25,7 +25,6 @@ import { ValidationService } from '../../../../core/services/validation.service'
 import { Auth } from '../../../../core/services/auth';
 import { ErrorMessage } from '../../../../shared/components/error-message/error-message';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
-import { getErrorMessage as getHttpErrorMessage } from '../../../../core/utils/error-helper';
 import { UserService } from '../../../../core/services/user.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 
@@ -138,9 +137,9 @@ export class Login implements OnInit {
             },
           });
         },
-        error: err => {
+        error: () => {
           this.loadingButton = false;
-          this.errorMessage = getHttpErrorMessage(err);
+          this.errorMessage = this.t.instant('login.authenticationFailed');
         },
       });
     } else {

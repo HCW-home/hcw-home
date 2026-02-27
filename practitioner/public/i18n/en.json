@@ -80,7 +80,8 @@
     "loginWith": "Login with {{provider}}",
     "fieldRequired": "Field is required",
     "invalidEmail": "Invalid email address",
-    "subtitle": "Practitioner portal for managing follow-ups and patient care."
+    "subtitle": "Practitioner portal for managing follow-ups and patient care.",
+    "authenticationFailed": "Unable to log in with the provided credentials."
   },
   "profile": {
     "title": "User Profile",

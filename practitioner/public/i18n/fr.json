@@ -43,6 +43,20 @@
     "noAccount": "Vous n'avez pas de compte ?",
     "signUp": "S'inscrire"
   },
+  "login": {
+    "signIn": "Se connecter",
+    "email": "Email",
+    "emailPlaceholder": "exemple@email.com",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "********",
+    "forgotPassword": "Mot de passe oublié ?",
+    "or": "ou",
+    "loginWith": "Se connecter avec {{provider}}",
+    "fieldRequired": "Ce champ est obligatoire",
+    "invalidEmail": "Adresse email invalide",
+    "subtitle": "Portail praticien pour la gestion des suivis et des patients.",
+    "authenticationFailed": "Impossible de s'authentifier avec les identifiants fournis."
+  },
   "navigation": {
     "dashboard": "Tableau de bord",
     "consultations": "Suivis / Consultations",

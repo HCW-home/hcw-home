@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { SuccessResponse } from '../models/succesResponse';
 import { environment } from '../../../environments/environment';
+import { SKIP_ERROR_TOAST } from '../interceptors/auth.interceptor';
 import {
   IBodyLogin,
   IResponseLogin,
@@ -63,7 +64,8 @@ export class Auth {
   login(body: IBodyLogin): Observable<IResponseLogin> {
     return this.http.post<IResponseLogin>(
       `${environment.apiUrl}/auth/login/`,
-      body
+      body,
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
     );
   }
 

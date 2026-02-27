@@ -637,7 +637,9 @@ class UserViewSet(viewsets.ModelViewSet):
     Supports search by first name, last name, and email
     """
 
-    queryset = User.objects.filter()
+    queryset = User.objects.filter(
+        Q(email__gt='') | Q(first_name__gt='') | Q(last_name__gt='')
+    )
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated, IsPractitioner]
     pagination_class = UniversalPagination

@@ -135,20 +135,86 @@
     margin-bottom: var(--app-spacing-xl);
   }
 
-  .cards-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--app-card-background);
+    border-radius: var(--app-card-radius);
+    border: 1px solid var(--app-border-color);
+    overflow: hidden;
+  }
+
+  .timeline-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--app-spacing-lg);
+    border-bottom: 1px solid var(--app-border-color);
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(var(--ion-color-primary-rgb), 0.03);
+    }
+
+    &:active {
+      background: rgba(var(--ion-color-primary-rgb), 0.06);
+    }
+  }
+
+  .timeline-item-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: var(--app-spacing-md);
+  }
 
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .timeline-item-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 
-    .request-card,
-    .consultation-card,
-    .appointment-card {
-      margin-bottom: 0;
-    }
+  .timeline-item-right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .timeline-item-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--app-text-primary);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .timeline-item-subtitle {
+    font-size: 0.875rem;
+    color: var(--app-text-secondary);
+  }
+
+  .timeline-item-date {
+    font-size: 0.8125rem;
+    color: var(--app-text-muted);
+  }
+
+  .timeline-item-doctor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    color: var(--app-text-primary);
+    font-weight: 500;
+    margin-top: 2px;
   }
 
   .section-header {
@@ -211,67 +277,6 @@
       padding: 10px 24px;
       font-size: 1rem;
     }
-  }
-
-  // Shared card styles
-  .request-card,
-  .consultation-card,
-  .appointment-card {
-    background: var(--app-card-background);
-    border-radius: var(--app-card-radius);
-    border: 1px solid var(--app-border-color);
-    padding: var(--app-spacing-lg);
-    margin-bottom: 0;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    &:hover {
-      border-color: rgba(var(--ion-color-primary-rgb), 0.3);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    }
-
-    &:active {
-      border-color: var(--ion-color-primary);
-    }
-  }
-
-  .card-top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--app-spacing-sm);
-  }
-
-  .card-date {
-    font-size: 0.875rem;
-    color: var(--app-text-muted);
-  }
-
-  .card-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--app-text-primary);
-    margin: 0;
-    line-height: 1.3;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .card-subtitle {
-    font-size: 0.9375rem;
-    color: var(--app-text-secondary);
-  }
-
-  .card-doctor {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9375rem;
-    color: var(--app-text-primary);
-    font-weight: 500;
   }
 
   .doctor-avatar-sm {

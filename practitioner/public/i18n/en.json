@@ -489,6 +489,7 @@
     "reasonPlaceholder": "e.g., Follow-up, Initial assessment...",
     "description": "Description",
     "descriptionPlaceholder": "Add any relevant notes or context for this follow-up...",
+    "visibleByPatient": "Visible by patient (the patient will be able to view and send messages in this follow-up)",
     "practitionerAssignment": "Practitioner Assignment",
     "practitionerAssignmentDescription": "Optionally assign this follow-up to a team or specific practitioner",
     "selectPractitioner": "Select Practitioner",

@@ -34,6 +34,7 @@ export interface Consultation {
   notes?: string;
   prescriptions?: Prescription[];
   next_appointment?: Appointment;
+  appointments?: Appointment[];
   messages?: ConsultationMessage[];
 }
 

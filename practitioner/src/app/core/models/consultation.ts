@@ -110,6 +110,7 @@ export interface Consultation {
   owned_by?: User | null;
   group: Queue | null;
   group_id?: number;
+  visible_by_patient: boolean;
   custom_fields?: CustomFieldValue[];
 }
 
@@ -119,6 +120,7 @@ export interface CreateConsultationRequest {
   group_id?: number | null;
   beneficiary_id?: number | null;
   owned_by_id?: number | null;
+  visible_by_patient?: boolean;
   custom_fields?: { field: number; value: string | null }[];
 }
 

@@ -26,6 +26,17 @@
           </app-typography>
 
           <div class="form-group">
+            <app-input
+              [label]="'consultationForm.reason' | translate"
+              [required]="true"
+              [placeholder]="'consultationForm.reasonPlaceholder' | translate"
+              formControlName="title"
+              [invalid]="isFieldInvalid('title')"
+              [invalidMessage]="getFieldError('title')">
+            </app-input>
+          </div>
+
+          <div class="form-group">
             <app-user-search-select
               [label]="'consultationForm.selectBeneficiary' | translate"
               [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
@@ -35,15 +46,11 @@
             </app-user-search-select>
           </div>
 
-          <div class="form-group">
-            <app-input
-              [label]="'consultationForm.reason' | translate"
-              [required]="true"
-              [placeholder]="'consultationForm.reasonPlaceholder' | translate"
-              formControlName="title"
-              [invalid]="isFieldInvalid('title')"
-              [invalidMessage]="getFieldError('title')">
-            </app-input>
+          <div class="form-group visibility-toggle">
+            <app-checkbox
+              [label]="'consultationForm.visibleByPatient' | translate"
+              formControlName="visible_by_patient">
+            </app-checkbox>
           </div>
 
           <div class="form-group">
@@ -57,12 +64,6 @@
 
           @if (customFields().length > 0) {
           <div class="custom-fields-section" formGroupName="custom_fields">
-            <app-typography
-              [variant]="TypographyTypeEnum['body-l-bold']"
-              style="margin-top: 24px; margin-bottom: 16px; display: block">
-              {{ 'consultationForm.customFields' | translate }}
-            </app-typography>
-
             @for (field of customFields(); track field.id) {
             <div class="form-group">
               @switch (field.field_type) { @case ('short_text') {

@@ -225,6 +225,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       group_id: [''],
       beneficiary_id: [''],
       owned_by_id: [''],
+      visible_by_patient: [true],
       appointments: this.fb.array([]),
     });
     this.formReady.set(true);
@@ -336,6 +337,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       description: consultation.description || '',
       group_id: consultation.group?.id?.toString() || '',
       beneficiary_id: consultation.beneficiary?.id?.toString() || '',
+      visible_by_patient: consultation.visible_by_patient ?? true,
     });
 
     if (consultation.custom_fields?.length) {
@@ -427,6 +429,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       description: formValue.description || undefined,
       group_id: formValue.group_id ? parseInt(formValue.group_id) : undefined,
       beneficiary_id: formValue.beneficiary_id ? parseInt(formValue.beneficiary_id) : undefined,
+      visible_by_patient: formValue.visible_by_patient,
       custom_fields: this.buildCustomFieldsPayload(),
     };
 
@@ -481,6 +484,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       group_id: formValue.group_id ? parseInt(formValue.group_id) : undefined,
       beneficiary_id: beneficiaryId,
       owned_by_id: ownedById,
+      visible_by_patient: formValue.visible_by_patient,
       custom_fields: this.buildCustomFieldsPayload(),
     };
 
@@ -574,6 +578,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       beneficiary_id: formValue.beneficiary_id
         ? parseInt(formValue.beneficiary_id)
         : undefined,
+      visible_by_patient: formValue.visible_by_patient,
       custom_fields: this.buildCustomFieldsPayload(),
     };
 

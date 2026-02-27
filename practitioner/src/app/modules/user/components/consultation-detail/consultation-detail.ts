@@ -58,6 +58,7 @@ import { Button } from '../../../../shared/ui-components/button/button';
 import { Badge } from '../../../../shared/components/badge/badge';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
+import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
 import { Select } from '../../../../shared/ui-components/select/select';
 import { UserSearchSelect } from '../../../../shared/components/user-search-select/user-search-select';
 import {
@@ -101,6 +102,7 @@ type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
     Badge,
     Input,
     Textarea,
+    Checkbox,
     Select,
     UserSearchSelect,
     AppointmentFormModal,
@@ -266,6 +268,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       beneficiary_id: [''],
       owned_by_id: [''],
       group_id: [''],
+      visible_by_patient: [true],
     });
   }
 
@@ -945,6 +948,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       beneficiary_id: currentConsultation.beneficiary?.id || '',
       owned_by_id: currentConsultation.owned_by?.id || '',
       group_id: currentConsultation.group?.id?.toString() || '',
+      visible_by_patient: currentConsultation.visible_by_patient ?? true,
     });
 
     // Build custom fields form controls
@@ -1031,6 +1035,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
         : null,
       owned_by_id: formValue.owned_by_id ? Number(formValue.owned_by_id) : null,
       group_id: formValue.group_id ? Number(formValue.group_id) : null,
+      visible_by_patient: formValue.visible_by_patient,
       custom_fields: customFieldsPayload,
     };
 

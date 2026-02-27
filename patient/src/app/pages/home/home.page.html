@@ -69,32 +69,41 @@
           </button>
         </div>
       } @else {
-        <div class="cards-grid">
+        <div class="timeline-list">
           @for (request of requests(); track request.id) {
-            <div class="request-card" (click)="viewRequestDetails(request)">
-              <div class="card-top-row">
-                <h3 class="card-title">{{ getReasonName(request) }}</h3>
-                <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
-                  {{ getStatusConfig(request.status).label }}
-                </span>
+            <div class="timeline-item" (click)="viewRequestDetails(request)">
+              <div class="timeline-item-main">
+                <div class="timeline-item-left">
+                  <h3 class="timeline-item-title">{{ getReasonName(request) }}</h3>
+                  @if (getSpecialityName(request)) {
+                    <span class="timeline-item-subtitle">{{ getSpecialityName(request) }}</span>
+                  }
+                  @if (getDoctorName(request) && !hasConsultation(request)) {
+                    <div class="timeline-item-doctor">
+                      <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
+                      <span>{{ getDoctorName(request) }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="timeline-item-right">
+                  @if (request.created_at) {
+                    <span class="timeline-item-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
+                  }
+                  <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
+                    {{ getStatusConfig(request.status).label }}
+                  </span>
+                </div>
               </div>
 
-              @if (request.created_at) {
-                <span class="card-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
-              }
-
-              @if (getSpecialityName(request)) {
-                <span class="card-subtitle">{{ getSpecialityName(request) }}</span>
-              }
-
-              @if (getDoctorName(request) && !hasConsultation(request)) {
-                <div class="card-doctor">
-                  <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
-                  <span>{{ getDoctorName(request) }}</span>
-                </div>
-              }
-
-              @if (hasAppointment(request)) {
+              @if (request.consultation?.appointments?.length) {
+                @for (appt of request.consultation!.appointments!; track appt.id) {
+                  <app-appointment-info
+                    [appointment]="appt"
+                    [label]="'home.scheduledAppointment' | translate"
+                    [speciality]="getSpecialityName(request)">
+                  </app-appointment-info>
+                }
+              } @else if (hasAppointment(request)) {
                 <app-appointment-info
                   [appointment]="request.appointment!"
                   [label]="'home.scheduledAppointment' | translate"
@@ -154,20 +163,16 @@
           </div>
         </div>
 
-        <div class="cards-grid">
+        <div class="timeline-list">
           @for (consultation of consultations(); track consultation.id) {
-            <div class="consultation-card" (click)="viewConsultationDetails(consultation)">
-              <div class="card-top-row">
-                @if (consultation.created_at) {
-                  <span class="card-date">{{ consultation.created_at | date:'MMM d, yyyy' }}</span>
+            <div class="timeline-item" (click)="viewConsultationDetails(consultation)">
+              @if (consultation.appointments?.length) {
+                @for (appt of consultation.appointments!; track appt.id) {
+                  <app-appointment-info
+                    [appointment]="appt"
+                    [label]="'home.scheduledAppointment' | translate">
+                  </app-appointment-info>
                 }
-              </div>
-
-              @if (consultation.next_appointment) {
-                <app-appointment-info
-                  [appointment]="consultation.next_appointment"
-                  [label]="'home.nextAppointmentLabel' | translate">
-                </app-appointment-info>
               }
 
               <app-consultation-info
@@ -189,19 +194,22 @@
           </div>
         </div>
 
-        <div class="cards-grid">
+        <div class="timeline-list">
           @for (appointment of appointments(); track appointment.id) {
-            <div class="appointment-card" (click)="viewAppointmentDetails(appointment)">
-              <div class="card-top-row">
-                <span class="status-badge status-{{ getAppointmentStatusConfig(appointment.status).color }}">
-                  {{ getAppointmentStatusConfig(appointment.status).label }}
-                </span>
+            <div class="timeline-item" (click)="viewAppointmentDetails(appointment)">
+              <div class="timeline-item-main">
+                <div class="timeline-item-left">
+                  <app-appointment-info
+                    [appointment]="appointment"
+                    [label]="'home.scheduledAppointment' | translate">
+                  </app-appointment-info>
+                </div>
+                <div class="timeline-item-right">
+                  <span class="status-badge status-{{ getAppointmentStatusConfig(appointment.status).color }}">
+                    {{ getAppointmentStatusConfig(appointment.status).label }}
+                  </span>
+                </div>
               </div>
-
-              <app-appointment-info
-                [appointment]="appointment"
-                [label]="'home.scheduledAppointment' | translate">
-              </app-appointment-info>
             </div>
           }
         </div>

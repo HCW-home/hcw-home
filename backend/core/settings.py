@@ -363,11 +363,6 @@ WEBPUSH_VAPID_CLAIMS_EMAIL = os.getenv(
 
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
-# Janus Media Server Configuration
-JANUS_TURN_SERVER = os.getenv("JANUS_TURN_SERVER", "turn:demo.hcw-at-home.com")
-JANUS_TURN_USERNAME = os.getenv("JANUS_TURN_USERNAME", "iabsis")
-JANUS_TURN_PASSWORD = os.getenv("JANUS_TURN_PASSWORD", "pfcqopfs")
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

@@ -3,4 +3,7 @@ export interface SelectOption {
   value: number | string;
   disabled?: boolean;
   isNew?: boolean;
+  image?: string;
+  secondaryLabel?: string;
+  initials?: string;
 }

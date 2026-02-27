@@ -17,7 +17,7 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Observable, Subject, takeUntil, debounceTime, distinctUntilChanged, map } from 'rxjs';
 
 import { ConsultationService } from '../../../../core/services/consultation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
@@ -72,7 +72,7 @@ import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
 import { Switch } from '../../../../shared/ui-components/switch/switch';
 
 import { Typography } from '../../../../shared/ui-components/typography/typography';
-import { Select } from '../../../../shared/ui-components/select/select';
+import { Select, AsyncSearchFn, AsyncSearchResult } from '../../../../shared/ui-components/select/select';
 import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
@@ -144,6 +144,8 @@ export class ConsultationForm implements OnInit, OnDestroy {
   selectedOwner = signal<IUser | null>(null);
   selectedBeneficiary = signal<IUser | null>(null);
   currentUser = signal<IUser | null>(null);
+  private practitionerCache = new Map<number, IUser>();
+  private beneficiaryCache = new Map<number, IUser>();
 
   consultationForm!: FormGroup;
 
@@ -193,6 +195,55 @@ export class ConsultationForm implements OnInit, OnDestroy {
       label: queue.name,
     }))
   );
+
+  practitionerSearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
+    return this.userService.searchUsers(query, page, 20, false, undefined, true).pipe(
+      map(response => {
+        const results: SelectOption[] = response.results.map(user => {
+          this.practitionerCache.set(user.pk, user);
+          const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+          const initials = this.getUserInitials(user);
+          return {
+            value: user.pk,
+            label: name,
+            secondaryLabel: user.email,
+            image: user.picture || undefined,
+            initials,
+          };
+        });
+        return { results, hasMore: response.next !== null };
+      })
+    );
+  };
+
+  beneficiarySearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
+    return this.userService.searchUsers(query, page, 20, false).pipe(
+      map(response => {
+        const results: SelectOption[] = response.results.map(user => {
+          this.beneficiaryCache.set(user.pk, user);
+          const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+          const initials = this.getUserInitials(user);
+          return {
+            value: user.pk,
+            label: name,
+            secondaryLabel: user.email,
+            image: user.picture || undefined,
+            initials,
+          };
+        });
+        return { results, hasMore: response.next !== null };
+      })
+    );
+  };
+
+  private getUserInitials(user: IUser): string {
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+    return (firstName || lastName || user.email || 'U').charAt(0).toUpperCase();
+  }
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -257,6 +308,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
     });
 
     this.setupAutoSave();
+    this.setupOwnerSync();
   }
 
   private loadCurrentUser(): void {
@@ -641,6 +693,32 @@ export class ConsultationForm implements OnInit, OnDestroy {
       this.consultationForm.patchValue({ owned_by_id: '' });
     }
     this.updateInviteCheckboxStates();
+  }
+
+  private setupOwnerSync(): void {
+    this.consultationForm.get('owned_by_id')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        if (value) {
+          const user = this.practitionerCache.get(Number(value));
+          this.selectedOwner.set(user || null);
+        } else {
+          this.selectedOwner.set(null);
+        }
+        this.updateInviteCheckboxStates();
+      });
+
+    this.consultationForm.get('beneficiary_id')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        if (value) {
+          const user = this.beneficiaryCache.get(Number(value));
+          this.selectedBeneficiary.set(user || null);
+        } else {
+          this.selectedBeneficiary.set(null);
+        }
+        this.updateInviteCheckboxStates();
+      });
   }
 
   nextStep(): void {

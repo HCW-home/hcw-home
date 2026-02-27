@@ -77,26 +77,66 @@
     </div>
 
     @if (open) {
-      <ul class="options">
-        @for (opt of filteredOptions; track opt.value; let i = $index) {
-          <li
-            tabindex="0"
-            role="listitem"
-            class="option"
-            [class.selected]="isSelected(opt)"
-            [class.disabled]="opt.disabled"
-            [class.new-option]="opt.isNew"
-            [class.hover]="hoverIndex === i"
-            (click)="onOptionClick(opt); $event.stopPropagation()"
-            (mouseenter)="hoverIndex = i"
-            (mouseleave)="hoverIndex = null"
-            (keydown.enter)="onOptionClick(opt); $event.stopPropagation()">
-            <app-typography
-              class="select-value"
-              [variant]="TypographyTypeEnum['body-medium']">
-              {{ opt.label }}
-            </app-typography>
+      <ul class="options" (scroll)="onOptionsScroll($event)">
+        @if (asyncSearch() && asyncLoading() && filteredOptions.length === 0) {
+          <li class="option-loading">
+            <app-loader></app-loader>
           </li>
+        } @else {
+          @for (opt of filteredOptions; track opt.value; let i = $index) {
+            <li
+              tabindex="0"
+              role="listitem"
+              class="option"
+              [class.selected]="isSelected(opt)"
+              [class.disabled]="opt.disabled"
+              [class.new-option]="opt.isNew"
+              [class.hover]="hoverIndex === i"
+              [class.rich]="opt.image || opt.initials || opt.secondaryLabel"
+              (click)="onOptionClick(opt); $event.stopPropagation()"
+              (mouseenter)="hoverIndex = i"
+              (mouseleave)="hoverIndex = null"
+              (keydown.enter)="onOptionClick(opt); $event.stopPropagation()">
+              @if (opt.image || opt.initials) {
+                <div class="option-avatar">
+                  @if (opt.image) {
+                    <img [src]="opt.image" alt="" />
+                  } @else {
+                    <span>{{ opt.initials }}</span>
+                  }
+                </div>
+              }
+              <div class="option-content">
+                <app-typography
+                  class="select-value"
+                  [variant]="TypographyTypeEnum['body-medium']">
+                  {{ opt.label }}
+                </app-typography>
+                @if (opt.secondaryLabel) {
+                  <app-typography
+                    class="select-secondary"
+                    [variant]="TypographyTypeEnum['body-xs-regular']"
+                    color="var(--slate-500)">
+                    {{ opt.secondaryLabel }}
+                  </app-typography>
+                }
+              </div>
+            </li>
+          }
+          @if (asyncSearch() && filteredOptions.length === 0 && !asyncLoading()) {
+            <li class="option-empty">
+              <app-typography
+                [variant]="TypographyTypeEnum['body-s-regular']"
+                color="var(--slate-400)">
+                No results
+              </app-typography>
+            </li>
+          }
+          @if (asyncLoadingMore()) {
+            <li class="option-loading">
+              <app-loader></app-loader>
+            </li>
+          }
         }
       </ul>
     }

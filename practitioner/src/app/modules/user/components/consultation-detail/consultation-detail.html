@@ -55,23 +55,27 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <app-user-search-select
+                  <app-select
                     [label]="'consultationDetail.beneficiary' | translate"
                     [placeholder]="'consultationDetail.searchPatient' | translate"
-                    [temporary]="false"
-                    [initialUser]="selectedBeneficiary()"
-                    (userSelected)="onBeneficiarySelected($event)">
-                  </app-user-search-select>
+                    [options]="[]"
+                    [asyncSearch]="beneficiarySearchFn"
+                    [initialOption]="beneficiaryInitialOption()"
+                    [clearable]="true"
+                    formControlName="beneficiary_id">
+                  </app-select>
                 </div>
 
                 <div class="form-group">
-                  <app-user-search-select
+                  <app-select
                     [label]="'consultationDetail.practitioner' | translate"
                     [placeholder]="'consultationDetail.searchPractitioner' | translate"
-                    [isPractitioner]="true"
-                    [initialUser]="selectedOwner()"
-                    (userSelected)="onOwnerSelected($event)">
-                  </app-user-search-select>
+                    [options]="[]"
+                    [asyncSearch]="practitionerSearchFn"
+                    [initialOption]="ownerInitialOption()"
+                    [clearable]="true"
+                    formControlName="owned_by_id">
+                  </app-select>
                 </div>
               </div>
 

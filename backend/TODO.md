@@ -108,10 +108,6 @@ Feedback Gilles
 ===============
 
 - image cannot be svg
-- http://localhost:4200/app/consultations/new?step=1 : plus moyen de déselectionner
-- http://localhost:8001/home > sous forme de timeline et lister tous les futures rdv
-- Mes demandes : 
-- http://localhost:8001/home : navigation "request" 
 - http://localhost:8001/new-request > virer "Passer - Laise le système ..."
 - http://localhost:8001/new-request > validation synchrone ?
 - Corriger le login

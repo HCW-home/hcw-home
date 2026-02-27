@@ -37,13 +37,14 @@
           </div>
 
           <div class="form-group">
-            <app-user-search-select
+            <app-select
               [label]="'consultationForm.selectBeneficiary' | translate"
               [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
-              [temporary]="false"
-              formControlName="beneficiary_id"
-              (userSelected)="onBeneficiarySelected($event)">
-            </app-user-search-select>
+              [options]="[]"
+              [asyncSearch]="beneficiarySearchFn"
+              [clearable]="true"
+              formControlName="beneficiary_id">
+            </app-select>
           </div>
 
           <div class="form-group visibility-toggle">
@@ -123,13 +124,14 @@
           </app-typography>
 
           <div class="form-group">
-            <app-user-search-select
+            <app-select
               [label]="'consultationForm.selectPractitioner' | translate"
               [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
-              [temporary]="false"
-              [isPractitioner]="true"
-              (userSelected)="onOwnerSelected($event)">
-            </app-user-search-select>
+              [options]="[]"
+              [asyncSearch]="practitionerSearchFn"
+              [clearable]="true"
+              formControlName="owned_by_id">
+            </app-select>
           </div>
 
           <div class="form-group">

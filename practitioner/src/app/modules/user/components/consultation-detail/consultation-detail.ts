@@ -14,7 +14,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil, map } from 'rxjs';
 import {
   FullCalendarModule,
   FullCalendarComponent,
@@ -59,15 +59,14 @@ import { Badge } from '../../../../shared/components/badge/badge';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
 import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
-import { Select } from '../../../../shared/ui-components/select/select';
-import { UserSearchSelect } from '../../../../shared/components/user-search-select/user-search-select';
+import { Select, AsyncSearchFn, AsyncSearchResult } from '../../../../shared/ui-components/select/select';
+import { SelectOption } from '../../../../shared/models/select';
 import {
   ButtonStyleEnum,
   ButtonSizeEnum,
   ButtonStateEnum,
 } from '../../../../shared/constants/button';
 import { BadgeTypeEnum } from '../../../../shared/constants/badge';
-import { SelectOption } from '../../../../shared/models/select';
 import {
   getParticipantBadgeType,
   getAppointmentBadgeType,
@@ -104,7 +103,6 @@ type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
     Textarea,
     Checkbox,
     Select,
-    UserSearchSelect,
     AppointmentFormModal,
     FullCalendarModule,
     LocalDatePipe,
@@ -201,6 +199,10 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   editForm!: FormGroup;
   selectedBeneficiary = signal<IUser | null>(null);
   selectedOwner = signal<IUser | null>(null);
+  beneficiaryInitialOption = signal<SelectOption | null>(null);
+  ownerInitialOption = signal<SelectOption | null>(null);
+  private practitionerCache = new Map<number, IUser>();
+  private beneficiaryCache = new Map<number, IUser>();
 
   private fb = inject(FormBuilder);
 
@@ -210,6 +212,49 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       label: queue.name,
     }))
   );
+
+  beneficiarySearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
+    return this.userService.searchUsers(query, page, 20, false).pipe(
+      map(response => {
+        const results: SelectOption[] = response.results.map(user => {
+          this.beneficiaryCache.set(user.pk, user);
+          return this.userToSelectOption(user);
+        });
+        return { results, hasMore: response.next !== null };
+      })
+    );
+  };
+
+  practitionerSearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
+    return this.userService.searchUsers(query, page, 20, false, undefined, true).pipe(
+      map(response => {
+        const results: SelectOption[] = response.results.map(user => {
+          this.practitionerCache.set(user.pk, user);
+          return this.userToSelectOption(user);
+        });
+        return { results, hasMore: response.next !== null };
+      })
+    );
+  };
+
+  private userToSelectOption(user: IUser): SelectOption {
+    const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    let initials: string;
+    if (firstName && lastName) {
+      initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    } else {
+      initials = (firstName || lastName || user.email || 'U').charAt(0).toUpperCase();
+    }
+    return {
+      value: user.pk,
+      label: name,
+      secondaryLabel: user.email,
+      image: user.picture || undefined,
+      initials,
+    };
+  }
 
   protected readonly AppointmentStatus = AppointmentStatus;
   protected readonly AppointmentType = AppointmentType;
@@ -270,6 +315,28 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       group_id: [''],
       visible_by_patient: [true],
     });
+
+    this.editForm.get('beneficiary_id')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        if (value) {
+          const user = this.beneficiaryCache.get(Number(value));
+          this.selectedBeneficiary.set(user || null);
+        } else {
+          this.selectedBeneficiary.set(null);
+        }
+      });
+
+    this.editForm.get('owned_by_id')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        if (value) {
+          const user = this.practitionerCache.get(Number(value));
+          this.selectedOwner.set(user || null);
+        } else {
+          this.selectedOwner.set(null);
+        }
+      });
   }
 
   private loadQueues(): void {
@@ -967,27 +1034,35 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       this.editForm.get('custom_fields')?.patchValue(cfValues);
     }
 
-    this.selectedBeneficiary.set(
-      currentConsultation.beneficiary
-        ? ({
-            pk: currentConsultation.beneficiary.id,
-            email: currentConsultation.beneficiary.email,
-            first_name: currentConsultation.beneficiary.first_name,
-            last_name: currentConsultation.beneficiary.last_name,
-          } as IUser)
-        : null
-    );
+    if (currentConsultation.beneficiary) {
+      const bUser = {
+        pk: currentConsultation.beneficiary.id,
+        email: currentConsultation.beneficiary.email,
+        first_name: currentConsultation.beneficiary.first_name,
+        last_name: currentConsultation.beneficiary.last_name,
+      } as IUser;
+      this.selectedBeneficiary.set(bUser);
+      this.beneficiaryCache.set(bUser.pk, bUser);
+      this.beneficiaryInitialOption.set(this.userToSelectOption(bUser));
+    } else {
+      this.selectedBeneficiary.set(null);
+      this.beneficiaryInitialOption.set(null);
+    }
 
-    this.selectedOwner.set(
-      currentConsultation.owned_by
-        ? ({
-            pk: currentConsultation.owned_by.id,
-            email: currentConsultation.owned_by.email,
-            first_name: currentConsultation.owned_by.first_name,
-            last_name: currentConsultation.owned_by.last_name,
-          } as IUser)
-        : null
-    );
+    if (currentConsultation.owned_by) {
+      const oUser = {
+        pk: currentConsultation.owned_by.id,
+        email: currentConsultation.owned_by.email,
+        first_name: currentConsultation.owned_by.first_name,
+        last_name: currentConsultation.owned_by.last_name,
+      } as IUser;
+      this.selectedOwner.set(oUser);
+      this.practitionerCache.set(oUser.pk, oUser);
+      this.ownerInitialOption.set(this.userToSelectOption(oUser));
+    } else {
+      this.selectedOwner.set(null);
+      this.ownerInitialOption.set(null);
+    }
 
     this.isEditMode.set(true);
   }
@@ -996,16 +1071,8 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     this.isEditMode.set(false);
     this.selectedBeneficiary.set(null);
     this.selectedOwner.set(null);
-  }
-
-  onBeneficiarySelected(user: IUser | null): void {
-    this.selectedBeneficiary.set(user);
-    this.editForm.patchValue({ beneficiary_id: user?.pk || '' });
-  }
-
-  onOwnerSelected(user: IUser | null): void {
-    this.selectedOwner.set(user);
-    this.editForm.patchValue({ owned_by_id: user?.pk || '' });
+    this.beneficiaryInitialOption.set(null);
+    this.ownerInitialOption.set(null);
   }
 
   saveConsultationChanges(): void {

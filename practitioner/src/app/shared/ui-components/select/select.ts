@@ -6,19 +6,36 @@ import {
   HostListener,
   input,
   OnChanges,
+  OnDestroy,
+  OnInit,
   output,
+  signal,
   SimpleChanges,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { SelectOption } from '../../models/select';
 import { Svg } from '../svg/svg';
 import { Typography } from '../typography/typography';
 import { TypographyTypeEnum } from '../../constants/typography';
 import { ErrorMessage } from '../../components/error-message/error-message';
+import { Loader } from '../../components/loader/loader';
+
+export interface AsyncSearchResult {
+  results: SelectOption[];
+  hasMore: boolean;
+}
+
+export type AsyncSearchFn = (
+  query: string,
+  page: number
+) => Observable<AsyncSearchResult>;
 
 @Component({
   selector: 'app-select',
-  imports: [Svg, Typography, ErrorMessage],
+  imports: [CommonModule, Svg, Typography, ErrorMessage, Loader],
   templateUrl: './select.html',
   styleUrl: './select.scss',
   providers: [
@@ -29,7 +46,7 @@ import { ErrorMessage } from '../../components/error-message/error-message';
     },
   ],
 })
-export class Select implements ControlValueAccessor, OnChanges {
+export class Select implements ControlValueAccessor, OnChanges, OnInit, OnDestroy {
   label = input<string>();
   name = input<string>();
   required = input<boolean>(false);
@@ -43,6 +60,8 @@ export class Select implements ControlValueAccessor, OnChanges {
   createOptionLabel = input<string>('');
   clearable = input(false);
   openUp = input(false);
+  asyncSearch = input<AsyncSearchFn | null>(null);
+  initialOption = input<SelectOption | null>(null);
   createItem = output<boolean>();
 
   value: string | number | null = null;
@@ -50,6 +69,18 @@ export class Select implements ControlValueAccessor, OnChanges {
   selectedValues: SelectOption[] = [];
   hoverIndex: number | null = null;
   searchTerm = '';
+
+  // Async search state
+  asyncOptions = signal<SelectOption[]>([]);
+  asyncLoading = signal(false);
+  asyncLoadingMore = signal(false);
+  asyncHasMore = signal(false);
+  private asyncPage = 1;
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  private currentSearchSub: Subscription | null = null;
+  // Store the selected option for display when in async mode
+  private selectedOption: SelectOption | null = null;
 
   @HostBinding('class.open') open = false;
   @HostBinding('class.disabled') disabled = false;
@@ -60,9 +91,34 @@ export class Select implements ControlValueAccessor, OnChanges {
   private onChange: (value: string | number | (string | number)[] | null) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
+  ngOnInit(): void {
+    this.searchSubject
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(query => {
+        this.asyncPage = 1;
+        this.asyncOptions.set([]);
+        this.asyncHasMore.set(false);
+        this.performAsyncSearch(query, 1);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.currentSearchSub?.unsubscribe();
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['options'] && !changes['options'].firstChange) {
       this.writeValue(this.value);
+    }
+    if (changes['initialOption']) {
+      const opt = this.initialOption();
+      if (opt) {
+        this.selectedOption = opt;
+        this.value = opt.value;
+        this.display = opt.label;
+      }
     }
   }
 
@@ -72,8 +128,17 @@ export class Select implements ControlValueAccessor, OnChanges {
       this.selectedValues = this.options().filter(o => arr.includes(o.value));
     } else {
       this.value = Array.isArray(obj) ? null : obj;
-      const match = this.options().find(o => o.value === obj);
-      this.display = match ? match.label : '';
+      if (this.asyncSearch()) {
+        // In async mode, check initialOption first, then selectedOption
+        const initial = this.initialOption();
+        if (initial && initial.value === obj) {
+          this.selectedOption = initial;
+        }
+        this.display = this.selectedOption?.label ?? '';
+      } else {
+        const match = this.options().find(o => o.value === obj);
+        this.display = match ? match.label : '';
+      }
     }
   }
 
@@ -104,6 +169,12 @@ export class Select implements ControlValueAccessor, OnChanges {
     this.open = true;
     this.onTouched();
     this.updateDropDirection();
+
+    // Load initial results for async mode
+    if (this.asyncSearch() && this.asyncOptions().length === 0) {
+      this.asyncPage = 1;
+      this.performAsyncSearch('', 1);
+    }
   }
 
   private updateDropDirection(): void {
@@ -121,6 +192,11 @@ export class Select implements ControlValueAccessor, OnChanges {
     const target = event.target as HTMLInputElement;
     this.searchTerm = target.value;
 
+    if (this.asyncSearch()) {
+      this.searchSubject.next(this.searchTerm);
+      return;
+    }
+
     if (!this.multiSelect() && this.open) {
       const match = this.filteredOptions.find(
         opt => opt.label.toLowerCase() === this.searchTerm.toLowerCase()
@@ -132,6 +208,10 @@ export class Select implements ControlValueAccessor, OnChanges {
   }
 
   get filteredOptions(): SelectOption[] {
+    if (this.asyncSearch()) {
+      return this.asyncOptions();
+    }
+
     const search = this.searchTerm.toLowerCase();
     const base = this.options().filter(opt =>
       opt.label.toLowerCase().includes(search)
@@ -186,6 +266,8 @@ export class Select implements ControlValueAccessor, OnChanges {
   selectOption(opt: SelectOption): void {
     this.value = opt.value;
     this.display = opt.label;
+    this.selectedOption = opt;
+    this.searchTerm = '';
     this.onChange(opt.value);
     this.open = false;
   }
@@ -195,6 +277,7 @@ export class Select implements ControlValueAccessor, OnChanges {
     this.value = null;
     this.display = '';
     this.searchTerm = '';
+    this.selectedOption = null;
     this.onChange(null);
   }
 
@@ -203,6 +286,55 @@ export class Select implements ControlValueAccessor, OnChanges {
       o => o.value !== item.value
     );
     this.onChange(this.selectedValues.map(o => o.value));
+  }
+
+  onOptionsScroll(event: Event): void {
+    if (!this.asyncSearch()) return;
+    const el = event.target as HTMLElement;
+    const threshold = 50;
+    const isNearBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    if (isNearBottom && this.asyncHasMore() && !this.asyncLoadingMore() && !this.asyncLoading()) {
+      this.asyncPage++;
+      this.performAsyncSearch(this.searchTerm, this.asyncPage, true);
+    }
+  }
+
+  private performAsyncSearch(query: string, page: number, loadMore = false): void {
+    const searchFn = this.asyncSearch();
+    if (!searchFn) return;
+
+    if (loadMore) {
+      this.asyncLoadingMore.set(true);
+    } else {
+      this.asyncLoading.set(true);
+    }
+
+    this.currentSearchSub?.unsubscribe();
+    this.currentSearchSub = searchFn(query, page)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: result => {
+          if (loadMore) {
+            this.asyncOptions.update(current => [...current, ...result.results]);
+          } else {
+            this.asyncOptions.set(result.results);
+          }
+          this.asyncHasMore.set(result.hasMore);
+          this.asyncLoading.set(false);
+          this.asyncLoadingMore.set(false);
+        },
+        error: () => {
+          this.asyncLoading.set(false);
+          this.asyncLoadingMore.set(false);
+        },
+      });
+  }
+
+  // Check if any option has rich content (avatar/secondary label)
+  get hasRichOptions(): boolean {
+    const opts = this.asyncSearch() ? this.asyncOptions() : this.options();
+    return opts.some(o => o.image || o.initials || o.secondaryLabel);
   }
 
   @HostListener('document:click', ['$event'])

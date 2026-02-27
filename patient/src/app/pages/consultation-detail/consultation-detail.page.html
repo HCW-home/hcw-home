@@ -16,9 +16,15 @@
         <h2 class="consultation-title">{{ consultation()?.title }}</h2>
       }
       @if (getDoctorName()) {
-        <div class="doctor-row">
-          <div class="doctor-avatar">{{ getDoctorInitial() }}</div>
-          <span class="doctor-name">{{ getDoctorName() }}</span>
+        <div class="doctor-section">
+          <span class="doctor-label">{{ 'consultationDetail.handledBy' | translate }}</span>
+          <div class="doctor-row">
+            <div class="doctor-avatar">{{ getDoctorInitial() }}</div>
+            <span class="doctor-name">{{ getDoctorName() }}</span>
+            @if (getDoctorSpecialities()) {
+              <span class="doctor-specialities">{{ getDoctorSpecialities() }}</span>
+            }
+          </div>
         </div>
       }
       <div class="header-dates">

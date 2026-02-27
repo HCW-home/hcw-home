@@ -432,7 +432,7 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
   getDoctorName(): string {
     const cons = this.consultation();
     if (cons?.owned_by) {
-      return `Dr. ${cons.owned_by.first_name} ${cons.owned_by.last_name}`;
+      return `${cons.owned_by.first_name} ${cons.owned_by.last_name}`;
     }
     return "";
   }
@@ -443,6 +443,14 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
       return cons.owned_by.first_name.charAt(0).toUpperCase();
     }
     return "?";
+  }
+
+  getDoctorSpecialities(): string {
+    const cons = this.consultation();
+    if (cons?.owned_by?.specialities?.length) {
+      return cons.owned_by.specialities.map(s => s.name).join(', ');
+    }
+    return '';
   }
 
   getAppointmentTypeIcon(appointment: Appointment): string {

@@ -38,11 +38,22 @@
       margin: 0 0 var(--app-spacing-md) 0;
     }
 
+    .doctor-section {
+      margin-top: var(--app-spacing-sm);
+      margin-bottom: var(--app-spacing-md);
+
+      .doctor-label {
+        display: block;
+        font-size: 0.8125rem;
+        color: var(--app-text-muted);
+        margin-bottom: 6px;
+      }
+    }
+
     .doctor-row {
       display: flex;
       align-items: center;
       gap: var(--app-spacing-sm);
-      margin-bottom: var(--app-spacing-md);
 
       .doctor-avatar {
         width: 32px;
@@ -61,6 +72,11 @@
         font-size: 0.9375rem;
         font-weight: 600;
         color: var(--app-text-primary);
+      }
+
+      .doctor-specialities {
+        font-size: 0.8125rem;
+        color: var(--app-text-muted);
       }
     }
 

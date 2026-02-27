@@ -158,7 +158,7 @@
 
         <div class="timeline-list">
           @for (consultation of consultations(); track consultation.id) {
-            <div class="timeline-item" (click)="viewConsultationDetails(consultation)">
+            <div class="timeline-item">
               @if (consultation.appointments?.length) {
                 @for (appt of consultation.appointments!; track appt.id) {
                   <app-appointment-info

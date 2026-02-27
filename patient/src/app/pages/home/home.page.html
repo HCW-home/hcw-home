@@ -72,26 +72,31 @@
           @for (request of requests(); track request.id) {
             <div class="timeline-item">
               <div class="timeline-item-content">
-                <div class="timeline-item-main">
-                  <div class="timeline-item-left">
-                    <h3 class="timeline-item-title">{{ getReasonName(request) }}</h3>
-                    @if (getSpecialityName(request)) {
-                      <span class="timeline-item-subtitle">{{ getSpecialityName(request) }}</span>
-                    }
-                    @if (getDoctorName(request) && !hasConsultation(request)) {
-                      <div class="timeline-item-doctor">
-                        <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
-                        <span>{{ getDoctorName(request) }}</span>
-                      </div>
-                    }
+                <div class="request-info-block">
+                  <div class="request-info-label">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>{{ 'home.myRequest' | translate }}</span>
                   </div>
-                  <div class="timeline-item-right">
-                    @if (request.created_at) {
-                      <span class="timeline-item-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
-                    }
+                  <span class="request-info-title">{{ getReasonName(request) }}</span>
+                  @if (getSpecialityName(request)) {
+                    <span class="request-info-subtitle">{{ getSpecialityName(request) }}</span>
+                  }
+                  @if (getDoctorName(request) && !hasConsultation(request)) {
+                    <div class="request-info-doctor">
+                      <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
+                      <span>{{ getDoctorName(request) }}</span>
+                    </div>
+                  }
+                  @if (request.comment) {
+                    <p class="request-info-comment">{{ request.comment }}</p>
+                  }
+                  <div class="request-info-footer">
                     <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
                       {{ getStatusConfig(request.status).label }}
                     </span>
+                    @if (request.created_at) {
+                      <span class="request-info-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
+                    }
                   </div>
                 </div>
 

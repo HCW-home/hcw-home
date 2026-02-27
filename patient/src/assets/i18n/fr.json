@@ -128,6 +128,7 @@
   "home": {
     "nextAppointment": "Prochain rendez-vous",
     "myRequests": "Mes demandes",
+    "myRequest": "Ma demande",
     "noPendingRequests": "Aucune demande en attente",
     "noInvitations": "Vous n'avez reçu aucune invitation",
     "noAppointment": "Pas de rendez-vous pour l'instant",

@@ -1,23 +1,35 @@
-<div class="cgu-page">
+<div class="terms-page">
   @if (loading) {
     <app-loader></app-loader>
   } @else if (term) {
-    <div class="cgu-card">
-      <app-typography
-        color="var(--slate-800)"
-        [variant]="TypographyTypeEnum['h6-semibold']">
-        {{ term.name }}
-      </app-typography>
+    <div class="terms-content-wrapper">
+      <div class="terms-card">
+        <app-typography
+          color="var(--slate-800)"
+          [variant]="TypographyTypeEnum['h6-semibold']">
+          {{ term.name }}
+        </app-typography>
 
-      <div class="cgu-content" [innerHTML]="term.content"></div>
+        <div class="terms-content" [innerHTML]="term.content"></div>
+      </div>
+    </div>
 
-      <app-button
-        [type]="ButtonTypeEnum.button"
-        [block]="true"
-        [style]="ButtonStyleEnum.primary"
-        [text]="'cgu.accept' | translate"
-        [loading]="accepting"
-        (click)="onAccept()"></app-button>
+    <div class="terms-footer">
+      <div class="footer-inner">
+        <label class="accept-checkbox">
+          <input type="checkbox" [(ngModel)]="accepted" />
+          <span>{{ 'cgu.acceptCheckbox' | translate }}</span>
+        </label>
+        <button
+          class="accept-button"
+          [disabled]="!accepted || accepting"
+          (click)="onAccept()">
+          @if (accepting) {
+            <span class="spinner"></span>
+          }
+          {{ 'cgu.accept' | translate }}
+        </button>
+      </div>
     </div>
   }
 </div>

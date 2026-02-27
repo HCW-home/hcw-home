@@ -1,38 +1,133 @@
-.cgu-page {
+.terms-page {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  min-height: 100vh;
+  padding-bottom: 140px;
   box-sizing: border-box;
+  background: linear-gradient(
+    135deg,
+    var(--slate-100) 0%,
+    var(--primary-50) 50%,
+    var(--slate-100) 100%
+  );
 
-  .cgu-card {
-    gap: 24px;
-    width: 100%;
-    max-width: 600px;
+  .terms-content-wrapper {
+    padding: 24px 16px;
     display: flex;
-    padding: 24px;
-    border-radius: 16px;
-    flex-direction: column;
-    background: var(--White);
+    justify-content: center;
 
-    .cgu-content {
-      flex: 1;
-      overflow-y: auto;
+    .terms-card {
+      gap: 24px;
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      padding: 24px;
+      border-radius: 16px;
+      flex-direction: column;
+      background: var(--White);
+
+      .terms-content {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--slate-600);
+      }
+    }
+  }
+
+  .terms-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: #ffffff;
+    border-top: 1px solid var(--slate-200, #e2e8f0);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+
+    .footer-inner {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .accept-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
       font-size: 14px;
-      line-height: 1.6;
-      color: var(--slate-600);
+      color: var(--slate-700, #334155);
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-600, #0891b2);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      span {
+        line-height: 1.4;
+      }
+    }
+
+    .accept-button {
+      width: 100%;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      background: var(--primary-600, #0891b2);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s, opacity 0.15s;
+
+      &:hover:not(:disabled) {
+        opacity: 0.9;
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
     }
   }
 }
 
-@media (max-width: 480px) {
-  .cgu-page {
-    padding: 12px;
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-    .cgu-card {
-      padding: 16px;
+@media (max-width: 480px) {
+  .terms-page {
+    .terms-content-wrapper {
+      padding: 12px;
+
+      .terms-card {
+        padding: 16px;
+      }
+    }
+
+    .terms-footer {
+      padding: 12px;
     }
   }
 }

@@ -145,6 +145,7 @@ Feedback Gilles
 - http://localhost:8001/new-request > virer "Passer - Laise le système ..."
 - http://localhost:8001/new-request > validation synchrone ?
 - Corriger le login
+- Des fois le websocket s'affiche même sur la page de login
 
 {
 	"non_field_errors": [

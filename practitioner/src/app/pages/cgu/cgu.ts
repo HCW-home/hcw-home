@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, switchMap } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -9,15 +10,13 @@ import { TranslationService } from '../../core/services/translation.service';
 import { ITerm } from '../../modules/user/models/user';
 import { RoutePaths } from '../../core/constants/routes';
 import { Typography } from '../../shared/ui-components/typography/typography';
-import { Button } from '../../shared/ui-components/button/button';
 import { Loader } from '../../shared/components/loader/loader';
 import { TypographyTypeEnum } from '../../shared/constants/typography';
-import { ButtonTypeEnum, ButtonStyleEnum } from '../../shared/constants/button';
 
 @Component({
   selector: 'app-cgu',
   standalone: true,
-  imports: [Typography, Button, Loader, TranslatePipe],
+  imports: [FormsModule, Typography, Loader, TranslatePipe],
   templateUrl: './cgu.html',
   styleUrl: './cgu.scss',
 })
@@ -30,12 +29,11 @@ export class CguPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   TypographyTypeEnum = TypographyTypeEnum;
-  ButtonTypeEnum = ButtonTypeEnum;
-  ButtonStyleEnum = ButtonStyleEnum;
 
   term: ITerm | null = null;
   loading = true;
   accepting = false;
+  accepted = false;
 
   ngOnInit(): void {
     this.loadTerm();

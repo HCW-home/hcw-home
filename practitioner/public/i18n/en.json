@@ -301,7 +301,8 @@
     "resendFailedMessage": "Failed to resend code. Please try again."
   },
   "cgu": {
-    "accept": "Accept",
+    "accept": "Accept and continue",
+    "acceptCheckbox": "I have read and accept the terms and conditions",
     "title": "Terms & Conditions",
     "loadError": "Failed to load terms",
     "acceptError": "Failed to accept terms"

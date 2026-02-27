@@ -269,11 +269,18 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.loading.set(true);
     this.listCurrentPage = 1;
 
+    const params: Record<string, unknown> = {
+      page_size: this.pageSize,
+      status: AppointmentStatus.SCHEDULED,
+    };
+
+    if (this.currentDateRange) {
+      params['scheduled_at__date__gte'] = this.currentDateRange.start;
+      params['scheduled_at__date__lte'] = this.currentDateRange.end;
+    }
+
     this.consultationService
-      .getAppointments({
-        page_size: this.pageSize,
-        status: AppointmentStatus.SCHEDULED,
-      })
+      .getAppointments(params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: response => {
@@ -298,12 +305,19 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.loadingMore.set(true);
     this.listCurrentPage++;
 
+    const params: Record<string, unknown> = {
+      page_size: this.pageSize,
+      page: this.listCurrentPage,
+      status: AppointmentStatus.SCHEDULED,
+    };
+
+    if (this.currentDateRange) {
+      params['scheduled_at__date__gte'] = this.currentDateRange.start;
+      params['scheduled_at__date__lte'] = this.currentDateRange.end;
+    }
+
     this.consultationService
-      .getAppointments({
-        page_size: this.pageSize,
-        page: this.listCurrentPage,
-        status: AppointmentStatus.SCHEDULED,
-      })
+      .getAppointments(params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: response => {

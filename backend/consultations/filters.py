@@ -10,6 +10,7 @@ class ConsultationFilter(django_filters.FilterSet):
         lookup_expr="isnull",
         exclude=True  # so is_closed=True means closed_at is NOT null
     )
+    scheduled = django_filters.BooleanFilter(method='filter_scheduled')
 
     class Meta:
         model = Consultation
@@ -20,6 +21,23 @@ class ConsultationFilter(django_filters.FilterSet):
             "owned_by",
             "closed_at",
         ]
+
+    def filter_scheduled(self, queryset, name, value):
+        from .models import AppointmentStatus
+        cutoff = timezone.now() - timedelta(hours=2)
+        if value is True:
+            # Consultations with at least one future scheduled appointment
+            return queryset.filter(
+                appointments__scheduled_at__gte=cutoff,
+                appointments__status=AppointmentStatus.scheduled,
+            ).distinct()
+        elif value is False:
+            # Consultations without any future scheduled appointment
+            return queryset.exclude(
+                appointments__scheduled_at__gte=cutoff,
+                appointments__status=AppointmentStatus.scheduled,
+            ).distinct()
+        return queryset
 
 
 class AppointmentFilter(django_filters.FilterSet):

@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { SKIP_ERROR_TOAST } from '../interceptors/auth.interceptor';
 import {
   Queue,
   Participant,
@@ -38,6 +39,7 @@ export class ConsultationService {
     created_by?: number;
     owned_by?: number;
     is_closed?: boolean;
+    scheduled?: boolean;
     closed_at?: string;
     search?: string;
   }): Observable<PaginatedResponse<Consultation>> {
@@ -82,7 +84,8 @@ export class ConsultationService {
   closeConsultation(id: number): Observable<Consultation> {
     return this.http.post<Consultation>(
       `${this.apiUrl}/consultations/${id}/close/`,
-      {}
+      {},
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
     );
   }
 
@@ -90,29 +93,6 @@ export class ConsultationService {
     return this.http.post<Consultation>(
       `${this.apiUrl}/consultations/${id}/reopen/`,
       {}
-    );
-  }
-
-  getOverdueConsultations(params?: {
-    page?: number;
-    page_size?: number;
-    group?: number;
-    beneficiary?: number;
-    created_by?: number;
-    owned_by?: number;
-    search?: string;
-  }): Observable<PaginatedResponse<Consultation>> {
-    let httpParams = new HttpParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          httpParams = httpParams.set(key, value.toString());
-        }
-      });
-    }
-    return this.http.get<PaginatedResponse<Consultation>>(
-      `${this.apiUrl}/consultations/overdue/`,
-      { params: httpParams }
     );
   }
 

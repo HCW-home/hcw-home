@@ -120,7 +120,7 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
             return Response(
                 {
                     "error": _(
-                        "Unable to close consultation with appointment scheduled in future"
+                        _("Unable to close consultation with appointment scheduled in future")
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -240,22 +240,6 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
                 )
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @extend_schema(
-        responses={200: ConsultationSerializer(many=True)},
-        description="Get overdue consultations where either:\n"
-        "1. All appointments are more than 1 hour in the past, OR\n"
-        "2. The last message was sent by the beneficiary",
-    )
-    @action(detail=False, methods=["get"], url_path="overdue")
-    def overdue(self, request):
-        """Get consultations that need attention (overdue)"""
-
-        # Get consultations the user has access to
-        queryset = self.filter_queryset(self.get_queryset().overdue)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
 
     @extend_schema(
         responses={200: {"type": "string", "format": "binary"}},
@@ -1148,7 +1132,10 @@ class DashboardPractitionerView(APIView):
                     remaining_appointments, many=True, context=ctx
                 ).data,
                 "overdue_consultations": ConsultationSerializer(
-                    consultations_qs.overdue.order_by("-created_at")[:3], many=True, context=ctx
+                    consultations_qs.active.exclude(
+                        appointments__scheduled_at__gte=timezone.now() - timedelta(hours=2),
+                        appointments__status=AppointmentStatus.scheduled,
+                    ).distinct().order_by("-created_at")[:3], many=True, context=ctx
                 ).data,
             },
             status=status.HTTP_200_OK,

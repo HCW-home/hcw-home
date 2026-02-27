@@ -3,6 +3,7 @@ import {
   HttpRequest,
   HttpHandlerFn,
   HttpErrorResponse,
+  HttpContextToken,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
@@ -12,6 +13,8 @@ import { Auth } from '../services/auth';
 import { TranslationService } from '../services/translation.service';
 import { ToasterService } from '../services/toaster.service';
 import { getErrorMessage } from '../utils/error-helper';
+
+export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 let isRefreshing = false;
 
@@ -83,7 +86,7 @@ export const authInterceptor: HttpInterceptorFn = (
           translationService.instant('common.networkError'),
           translationService.instant('common.networkErrorMessage')
         );
-      } else if (error.status >= 400) {
+      } else if (error.status >= 400 && !req.context.get(SKIP_ERROR_TOAST)) {
         const message = getErrorMessage(error);
         toasterService.show(
           'error',

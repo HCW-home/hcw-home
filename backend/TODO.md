@@ -10,21 +10,13 @@ update patient user information
 * Add language endpoint /language/<lang_code>/
 * Add some field in user
 * Add location field
-* Add terms models
-* Add terms for Users
-
-
-
 * On sent action appointement, I would track partitipant
 * Add message logic and send link and datetime of appointment
 * Add calculated status field for participant (participant : sent, read, accepted)
 * Add validation on phone number
 
-* Websocket messages
 * edit appointment > reset participant notification status
 
-* Add appointment into consultation patient side
-* Send join appointment
 
 ## Top priority
 
@@ -47,16 +39,10 @@ update patient user information
     - Edit should have modal or inline edit, not back to wizard
     - Merge Edit and Manage participant button and modal, participants can be manage on the right.
 
-* Handling user timezone
-
-<!-- * Participant delete causing many problem : Notification if participant has been deleted, message rending is not working anymore. -->
-
 ## Low priority
 
 * Join consultation : add intermediate page similar to google meet.
 * Health Metric : add custom fields on patient + on health metric + endpoints
-<!-- * Remove delete appointment -->
-check permission for /dashboard
 
 
 ## Add filter patient (user) to only have doctor
@@ -95,28 +81,18 @@ No permission (=patient) but : can still go own appointment or group appointment
 
 # Misc
 
-<!--- Add register endpoint, but can be disable from .env file (Olivier)-->
-<!--- Add openid authentication (Olivier)-->
-<!--- Patient dashboard : having next appointment on top-->
-<!--- Remove Review button on Dashboard (click on line is enough)-->
-<!--- Remove resume button on consultation list (click on line is enough)-->
 - Remove arrow on Patient page list (click on line is enough)
-<!--- Websocket, add event when somebody join appointment, have ring page (Accept or later)-->
 - Implement system message in backend in consultation, to log system event, created_by will be empty
 
 ![alt text](image.png)
 - specialities/id/doctors/ is not returning full image path for picture
 - permissions : doctor without permission should see dashboard and consultation
-<!-- - on notificaton create, send websocket message also. -->
-<!-- - add terms view by ID -->
 - User messages for patient is giving 404 not found
 - picture on reason is not correct, fix for debug mode
 - patient will be redirected to patient app if login in doctor app
 
 
 - online status is not properly updated in consultations detail for participant
-<!--- think about patient terms-->
-<!--- consultations list search is not working-->
 - dashboard overdue consultations is missing profile picture full path
 - after openid login everything is 403 except for dashboard end-point
 - getting 403 on consultation messages in patient app
@@ -131,15 +107,12 @@ No permission (=patient) but : can still go own appointment or group appointment
 Feedback Gilles
 ===============
 
-- Interface docteur : InPerson ou online >> Video
 - Rendez-vous à venir : tous lister et mettre en surbrillance
 - Fuseau horaire coupé dans interface doctor bienvenue
-- term qui marche plus bordel
 - image cannot be svg
 - button par dessus l'overlay pour le welcome
-- http://localhost:4200/app/consultations/new : non traduit + Reason first + Beneficiary can see consultation
 - http://localhost:4200/app/consultations/new?step=1 : plus moyen de déselectionner
-- http://localhost:8001/home > sous forme de timeline
+- http://localhost:8001/home > sous forme de timeline et lister tous les futures rdv
 - Mes demandes : 
 - http://localhost:8001/home : navigation "request" 
 - http://localhost:8001/new-request > virer "Passer - Laise le système ..."

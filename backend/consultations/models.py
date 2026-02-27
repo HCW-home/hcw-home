@@ -78,6 +78,10 @@ class Consultation(models.Model):
         verbose_name=_("owned by"),
     )
 
+    visible_by_patient = models.BooleanField(
+        _("visible by patient"), default=True
+    )
+
     objects = ConsultationManager()
 
     class Meta:

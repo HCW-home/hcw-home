@@ -71,11 +71,12 @@ class ConsultationAdmin(ModelAdmin):
         "created_by",
         "beneficiary",
         "group",
+        "visible_by_patient",
         "created_at",
         "closed_at",
         "messages_count",
     ]
-    list_filter = ["created_at", "closed_at", "group"]
+    list_filter = ["created_at", "closed_at", "group", "visible_by_patient"]
     search_fields = ["created_by__email", "beneficiary__email", "group__name"]
     readonly_fields = ["created_at", "updated_at"]
 

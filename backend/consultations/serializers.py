@@ -294,6 +294,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "description",
             "title",
             "closed_at",
+            "visible_by_patient",
             "next_appointment",
         ]
         read_only_fields = [

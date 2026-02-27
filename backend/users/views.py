@@ -188,7 +188,7 @@ class UserConsultationsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Get consultations for the authenticated user."""
         user = self.request.user
-        return Consultation.objects.filter(beneficiary=user)
+        return Consultation.objects.filter(beneficiary=user, visible_by_patient=True)
 
     @extend_schema(
         responses={
@@ -1018,7 +1018,7 @@ class UserDashboardView(APIView):
 
         consultations = (
             Consultation.objects.exclude(request__in=user_requests)
-            .filter(beneficiary=user, closed_at__isnull=True)
+            .filter(beneficiary=user, closed_at__isnull=True, visible_by_patient=True)
             .order_by("-created_at")
         )
 

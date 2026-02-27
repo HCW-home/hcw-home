@@ -107,7 +107,6 @@ No permission (=patient) but : can still go own appointment or group appointment
 Feedback Gilles
 ===============
 
-- Fuseau horaire coupé dans interface doctor bienvenue
 - image cannot be svg
 - button par dessus l'overlay pour le welcome
 - http://localhost:4200/app/consultations/new?step=1 : plus moyen de déselectionner

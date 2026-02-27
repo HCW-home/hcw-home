@@ -20,7 +20,6 @@
   max-width: 900px;
   min-height: 520px;
   border-radius: 16px;
-  overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   background: var(--White);
 }
@@ -32,6 +31,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
+  border-radius: 16px 0 0 16px;
 
   .left-content {
     text-align: center;
@@ -148,6 +148,7 @@
   .left-side {
     padding: 32px 24px;
     min-height: auto;
+    border-radius: 0;
 
     .left-content {
       .logo-img {

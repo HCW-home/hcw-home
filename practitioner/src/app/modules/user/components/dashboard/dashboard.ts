@@ -162,6 +162,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.router.navigate(['/app/consultations']);
   }
 
+  navigateToAppointments(): void {
+    this.router.navigate(['/app/appointments']);
+  }
+
   navigateToNewConsultation(): void {
     this.router.navigate(['/app/consultations/new']);
   }

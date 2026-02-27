@@ -109,13 +109,4 @@ Feedback Gilles
 
 - image cannot be svg
 - http://localhost:8001/new-request > validation synchrone ?
-- Corriger le login
 - Des fois le websocket s'affiche même sur la page de login
-
-{
-	"non_field_errors": [
-		"Unable to log in with provided credentials."
-	]
-}
-- Close offline not working
-- Email doit afficher 6 digits

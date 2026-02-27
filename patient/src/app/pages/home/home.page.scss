@@ -273,9 +273,9 @@
     justify-content: flex-start;
     gap: 6px;
     padding: 16px;
-    border: 1.5px dashed var(--app-border-color);
+    border: 1.5px dashed var(--app-text-muted);
     border-radius: 8px;
-    color: var(--app-text-muted);
+    color: var(--app-text-secondary);
     font-size: 0.875rem;
 
     ion-icon {

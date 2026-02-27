@@ -108,7 +108,6 @@ Feedback Gilles
 ===============
 
 - image cannot be svg
-- button par dessus l'overlay pour le welcome
 - http://localhost:4200/app/consultations/new?step=1 : plus moyen de déselectionner
 - http://localhost:8001/home > sous forme de timeline et lister tous les futures rdv
 - Mes demandes : 

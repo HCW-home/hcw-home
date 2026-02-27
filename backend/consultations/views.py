@@ -879,6 +879,11 @@ class ReasonSlotsView(APIView):
                         slot_start_aware = timezone.make_aware(current_datetime)
                         slot_end_aware = timezone.make_aware(slot_end_datetime)
 
+                        # Skip slots in the past
+                        if slot_start_aware <= timezone.now():
+                            current_time = slot_end_time
+                            continue
+
                         slot_conflicts = False
                         practitioner_appointments = appointment_lookup.get(
                             practitioner.id, []

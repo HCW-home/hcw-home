@@ -127,16 +127,13 @@
             }
           </div>
 
-          <div class="step-actions">
-            @if (selectedSlot()) {
+          @if (selectedSlot()) {
+            <div class="step-actions">
               <button class="primary-action" (click)="proceedToDoctor()">
                 {{ 'newRequest.continueWithSlot' | translate }}
               </button>
-            }
-            <button class="secondary-action" (click)="skipSlotSelection()">
-              {{ 'newRequest.skipSlot' | translate }}
-            </button>
-          </div>
+            </div>
+          }
         </div>
       }
 

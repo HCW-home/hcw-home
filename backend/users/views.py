@@ -996,6 +996,7 @@ class UserDashboardView(APIView):
         """Get dashboard data for the authenticated user."""
         user = request.user
         now = timezone.now()
+        two_hours_ago = now - timezone.timedelta(hours=2)
 
         user_requests = (
             Request.objects.filter(
@@ -1009,7 +1010,7 @@ class UserDashboardView(APIView):
                 )
                 | Q(
                     status=RequestStatus.accepted,
-                    appointment__scheduled_at__gte=now,
+                    appointment__scheduled_at__gte=two_hours_ago,
                     appointment__status="scheduled",
                 )
             )
@@ -1022,12 +1023,12 @@ class UserDashboardView(APIView):
             .order_by("-created_at")
         )
 
-        # Next upcoming appointment (with 1 hour grace period)
+        # Next upcoming appointment (with 2 hour grace period)
         next_appointment = (
             Appointment.objects.filter(
                 participant__user=user,
                 participant__is_active=True,
-                scheduled_at__gte=now - timezone.timedelta(hours=1),
+                scheduled_at__gte=two_hours_ago,
                 status="scheduled",
             )
             .distinct()
@@ -1042,7 +1043,7 @@ class UserDashboardView(APIView):
             ).filter(
                 participant__user=user,
                 participant__is_active=True,
-                scheduled_at__gte=now,
+                scheduled_at__gte=two_hours_ago,
                 status="scheduled",
             )
             .distinct()

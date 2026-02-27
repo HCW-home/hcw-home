@@ -323,11 +323,11 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         return None
 
     def get_appointments(self, obj):
-        """Get all non-cancelled appointments scheduled after one hour ago."""
-        one_hour_ago = timezone.now() - timedelta(hours=1)
+        """Get all non-cancelled appointments scheduled after two hours ago."""
+        two_hours_ago = timezone.now() - timedelta(hours=2)
         appts = (
             obj.appointments.exclude(status=AppointmentStatus.cancelled)
-            .filter(scheduled_at__gte=one_hour_ago)
+            .filter(scheduled_at__gte=two_hours_ago)
             .order_by("scheduled_at")
         )
         return AppointmentSerializer(appts, many=True, context=self.context).data
@@ -758,7 +758,7 @@ class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     expected_with = ConsultationUserSerializer(read_only=True)
     consultation = serializers.SerializerMethodField()
-    appointment = AppointmentSerializer(read_only=True)
+    appointment = serializers.SerializerMethodField()
     reason = ReasonSerializer(read_only=True)
     reason_id = serializers.IntegerField(write_only=True)
     expected_with_id = serializers.IntegerField(
@@ -808,6 +808,14 @@ class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         validated_data["created_by"] = user
 
         return super().create(validated_data)
+
+    def get_appointment(self, obj):
+        """Only return appointment if scheduled within the last 2 hours."""
+        if obj.appointment:
+            two_hours_ago = timezone.now() - timedelta(hours=2)
+            if obj.appointment.scheduled_at >= two_hours_ago:
+                return AppointmentSerializer(obj.appointment, context=self.context).data
+        return None
 
     def get_consultation(self, obj):
         """Only return consultation data if visible_by_patient is True."""

@@ -120,19 +120,33 @@ def message_saved(sender, instance: Message, created, **kwargs):
 @receiver(post_save, sender=Appointment)
 def appointment_saved(sender, instance: Appointment, created, **kwargs):
     """
-    Whenever an Appointment is created, broadcast it over Channels.
+    Whenever an Appointment is created/updated, broadcast it over Channels
+    to consultation users and appointment participants.
     """
     channel_layer = get_channel_layer()
 
-    # Send notifications to each user
-    if not instance.consultation:
-        return
-    for user_pk in get_users_to_notification_consultation(instance.consultation):
+    users_to_notify = set()
+
+    # Add consultation users
+    if instance.consultation:
+        users_to_notify.update(
+            get_users_to_notification_consultation(instance.consultation)
+        )
+
+    # Add appointment participants
+    for participant in instance.participant_set.filter(
+        is_active=True, user__isnull=False
+    ):
+        users_to_notify.add(participant.user.pk)
+
+    consultation_pk = instance.consultation.pk if instance.consultation else None
+
+    for user_pk in users_to_notify:
         async_to_sync(channel_layer.group_send)(
             f"user_{user_pk}",
             {
                 "type": "appointment",
-                "consultation_id": instance.consultation.pk,
+                "consultation_id": consultation_pk,
                 "appointment_id": instance.pk,
                 "state": "created" if created else "updated",
             },

@@ -159,6 +159,12 @@
         <div class="timeline-list">
           @for (consultation of consultations(); track consultation.id) {
             <div class="timeline-item">
+              <app-consultation-info
+                [consultation]="consultation"
+                [label]="'home.followUp' | translate"
+                (access)="viewConsultationDetails(consultation)">
+              </app-consultation-info>
+
               @if (consultation.appointments?.length) {
                 @for (appt of consultation.appointments!; track appt.id) {
                   <app-appointment-info
@@ -167,12 +173,6 @@
                   </app-appointment-info>
                 }
               }
-
-              <app-consultation-info
-                [consultation]="consultation"
-                [label]="'home.followUp' | translate"
-                (access)="viewConsultationDetails(consultation)">
-              </app-consultation-info>
             </div>
           }
         </div>

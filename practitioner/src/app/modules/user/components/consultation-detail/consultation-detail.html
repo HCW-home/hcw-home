@@ -243,7 +243,7 @@
             @if (isEditMode() && customFields().length > 0 && editForm.get('custom_fields')) {
             <ng-container formGroupName="custom_fields">
               @for (field of customFields(); track field.id) {
-              <div class="info-item">
+              <div class="info-item" [class.full-width]="field.field_type === 'long_text'">
                 @switch (field.field_type) { @case ('short_text') {
                 <app-input
                   [label]="field.name"
@@ -282,7 +282,7 @@
             </ng-container>
             } @else if (consultation()?.custom_fields?.length) {
               @for (cf of consultation()!.custom_fields!; track cf.field) {
-              <div class="info-item">
+              <div class="info-item" [class.full-width]="cf.field_type === 'long_text'">
                 <span class="info-label">{{ cf.field_name }}</span>
                 <span class="info-value">{{ cf.value || '-' }}</span>
               </div>

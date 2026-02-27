@@ -108,7 +108,6 @@ Feedback Gilles
 ===============
 
 - image cannot be svg
-- http://localhost:8001/new-request > virer "Passer - Laise le système ..."
 - http://localhost:8001/new-request > validation synchrone ?
 - Corriger le login
 - Des fois le websocket s'affiche même sur la page de login

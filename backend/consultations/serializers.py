@@ -757,7 +757,7 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
 class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     expected_with = ConsultationUserSerializer(read_only=True)
-    consultation = ConsultationSerializer(read_only=True)
+    consultation = serializers.SerializerMethodField()
     appointment = AppointmentSerializer(read_only=True)
     reason = ReasonSerializer(read_only=True)
     reason_id = serializers.IntegerField(write_only=True)
@@ -808,6 +808,12 @@ class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         validated_data["created_by"] = user
 
         return super().create(validated_data)
+
+    def get_consultation(self, obj):
+        """Only return consultation data if visible_by_patient is True."""
+        if obj.consultation and obj.consultation.visible_by_patient:
+            return ConsultationSerializer(obj.consultation, context=self.context).data
+        return None
 
 
 # class AppointmentFHIRSerializer(serializers.Serializer):

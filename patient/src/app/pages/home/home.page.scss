@@ -163,8 +163,8 @@
 
   .timeline-item {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: var(--app-spacing-md);
     padding: var(--app-spacing-lg);
     border-bottom: 1px solid var(--app-border-color);
     cursor: pointer;
@@ -180,6 +180,34 @@
 
     &:active {
       background: rgba(var(--ion-color-primary-rgb), 0.06);
+    }
+  }
+
+  .timeline-item-content {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 280px - var(--app-spacing-md));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .timeline-item-appointments {
+    flex-shrink: 0;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: center;
+  }
+
+  @media (max-width: 768px) {
+    .timeline-item {
+      flex-direction: column;
+    }
+
+    .timeline-item-appointments {
+      width: 100%;
     }
   }
 

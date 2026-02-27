@@ -71,64 +71,70 @@
         <div class="timeline-list">
           @for (request of requests(); track request.id) {
             <div class="timeline-item">
-              <div class="timeline-item-main">
-                <div class="timeline-item-left">
-                  <h3 class="timeline-item-title">{{ getReasonName(request) }}</h3>
-                  @if (getSpecialityName(request)) {
-                    <span class="timeline-item-subtitle">{{ getSpecialityName(request) }}</span>
-                  }
-                  @if (getDoctorName(request) && !hasConsultation(request)) {
-                    <div class="timeline-item-doctor">
-                      <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
-                      <span>{{ getDoctorName(request) }}</span>
-                    </div>
-                  }
+              <div class="timeline-item-content">
+                <div class="timeline-item-main">
+                  <div class="timeline-item-left">
+                    <h3 class="timeline-item-title">{{ getReasonName(request) }}</h3>
+                    @if (getSpecialityName(request)) {
+                      <span class="timeline-item-subtitle">{{ getSpecialityName(request) }}</span>
+                    }
+                    @if (getDoctorName(request) && !hasConsultation(request)) {
+                      <div class="timeline-item-doctor">
+                        <div class="doctor-avatar-sm">{{ getDoctorName(request).charAt(0) }}</div>
+                        <span>{{ getDoctorName(request) }}</span>
+                      </div>
+                    }
+                  </div>
+                  <div class="timeline-item-right">
+                    @if (request.created_at) {
+                      <span class="timeline-item-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
+                    }
+                    <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
+                      {{ getStatusConfig(request.status).label }}
+                    </span>
+                  </div>
                 </div>
-                <div class="timeline-item-right">
-                  @if (request.created_at) {
-                    <span class="timeline-item-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
-                  }
-                  <span class="status-badge status-{{ getStatusConfig(request.status).color }}">
-                    {{ getStatusConfig(request.status).label }}
-                  </span>
-                </div>
+
+                @if (hasConsultation(request)) {
+                  <app-consultation-info
+                    [consultation]="request.consultation!"
+                    [label]="'home.followUp' | translate"
+                    (access)="viewConsultationFromRequest(request)">
+                  </app-consultation-info>
+                }
+
+                @if (isStatusRequested(request)) {
+                  <div class="card-info-row card-info-waiting">
+                    <ion-icon name="hourglass-outline"></ion-icon>
+                    <span>{{ 'home.awaitingAssignment' | translate }}</span>
+                  </div>
+                }
+
+                @if (isStatusRefused(request) && request.refused_reason) {
+                  <div class="card-info-row card-info-refused">
+                    <ion-icon name="close-circle-outline"></ion-icon>
+                    <span>{{ request.refused_reason }}</span>
+                  </div>
+                }
               </div>
 
-              @if (hasConsultation(request)) {
-                <app-consultation-info
-                  [consultation]="request.consultation!"
-                  [label]="'home.followUp' | translate"
-                  (access)="viewConsultationFromRequest(request)">
-                </app-consultation-info>
-              }
-
-              @if (request.consultation?.appointments?.length) {
-                @for (appt of request.consultation!.appointments!; track appt.id) {
-                  <app-appointment-info
-                    [appointment]="appt"
-                    [label]="'home.scheduledAppointment' | translate"
-                    [speciality]="getSpecialityName(request)">
-                  </app-appointment-info>
-                }
-              } @else if (hasAppointment(request)) {
-                <app-appointment-info
-                  [appointment]="request.appointment!"
-                  [label]="'home.scheduledAppointment' | translate"
-                  [speciality]="getSpecialityName(request)">
-                </app-appointment-info>
-              }
-
-              @if (isStatusRequested(request)) {
-                <div class="card-info-row card-info-waiting">
-                  <ion-icon name="hourglass-outline"></ion-icon>
-                  <span>{{ 'home.awaitingAssignment' | translate }}</span>
-                </div>
-              }
-
-              @if (isStatusRefused(request) && request.refused_reason) {
-                <div class="card-info-row card-info-refused">
-                  <ion-icon name="close-circle-outline"></ion-icon>
-                  <span>{{ request.refused_reason }}</span>
+              @if (request.consultation?.appointments?.length || hasAppointment(request)) {
+                <div class="timeline-item-appointments">
+                  @if (request.consultation?.appointments?.length) {
+                    @for (appt of request.consultation!.appointments!; track appt.id) {
+                      <app-appointment-info
+                        [appointment]="appt"
+                        [label]="'home.scheduledAppointment' | translate"
+                        [speciality]="getSpecialityName(request)">
+                      </app-appointment-info>
+                    }
+                  } @else if (hasAppointment(request)) {
+                    <app-appointment-info
+                      [appointment]="request.appointment!"
+                      [label]="'home.scheduledAppointment' | translate"
+                      [speciality]="getSpecialityName(request)">
+                    </app-appointment-info>
+                  }
                 </div>
               }
             </div>
@@ -159,19 +165,23 @@
         <div class="timeline-list">
           @for (consultation of consultations(); track consultation.id) {
             <div class="timeline-item">
-              <app-consultation-info
-                [consultation]="consultation"
-                [label]="'home.followUp' | translate"
-                (access)="viewConsultationDetails(consultation)">
-              </app-consultation-info>
+              <div class="timeline-item-content">
+                <app-consultation-info
+                  [consultation]="consultation"
+                  [label]="'home.followUp' | translate"
+                  (access)="viewConsultationDetails(consultation)">
+                </app-consultation-info>
+              </div>
 
               @if (consultation.appointments?.length) {
-                @for (appt of consultation.appointments!; track appt.id) {
-                  <app-appointment-info
-                    [appointment]="appt"
-                    [label]="'home.scheduledAppointment' | translate">
-                  </app-appointment-info>
-                }
+                <div class="timeline-item-appointments">
+                  @for (appt of consultation.appointments!; track appt.id) {
+                    <app-appointment-info
+                      [appointment]="appt"
+                      [label]="'home.scheduledAppointment' | translate">
+                    </app-appointment-info>
+                  }
+                </div>
               }
             </div>
           }
@@ -191,9 +201,12 @@
         <div class="timeline-list">
           @for (appointment of appointments(); track appointment.id) {
             <div class="timeline-item">
-              <app-appointment-info
-                [appointment]="appointment">
-              </app-appointment-info>
+              <div class="timeline-item-content"></div>
+              <div class="timeline-item-appointments">
+                <app-appointment-info
+                  [appointment]="appointment">
+                </app-appointment-info>
+              </div>
             </div>
           }
         </div>

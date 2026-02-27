@@ -1047,7 +1047,7 @@ class UserDashboardView(APIView):
                 status="scheduled",
             )
             .distinct()
-            .order_by("-scheduled_at")
+            .order_by("scheduled_at")
         )
 
         serializer_context = {"request": request}

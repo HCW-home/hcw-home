@@ -190,20 +190,10 @@
 
         <div class="timeline-list">
           @for (appointment of appointments(); track appointment.id) {
-            <div class="timeline-item" (click)="viewAppointmentDetails(appointment)">
-              <div class="timeline-item-main">
-                <div class="timeline-item-left">
-                  <app-appointment-info
-                    [appointment]="appointment"
-                    [label]="'home.scheduledAppointment' | translate">
-                  </app-appointment-info>
-                </div>
-                <div class="timeline-item-right">
-                  <span class="status-badge status-{{ getAppointmentStatusConfig(appointment.status).color }}">
-                    {{ getAppointmentStatusConfig(appointment.status).label }}
-                  </span>
-                </div>
-              </div>
+            <div class="timeline-item">
+              <app-appointment-info
+                [appointment]="appointment">
+              </app-appointment-info>
             </div>
           }
         </div>

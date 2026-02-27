@@ -298,9 +298,6 @@ export class HomePage implements OnInit, OnDestroy {
     return appointment.type === 'online' ? this.t.instant('common.video') : this.t.instant('common.inPerson');
   }
 
-  viewAppointmentDetails(appointment: Appointment): void {
-    this.navCtrl.navigateForward(`/appointment/${appointment.id}`);
-  }
 
   getNextAppointmentDoctorName(): string {
     const appt = this.nextAppointment();

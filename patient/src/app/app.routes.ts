@@ -65,12 +65,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/new-request/new-request.page').then(m => m.NewRequestPage),
     canActivate: [AuthGuard, TermsGuard],
   },
-  {
-    path: 'appointment/:id',
-    loadComponent: () => import('./pages/appointment-detail/appointment-detail.page').then(m => m.AppointmentDetailPage),
-    canActivate: [AuthGuard, TermsGuard],
-  },
-  {
+{
     path: 'consultation/:id',
     loadComponent: () => import('./pages/consultation-detail/consultation-detail.page').then(m => m.ConsultationDetailPage),
     canActivate: [AuthGuard, TermsGuard],

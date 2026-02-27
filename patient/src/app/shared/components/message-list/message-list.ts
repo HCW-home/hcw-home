@@ -75,6 +75,7 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
   private t = inject(TranslationService);
 
   @Input() messages: Message[] = [];
+  @Input() headerTitle = '';
   @Input() isConnected = false;
   @Input() isLoadingMore = false;
   @Input() hasMore = true;

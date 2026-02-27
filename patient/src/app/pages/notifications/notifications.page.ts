@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  IonButton,
   IonText,
   IonContent,
   IonRefresher,
@@ -45,7 +44,6 @@ interface DisplayNotification {
   standalone: true,
   imports: [
     CommonModule,
-    IonButton,
     IonText,
     IonContent,
     IonRefresher,

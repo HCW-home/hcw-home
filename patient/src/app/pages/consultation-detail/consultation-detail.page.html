@@ -102,14 +102,9 @@
     }
 
     <div class="chat-section" [class.read-only]="isConsultationClosed()">
-      <div class="chat-header">
-        <ion-icon name="chatbubbles-outline"></ion-icon>
-        <span
-          >{{ isConsultationClosed() ? ('consultationDetail.messageHistory' | translate) : ('consultationDetail.messages' | translate) }}</span
-        >
-      </div>
       <app-message-list
         [messages]="messages()"
+        [headerTitle]="isConsultationClosed() ? ('consultationDetail.messageHistory' | translate) : ('consultationDetail.messages' | translate)"
         [isConnected]="isConsultationClosed() ? false : isConnected()"
         [isLoadingMore]="isLoadingMore()"
         [hasMore]="hasMore()"

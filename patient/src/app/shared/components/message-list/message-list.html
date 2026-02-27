@@ -1,6 +1,8 @@
 <div class="message-list-container">
   <div class="message-list-header">
-    <span class="header-title">{{ 'messageList.messages' | translate }}</span>
+    @if (headerTitle) {
+      <span class="header-title">{{ headerTitle }}</span>
+    }
     <span class="connection-status" [class.connected]="isConnected" [class.disconnected]="!isConnected">
       <ion-icon [name]="isConnected ? 'wifi-outline' : 'cloud-offline-outline'"></ion-icon>
       {{ isConnected ? ('messageList.connected' | translate) : ('messageList.disconnected' | translate) }}

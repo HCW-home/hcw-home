@@ -169,10 +169,6 @@ export class HomePage implements OnInit, OnDestroy {
     this.navCtrl.navigateForward('/new-request');
   }
 
-  viewRequestDetails(request: ConsultationRequest): void {
-    this.navCtrl.navigateForward(`/request-detail/${request.id}`);
-  }
-
   getStatusConfig(status: string | undefined): RequestStatus {
     const normalizedStatus = (status || 'Requested').toLowerCase();
     const statusMap: Record<string, RequestStatus> = {

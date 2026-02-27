@@ -70,7 +70,7 @@
       } @else {
         <div class="timeline-list">
           @for (request of requests(); track request.id) {
-            <div class="timeline-item" (click)="viewRequestDetails(request)">
+            <div class="timeline-item">
               <div class="timeline-item-main">
                 <div class="timeline-item-left">
                   <h3 class="timeline-item-title">{{ getReasonName(request) }}</h3>
@@ -130,13 +130,6 @@
                   [label]="'home.followUp' | translate"
                   (access)="viewConsultationFromRequest(request)">
                 </app-consultation-info>
-              } @else {
-                <div class="card-actions">
-                  <button class="card-btn card-btn-secondary">
-                    <span>{{ 'common.viewDetails' | translate }}</span>
-                    <ion-icon name="chevron-forward-outline"></ion-icon>
-                  </button>
-                </div>
               }
             </div>
           }

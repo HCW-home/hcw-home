@@ -141,6 +141,16 @@
     margin-bottom: var(--app-spacing-xl);
   }
 
+  .requests-section .timeline-item,
+  .consultations-section .timeline-item {
+    cursor: default;
+
+    &:hover,
+    &:active {
+      background: transparent;
+    }
+  }
+
   .timeline-list {
     display: flex;
     flex-direction: column;

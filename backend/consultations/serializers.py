@@ -277,6 +277,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         allow_null=True,
     )
     next_appointment = serializers.SerializerMethodField()
+    appointments = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultation
@@ -296,6 +297,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "closed_at",
             "visible_by_patient",
             "next_appointment",
+            "appointments",
         ]
         read_only_fields = [
             "id",
@@ -304,6 +306,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "created_by",
             "closed_at",
             "next_appointment",
+            "appointments",
         ]
 
     def get_next_appointment(self, obj):
@@ -318,6 +321,16 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         if next_appt:
             return AppointmentSerializer(next_appt, context=self.context).data
         return None
+
+    def get_appointments(self, obj):
+        """Get all non-cancelled appointments scheduled after one hour ago."""
+        one_hour_ago = timezone.now() - timedelta(hours=1)
+        appts = (
+            obj.appointments.exclude(status=AppointmentStatus.cancelled)
+            .filter(scheduled_at__gte=one_hour_ago)
+            .order_by("scheduled_at")
+        )
+        return AppointmentSerializer(appts, many=True, context=self.context).data
 
 
 class AppointmentSerializer(serializers.ModelSerializer):

@@ -13,7 +13,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 
 from .forms import CustomAllAuthPasswordResetForm
-from .models import HealthMetric, Language, Organisation, Speciality, Term
+from .models import HealthMetric, Language, Organisation, Speciality, Term, WebPushSubscription
 
 UserModel = get_user_model()
 
@@ -276,6 +276,26 @@ class HealthMetricSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class WebPushSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebPushSubscription
+        fields = ["id", "endpoint", "p256dh", "auth", "browser"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        subscription, _ = WebPushSubscription.objects.update_or_create(
+            user=user,
+            endpoint=validated_data["endpoint"],
+            defaults={
+                "p256dh": validated_data["p256dh"],
+                "auth": validated_data["auth"],
+                "browser": validated_data.get("browser", ""),
+                "is_active": True,
+            },
+        )
+        return subscription
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):

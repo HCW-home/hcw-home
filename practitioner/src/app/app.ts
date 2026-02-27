@@ -9,6 +9,7 @@ import { UserWebSocketService } from './core/services/user-websocket.service';
 import { ActionHandlerService } from './core/services/action-handler.service';
 import { IncomingCallService } from './core/services/incoming-call.service';
 import { BrowserNotificationService } from './core/services/browser-notification.service';
+import { PushNotificationService } from './core/services/push-notification.service';
 import { ConsultationService } from './core/services/consultation.service';
 import { RoutePaths } from './core/constants/routes';
 
@@ -29,6 +30,7 @@ export class App implements OnInit, OnDestroy {
     private actionHandler: ActionHandlerService,
     private incomingCallService: IncomingCallService,
     private browserNotificationService: BrowserNotificationService,
+    private pushNotificationService: PushNotificationService,
     private consultationService: ConsultationService,
     private router: Router
   ) {}
@@ -36,6 +38,7 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.handleDeepLinks();
     this.setupWebSocketSubscriptions();
+    this.loadVapidKey();
 
     this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))
@@ -43,8 +46,19 @@ export class App implements OnInit, OnDestroy {
         if (isAuthenticated) {
           this.userWsService.connect();
           this.browserNotificationService.requestPermission();
+          this.pushNotificationService.subscribe();
         } else {
           this.userWsService.disconnect();
+        }
+      });
+  }
+
+  private loadVapidKey(): void {
+    this.authService.getOpenIDConfig()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((config: any) => {
+        if (config?.vapid_public_key) {
+          this.pushNotificationService.setVapidPublicKey(config.vapid_public_key);
         }
       });
   }

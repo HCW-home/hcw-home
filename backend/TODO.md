@@ -127,3 +127,28 @@ No permission (=patient) but : can still go own appointment or group appointment
 
 
 - Use GenericForeignKey for message foreign relation
+
+Feedback Gilles
+===============
+
+- Interface docteur : InPerson ou online >> Video
+- Rendez-vous à venir : tous lister et mettre en surbrillance
+- Fuseau horaire coupé dans interface doctor bienvenue
+- term qui marche plus bordel
+- image cannot be svg
+- button par dessus l'overlay pour le welcome
+- http://localhost:4200/app/consultations/new : non traduit + Reason first + Beneficiary can see consultation
+- http://localhost:4200/app/consultations/new?step=1 : plus moyen de déselectionner
+- http://localhost:8001/home > sous forme de timeline
+- Mes demandes : 
+- http://localhost:8001/home : navigation "request" 
+- http://localhost:8001/new-request > virer "Passer - Laise le système ..."
+- http://localhost:8001/new-request > validation synchrone ?
+- Corriger le login
+
+{
+	"non_field_errors": [
+		"Unable to log in with provided credentials."
+	]
+}
+- Close offline not working

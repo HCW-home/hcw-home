@@ -36,3 +36,4 @@ django-constance
 fhir.resources
 django-storages
 boto3
+pywebpush

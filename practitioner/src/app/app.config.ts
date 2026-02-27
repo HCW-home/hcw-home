@@ -1,8 +1,10 @@
 import {
   ApplicationConfig,
+  isDevMode,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
 import {
   provideHttpClient,
@@ -161,6 +163,10 @@ export const appConfig: ApplicationConfig = {
       lucideSparkles,
       lucideCircleDot,
       lucideSquare,
+    }),
+    provideServiceWorker('custom-sw.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideTranslateService({

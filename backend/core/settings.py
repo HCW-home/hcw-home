@@ -354,6 +354,13 @@ FCM_DJANGO_SETTINGS = {
     "FCM_DEVICE_MODEL": "users.FCMDeviceOverride",
 }
 
+# Web Push (VAPID) Configuration
+WEBPUSH_VAPID_PRIVATE_KEY = os.getenv("WEBPUSH_VAPID_PRIVATE_KEY")
+WEBPUSH_VAPID_PUBLIC_KEY = os.getenv("WEBPUSH_VAPID_PUBLIC_KEY")
+WEBPUSH_VAPID_CLAIMS_EMAIL = os.getenv(
+    "WEBPUSH_VAPID_CLAIMS_EMAIL", "mailto:admin@hcw-at-home.com"
+)
+
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
 # Janus Media Server Configuration

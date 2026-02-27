@@ -38,6 +38,7 @@ from .models import (
     Speciality,
     Term,
     User,
+    WebPushSubscription,
 )
 
 admin.site.unregister(Group)
@@ -410,6 +411,19 @@ class DeviceAdmin(ModelAdmin):
 
 admin.site.unregister(FCMDevice)
 admin.site.register(FCMDeviceOverride, DeviceAdmin)
+
+
+@admin.register(WebPushSubscription)
+class WebPushSubscriptionAdmin(ModelAdmin):
+    list_display = ["user", "endpoint_short", "browser", "is_active", "created_at"]
+    list_filter = ["is_active", "browser"]
+    search_fields = ["user__email", "endpoint"]
+    readonly_fields = ["created_at", "updated_at"]
+
+    def endpoint_short(self, obj):
+        return obj.endpoint[:60] + "..."
+
+    endpoint_short.short_description = "Endpoint"
 
 
 @admin.register(Language)

@@ -44,6 +44,16 @@ urlpatterns = [
         views.UserNotificationReadView.as_view(),
         name="user_notification_read",
     ),
+    path(
+        "api/user/webpush/subscribe/",
+        views.WebPushSubscribeView.as_view(),
+        name="webpush_subscribe",
+    ),
+    path(
+        "api/user/webpush/unsubscribe/",
+        views.WebPushUnsubscribeView.as_view(),
+        name="webpush_unsubscribe",
+    ),
     path("api/user/testrtc/", views.TestRTCView.as_view(), name="user_testrtc"),
     path(
         "api/user/dashboard/",

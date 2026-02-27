@@ -3,7 +3,8 @@ import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules, w
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { register } from 'swiper/element/bundle';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, isDevMode } from '@angular/core';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
@@ -202,6 +203,10 @@ bootstrapApplication(AppComponent, {
       }),
       fallbackLang: 'en',
       lang: 'en',
-    })
+    }),
+    provideServiceWorker('custom-sw.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ]
 }).catch(err => console.log(err));

@@ -29,7 +29,7 @@ constantly==23.10.4
 coreapi==2.3.3
 coreschema==0.0.4
 cron_descriptor==2.0.6
-cryptography==44.0.3
+cryptography==46.0.5
 daphne==4.2.1
 diff-match-patch==20241021
 dj-rest-auth==7.0.2
@@ -43,6 +43,7 @@ django-cors-headers==4.9.0
 django-filter==25.2
 django-import-export==4.4.0
 django-location-field==2.7.3
+django-magic-link==1.2.0
 django-mfa2==3.1.2
 django-modeltranslation==0.19.19
 django-rest-swagger==2.2.0
@@ -50,7 +51,7 @@ django-storages==1.14.6
 django-timezone-field==7.2.1
 django-tinymce==5.0.0
 django-types==0.22.0
-django-unfold==0.77.1
+django-unfold==0.80.2
 django_celery_results==2.6.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
@@ -78,6 +79,7 @@ grpcio-status==1.76.0
 h11==0.16.0
 h2==4.3.0
 hpack==4.1.0
+http_ece==1.2.1
 httpcore==1.0.9
 httpx==0.28.1
 hyperframe==6.1.0
@@ -107,6 +109,7 @@ proto-plus==1.27.0
 protobuf==6.33.2
 psycopg==3.3.2
 py-ubjson==0.16.1
+py-vapid==1.9.4
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
 pycparser==2.23
@@ -120,6 +123,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-jose==3.5.0
 python-u2flib-server==5.0.1
+pywebpush==2.3.0
 PyYAML==6.0.3
 redis==7.1.0
 referencing==0.37.0

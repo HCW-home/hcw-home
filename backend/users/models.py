@@ -107,6 +107,44 @@ class FCMDeviceOverride(AbstractFCMDevice):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class WebPushSubscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="webpush_subscriptions",
+    )
+    endpoint = models.URLField(max_length=500, unique=True)
+    p256dh = models.CharField(
+        max_length=200,
+        help_text="Client public key for encryption",
+    )
+    auth = models.CharField(
+        max_length=200,
+        help_text="Client auth secret",
+    )
+    browser = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _("web push subscription")
+        verbose_name_plural = _("web push subscriptions")
+
+    def __str__(self):
+        return f"WebPush for {self.user} ({self.endpoint[:50]}...)"
+
+    @property
+    def subscription_info(self):
+        return {
+            "endpoint": self.endpoint,
+            "keys": {
+                "p256dh": self.p256dh,
+                "auth": self.auth,
+            },
+        }
+
+
 class User(AbstractUser):
     def __str__(self):
         return self.name

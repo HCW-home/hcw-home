@@ -60,7 +60,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .filters import UserFilter
-from .models import HealthMetric, Language, Organisation, Speciality, Term, User
+from .models import HealthMetric, Language, Organisation, Speciality, Term, User, WebPushSubscription
 from .serializers import (
     HealthMetricSerializer,
     LanguageSerializer,
@@ -69,6 +69,7 @@ from .serializers import (
     TermSerializer,
     UserDetailsSerializer,
     UserParticipantDetailSerializer,
+    WebPushSubscriptionSerializer,
 )
 
 
@@ -498,6 +499,41 @@ class UserNotificationsMarkAllReadView(APIView):
         )
 
 
+class WebPushSubscribeView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = WebPushSubscriptionSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class WebPushUnsubscribeView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        endpoint = request.data.get("endpoint")
+        if not endpoint:
+            return Response(
+                {"detail": "endpoint is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        deleted, _ = WebPushSubscription.objects.filter(
+            user=request.user, endpoint=endpoint
+        ).delete()
+        if deleted:
+            return Response({"detail": "Subscription removed."})
+        return Response(
+            {"detail": "Subscription not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
 class UserAppointmentsViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -813,6 +849,7 @@ class AppConfigView(APIView):
                 "primary_color_practitioner": main_org.primary_color_practitioner if main_org else None,
                 "languages": languages,
                 "communication_methods": communication_methods,
+                "vapid_public_key": settings.WEBPUSH_VAPID_PUBLIC_KEY,
             }
         )
 

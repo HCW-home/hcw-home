@@ -14,6 +14,7 @@ import { ActionHandlerService } from "./core/services/action-handler.service";
 import { ConsultationService } from "./core/services/consultation.service";
 import { IncomingCallComponent } from "./shared/components/incoming-call/incoming-call.component";
 import { TranslationService } from "./core/services/translation.service";
+import { PushNotificationService } from "./core/services/push-notification.service";
 
 @Component({
   selector: "app-root",
@@ -25,6 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private titleService = inject(Title);
   private translationService = inject(TranslationService);
+  private pushNotificationService = inject(PushNotificationService);
 
   constructor(
     private authService: AuthService,
@@ -46,6 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((isAuthenticated: boolean) => {
         if (isAuthenticated) {
           this.userWsService.connect();
+          this.pushNotificationService.subscribe();
         } else {
           this.userWsService.disconnect();
         }
@@ -141,6 +144,9 @@ export class AppComponent implements OnInit, OnDestroy {
             link.rel = "icon";
             link.href = config.site_favicon;
             document.head.appendChild(link);
+          }
+          if (config?.vapid_public_key) {
+            this.pushNotificationService.setVapidPublicKey(config.vapid_public_key);
           }
           if (config?.primary_color_patient) {
             this.applyPrimaryColor(config.primary_color_patient);

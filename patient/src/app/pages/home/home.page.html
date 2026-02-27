@@ -6,6 +6,15 @@
   </ion-refresher>
 
   <div class="main-content">
+    @if (hasReasons()) {
+      <div class="new-request-action">
+        <button class="card-btn card-btn-outline" (click)="goToNewRequest()">
+          <ion-icon name="add-outline"></ion-icon>
+          <span>{{ 'home.requestConsultation' | translate }}</span>
+        </button>
+      </div>
+    }
+
     @if (nextAppointment()) {
       <div class="next-appointment-banner">
         <div class="next-appointment-icon">
@@ -47,12 +56,6 @@
             <span class="section-badge">{{ totalRequests() }} {{ 'common.total' | translate }}</span>
           }
         </div>
-        @if (requests().length > 0) {
-          <button class="card-btn card-btn-outline" (click)="goToNewRequest()">
-            <ion-icon name="add-outline"></ion-icon>
-            <span>{{ 'home.requestConsultation' | translate }}</span>
-          </button>
-        }
       </div>
 
       @if (isLoading()) {
@@ -63,10 +66,6 @@
         <div class="empty-state">
           <ion-icon name="document-text-outline" class="empty-icon"></ion-icon>
           <p class="empty-text">{{ 'home.noPendingRequests' | translate }}</p>
-          <button class="card-btn empty-cta" [class.card-btn-primary]="hasNoItems()" [class.card-btn-outline]="!hasNoItems()" (click)="goToNewRequest()">
-            <ion-icon name="add-outline"></ion-icon>
-            <span>{{ 'home.requestConsultation' | translate }}</span>
-          </button>
         </div>
       } @else {
         <div class="timeline-list">

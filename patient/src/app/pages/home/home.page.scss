@@ -5,6 +5,12 @@
     padding-bottom: 100px;
   }
 
+  .new-request-action {
+    margin-bottom: var(--app-spacing-lg);
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .greeting {
     margin-bottom: var(--app-spacing-lg);
 

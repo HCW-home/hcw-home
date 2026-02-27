@@ -214,7 +214,12 @@
         <div class="timeline-list">
           @for (appointment of appointments(); track appointment.id) {
             <div class="timeline-item">
-              <div class="timeline-item-content"></div>
+              <div class="timeline-item-content">
+                <div class="no-appointment-placeholder">
+                  <ion-icon name="chatbubbles-outline"></ion-icon>
+                  <span>{{ 'home.noFollowUp' | translate }}</span>
+                </div>
+              </div>
               <div class="timeline-item-appointments">
                 <app-appointment-info
                   [appointment]="appointment">

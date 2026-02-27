@@ -94,6 +94,14 @@
                 </div>
               </div>
 
+              @if (hasConsultation(request)) {
+                <app-consultation-info
+                  [consultation]="request.consultation!"
+                  [label]="'home.followUp' | translate"
+                  (access)="viewConsultationFromRequest(request)">
+                </app-consultation-info>
+              }
+
               @if (request.consultation?.appointments?.length) {
                 @for (appt of request.consultation!.appointments!; track appt.id) {
                   <app-appointment-info
@@ -122,14 +130,6 @@
                   <ion-icon name="close-circle-outline"></ion-icon>
                   <span>{{ request.refused_reason }}</span>
                 </div>
-              }
-
-              @if (hasConsultation(request)) {
-                <app-consultation-info
-                  [consultation]="request.consultation!"
-                  [label]="'home.followUp' | translate"
-                  (access)="viewConsultationFromRequest(request)">
-                </app-consultation-info>
               }
             </div>
           }

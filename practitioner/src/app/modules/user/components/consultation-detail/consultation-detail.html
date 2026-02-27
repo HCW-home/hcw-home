@@ -10,144 +10,24 @@
     } @else if (consultation()) {
     <div class="consultation-content-wrapper">
       <div class="main-content">
-        <div class="consultation-info-card">
-          @if (isEditMode()) {
-          <form [formGroup]="editForm" class="edit-form">
-            <div class="edit-form-header">
-              <h3 class="edit-title">
-                {{ 'consultationDetail.editConsultation' | translate }}
-              </h3>
-              <div class="edit-actions">
-                <app-button
-                  [text]="'consultationDetail.cancel' | translate"
-                  [style]="ButtonStyleEnum.stroke"
-                  [size]="ButtonSizeEnum.small"
-                  (buttonClick)="cancelEdit()">
-                </app-button>
-                <app-button
-                  [text]="'consultationDetail.save' | translate"
-                  [style]="ButtonStyleEnum.primary"
-                  [size]="ButtonSizeEnum.small"
-                  [loading]="isSavingConsultation()"
-                  [disabled]="isSavingConsultation()"
-                  (buttonClick)="saveConsultationChanges()">
-                </app-button>
-              </div>
-            </div>
-
-            <div class="edit-form-content">
-              <div class="form-group">
-                <app-input
-                  [label]="'consultationDetail.title' | translate"
-                  [placeholder]="'consultationDetail.titlePlaceholder' | translate"
-                  formControlName="title">
-                </app-input>
-              </div>
-
-              <div class="form-group">
-                <app-textarea
-                  [label]="'consultationDetail.description' | translate"
-                  [placeholder]="'consultationDetail.descriptionPlaceholder' | translate"
-                  [rows]="3"
-                  formControlName="description">
-                </app-textarea>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <app-select
-                    [label]="'consultationDetail.beneficiary' | translate"
-                    [placeholder]="'consultationDetail.searchPatient' | translate"
-                    [options]="[]"
-                    [asyncSearch]="beneficiarySearchFn"
-                    [initialOption]="beneficiaryInitialOption()"
-                    [clearable]="true"
-                    formControlName="beneficiary_id">
-                  </app-select>
-                </div>
-
-                <div class="form-group">
-                  <app-select
-                    [label]="'consultationDetail.practitioner' | translate"
-                    [placeholder]="'consultationDetail.searchPractitioner' | translate"
-                    [options]="[]"
-                    [asyncSearch]="practitionerSearchFn"
-                    [initialOption]="ownerInitialOption()"
-                    [clearable]="true"
-                    formControlName="owned_by_id">
-                  </app-select>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <app-checkbox
-                  [label]="'consultationForm.visibleByPatient' | translate"
-                  formControlName="visible_by_patient">
-                </app-checkbox>
-              </div>
-
-              <div class="form-group">
-                <app-select
-                  [label]="'consultationDetail.group' | translate"
-                  [options]="queueOptions()"
-                  [placeholder]="'consultationDetail.selectGroup' | translate"
-                  [clearable]="true"
-                  formControlName="group_id">
-                </app-select>
-              </div>
-
-              @if (customFields().length > 0 && editForm.get('custom_fields')) {
-              <div formGroupName="custom_fields" class="custom-fields-edit">
-                @for (field of customFields(); track field.id) {
-                <div class="form-group">
-                  @switch (field.field_type) { @case ('short_text') {
-                  <app-input
-                    [label]="field.name"
-                    [required]="field.required"
-                    [formControlName]="field.id.toString()">
-                  </app-input>
-                  } @case ('long_text') {
-                  <app-textarea
-                    [label]="field.name"
-                    [rows]="3"
-                    [formControlName]="field.id.toString()">
-                  </app-textarea>
-                  } @case ('date') {
-                  <app-input
-                    [label]="field.name"
-                    [required]="field.required"
-                    type="date"
-                    [formControlName]="field.id.toString()">
-                  </app-input>
-                  } @case ('number') {
-                  <app-input
-                    [label]="field.name"
-                    [required]="field.required"
-                    type="number"
-                    [formControlName]="field.id.toString()">
-                  </app-input>
-                  } @case ('list') {
-                  <app-select
-                    [label]="field.name"
-                    [options]="getCustomFieldOptions(field)"
-                    [formControlName]="field.id.toString()">
-                  </app-select>
-                  } }
-                </div>
-                }
-              </div>
-              }
-            </div>
-          </form>
-          } @else {
+        <div class="consultation-info-card" [class.editing]="isEditMode()">
+          <form [formGroup]="editForm">
           <div class="info-header">
             <div class="header-top-row">
               <div class="title-row">
+                @if (isEditMode()) {
+                <app-input
+                  class="inline-edit-title"
+                  [placeholder]="'consultationDetail.titlePlaceholder' | translate"
+                  formControlName="title">
+                </app-input>
+                } @else {
                 <h2 class="consultation-title">
                   {{ consultation()?.title ||
                   ('consultationDetail.consultationNumber' | translate: { id:
                   consultation()?.id }) }}
                 </h2>
+                }
                 <app-badge
                   [type]="consultation()?.closed_at ? BadgeTypeEnum.gray : BadgeTypeEnum.green">
                   {{ consultation()?.closed_at ? ('consultationDetail.closed' |
@@ -155,6 +35,24 @@
                 </app-badge>
               </div>
               <div class="card-actions">
+                @if (isEditMode()) {
+                <app-button
+                  [text]="'consultationDetail.cancel' | translate"
+                  leftIcon="close"
+                  [style]="ButtonStyleEnum.stroke"
+                  [size]="ButtonSizeEnum.small"
+                  (buttonClick)="cancelEdit()">
+                </app-button>
+                <app-button
+                  [text]="'consultationDetail.save' | translate"
+                  leftIcon="check"
+                  [style]="ButtonStyleEnum.primary"
+                  [size]="ButtonSizeEnum.small"
+                  [loading]="isSavingConsultation()"
+                  [disabled]="isSavingConsultation()"
+                  (buttonClick)="saveConsultationChanges()">
+                </app-button>
+                } @else {
                 <app-button
                   [text]="'consultationDetail.edit' | translate"
                   leftIcon="edit"
@@ -191,6 +89,7 @@
                   (buttonClick)="reopenConsultation()">
                 </app-button>
                 }
+                }
               </div>
             </div>
             <span class="created-date"
@@ -199,7 +98,16 @@
             >
           </div>
 
-          @if (consultation()?.description) {
+          @if (isEditMode()) {
+          <div class="description-edit">
+            <app-textarea
+              [label]="'consultationDetail.description' | translate"
+              [placeholder]="'consultationDetail.descriptionPlaceholder' | translate"
+              [rows]="3"
+              formControlName="description">
+            </app-textarea>
+          </div>
+          } @else if (consultation()?.description) {
           <p class="description">{{ consultation()?.description }}</p>
           }
 
@@ -228,11 +136,22 @@
                 </div>
               </div>
             </div>
-            } @if (consultation()?.owned_by) {
+            }
+
             <div class="info-item">
               <span class="info-label"
                 >{{ 'consultationDetail.practitioner' | translate }}</span
               >
+              @if (isEditMode()) {
+              <app-select
+                [placeholder]="'consultationDetail.searchPractitioner' | translate"
+                [options]="[]"
+                [asyncSearch]="practitionerSearchFn"
+                [initialOption]="ownerInitialOption()"
+                [clearable]="true"
+                formControlName="owned_by_id">
+              </app-select>
+              } @else if (consultation()?.owned_by) {
               <div class="info-user">
                 <app-user-avatar
                   [firstName]="consultation()!.owned_by!.first_name"
@@ -243,21 +162,33 @@
                 </app-user-avatar>
                 <div class="info-user-details">
                   <span class="info-value"
-                    >{{ consultation()!.owned_by?.first_name }} {{
-                    consultation()!.owned_by?.last_name }}</span
+                    >{{ consultation()!.owned_by!.first_name }} {{
+                    consultation()!.owned_by!.last_name }}</span
                   >
                   <span class="info-sub"
-                    >{{ consultation()!.owned_by?.email }}</span
+                    >{{ consultation()!.owned_by!.email }}</span
                   >
                 </div>
               </div>
+              } @else {
+              <span class="info-placeholder">{{ 'consultationDetail.noPractitioner' | translate }}</span>
+              }
             </div>
-            }
 
             <div class="info-item">
               <span class="info-label"
                 >{{ 'consultationDetail.patient' | translate }}</span
               >
+              @if (isEditMode()) {
+              <app-select
+                [placeholder]="'consultationDetail.searchPatient' | translate"
+                [options]="[]"
+                [asyncSearch]="beneficiarySearchFn"
+                [initialOption]="beneficiaryInitialOption()"
+                [clearable]="true"
+                formControlName="beneficiary_id">
+              </app-select>
+              } @else if (consultation()?.beneficiary) {
               <div class="info-user">
                 <app-user-avatar
                   [firstName]="consultation()?.beneficiary?.first_name || ''"
@@ -277,24 +208,88 @@
                   }
                 </div>
               </div>
+              } @else {
+              <span class="info-placeholder">{{ 'consultationDetail.noPatient' | translate }}</span>
+              }
             </div>
 
-            @if (consultation()?.group) {
             <div class="info-item">
               <span class="info-label"
                 >{{ 'consultationDetail.queue' | translate }}</span
               >
+              @if (isEditMode()) {
+              <app-select
+                [options]="queueOptions()"
+                [placeholder]="'consultationDetail.selectGroup' | translate"
+                [clearable]="true"
+                formControlName="group_id">
+              </app-select>
+              } @else if (consultation()?.group) {
               <span class="info-value">{{ consultation()!.group!.name }}</span>
+              } @else {
+              <span class="info-placeholder">-</span>
+              }
             </div>
-            } @if (consultation()?.custom_fields?.length) { @for (cf of
-            consultation()!.custom_fields!; track cf.field) {
+
+            @if (isEditMode()) {
             <div class="info-item">
-              <span class="info-label">{{ cf.field_name }}</span>
-              <span class="info-value">{{ cf.value || '-' }}</span>
+              <app-checkbox
+                [label]="'consultationForm.visibleByPatient' | translate"
+                formControlName="visible_by_patient">
+              </app-checkbox>
             </div>
-            } }
+            }
+
+            @if (isEditMode() && customFields().length > 0 && editForm.get('custom_fields')) {
+            <ng-container formGroupName="custom_fields">
+              @for (field of customFields(); track field.id) {
+              <div class="info-item">
+                @switch (field.field_type) { @case ('short_text') {
+                <app-input
+                  [label]="field.name"
+                  [required]="field.required"
+                  [formControlName]="field.id.toString()">
+                </app-input>
+                } @case ('long_text') {
+                <app-textarea
+                  [label]="field.name"
+                  [rows]="3"
+                  [formControlName]="field.id.toString()">
+                </app-textarea>
+                } @case ('date') {
+                <app-input
+                  [label]="field.name"
+                  [required]="field.required"
+                  type="date"
+                  [formControlName]="field.id.toString()">
+                </app-input>
+                } @case ('number') {
+                <app-input
+                  [label]="field.name"
+                  [required]="field.required"
+                  type="number"
+                  [formControlName]="field.id.toString()">
+                </app-input>
+                } @case ('list') {
+                <app-select
+                  [label]="field.name"
+                  [options]="getCustomFieldOptions(field)"
+                  [formControlName]="field.id.toString()">
+                </app-select>
+                } }
+              </div>
+              }
+            </ng-container>
+            } @else if (consultation()?.custom_fields?.length) {
+              @for (cf of consultation()!.custom_fields!; track cf.field) {
+              <div class="info-item">
+                <span class="info-label">{{ cf.field_name }}</span>
+                <span class="info-value">{{ cf.value || '-' }}</span>
+              </div>
+              }
+            }
           </div>
-          }
+          </form>
         </div>
 
         @if (inCall() && activeAppointmentId()) {

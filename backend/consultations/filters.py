@@ -35,7 +35,7 @@ class AppointmentFilter(django_filters.FilterSet):
 
     def filter_future(self, queryset, name, value):
         if value is True:
-            return queryset.filter(scheduled_at__gte=timezone.now() - timedelta(hours=1))
+            return queryset.filter(scheduled_at__gte=timezone.now() - timedelta(hours=2))
         elif value is False:
-            return queryset.filter(scheduled_at__lt=timezone.now() - timedelta(hours=1))
+            return queryset.filter(scheduled_at__lt=timezone.now() - timedelta(hours=2))
         return queryset

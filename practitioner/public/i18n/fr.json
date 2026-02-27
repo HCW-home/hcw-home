@@ -718,6 +718,8 @@
     "patient": "Patient",
     "queue": "File d'attente",
     "noBeneficiary": "Aucun bénéficiaire assigné",
+    "noPractitioner": "Aucun praticien assigné",
+    "noPatient": "Aucun patient assigné",
     "unknownPatient": "Patient inconnu",
     "unknown": "Anonyme",
     "appointmentsCount": "Rendez-vous ({{count}})",

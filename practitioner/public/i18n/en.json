@@ -606,6 +606,8 @@
     "patient": "Patient",
     "queue": "Queue",
     "noBeneficiary": "No beneficiary assigned",
+    "noPractitioner": "No practitioner assigned",
+    "noPatient": "No patient assigned",
     "unknownPatient": "Unknown patient",
     "unknown": "Unknown",
     "appointmentsCount": "Appointments ({{count}})",

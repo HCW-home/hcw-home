@@ -5,53 +5,56 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  @if (notifications.length > 0) {
-    <div class="mark-all-read">
-      <ion-button fill="clear" size="small" (click)="markAllAsRead()">
-        {{ 'notifications.markAllRead' | translate }}
-      </ion-button>
-    </div>
-  }
+  <div class="main-content">
+    @if (notifications.length > 0) {
+      <div class="section-header">
+        <button class="mark-all-btn" (click)="markAllAsRead()">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>{{ 'notifications.markAllRead' | translate }}</span>
+        </button>
+      </div>
 
-  <div class="notifications-list">
-    @for (notification of notifications; track notification.id) {
-      <div class="notification-card" [class.unread]="!notification.isRead" (click)="onNotificationClick(notification)">
-        <div class="notification-icon-wrapper" [attr.data-color]="notification.color">
-          <ion-icon [name]="notification.icon"></ion-icon>
-        </div>
-        <div class="notification-body">
-          <div class="notification-header-row">
-            <span class="notification-title">{{ notification.title }}</span>
-            <span class="notification-time">{{ notification.time }}</span>
-          </div>
-          <div class="notification-message"><span [innerHTML]="notification.message"></span></div>
-          @if (notification.senderName) {
-            <div class="notification-sender">{{ 'notifications.sentBy' | translate:{ name: notification.senderName } }}</div>
-          }
-          @if (notification.actionLabel && notification.objectModel) {
-            <div class="notification-action">
-              <button class="action-btn" (click)="onNotificationClick(notification); $event.stopPropagation()">
-                {{ notification.actionLabel }}
-              </button>
+      <div class="timeline-list">
+        @for (notification of notifications; track notification.id) {
+          <div class="timeline-item" [class.unread]="!notification.isRead" (click)="onNotificationClick(notification)">
+            <div class="notification-icon-wrapper" [attr.data-color]="notification.color">
+              <ion-icon [name]="notification.icon"></ion-icon>
             </div>
-          }
-        </div>
-        @if (!notification.isRead) {
-          <div class="unread-dot"></div>
+            <div class="notification-body">
+              <div class="notification-header-row">
+                <span class="notification-title">{{ notification.title }}</span>
+                <span class="notification-time">{{ notification.time }}</span>
+              </div>
+              <div class="notification-message"><span [innerHTML]="notification.message"></span></div>
+              @if (notification.senderName) {
+                <div class="notification-sender">{{ 'notifications.sentBy' | translate:{ name: notification.senderName } }}</div>
+              }
+              @if (notification.actionLabel && notification.objectModel) {
+                <div class="notification-action">
+                  <button class="action-btn" (click)="onNotificationClick(notification); $event.stopPropagation()">
+                    {{ notification.actionLabel }}
+                  </button>
+                </div>
+              }
+            </div>
+            @if (!notification.isRead) {
+              <div class="unread-dot"></div>
+            }
+          </div>
         }
       </div>
     }
-  </div>
 
-  @if (notifications.length === 0) {
-    <div class="empty-state">
-      <ion-icon name="notifications-off-outline" color="medium" class="empty-icon"></ion-icon>
-      <ion-text class="empty-title" color="medium">{{ 'notifications.noNotifications' | translate }}</ion-text>
-      <ion-text class="empty-subtitle" color="medium">
-        {{ 'notifications.noNotificationsYet' | translate }}
-      </ion-text>
-    </div>
-  }
+    @if (notifications.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="notifications-off-outline" color="medium" class="empty-icon"></ion-icon>
+        <ion-text class="empty-title" color="medium">{{ 'notifications.noNotifications' | translate }}</ion-text>
+        <ion-text class="empty-subtitle" color="medium">
+          {{ 'notifications.noNotificationsYet' | translate }}
+        </ion-text>
+      </div>
+    }
+  </div>
 </ion-content>
 
 <app-footer></app-footer>

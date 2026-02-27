@@ -1,37 +1,77 @@
 .notifications-content {
 
+  .main-content {
+    padding: var(--app-spacing-lg);
+    padding-bottom: 100px;
+  }
 
-  .mark-all-read {
+  .section-header {
     display: flex;
     justify-content: flex-end;
-    padding: var(--app-spacing-sm) var(--app-spacing-md) 0;
+    margin-bottom: var(--app-spacing-md);
+
+    .mark-all-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, box-shadow 0.15s;
+      background: transparent;
+      color: var(--ion-color-primary);
+      border: 1.5px solid var(--ion-color-primary);
+
+      ion-icon {
+        font-size: 18px;
+      }
+
+      &:hover {
+        background: var(--ion-color-primary-bg);
+      }
+
+      &:active {
+        background: rgba(var(--ion-color-primary-rgb), 0.12);
+      }
+    }
   }
 
-  .notifications-list {
-    padding: var(--app-spacing-md);
+  .timeline-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    background: var(--app-card-background);
+    border-radius: var(--app-card-radius);
+    border: 1px solid var(--app-border-color);
+    overflow: hidden;
   }
 
-  .notification-card {
+  .timeline-item {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 14px 16px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: var(--app-spacing-lg);
     cursor: pointer;
     position: relative;
     transition: background-color 0.15s ease;
+    border-bottom: 1px solid var(--app-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(var(--ion-color-primary-rgb), 0.03);
+    }
 
     &:active {
-      background-color: #f3f4f6;
+      background-color: rgba(var(--ion-color-primary-rgb), 0.06);
     }
 
     &.unread {
-      background: #f0f4ff;
+      background: var(--ion-color-primary-bg);
       border-left: 3px solid var(--ion-color-primary);
     }
   }
@@ -85,31 +125,31 @@
   }
 
   .notification-title {
-    font-size: 14px;
+    font-size: 0.9375rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--app-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .notification-time {
-    font-size: 11px;
-    color: #9ca3af;
+    font-size: 0.8125rem;
+    color: var(--app-text-muted);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .notification-message {
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 0.875rem;
+    color: var(--app-text-secondary);
     line-height: 1.4;
     margin-bottom: 2px;
   }
 
   .notification-sender {
-    font-size: 12px;
-    color: #9ca3af;
+    font-size: 0.8125rem;
+    color: var(--app-text-muted);
     margin-top: 4px;
   }
 
@@ -121,19 +161,19 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 16px;
+      padding: 10px 16px;
+      border: 1px solid var(--app-border-color);
       border-radius: 8px;
-      font-size: 0.8125rem;
+      background: var(--app-card-background);
+      color: var(--app-text-primary);
+      font-size: 1rem;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      background: transparent;
-      color: var(--ion-color-primary);
-      border: 1.5px solid var(--ion-color-primary);
-      transition: background-color 0.15s ease;
+      transition: background 0.15s;
 
       &:active {
-        background: rgba(var(--ion-color-primary-rgb), 0.12);
+        background: var(--app-background);
       }
     }
   }

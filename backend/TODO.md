@@ -107,7 +107,6 @@ No permission (=patient) but : can still go own appointment or group appointment
 Feedback Gilles
 ===============
 
-- Rendez-vous à venir : tous lister et mettre en surbrillance
 - Fuseau horaire coupé dans interface doctor bienvenue
 - image cannot be svg
 - button par dessus l'overlay pour le welcome
@@ -126,3 +125,4 @@ Feedback Gilles
 	]
 }
 - Close offline not working
+- Email doit afficher 6 digits

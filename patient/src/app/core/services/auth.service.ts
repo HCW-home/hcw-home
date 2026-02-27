@@ -47,9 +47,7 @@ export class AuthService {
             await this.storage.set('access_token', response.access);
             await this.storage.set('refresh_token', response.refresh);
             this.isAuthenticatedSubject.next(true);
-            if (response.user) {
-              this.currentUserSubject.next(response.user);
-            }
+            await firstValueFrom(this.getCurrentUser());
           }
           return response;
         })
@@ -95,6 +93,7 @@ export class AuthService {
             await this.storage.set('access_token', response.access);
             await this.storage.set('refresh_token', response.refresh);
             this.isAuthenticatedSubject.next(true);
+            await firstValueFrom(this.getCurrentUser());
           }
           return response;
         })
@@ -108,6 +107,9 @@ export class AuthService {
           this.currentUserSubject.next(user);
           if (user.preferred_language) {
             this.translationService.setLanguage(user.preferred_language);
+          } else {
+            const currentLang = this.translationService.currentLanguage();
+            this.updateProfile({ preferred_language: currentLang }).subscribe();
           }
         })
       );

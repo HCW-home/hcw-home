@@ -144,7 +144,7 @@ class AnonymousTokenAuthView(APIView):
             else:
                 # Grace period expired: verification code required
                 if not verification_code:
-                    user.verification_code = secrets.randbelow(1000000)
+                    user.verification_code = 100000 + secrets.randbelow(900000)
                     user.verification_attempts = 0
                     user.save(
                         update_fields=["verification_code", "verification_attempts"]

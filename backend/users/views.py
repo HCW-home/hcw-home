@@ -3,6 +3,7 @@ import mimetypes
 import os
 import random
 import uuid
+import secrets
 
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.openid_connect.views import (
@@ -1137,7 +1138,7 @@ class SendVerificationCodeView(APIView):
             )
 
         # Generate a verification code (6 digits)
-        verification_code = random.randint(0, 999999)
+        user_instance.verification_code = 100000 + secrets.randbelow(900000)
 
         user_instance.verification_code = verification_code
         user_instance.verification_code_created_at = timezone.now()

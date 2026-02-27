@@ -201,9 +201,37 @@
     align-self: center;
   }
 
+  .no-appointment-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border: 1.5px dashed var(--app-border-color);
+    border-radius: 8px;
+    color: var(--app-text-muted);
+    font-size: 0.875rem;
+
+    ion-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    span {
+      line-height: 1.2;
+      position: relative;
+      top: 2px;
+    }
+  }
+
   @media (max-width: 768px) {
     .timeline-item {
       flex-direction: column;
+    }
+
+    .timeline-item-content {
+      max-width: 100%;
     }
 
     .timeline-item-appointments {

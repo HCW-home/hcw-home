@@ -118,25 +118,28 @@
                 }
               </div>
 
-              @if (request.consultation?.appointments?.length || hasAppointment(request)) {
-                <div class="timeline-item-appointments">
-                  @if (request.consultation?.appointments?.length) {
-                    @for (appt of request.consultation!.appointments!; track appt.id) {
-                      <app-appointment-info
-                        [appointment]="appt"
-                        [label]="'home.scheduledAppointment' | translate"
-                        [speciality]="getSpecialityName(request)">
-                      </app-appointment-info>
-                    }
-                  } @else if (hasAppointment(request)) {
+              <div class="timeline-item-appointments">
+                @if (request.consultation?.appointments?.length) {
+                  @for (appt of request.consultation!.appointments!; track appt.id) {
                     <app-appointment-info
-                      [appointment]="request.appointment!"
+                      [appointment]="appt"
                       [label]="'home.scheduledAppointment' | translate"
                       [speciality]="getSpecialityName(request)">
                     </app-appointment-info>
                   }
-                </div>
-              }
+                } @else if (hasAppointment(request)) {
+                  <app-appointment-info
+                    [appointment]="request.appointment!"
+                    [label]="'home.scheduledAppointment' | translate"
+                    [speciality]="getSpecialityName(request)">
+                  </app-appointment-info>
+                } @else {
+                  <div class="no-appointment-placeholder">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    <span>{{ 'home.noAppointment' | translate }}</span>
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>
@@ -173,16 +176,21 @@
                 </app-consultation-info>
               </div>
 
-              @if (consultation.appointments?.length) {
-                <div class="timeline-item-appointments">
+              <div class="timeline-item-appointments">
+                @if (consultation.appointments?.length) {
                   @for (appt of consultation.appointments!; track appt.id) {
                     <app-appointment-info
                       [appointment]="appt"
                       [label]="'home.scheduledAppointment' | translate">
                     </app-appointment-info>
                   }
-                </div>
-              }
+                } @else {
+                  <div class="no-appointment-placeholder">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    <span>{{ 'home.noAppointment' | translate }}</span>
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>

@@ -130,6 +130,7 @@
     "myRequests": "Mes demandes",
     "noPendingRequests": "Aucune demande en attente",
     "noInvitations": "Vous n'avez reçu aucune invitation",
+    "noAppointment": "Pas de rendez-vous pour l'instant",
     "requestConsultation": "Demander une consultation",
     "awaitingAssignment": "En attente d'attribution d'un médecin",
     "accessConsultation": "Discuter avec le praticien",

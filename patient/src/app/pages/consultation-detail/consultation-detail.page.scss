@@ -28,7 +28,40 @@
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--app-text-primary);
+      margin: 0 0 4px 0;
+    }
+
+    .consultation-reason {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--app-text-secondary);
       margin: 0 0 var(--app-spacing-md) 0;
+    }
+
+    .doctor-row {
+      display: flex;
+      align-items: center;
+      gap: var(--app-spacing-sm);
+      margin-bottom: var(--app-spacing-md);
+
+      .doctor-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--ion-color-primary-bg);
+        color: var(--ion-color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+      }
+
+      .doctor-name {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--app-text-primary);
+      }
     }
 
     .header-dates {
@@ -111,33 +144,6 @@
       font-weight: 600;
       color: var(--app-text-primary);
       margin: 0;
-    }
-  }
-
-  .doctor-card {
-    .doctor-row {
-      display: flex;
-      align-items: center;
-      gap: var(--app-spacing-md);
-
-      .doctor-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: var(--ion-color-primary-bg);
-        color: var(--ion-color-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1rem;
-      }
-
-      .doctor-name {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--app-text-primary);
-      }
     }
   }
 

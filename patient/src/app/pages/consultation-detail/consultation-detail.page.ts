@@ -428,13 +428,6 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     return statusMap[normalizedStatus] || statusMap["requested"];
   }
 
-  getReasonName(): string {
-    const cons = this.consultation();
-    if (cons?.reason && typeof cons.reason === "object") {
-      return cons.reason.name;
-    }
-    return this.t.instant('consultationDetail.consultation');
-  }
 
   getDoctorName(): string {
     const cons = this.consultation();

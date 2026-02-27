@@ -12,14 +12,15 @@
   } @else if (consultation()) {
   <div class="main-content">
     <div class="consultation-header-section">
-      <div class="header-top">
-        <span
-          class="status-badge status-{{ getStatusConfig(consultation()?.status).color }}"
-        >
-          {{ getStatusConfig(consultation()?.status).label }}
-        </span>
-      </div>
-      <h2 class="consultation-title">{{ getReasonName() }}</h2>
+      @if (consultation()?.title) {
+        <h2 class="consultation-title">{{ consultation()?.title }}</h2>
+      }
+      @if (getDoctorName()) {
+        <div class="doctor-row">
+          <div class="doctor-avatar">{{ getDoctorInitial() }}</div>
+          <span class="doctor-name">{{ getDoctorName() }}</span>
+        </div>
+      }
       <div class="header-dates">
         <div class="date-item">
           <ion-icon name="calendar-outline"></ion-icon>
@@ -48,18 +49,7 @@
       </div>
     </div>
 
-    @if (getDoctorName()) {
-    <div class="info-card doctor-card">
-      <div class="card-header">
-        <ion-icon name="person-outline" class="card-icon"></ion-icon>
-        <h3 class="info-title">{{ 'consultationDetail.handledBy' | translate }}</h3>
-      </div>
-      <div class="doctor-row">
-        <div class="doctor-avatar">{{ getDoctorInitial() }}</div>
-        <span class="doctor-name">{{ getDoctorName() }}</span>
-      </div>
-    </div>
-    } @if (consultation()?.next_appointment; as appointment) {
+    @if (consultation()?.next_appointment; as appointment) {
     <div class="info-card appointments-card">
       <div class="card-header">
         <ion-icon name="calendar-outline" class="card-icon"></ion-icon>

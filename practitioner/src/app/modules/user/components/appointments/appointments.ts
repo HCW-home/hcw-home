@@ -460,7 +460,15 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.currentView.set(view);
 
     if (view === 'list') {
-      this.loadAllAppointments();
+      // Force the hidden calendar back to week view so the date range and title
+      // always reflect a week when in list mode
+      const calendarApi = this.calendarComponent()?.getApi();
+      if (calendarApi && calendarApi.view.type !== 'timeGridWeek') {
+        calendarApi.changeView('timeGridWeek');
+        // handleDatesSet will fire and call loadAppointments() -> loadAllAppointments()
+      } else {
+        this.loadAllAppointments();
+      }
     } else {
       const calendarApi = this.calendarComponent()?.getApi();
       if (calendarApi) {

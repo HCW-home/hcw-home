@@ -270,7 +270,13 @@
     "participantDraft": "Brouillon",
     "participantUnknown": "Anonyme",
     "errorLoadingAppointments": "Erreur de chargement des rendez-vous",
-    "confirmPresence": "Confirmer la présence"
+    "confirmPresence": "Confirmer la présence",
+    "viewConsultation": "Voir la consultation",
+    "edit": "Modifier",
+    "cancel": "Annuler",
+    "confirmCancel": "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
+    "cancelSuccess": "Rendez-vous annulé avec succès",
+    "cancelError": "Erreur lors de l'annulation du rendez-vous"
   },
   "confirmPresenceModal": {
     "title": "Confirmer votre présence",

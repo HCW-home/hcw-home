@@ -98,6 +98,8 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   calendarComponent = viewChild<FullCalendarComponent>('calendar');
   hoveredAppointment = signal<Appointment | null>(null);
   tooltipPosition = signal<{ top: number; left: number }>({ top: 0, left: 0 });
+  selectedAppointmentForMenu = signal<Appointment | null>(null);
+  menuPosition = signal<{ top: number; left: number }>({ top: 0, left: 0 });
 
   loading = signal(true);
   loadingMore = signal(false);
@@ -110,6 +112,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   confirmPresenceModalOpen = signal(false);
   confirmPresenceParticipantId = signal<number | null>(null);
   createAppointmentModalOpen = signal(false);
+  editingAppointment = signal<Appointment | null>(null);
   selectedStartDate = signal<Date | null>(null);
   selectedEndDate = signal<Date | null>(null);
 
@@ -151,6 +154,15 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   @HostListener('window:resize')
   onResize(): void {
     this.updateCalendarHeight();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const menuElement = this.el.nativeElement.querySelector('.appointment-context-menu');
+    if (menuElement && !menuElement.contains(target)) {
+      this.closeContextMenu();
+    }
   }
 
   ngOnInit(): void {
@@ -408,16 +420,20 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   }
 
   handleEventClick(clickInfo: EventClickArg): void {
+    clickInfo.jsEvent.preventDefault();
+    clickInfo.jsEvent.stopPropagation();
+
     const appointment = clickInfo.event.extendedProps[
       'appointment'
     ] as Appointment;
-    const consultationId =
-      appointment?.consultation_id || appointment?.consultation;
-    if (consultationId) {
-      this.router.navigate([RoutePaths.USER, 'consultations', consultationId], {
-        queryParams: { appointmentId: appointment.id },
-      });
-    }
+
+    const rect = clickInfo.el.getBoundingClientRect();
+    this.menuPosition.set({
+      top: rect.bottom + window.scrollY,
+      left: rect.left + window.scrollX,
+    });
+
+    this.selectedAppointmentForMenu.set(appointment);
   }
 
   handleDatesSet(arg: DatesSetArg): void {
@@ -661,14 +677,81 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
 
   onCreateAppointmentModalClosed(): void {
     this.createAppointmentModalOpen.set(false);
+    this.editingAppointment.set(null);
     this.selectedStartDate.set(null);
     this.selectedEndDate.set(null);
   }
 
   onAppointmentCreated(): void {
     this.createAppointmentModalOpen.set(false);
+    this.editingAppointment.set(null);
     this.selectedStartDate.set(null);
     this.selectedEndDate.set(null);
     this.loadAppointments();
+  }
+
+  onAppointmentUpdated(): void {
+    this.createAppointmentModalOpen.set(false);
+    this.editingAppointment.set(null);
+    this.selectedStartDate.set(null);
+    this.selectedEndDate.set(null);
+    this.loadAppointments();
+  }
+
+  closeContextMenu(): void {
+    this.selectedAppointmentForMenu.set(null);
+  }
+
+  editAppointment(appointment: Appointment, event: MouseEvent): void {
+    event.stopPropagation();
+    this.closeContextMenu();
+    this.editingAppointment.set(appointment);
+    this.createAppointmentModalOpen.set(true);
+  }
+
+  cancelAppointment(appointment: Appointment, event: MouseEvent): void {
+    event.stopPropagation();
+    this.closeContextMenu();
+
+    if (!confirm(this.t.instant('appointments.confirmCancel'))) {
+      return;
+    }
+
+    this.consultationService
+      .updateAppointment(appointment.id, { status: AppointmentStatus.CANCELLED })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toasterService.show(
+            'success',
+            this.t.instant('appointments.cancelSuccess')
+          );
+          this.loadAppointments();
+        },
+        error: err => {
+          this.toasterService.show(
+            'error',
+            this.t.instant('appointments.cancelError'),
+            getErrorMessage(err)
+          );
+        },
+      });
+  }
+
+  viewConsultationFromMenu(appointment: Appointment, event: MouseEvent): void {
+    event.stopPropagation();
+    this.closeContextMenu();
+
+    const consultationId =
+      appointment.consultation_id || appointment.consultation;
+    if (consultationId) {
+      this.router.navigate([RoutePaths.USER, 'consultations', consultationId], {
+        queryParams: { appointmentId: appointment.id },
+      });
+    }
+  }
+
+  hasConsultation(appointment: Appointment): boolean {
+    return !!(appointment.consultation_id || appointment.consultation);
   }
 }

@@ -147,6 +147,34 @@
       </full-calendar>
     </div>
 
+    @if (selectedAppointmentForMenu()) {
+    <div
+      class="appointment-context-menu"
+      [style.top.px]="menuPosition().top"
+      [style.left.px]="menuPosition().left">
+      @if (hasConsultation(selectedAppointmentForMenu()!)) {
+        <button class="context-menu-item" (click)="viewConsultationFromMenu(selectedAppointmentForMenu()!, $event)">
+          <app-svg
+            src="eye"
+            [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+          <span>{{ 'appointments.viewConsultation' | translate }}</span>
+        </button>
+      }
+      <button class="context-menu-item" (click)="editAppointment(selectedAppointmentForMenu()!, $event)">
+        <app-svg
+          src="edit"
+          [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+        <span>{{ 'appointments.edit' | translate }}</span>
+      </button>
+      <button class="context-menu-item cancel" (click)="cancelAppointment(selectedAppointmentForMenu()!, $event)">
+        <app-svg
+          src="x-circle"
+          [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+        <span>{{ 'appointments.cancel' | translate }}</span>
+      </button>
+    </div>
+    }
+
     @if (hoveredAppointment()) {
     <div
       class="calendar-tooltip"
@@ -229,10 +257,12 @@
 
     <app-appointment-form-modal
       [isOpen]="createAppointmentModalOpen()"
+      [editingAppointment]="editingAppointment()"
       [initialStartDate]="selectedStartDate()"
       [initialEndDate]="selectedEndDate()"
       (closed)="onCreateAppointmentModalClosed()"
-      (appointmentCreated)="onAppointmentCreated()">
+      (appointmentCreated)="onAppointmentCreated()"
+      (appointmentUpdated)="onAppointmentUpdated()">
     </app-appointment-form-modal>
   </div>
 </app-page>

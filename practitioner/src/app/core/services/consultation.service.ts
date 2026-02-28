@@ -193,13 +193,6 @@ export class ConsultationService {
     );
   }
 
-  cancelAppointment(appointmentId: number): Observable<Appointment> {
-    return this.http.post<Appointment>(
-      `${this.apiUrl}/appointments/${appointmentId}/cancel/`,
-      {}
-    );
-  }
-
   sendAppointment(appointmentId: number): Observable<Appointment> {
     return this.http.post<Appointment>(
       `${this.apiUrl}/appointments/${appointmentId}/send/`,

@@ -102,6 +102,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   currentUser = signal<IUser | null>(null);
   availableCommunicationMethods = signal<string[]>([]);
   appointmentForm!: FormGroup;
+  backendErrors = signal<Record<string, string[]>>({});
 
   participants = signal<Participant[]>([]);
   pendingParticipants = signal<CreateParticipantRequest[]>([]);
@@ -170,6 +171,15 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     this.loadCurrentUser();
     this.loadConfig();
     this.updateInviteCheckboxStates();
+
+    // Clear backend errors when form values change
+    this.appointmentForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (Object.keys(this.backendErrors()).length > 0) {
+          this.backendErrors.set({});
+        }
+      });
   }
 
   private loadCurrentUser(): void {
@@ -322,6 +332,15 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       communication_method: '',
       preferred_language: '',
     });
+    this.backendErrors.set({});
+  }
+
+  getFieldError(fieldName: string): string {
+    const errors = this.backendErrors();
+    if (errors[fieldName] && errors[fieldName].length > 0) {
+      return errors[fieldName][0];
+    }
+    return '';
   }
 
   private populateFormForEdit(): void {
@@ -592,6 +611,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   private updateAppointment(appointmentData: UpdateAppointmentRequest): void {
     if (!this.editingAppointment) return;
 
+    this.backendErrors.set({});
     this.consultationService
       .updateAppointment(this.editingAppointment.id, appointmentData)
       .pipe(takeUntil(this.destroy$))
@@ -602,16 +622,41 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
         },
         error: error => {
           this.isSubmitting.set(false);
-          this.toasterService.show(
-            'error',
-            this.t.instant('appointmentForm.errorUpdatingAppointment'),
-            getErrorMessage(error)
-          );
+
+          if (error.status === 400 && error.error) {
+            const backendErrors = error.error;
+            const mappedErrors: Record<string, string[]> = {};
+
+            // Map backend field names to form field names
+            if (backendErrors['scheduled_at']) {
+              mappedErrors['date'] = backendErrors['scheduled_at'];
+              mappedErrors['time'] = backendErrors['scheduled_at'];
+            }
+            if (backendErrors['end_expected_at']) {
+              mappedErrors['end_date'] = backendErrors['end_expected_at'];
+              mappedErrors['end_time'] = backendErrors['end_expected_at'];
+            }
+            // Copy other errors as-is
+            Object.keys(backendErrors).forEach(key => {
+              if (key !== 'scheduled_at' && key !== 'end_expected_at') {
+                mappedErrors[key] = backendErrors[key];
+              }
+            });
+
+            this.backendErrors.set(mappedErrors);
+          } else {
+            this.toasterService.show(
+              'error',
+              this.t.instant('appointmentForm.errorUpdatingAppointment'),
+              getErrorMessage(error)
+            );
+          }
         },
       });
   }
 
   private createAppointment(appointmentData: CreateAppointmentRequest): void {
+    this.backendErrors.set({});
     const createObservable = this.consultationId
       ? this.consultationService.createConsultationAppointment(
           this.consultationId,
@@ -631,11 +676,35 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       },
       error: error => {
         this.isSubmitting.set(false);
-        this.toasterService.show(
-          'error',
-          this.t.instant('appointmentForm.errorCreatingAppointment'),
-          getErrorMessage(error)
-        );
+
+        if (error.status === 400 && error.error) {
+          const backendErrors = error.error;
+          const mappedErrors: Record<string, string[]> = {};
+
+          // Map backend field names to form field names
+          if (backendErrors['scheduled_at']) {
+            mappedErrors['date'] = backendErrors['scheduled_at'];
+            mappedErrors['time'] = backendErrors['scheduled_at'];
+          }
+          if (backendErrors['end_expected_at']) {
+            mappedErrors['end_date'] = backendErrors['end_expected_at'];
+            mappedErrors['end_time'] = backendErrors['end_expected_at'];
+          }
+          // Copy other errors as-is
+          Object.keys(backendErrors).forEach(key => {
+            if (key !== 'scheduled_at' && key !== 'end_expected_at') {
+              mappedErrors[key] = backendErrors[key];
+            }
+          });
+
+          this.backendErrors.set(mappedErrors);
+        } else {
+          this.toasterService.show(
+            'error',
+            this.t.instant('appointmentForm.errorCreatingAppointment'),
+            getErrorMessage(error)
+          );
+        }
       },
     });
   }

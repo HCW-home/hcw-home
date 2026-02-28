@@ -1,3 +1,96 @@
+hcw (0.9.39) bookworm; urgency=medium
+
+  [ Olivier Bitsch ]
+  * Fix participant copy link
+  * Improve temporar participants
+  * Fix shown communication method
+  * Add missing migration
+  * Add more detail about failed preview render
+  * Add back consultation request
+  * Put logo color
+  * Fix logo handling
+  * Fix terms
+  * Fix terms
+  * Put background in white
+  * Default focus on password
+  * Now use primary color for drawing theme
+  * Fix background also on patient app
+  * Update consultation request
+  * Fix style
+  * Improve appointment block
+  * Fix block next appointment
+  * Improve label
+  * Improve dashboard patient
+  * Add consultation component inner the card
+  * Improve card info
+  * Show specility
+  * Make text bigger
+  * Return message if patient try to join sooner
+  * Add live update on appointment update
+  * Update on consultation also
+  * Fix notification-badge
+  * Rename information complement
+  * Add optional reason
+  * Fix language selectioN
+  * Placeholder when no item
+  * Fix styling when not item
+  * Add service worker
+  * Cleanup variables
+  * Fix .env-dist
+  * Fix terms page
+  * fix new consultation wizard with patient visible tickbox
+  * Update dashboard patient
+  * Update dashboard patient
+  * Move request consultation
+  * Adding Followup title
+  * Fix consultation display for patient
+  * Fix hover effect and remove request page
+  * Cleanup consultation detail page
+  * Improve patient interface
+  * Fix slot to show only in future
+  * Fix ordering consultatioN
+  * Update participant and put consultation on top
+  * Simplify again and cleanup
+  * Fix notification style
+  * Fix consultation detail structure
+  * Button on /home more explicit
+  * Never show old appointment in patient app
+  * Improve layout
+  * Adding placeholder when no appointment
+  * Add comment and user request
+  * Add placeholder on appointment
+  * Placeholder with more contrast
+  * Align vertical placeholder
+  * Fix 6 digits code
+  * Fix online status
+  * Fix dashboard and welcome popup
+  * Fix list view for appointment
+  * Fix List view date range
+  * Group clearable
+  * Fix user select
+  * Improve consultation edit
+  * Fix specific 400 error
+  * Fix new followup
+  * Improve text and fix login
+  * Add favicon
+  * Add launch all
+  * Ability to create appointment without consultation
+  * Ability to create appointment without consultation
+  * Avoid double error
+  * Show inline error in form
+  * Translate filtering
+  * Cleanup useless column
+  * Improve consultation with ID displayed
+  * Clean JWT on login to prevent connect on Websocket
+  * Add title on appointment
+  * Fix cancel appointment
+
+  [ Gor Grigoryan ]
+  * update ws connection after token expire
+  * add roboto font
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Sat, 28 Feb 2026 17:17:15 +0100
+
 hcw (0.9.38) bookworm; urgency=medium
 
   * Add missing translations in package

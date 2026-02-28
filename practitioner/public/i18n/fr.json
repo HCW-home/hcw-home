@@ -128,7 +128,17 @@
     "searchPlaceholder": "Rechercher des suivis...",
     "loading": "Chargement des suivis...",
     "retry": "Réessayer",
-    "viewMore": "Voir plus"
+    "viewMore": "Voir plus",
+    "hideFilters": "Masquer les filtres",
+    "advancedFilters": "Filtres avancés",
+    "beneficiary": "Bénéficiaire",
+    "searchBeneficiary": "Rechercher un bénéficiaire...",
+    "createdBy": "Créé par",
+    "searchCreator": "Rechercher un créateur...",
+    "ownedBy": "Assigné à",
+    "searchPractitioner": "Rechercher un praticien...",
+    "group": "Groupe",
+    "allGroups": "Tous les groupes"
   },
   "availability": {
     "title": "Gestion de la disponibilité",

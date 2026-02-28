@@ -124,14 +124,26 @@ export class ConsultationService {
     consultationId: number,
     data: CreateAppointmentRequest
   ): Observable<Appointment> {
-    return this.http.post<Appointment>(`${this.apiUrl}/appointments/`, {
-      ...data,
-      consultation_id: consultationId,
-    });
+    return this.http.post<Appointment>(
+      `${this.apiUrl}/appointments/`,
+      {
+        ...data,
+        consultation_id: consultationId,
+      },
+      {
+        context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+      }
+    );
   }
 
   createAppointment(data: CreateAppointmentRequest): Observable<Appointment> {
-    return this.http.post<Appointment>(`${this.apiUrl}/appointments/`, data);
+    return this.http.post<Appointment>(
+      `${this.apiUrl}/appointments/`,
+      data,
+      {
+        context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+      }
+    );
   }
 
   getAppointments(params?: {

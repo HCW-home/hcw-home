@@ -101,6 +101,7 @@ class AppointmentStatus(models.TextChoices):
 
 class Appointment(models.Model):
     type = models.CharField(choices=Type.choices, default=Type.online)
+    title = models.CharField(_("title"), max_length=255, null=True, blank=True)
     status = models.CharField(
         _("status"),
         choices=AppointmentStatus.choices,

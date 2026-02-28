@@ -5,12 +5,15 @@
       <span>{{ label }}</span>
     </div>
   }
-  <div class="appointment-info-value">
-    <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+  <div class="appointment-info-title">
+    <span>{{ title }}</span>
     <span class="type-tag">
       <ion-icon [name]="typeIcon"></ion-icon>
       {{ typeLabel }}
     </span>
+  </div>
+  <div class="appointment-info-value">
+    <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
   </div>
   @for (participant of otherParticipants; track participant.id) {
     <div class="appointment-info-participant">

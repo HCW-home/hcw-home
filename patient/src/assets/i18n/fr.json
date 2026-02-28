@@ -15,6 +15,7 @@
     "online": "En ligne",
     "inPerson": "En personne",
     "video": "Vidéo",
+    "videoCall": "Appel vidéo",
     "notSelected": "Non sélectionné"
   },
   "login": {
@@ -318,6 +319,9 @@
     "statusScheduled": "Planifié",
     "statusCancelled": "Annulé",
     "failedLoad": "Échec du chargement des détails du rendez-vous"
+  },
+  "appointments": {
+    "defaultTitle": "Rendez-vous"
   },
   "consultationDetail": {
     "title": "Consultation",

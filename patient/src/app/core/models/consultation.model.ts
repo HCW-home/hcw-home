@@ -81,6 +81,7 @@ export interface Appointment {
   id: number;
   consultation: number;
   consultation_id?: number;
+  title?: string | null;
   type: AppointmentType;
   status: AppointmentStatus;
   scheduled_at: string;

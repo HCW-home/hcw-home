@@ -246,6 +246,7 @@
   "appointments": {
     "appointmentsCount": "{{count}} rendez-vous",
     "createNew": "Nouveau rendez-vous",
+    "defaultTitle": "Rendez-vous",
     "today": "Aujourd'hui",
     "list": "Liste",
     "day": "Jour",
@@ -832,6 +833,8 @@
     "appointmentType": "Type de rendez-vous",
     "online": "Vidéo",
     "inPerson": "En personne",
+    "summary": "Résumé",
+    "summaryPlaceholder": "Entrez un résumé du rendez-vous...",
     "date": "Date",
     "time": "Heure",
     "expectedEndDate": "Date de fin prévue",

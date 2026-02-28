@@ -30,6 +30,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Page } from '../../../../core/components/page/page';
 import { Loader } from '../../../../shared/components/loader/loader';
 import { Badge } from '../../../../shared/components/badge/badge';
+import { BadgeTypeEnum } from '../../../../shared/constants/badge';
 import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Button } from '../../../../shared/ui-components/button/button';
 import {
@@ -90,6 +91,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
 
   protected readonly getAppointmentBadgeType = getAppointmentBadgeType;
   protected readonly AppointmentType = AppointmentType;
+  protected readonly BadgeTypeEnum = BadgeTypeEnum;
   protected readonly ButtonStyleEnum = ButtonStyleEnum;
   protected readonly ButtonSizeEnum = ButtonSizeEnum;
 
@@ -364,7 +366,9 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private getEventTitle(appointment: Appointment): string {
-    return this.getAppointmentTypeLabel(appointment.type);
+    const title = appointment.title || this.t.instant('appointments.defaultTitle');
+    const type = this.getAppointmentTypeLabel(appointment.type);
+    return `${title} (${type})`;
   }
 
   getAppointmentTypeLabel(type: AppointmentType | string): string {

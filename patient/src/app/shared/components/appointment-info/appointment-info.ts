@@ -61,7 +61,11 @@ export class AppointmentInfoComponent {
 
   get typeLabel(): string {
     return this.appointment.type === 'online'
-      ? this.t.instant('common.video')
+      ? this.t.instant('common.videoCall')
       : this.t.instant('common.inPerson');
+  }
+
+  get title(): string {
+    return this.appointment.title || this.t.instant('appointments.defaultTitle');
   }
 }

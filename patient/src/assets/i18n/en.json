@@ -15,6 +15,7 @@
     "online": "Online",
     "inPerson": "In person",
     "video": "Video",
+    "videoCall": "Video Call",
     "notSelected": "Not selected"
   },
   "login": {
@@ -318,6 +319,9 @@
     "statusScheduled": "Scheduled",
     "statusCancelled": "Cancelled",
     "failedLoad": "Failed to load appointment details"
+  },
+  "appointments": {
+    "defaultTitle": "Appointment"
   },
   "consultationDetail": {
     "title": "Consultation",

@@ -290,6 +290,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   private initForm(): void {
     this.appointmentForm = this.fb.group({
       type: [AppointmentType.ONLINE, [Validators.required]],
+      title: [''],
       date: ['', [Validators.required]],
       time: ['', [Validators.required]],
       end_date: [''],
@@ -358,6 +359,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
     this.appointmentForm.patchValue({
       type: this.editingAppointment.type || AppointmentType.ONLINE,
+      title: this.editingAppointment.title || '',
       date: dateStr,
       time: timeStr,
       end_date: endDateStr,
@@ -541,6 +543,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     if (this.isEditMode && this.editingAppointment) {
       const updateData: UpdateAppointmentRequest = {
         type: formValue.type as AppointmentType,
+        title: formValue.title || undefined,
         scheduled_at: scheduledAt,
         end_expected_at: endExpectedAt,
         participants_ids,
@@ -550,6 +553,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     } else {
       const createData: CreateAppointmentRequest = {
         type: formValue.type as AppointmentType,
+        title: formValue.title || undefined,
         scheduled_at: scheduledAt,
         end_expected_at: endExpectedAt,
         dont_invite_beneficiary: formValue.dont_invite_beneficiary || false,

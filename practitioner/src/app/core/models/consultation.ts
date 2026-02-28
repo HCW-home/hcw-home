@@ -66,6 +66,7 @@ export enum AppointmentType {
 export interface Appointment {
   id: number;
   type: AppointmentType;
+  title?: string | null;
   scheduled_at: string;
   end_expected_at: string | null;
   consultation: number;
@@ -220,6 +221,7 @@ export interface ITemporaryParticipant {
 
 export interface CreateAppointmentRequest {
   type?: AppointmentType;
+  title?: string;
   status?: AppointmentStatus;
   scheduled_at?: string;
   end_expected_at?: string;
@@ -232,6 +234,7 @@ export interface CreateAppointmentRequest {
 
 export interface UpdateAppointmentRequest {
   type?: AppointmentType;
+  title?: string;
   status?: AppointmentStatus;
   scheduled_at?: string;
   end_expected_at?: string;

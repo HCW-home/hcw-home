@@ -82,7 +82,10 @@
         </div>
         <div class="appointment-info">
           <div class="appointment-title">
-            {{ getAppointmentTypeLabel(appointment.type) }}
+            <span>{{ appointment.title || ('appointments.defaultTitle' | translate) }}</span>
+            <app-badge [type]="appointment.type === AppointmentType.ONLINE ? BadgeTypeEnum.blue : BadgeTypeEnum.purple">
+              {{ getAppointmentTypeLabel(appointment.type) }}
+            </app-badge>
           </div>
           <div class="appointment-meta">
             <span>
@@ -150,11 +153,14 @@
       [style.top.px]="tooltipPosition().top"
       [style.left.px]="tooltipPosition().left">
       <div class="tooltip-header">
-        <span
-          class="tooltip-type"
-          [class.online]="hoveredAppointment()!.type === AppointmentType.ONLINE">
-          {{ getAppointmentTypeLabel(hoveredAppointment()!.type) }}
-        </span>
+        <div class="tooltip-title-row">
+          <span class="tooltip-title">
+            {{ hoveredAppointment()!.title || ('appointments.defaultTitle' | translate) }}
+          </span>
+          <app-badge [type]="hoveredAppointment()!.type === AppointmentType.ONLINE ? BadgeTypeEnum.blue : BadgeTypeEnum.purple">
+            {{ getAppointmentTypeLabel(hoveredAppointment()!.type) }}
+          </app-badge>
+        </div>
         <span
           class="tooltip-status"
           [style.color]="getStatusColor(hoveredAppointment()!.status)">

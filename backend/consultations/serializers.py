@@ -354,6 +354,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "scheduled_at",
             "end_expected_at",
             "type",
+            "title",
             "consultation_id",
             "created_by",
             "status",

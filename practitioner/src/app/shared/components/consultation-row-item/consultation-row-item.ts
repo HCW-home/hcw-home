@@ -49,4 +49,8 @@ export class ConsultationRowItem {
     const fullName = `${user.first_name?.trim() || ''} ${user.last_name?.trim() || ''}`.trim();
     return fullName || user.email || '';
   }
+
+  getFormattedId(): string {
+    return `#${String(this.consultation().id).padStart(6, '0')}`;
+  }
 }

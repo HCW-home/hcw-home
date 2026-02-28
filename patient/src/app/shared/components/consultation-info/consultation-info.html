@@ -6,7 +6,7 @@
     </div>
   }
   @if (title) {
-    <span class="consultation-info-title">{{ title }}</span>
+    <span class="consultation-info-title">{{ getFormattedId() }} - {{ title }}</span>
   }
   @if (doctorName) {
     <div class="consultation-info-doctor">

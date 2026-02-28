@@ -1,7 +1,7 @@
 <div class="consultation-row" (click)="onClick()">
   <div class="row-header">
     <app-typography [variant]="TypographyTypeEnum['body-l-semibold']" color="var(--slate-800)">
-      {{ consultation().title || ('consultationRowItem.untitledConsultation' | translate) }}
+      {{ getFormattedId() }} - {{ consultation().title || ('consultationRowItem.untitledConsultation' | translate) }}
     </app-typography>
   </div>
 

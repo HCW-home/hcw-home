@@ -1141,8 +1141,6 @@ class SendVerificationCodeView(APIView):
 
         # Generate a verification code (6 digits)
         user_instance.verification_code = 100000 + secrets.randbelow(900000)
-
-        user_instance.verification_code = verification_code
         user_instance.verification_code_created_at = timezone.now()
 
         user_instance.one_time_auth_token = str(uuid.uuid4())

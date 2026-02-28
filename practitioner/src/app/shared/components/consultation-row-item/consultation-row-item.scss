@@ -1,5 +1,5 @@
 .consultation-row {
-  padding: 20px 24px;
+  padding: 12px 24px;
   border-bottom: 1px solid var(--slate-100);
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -13,13 +13,13 @@
   }
 
   .row-header {
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
 
   .row-details {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 14px 24px;
+    gap: 10px 24px;
 
     > * {
       min-width: 0;

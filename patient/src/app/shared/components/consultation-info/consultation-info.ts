@@ -32,6 +32,10 @@ export class ConsultationInfoComponent {
     return '';
   }
 
+  getFormattedId(): string {
+    return `#${String(this.consultation.id).padStart(6, '0')}`;
+  }
+
   onAccess(event: Event): void {
     event.stopPropagation();
     this.access.emit(this.consultation);

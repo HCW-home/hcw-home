@@ -7,7 +7,6 @@
 they can jump to active consultation screen, means consultation room, and messaging, file shareing
 update patient user information
 
-* Add language endpoint /language/<lang_code>/
 * Add some field in user
 * Add location field
 * On sent action appointement, I would track partitipant
@@ -19,60 +18,6 @@ update patient user information
 
 
 ## Top priority
-
-* Add dashboard endpoint for both doctor and patient
-    - Next appointment
-    - Up coming appointment
-    - Overdue consultation
-
-* New consultation
-    1 - Select beneficiary + reason + description
-    2 - Owner is either Team or Doctor group or owned_by
-    3 - Improve appointment creation
-        <!-- - handling dont_invite_beneficiary, dont_invite_practitionner and dont_invite_me -->
-        - check there is at least two participants
-        - change button "add participant" and having Existing user selected by default
-        - remove feedback_rate and feedback_message
-        - use timezone, communication_method and preferred_language
-
-* Consultation overview
-    - Edit should have modal or inline edit, not back to wizard
-    - Merge Edit and Manage participant button and modal, participants can be manage on the right.
-
-## Low priority
-
-* Join consultation : add intermediate page similar to google meet.
-* Health Metric : add custom fields on patient + on health metric + endpoints
-
-
-## Add filter patient (user) to only have doctor
-
-
-## Permission check
-No permission (=patient) but : can still go own appointment or group appointment
-
-# Role improvement (Olivier)
-
-- add role doctor (default = patient)
-- consultation owner must not be patient (role =doctor)
-
-# Consultation
-
-- add consultation filter (owned by, group, mine)
-- Add owner column + group in consultation table
-
-# Terms
-
-- Add realonly model view for terms (by id) (Olivier)
-- Add term select = patient or practitioner
-- Show term page :
-    - for practitioner, must have company + default terms configured, show terms if not the same, update into accepted_term field
-    - for patient, must get term data (id + content, new endpoint) and show if id not same than accepted_term field
-
-# Appointement
-
-- move consultation user into participant area (not under tickbox) (Gor)
-- on appointment calendar, click must bring to consultation detail.
 
 # Toast
 

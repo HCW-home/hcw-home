@@ -517,13 +517,14 @@ class AppointmentCreateSerializer(AppointmentSerializer):
         read_only_fields = AppointmentSerializer.Meta.read_only_fields
 
     @property
-    def consultation(self) -> Consultation:
+    def consultation(self) -> Consultation | None:
         if not self._consultation:
             consultation_id = self.validated_data.get("consultation_id", None)
+            if consultation_id is None:
+                return None
             try:
                 self._consultation = Consultation.objects.get(id=consultation_id)
             except Consultation.DoesNotExist:
-                # TODO : make this optional when presential consultation is handled
                 raise serializers.ValidationError(
                     {"consultation_id": "Consultation not found."}
                 )
@@ -572,11 +573,12 @@ class AppointmentCreateSerializer(AppointmentSerializer):
         participant_users = set()
 
         # Users from consultation
-        if not dont_invite_beneficiary and self.consultation.beneficiary:
-            participant_users.add(self.consultation.beneficiary)
+        if self.consultation:
+            if not dont_invite_beneficiary and self.consultation.beneficiary:
+                participant_users.add(self.consultation.beneficiary)
 
-        if not dont_invite_practitioner and self.consultation.owned_by:
-            participant_users.add(self.consultation.owned_by)
+            if not dont_invite_practitioner and self.consultation.owned_by:
+                participant_users.add(self.consultation.owned_by)
 
         if not dont_invite_me:
             participant_users.add(self.context["request"].user)

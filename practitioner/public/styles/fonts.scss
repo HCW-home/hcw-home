@@ -34,3 +34,39 @@
   url("../fonts/source-sans-pro/SourceSansPro-Bold.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Plus Jakarta Sans Regular"),
+  local("PlusJakartaSans-Regular"),
+  url("../fonts/plus-jakarta-sans/PlusJakartaSans-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 500;
+  src: local("Plus Jakarta Sans Medium"),
+  local("PlusJakartaSans-Medium"),
+  url("../fonts/plus-jakarta-sans/PlusJakartaSans-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 600;
+  src: local("Plus Jakarta Sans SemiBold"),
+  local("PlusJakartaSans-SemiBold"),
+  url("../fonts/plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Plus Jakarta Sans Bold"),
+  local("PlusJakartaSans-Bold"),
+  url("../fonts/plus-jakarta-sans/PlusJakartaSans-Bold.ttf") format("truetype");
+}
+

@@ -94,7 +94,7 @@ INSTALLED_APPS = [
     "import_export",
     "django_celery_beat",
     "corsheaders",
-    "mfa",
+    # "mfa",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",

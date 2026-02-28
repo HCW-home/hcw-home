@@ -78,6 +78,9 @@ export class Login implements OnInit {
   }
 
   ngOnInit() {
+    // Clean up JWT tokens to prevent websocket reconnection attempts
+    this.adminAuthService.removeToken();
+
     this.adminAuthService.getOpenIDConfig().subscribe({
       next: config => {
         this.openIdEnabled = config.enabled;

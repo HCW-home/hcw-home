@@ -44,7 +44,6 @@ django-filter==25.2
 django-import-export==4.4.0
 django-location-field==2.7.3
 django-magic-link==1.2.0
-django-mfa2==3.1.2
 django-modeltranslation==0.19.19
 django-rest-swagger==2.2.0
 django-storages==1.14.6
@@ -63,7 +62,7 @@ Faker==39.0.0
 fcm-django==2.3.1
 fhir.resources==8.1.0
 fhir_core==1.1.4
-fido2==1.2.1
+fido2==2.1.1
 firebase_admin==7.1.0
 frozenlist==1.8.0
 google-api-core==2.28.1

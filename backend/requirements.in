@@ -13,7 +13,7 @@ django-cors-headers
 django-filter
 django-import-export
 django-location-field
-django-mfa2
+# django-mfa2
 django-modeltranslation
 django-rest-swagger
 django-timezone-field

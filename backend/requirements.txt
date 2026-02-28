@@ -29,7 +29,7 @@ constantly==23.10.4
 coreapi==2.3.3
 coreschema==0.0.4
 cron_descriptor==2.0.6
-cryptography==44.0.0
+cryptography==46.0.5
 daphne==4.2.1
 diff-match-patch==20241021
 dj-rest-auth==7.0.2
@@ -63,7 +63,7 @@ Faker==39.0.0
 fcm-django==2.3.1
 fhir.resources==8.1.0
 fhir_core==1.1.4
-fido2==1.2.0
+fido2==1.2.1
 firebase_admin==7.1.0
 frozenlist==1.8.0
 google-api-core==2.28.1

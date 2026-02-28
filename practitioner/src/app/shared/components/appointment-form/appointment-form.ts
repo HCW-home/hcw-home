@@ -78,11 +78,13 @@ import { TranslationService } from '../../../core/services/translation.service';
   ],
 })
 export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
-  @Input() consultationId!: number;
+  @Input() consultationId?: number;
   @Input() editingAppointment: Appointment | null = null;
   @Input() showActions = true;
   @Input() beneficiary: User | null = null;
   @Input() owner: User | null = null;
+  @Input() initialStartDate: Date | null = null;
+  @Input() initialEndDate: Date | null = null;
 
   @Output() cancelled = new EventEmitter<void>();
   @Output() appointmentCreated = new EventEmitter<Appointment>();
@@ -236,6 +238,13 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     if ((changes['beneficiary'] || changes['owner']) && this.appointmentForm) {
       this.updateInviteCheckboxStates();
     }
+    if (
+      (changes['initialStartDate'] || changes['initialEndDate']) &&
+      this.appointmentForm &&
+      !this.editingAppointment
+    ) {
+      this.populateFormWithInitialDates();
+    }
   }
 
   updateInviteCheckboxStates(): void {
@@ -330,6 +339,40 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
     this.appointmentForm.patchValue({
       type: this.editingAppointment.type || AppointmentType.ONLINE,
+      date: dateStr,
+      time: timeStr,
+      end_date: endDateStr,
+      end_time: endTimeStr,
+    });
+  }
+
+  private populateFormWithInitialDates(): void {
+    if (!this.initialStartDate) return;
+
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const formatTime = (date: Date): string => {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    };
+
+    const dateStr = formatDate(this.initialStartDate);
+    const timeStr = formatTime(this.initialStartDate);
+
+    let endDateStr = '';
+    let endTimeStr = '';
+    if (this.initialEndDate) {
+      endDateStr = formatDate(this.initialEndDate);
+      endTimeStr = formatTime(this.initialEndDate);
+    }
+
+    this.appointmentForm.patchValue({
       date: dateStr,
       time: timeStr,
       end_date: endDateStr,
@@ -569,27 +612,31 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   private createAppointment(appointmentData: CreateAppointmentRequest): void {
-    this.consultationService
-      .createConsultationAppointment(this.consultationId, appointmentData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: appointment => {
-          this.isSubmitting.set(false);
-          this.toasterService.show(
-            'success',
-            this.t.instant('appointmentForm.appointmentCreated'),
-            this.t.instant('appointmentForm.appointmentCreatedMessage')
-          );
-          this.appointmentCreated.emit(appointment);
-        },
-        error: error => {
-          this.isSubmitting.set(false);
-          this.toasterService.show(
-            'error',
-            this.t.instant('appointmentForm.errorCreatingAppointment'),
-            getErrorMessage(error)
-          );
-        },
-      });
+    const createObservable = this.consultationId
+      ? this.consultationService.createConsultationAppointment(
+          this.consultationId,
+          appointmentData
+        )
+      : this.consultationService.createAppointment(appointmentData);
+
+    createObservable.pipe(takeUntil(this.destroy$)).subscribe({
+      next: appointment => {
+        this.isSubmitting.set(false);
+        this.toasterService.show(
+          'success',
+          this.t.instant('appointmentForm.appointmentCreated'),
+          this.t.instant('appointmentForm.appointmentCreatedMessage')
+        );
+        this.appointmentCreated.emit(appointment);
+      },
+      error: error => {
+        this.isSubmitting.set(false);
+        this.toasterService.show(
+          'error',
+          this.t.instant('appointmentForm.errorCreatingAppointment'),
+          getErrorMessage(error)
+        );
+      },
+    });
   }
 }

@@ -22,6 +22,7 @@ import {
   EventClickArg,
   EventHoveringArg,
   DatesSetArg,
+  DateSelectArg,
 } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -55,6 +56,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { UserService } from '../../../../core/services/user.service';
 import { ConfirmPresenceModal } from './confirm-presence-modal/confirm-presence-modal';
+import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
 
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
 
@@ -71,6 +73,7 @@ type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
     LocalDatePipe,
     TranslatePipe,
     ConfirmPresenceModal,
+    AppointmentFormModal,
   ],
   templateUrl: './appointments.html',
   styleUrl: './appointments.scss',
@@ -104,6 +107,9 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
 
   confirmPresenceModalOpen = signal(false);
   confirmPresenceParticipantId = signal<number | null>(null);
+  createAppointmentModalOpen = signal(false);
+  selectedStartDate = signal<Date | null>(null);
+  selectedEndDate = signal<Date | null>(null);
 
   private readonly pageSize = 20;
   private listCurrentPage = 1;
@@ -116,13 +122,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     height: 'auto',
     weekends: true,
     editable: false,
-    selectable: false,
-    selectMirror: false,
+    selectable: true,
+    selectMirror: true,
     dayMaxEvents: true,
     eventClick: this.handleEventClick.bind(this),
     datesSet: this.handleDatesSet.bind(this),
     eventMouseEnter: this.handleEventMouseEnter.bind(this),
     eventMouseLeave: this.handleEventMouseLeave.bind(this),
+    select: this.handleDateSelect.bind(this),
     slotMinTime: '00:00:00',
     slotMaxTime: '24:00:00',
     allDaySlot: false,
@@ -448,6 +455,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.hoveredAppointment.set(null);
   }
 
+  handleDateSelect(selectInfo: DateSelectArg): void {
+    this.selectedStartDate.set(selectInfo.start);
+    this.selectedEndDate.set(selectInfo.end);
+    this.openCreateAppointmentModal();
+    const calendarApi = selectInfo.view.calendar;
+    calendarApi.unselect();
+  }
+
   private updateTitle(): void {
     const calendarApi = this.calendarComponent()?.getApi();
     if (calendarApi) {
@@ -633,6 +648,23 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onPresenceConfirmed(): void {
+    this.loadAppointments();
+  }
+
+  openCreateAppointmentModal(): void {
+    this.createAppointmentModalOpen.set(true);
+  }
+
+  onCreateAppointmentModalClosed(): void {
+    this.createAppointmentModalOpen.set(false);
+    this.selectedStartDate.set(null);
+    this.selectedEndDate.set(null);
+  }
+
+  onAppointmentCreated(): void {
+    this.createAppointmentModalOpen.set(false);
+    this.selectedStartDate.set(null);
+    this.selectedEndDate.set(null);
     this.loadAppointments();
   }
 }

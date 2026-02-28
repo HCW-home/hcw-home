@@ -20,10 +20,12 @@ export class AppointmentFormModal {
   private t = inject(TranslationService);
 
   @Input() isOpen = false;
-  @Input() consultationId!: number;
+  @Input() consultationId?: number;
   @Input() editingAppointment: Appointment | null = null;
   @Input() beneficiary: User | null = null;
   @Input() owner: User | null = null;
+  @Input() initialStartDate: Date | null = null;
+  @Input() initialEndDate: Date | null = null;
 
   @Output() closed = new EventEmitter<void>();
   @Output() appointmentCreated = new EventEmitter<Appointment>();

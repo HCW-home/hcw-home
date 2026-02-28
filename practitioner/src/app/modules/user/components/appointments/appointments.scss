@@ -10,6 +10,12 @@
   align-items: center;
   margin-bottom: 24px;
 
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
   .total-count {
     font-size: 14px;
     color: var(--slate-500);

@@ -805,6 +805,7 @@
   },
   "appointments": {
     "appointmentsCount": "{{count}} appointments",
+    "createNew": "New Appointment",
     "today": "Today",
     "list": "List",
     "day": "Day",

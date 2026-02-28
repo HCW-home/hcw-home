@@ -1,10 +1,19 @@
 <app-page>
   <div class="appointments-container">
     <div class="calendar-header">
-      <span class="total-count"
-        >{{ 'appointments.appointmentsCount' | translate:{ count:
-        appointments().length } }}</span
-      >
+      <div class="header-left">
+        <span class="total-count"
+          >{{ 'appointments.appointmentsCount' | translate:{ count:
+          appointments().length } }}</span
+        >
+        <app-button
+          [text]="'appointments.createNew' | translate"
+          [style]="ButtonStyleEnum.primary"
+          [size]="ButtonSizeEnum.small"
+          leftIcon="plus"
+          (buttonClick)="openCreateAppointmentModal()">
+        </app-button>
+      </div>
       <div class="header-controls">
         <div class="nav-controls">
           <button class="nav-btn" (click)="navigatePrev()">
@@ -211,5 +220,13 @@
       (closed)="onConfirmPresenceModalClosed()"
       (presenceConfirmed)="onPresenceConfirmed()">
     </app-confirm-presence-modal>
+
+    <app-appointment-form-modal
+      [isOpen]="createAppointmentModalOpen()"
+      [initialStartDate]="selectedStartDate()"
+      [initialEndDate]="selectedEndDate()"
+      (closed)="onCreateAppointmentModalClosed()"
+      (appointmentCreated)="onAppointmentCreated()">
+    </app-appointment-form-modal>
   </div>
 </app-page>

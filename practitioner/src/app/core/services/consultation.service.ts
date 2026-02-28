@@ -130,6 +130,10 @@ export class ConsultationService {
     });
   }
 
+  createAppointment(data: CreateAppointmentRequest): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.apiUrl}/appointments/`, data);
+  }
+
   getAppointments(params?: {
     page?: number;
     page_size?: number;

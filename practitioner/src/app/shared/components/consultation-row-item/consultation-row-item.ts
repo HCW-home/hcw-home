@@ -17,6 +17,7 @@ import { BadgeTypeEnum } from '../../constants/badge';
 export class ConsultationRowItem {
   consultation = input.required<Consultation>();
   showClosedDate = input<boolean>(false);
+  showDescription = input<boolean>(true);
   rowClick = output<Consultation>();
   statusBadgeType = input<BadgeType>(BadgeTypeEnum.green);
   statusLabel = input<string>('Active');

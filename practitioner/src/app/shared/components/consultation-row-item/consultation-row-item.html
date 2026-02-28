@@ -38,9 +38,11 @@
         [value]="(consultation().closed_at | date:'MMM d, y, h:mm a') || '-'">
       </app-label-value>
     }
-    <app-label-value
-      [label]="'consultationRowItem.description' | translate"
-      [value]="consultation().description || '-'">
-    </app-label-value>
+    @if (showDescription()) {
+      <app-label-value
+        [label]="'consultationRowItem.description' | translate"
+        [value]="consultation().description || '-'">
+      </app-label-value>
+    }
   </div>
 </div>

@@ -147,7 +147,8 @@
         {
         <app-consultation-row-item
           [consultation]="consultation"
-          [showClosedDate]="activeTab() !== 'active'"
+          [showClosedDate]="activeTab() === 'past'"
+          [showDescription]="activeTab() === 'past'"
           (rowClick)="viewConsultationDetails($event)">
         </app-consultation-row-item>
         } @if (hasMore()) {

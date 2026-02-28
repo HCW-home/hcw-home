@@ -1,34 +1,52 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-          "command": "npx yarn start",
-          "name": "Start practitioner interface",
-          "request": "launch",
-          "type": "node-terminal",
-          "cwd": "${workspaceFolder}/practitioner"
-        },
-        {
-            "name": "Run django server",
-            "type": "debugpy",
-            "request": "launch",
-            "args": [
-                "runserver"
-            ],
-            "django": true,
-            "autoStartBrowser": false,
-            "program": "${workspaceFolder}/backend/manage.py"
-        },
-        {
-          "name": "Run celery task manager",
-          "type": "debugpy",
-          "request": "launch",
-          "module": "celery",
-          "args": ["-A", "core.celery", "worker", "--loglevel=debug"],
-          "cwd": "${workspaceFolder}/backend"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Run All",
+      "configurations": [
+        "Backend: Django runserver",
+        "Backend: Celery worker + beat",
+        "Practitioner: ng serve",
+        "Patient: ng serve"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "command": "npx yarn start",
+      "name": "Practitioner: ng serve",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/practitioner"
+    },
+    {
+      "command": "npx yarn start",
+      "name": "Patient: ng serve",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/patient"
+    },
+    {
+      "name": "Backend: Django runserver",
+      "type": "debugpy",
+      "request": "launch",
+      "args": ["runserver"],
+      "django": true,
+      "autoStartBrowser": false,
+      "program": "${workspaceFolder}/backend/manage.py",
+    //   "console": "internalConsole"
+    },
+    {
+      "name": "Backend: Celery worker + beat",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "celery",
+      "args": ["-A", "core", "worker", "--beat", "-l", "info"],
+      "cwd": "${workspaceFolder}/backend",
+    //   "console": "internalConsole"
+    }
+  ]
 }

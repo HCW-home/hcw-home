@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Practitioner: yarn install",
+    "command": "yarn install",
+    "cwd": "practitioner",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "on_success"
+  },
+  {
+    "label": "Patient: yarn install",
+    "command": "yarn install",
+    "cwd": "patient",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "on_success"
+  },
+  {
+    "label": "Backend: pip install",
+    "command": "pip install -r requirements.txt",
+    "cwd": "backend",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "on_success"
+  }
+]

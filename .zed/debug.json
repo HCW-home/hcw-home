@@ -1,0 +1,36 @@
+[
+  {
+    "adapter": "Debugpy",
+    "label": "Backend: Django runserver",
+    "request": "launch",
+    "args": ["runserver"],
+    "django": true,
+    "autoStartBrowser": true,
+    "program": "${ZED_WORKTREE_ROOT}/backend/manage.py",
+    "cwd": "${ZED_WORKTREE_ROOT}/backend/"
+  },
+  {
+    "adapter": "JavaScript",
+    "label": "Practitioner: ng serve",
+    "request": "launch",
+    "program": "${ZED_WORKTREE_ROOT}/practitioner/node_modules/.bin/ng",
+    "args": ["serve"],
+    "cwd": "${ZED_WORKTREE_ROOT}/practitioner/"
+  },
+  {
+    "adapter": "JavaScript",
+    "label": "Patient: ng serve",
+    "request": "launch",
+    "program": "${ZED_WORKTREE_ROOT}/patient/node_modules/.bin/ng",
+    "args": ["serve"],
+    "cwd": "${ZED_WORKTREE_ROOT}/patient/"
+  },
+  {
+    "adapter": "Debugpy",
+    "label": "Backend: Celery worker + beat",
+    "request": "launch",
+    "module": "celery",
+    "args": ["-A", "core", "worker", "--beat", "-l", "info"],
+    "cwd": "${ZED_WORKTREE_ROOT}/backend/"
+  }
+]

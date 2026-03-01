@@ -36,6 +36,7 @@ import {
 
 interface IAppointmentFormValue {
   id: number | null;
+  title: string;
   date: string;
   time: string;
   type: AppointmentType;
@@ -427,6 +428,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
 
     const appointmentGroup = this.fb.group({
       id: [appointment.id],
+      title: [appointment.title || ''],
       date: [date, Validators.required],
       time: [time, Validators.required],
       type: [appointment.type || AppointmentType.ONLINE, Validators.required],
@@ -504,22 +506,52 @@ export class ConsultationForm implements OnInit, OnDestroy {
 
   onSubmit(): void {
     const titleControl = this.consultationForm.get('title');
-    if (titleControl?.valid) {
-      this.isSaving.set(true);
-
-      if (this.mode === 'create') {
-        this.createConsultation();
-      } else {
-        this.updateConsultation();
-      }
-    } else {
+    if (!titleControl?.valid) {
       this.validationService.validateAllFormFields(this.consultationForm);
       this.toasterService.show(
         'error',
         this.t.instant('consultationForm.validationError'),
         this.t.instant('consultationForm.fillReasonField')
       );
+      return;
     }
+
+    if (!this.validateAppointments()) {
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    if (this.mode === 'create') {
+      this.createConsultation();
+    } else {
+      this.updateConsultation();
+    }
+  }
+
+  private validateAppointments(): boolean {
+    let isValid = true;
+    for (let i = 0; i < this.appointmentsFormArray.length; i++) {
+      const appointment = this.appointmentsFormArray.at(i);
+      const dateControl = appointment.get('date');
+      const timeControl = appointment.get('time');
+
+      if (dateControl?.invalid || timeControl?.invalid) {
+        dateControl?.markAsTouched();
+        timeControl?.markAsTouched();
+        isValid = false;
+      }
+    }
+
+    if (!isValid) {
+      this.toasterService.show(
+        'error',
+        this.t.instant('consultationForm.validationError'),
+        this.t.instant('consultationForm.fillAppointmentFields')
+      );
+    }
+
+    return isValid;
   }
 
   createConsultation(): void {
@@ -578,6 +610,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       const appointmentData: CreateAppointmentRequest = {
         scheduled_at: scheduledAt,
         type: apt.type,
+        title: apt.title || undefined,
         dont_invite_beneficiary: apt.dont_invite_beneficiary,
         dont_invite_practitioner: apt.dont_invite_practitioner,
         dont_invite_me: apt.dont_invite_me,
@@ -773,6 +806,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
   addAppointment(): void {
     const appointmentGroup = this.fb.group({
       id: [null],
+      title: [''],
       date: ['', Validators.required],
       time: ['', Validators.required],
       type: [AppointmentType.ONLINE, Validators.required],
@@ -848,6 +882,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
         .updateAppointment(appointmentId, {
           scheduled_at: scheduledAt,
           type: formValue.type,
+          title: formValue.title || undefined,
           participants_ids,
           temporary_participants,
         })
@@ -870,6 +905,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       const appointmentData: CreateAppointmentRequest = {
         scheduled_at: scheduledAt,
         type: formValue.type,
+        title: formValue.title || undefined,
         dont_invite_beneficiary: formValue.dont_invite_beneficiary,
         dont_invite_practitioner: formValue.dont_invite_practitioner,
         dont_invite_me: formValue.dont_invite_me,
@@ -911,6 +947,17 @@ export class ConsultationForm implements OnInit, OnDestroy {
     const appointment = this.appointmentsFormArray.at(appointmentIndex);
     const field = appointment?.get(fieldName);
     return (field?.invalid && field?.touched) || false;
+  }
+
+  getAppointmentFieldError(appointmentIndex: number, fieldName: string): string {
+    const appointment = this.appointmentsFormArray.at(appointmentIndex);
+    const field = appointment?.get(fieldName);
+    if (field?.errors && field?.touched) {
+      if (field.errors['required']) {
+        return this.t.instant('consultationForm.fieldRequired', { field: fieldName });
+      }
+    }
+    return '';
   }
 
   getParticipantsFormArray(appointmentIndex: number): FormArray {

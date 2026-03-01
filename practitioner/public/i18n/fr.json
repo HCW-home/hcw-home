@@ -625,6 +625,7 @@
     "stepSchedule": "Planification",
     "validationError": "Erreur de validation",
     "fillReasonField": "Veuillez remplir le champ motif",
+    "fillAppointmentFields": "Veuillez remplir la date et l'heure pour tous les rendez-vous",
     "fieldRequired": "{{field}} est obligatoire",
     "fieldTooShort": "{{field}} est trop court",
     "fieldTooLong": "{{field}} est trop long",

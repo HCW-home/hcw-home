@@ -223,6 +223,15 @@
               </div>
             </div>
 
+            <div class="form-group">
+              <app-input
+                type="text"
+                [label]="'appointmentForm.summary' | translate"
+                [placeholder]="'appointmentForm.summaryPlaceholder' | translate"
+                formControlName="title">
+              </app-input>
+            </div>
+
             <div class="appointment-grid">
               <div class="form-group">
                 <app-input
@@ -230,7 +239,9 @@
                   [required]="true"
                   type="date"
                   leftIcon="calendar"
-                  formControlName="date">
+                  formControlName="date"
+                  [invalid]="isAppointmentFieldInvalid(i, 'date')"
+                  [invalidMessage]="getAppointmentFieldError(i, 'date')">
                 </app-input>
               </div>
               <div class="form-group">
@@ -239,7 +250,9 @@
                   [required]="true"
                   type="time"
                   leftIcon="clock"
-                  formControlName="time">
+                  formControlName="time"
+                  [invalid]="isAppointmentFieldInvalid(i, 'time')"
+                  [invalidMessage]="getAppointmentFieldError(i, 'time')">
                 </app-input>
               </div>
             </div>

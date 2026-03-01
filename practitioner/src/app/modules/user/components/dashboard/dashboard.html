@@ -21,120 +21,101 @@
         </app-button>
       </div>
     } @else {
-      @if (hasValidNextAppointment()) {
-        <div class="next-appointment-section">
-          <div class="section-card highlight">
-            <div class="section-header">
-              <div class="header-left">
-                <div class="section-icon primary">
-                  <app-svg src="clock" [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--primary-600)'}"></app-svg>
-                </div>
-                <div class="section-title">
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ 'dashboard.nextAppointment' | translate }}
-                  </app-typography>
-                </div>
-              </div>
+      <div class="section-card appointments-section">
+        <div class="section-header">
+          <div class="header-left">
+            <div class="section-icon primary">
+              <app-svg src="calendar" [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--primary-600)'}"></app-svg>
             </div>
-            <div class="section-content">
-              <div class="next-appointment-card">
-                <div class="appointment-left"
-                     (click)="viewNextAppointment()"
-                     (keyup.enter)="viewNextAppointment()"
-                     (keyup.space)="viewNextAppointment()"
-                     role="button"
-                     tabindex="0">
-                  <div class="patient-avatar">
-                    <span>--</span>
-                  </div>
-                  <div class="appointment-info">
-                    <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                      {{ 'dashboard.appointment' | translate }}
-                    </app-typography>
-                    <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                      {{ nextAppointment()!.type || ('dashboard.videoCall' | translate) }}
-                    </app-typography>
-                  </div>
-                </div>
-                <div class="appointment-center">
-                  <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--primary-600)">
-                    {{ getRelativeTime(nextAppointment()!.scheduled_at!) }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ nextAppointment()!.scheduled_at  | localDate : 'MMM d, HH:mm' }}
-                  </app-typography>
-                </div>
-                <div class="appointment-action">
-                  <app-button
-                    [text]="'dashboard.joinNow' | translate"
-                    leftIcon="video"
-                    [size]="ButtonSizeEnum.large"
-                    [style]="ButtonStyleEnum.primary"
-                    (buttonClick)="joinNextAppointment($event)">
-                  </app-button>
-                </div>
-              </div>
+            <div class="section-title">
+              <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
+                {{ 'dashboard.upcomingAppointments' | translate }}
+              </app-typography>
+              <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+                {{ 'dashboard.scheduledAppointments' | translate }}
+              </app-typography>
             </div>
           </div>
+          <app-button
+            [text]="'dashboard.viewAll' | translate"
+            [size]="ButtonSizeEnum.small"
+            [style]="ButtonStyleEnum.stroke"
+            (buttonClick)="navigateToAppointments()">
+          </app-button>
         </div>
-      }
-
-      <div class="dashboard-grid">
-        <div class="main-content">
-          <div class="section-card">
-            <div class="section-header">
-              <div class="header-left">
-                <div class="section-icon primary">
-                  <app-svg src="calendar" [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--primary-600)'}"></app-svg>
-                </div>
-                <div class="section-title">
-                  <app-typography [variant]="TypographyTypeEnum['body-l-bold']" color="var(--slate-800)">
-                    {{ 'dashboard.upcomingAppointments' | translate }}
-                  </app-typography>
-                  <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                    {{ 'dashboard.scheduledAppointments' | translate }}
-                  </app-typography>
-                </div>
-              </div>
-              <app-button
-                [text]="'dashboard.viewAll' | translate"
-                [size]="ButtonSizeEnum.small"
-                [style]="ButtonStyleEnum.stroke"
-                (buttonClick)="navigateToAppointments()">
-              </app-button>
+        <div class="section-content">
+          @if (!hasValidNextAppointment() && upcomingAppointments().length === 0) {
+            <div class="empty-state-small">
+              <app-svg src="calendar" [svgStyle]="{'width.px': 32, 'height.px': 32, 'opacity': 0.3}"></app-svg>
+              <app-typography [variant]="TypographyTypeEnum['body-s-medium']" color="var(--slate-400)">
+                {{ 'dashboard.noUpcoming' | translate }}
+              </app-typography>
             </div>
-            <div class="section-content">
-              @if (upcomingAppointments().length === 0) {
-                <div class="empty-state-small">
-                  <app-svg src="calendar" [svgStyle]="{'width.px': 32, 'height.px': 32, 'opacity': 0.3}"></app-svg>
-                  <app-typography [variant]="TypographyTypeEnum['body-s-medium']" color="var(--slate-400)">
-                    {{ 'dashboard.noUpcoming' | translate }}
-                  </app-typography>
-                </div>
-              } @else {
-                <div class="appointments-list">
-                  @for (appointment of upcomingAppointments(); track appointment.id) {
-                    <div class="appointment-item" (click)="viewAppointment(appointment)">
-                      <div class="patient-avatar small">
-                        <span>--</span>
-                      </div>
-                      <div class="appointment-details">
-                        <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                          {{ getAppointmentTypeLabel(appointment.type) }}
-                        </app-typography>
-                        <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                          {{ formatDateTime(appointment.scheduled_at) }}
-                        </app-typography>
-                      </div>
-                      <div class="appointment-time">
-                        <app-badge [type]="getAppointmentBadgeType(appointment.status)">{{ appointment.status }}</app-badge>
-                      </div>
+          } @else {
+            <div class="appointments-list">
+              @if (hasValidNextAppointment()) {
+                <div class="next-appointment-card" (click)="viewNextAppointment()">
+                  <div class="appointment-left">
+                    <div class="patient-avatar">
+                      <span>--</span>
                     </div>
-                  }
+                    <div class="appointment-info">
+                      <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
+                        {{ getAppointmentTypeLabel(nextAppointment()!.type!) }}
+                      </app-typography>
+                      <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+                        {{ nextAppointment()!.scheduled_at | localDate : 'MMM d, HH:mm' }}
+                      </app-typography>
+                    </div>
+                  </div>
+                  <div class="appointment-right">
+                    <app-badge [type]="BadgeTypeEnum.blue">
+                      {{ 'dashboard.nextAppointment' | translate }}
+                    </app-badge>
+                    <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--primary-600)">
+                      {{ getRelativeTime(nextAppointment()!.scheduled_at!) }}
+                    </app-typography>
+                    @if (isOnlineAppointment(nextAppointment()!.type)) {
+                      <app-button
+                        [text]="'dashboard.joinNow' | translate"
+                        leftIcon="video"
+                        [size]="ButtonSizeEnum.small"
+                        [style]="ButtonStyleEnum.primary"
+                        (buttonClick)="joinNextAppointment($event)">
+                      </app-button>
+                    }
+                  </div>
+                </div>
+              }
+              @for (appointment of upcomingAppointments(); track appointment.id) {
+                <div class="appointment-item" (click)="viewAppointment(appointment)">
+                  <div class="patient-avatar small">
+                    <span>--</span>
+                  </div>
+                  <div class="appointment-details">
+                    <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
+                      {{ getAppointmentTypeLabel(appointment.type) }}
+                    </app-typography>
+                    <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+                      {{ formatDateTime(appointment.scheduled_at) }}
+                    </app-typography>
+                  </div>
+                  <div class="appointment-actions">
+                    <app-badge [type]="getAppointmentBadgeType(appointment.status)">{{ appointment.status }}</app-badge>
+                    @if (isOnlineAppointment(appointment.type)) {
+                      <app-button
+                        [text]="'consultationDetail.join' | translate"
+                        leftIcon="video"
+                        [size]="ButtonSizeEnum.small"
+                        [style]="ButtonStyleEnum.stroke"
+                        (buttonClick)="joinAppointment(appointment, $event)">
+                      </app-button>
+                    }
+                  </div>
                 </div>
               }
             </div>
-          </div>
+          }
         </div>
       </div>
 

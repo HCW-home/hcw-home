@@ -180,6 +180,12 @@ export class Dashboard implements OnInit, OnDestroy {
     this.router.navigate(['/app/consultations', consultation.id]);
   }
 
+  isOnlineAppointment(type: AppointmentType | string | null): boolean {
+    if (!type) return false;
+    const t = typeof type === 'string' ? type.toLowerCase() : type;
+    return t === 'online' || t === AppointmentType.ONLINE;
+  }
+
   viewAppointment(appointment: Appointment): void {
     if (appointment.consultation_id) {
       this.router.navigate(['/app/consultations', appointment.consultation_id], {
@@ -188,6 +194,19 @@ export class Dashboard implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['/app/appointments'], {
         queryParams: { appointmentId: appointment.id },
+      });
+    }
+  }
+
+  joinAppointment(appointment: Appointment, event: Event): void {
+    event.stopPropagation();
+    if (appointment.consultation_id) {
+      this.router.navigate(['/app/consultations', appointment.consultation_id], {
+        queryParams: { join: true, appointmentId: appointment.id },
+      });
+    } else {
+      this.router.navigate(['/app/appointments'], {
+        queryParams: { appointmentId: appointment.id, join: true },
       });
     }
   }
@@ -202,7 +221,7 @@ export class Dashboard implements OnInit, OnDestroy {
         });
       } else {
         this.router.navigate(['/app/appointments'], {
-          queryParams: { appointmentId: apt.id },
+          queryParams: { appointmentId: apt.id, join: true },
         });
       }
     }

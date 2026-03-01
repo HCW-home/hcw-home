@@ -189,7 +189,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
       }
 
       if (appointmentId) {
-        this.highlightedAppointmentId.set(Number(appointmentId));
+        const join = params['join'] === 'true';
+        const id = Number(appointmentId);
+        this.highlightedAppointmentId.set(id);
+        if (join) {
+          this.activeAppointmentId.set(id);
+          this.inCall.set(true);
+          this.incomingCallService.setActiveCall(id);
+        }
         this.setView('list');
         this.router.navigate([], {
           relativeTo: this.route,

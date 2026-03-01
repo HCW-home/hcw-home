@@ -365,7 +365,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def join(self, request, pk=None):
         """Join consultation call"""
         appointment = self.get_object()
-        if appointment.consultation.closed_at:
+        if appointment.consultation and appointment.consultation.closed_at:
             return Response(
                 {"detail": _("Cannot join call in closed consultation")},
                 status=status.HTTP_400_BAD_REQUEST,

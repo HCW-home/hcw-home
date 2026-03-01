@@ -512,6 +512,9 @@
   .fc-daygrid-event {
     margin: 2px 4px;
     padding: 4px 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .fc-daygrid-day-number {
@@ -541,6 +544,7 @@
 
   .fc-daygrid-day-events {
     padding: 4px;
+    overflow: hidden;
   }
 
   .fc-more-link {

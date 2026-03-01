@@ -183,6 +183,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     dayMaxEvents: 3,
     eventClick: this.handleCalendarEventClick.bind(this),
     datesSet: this.handleDatesSet.bind(this),
+    eventDidMount: (info) => {
+      info.el.setAttribute('title', info.event.title);
+    },
     slotMinTime: '06:00:00',
     slotMaxTime: '22:00:00',
     allDaySlot: false,
@@ -1394,7 +1397,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       appointment.type === AppointmentType.ONLINE
         ? this.t.instant('consultationDetail.video')
         : this.t.instant('consultationDetail.inPersonLabel');
-    return typeLabel;
+    return appointment.title ? `${appointment.title} (${typeLabel})` : typeLabel;
   }
 
   private getStatusColor(status: AppointmentStatus): string {

@@ -255,6 +255,7 @@ export interface CreateParticipantRequest {
 
 export interface DashboardNextAppointment {
   id: number | null;
+  title: string | null;
   scheduled_at: string | null;
   end_expected_at: string | null;
   type: string | null;

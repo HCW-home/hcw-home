@@ -61,20 +61,22 @@
                     </div>
                     <div class="appointment-info">
                       <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                        {{ getAppointmentTypeLabel(nextAppointment()!.type!) }}
+                        {{ nextAppointment()!.title || getAppointmentTypeLabel(nextAppointment()!.type!) }}
                       </app-typography>
-                      <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                        {{ nextAppointment()!.scheduled_at | localDate : 'MMM d, HH:mm' }}
-                      </app-typography>
+                      <span class="appointment-time-row">
+                        <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+                          {{ nextAppointment()!.scheduled_at | localDate : 'MMM d, HH:mm' }}
+                        </app-typography>
+                        <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--primary-600)">
+                          {{ getRelativeTime(nextAppointment()!.scheduled_at!) }}
+                        </app-typography>
+                      </span>
                     </div>
                   </div>
                   <div class="appointment-right">
                     <app-badge [type]="BadgeTypeEnum.blue">
                       {{ 'dashboard.nextAppointment' | translate }}
                     </app-badge>
-                    <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--primary-600)">
-                      {{ getRelativeTime(nextAppointment()!.scheduled_at!) }}
-                    </app-typography>
                     @if (isOnlineAppointment(nextAppointment()!.type)) {
                       <app-button
                         [text]="'dashboard.joinNow' | translate"
@@ -92,16 +94,20 @@
                   <div class="patient-avatar small">
                     <span>--</span>
                   </div>
-                  <div class="appointment-details">
+                  <div class="appointment-info">
                     <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
-                      {{ getAppointmentTypeLabel(appointment.type) }}
+                      {{ appointment.title || getAppointmentTypeLabel(appointment.type) }}
                     </app-typography>
-                    <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                      {{ formatDateTime(appointment.scheduled_at) }}
-                    </app-typography>
+                    <span class="appointment-time-row">
+                      <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
+                        {{ appointment.scheduled_at | localDate : 'MMM d, HH:mm' }}
+                      </app-typography>
+                      <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--slate-400)">
+                        {{ getRelativeTime(appointment.scheduled_at) }}
+                      </app-typography>
+                    </span>
                   </div>
-                  <div class="appointment-actions">
-                    <app-badge [type]="getAppointmentBadgeType(appointment.status)">{{ appointment.status }}</app-badge>
+                  <div class="appointment-right">
                     @if (isOnlineAppointment(appointment.type)) {
                       <app-button
                         [text]="'consultationDetail.join' | translate"

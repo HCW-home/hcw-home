@@ -14,9 +14,8 @@
     gap: 16px;
     padding: 16px 24px;
     background: var(--primary-50);
-    border: 1px solid var(--primary-200);
-    border-radius: 12px;
-    margin: 12px 12px 0;
+    border-top: 1px solid var(--primary-200);
+    border-bottom: 1px solid var(--primary-200);
     cursor: pointer;
     transition: background-color 0.2s ease;
 
@@ -190,6 +189,12 @@
     }
   }
 
+  .appointment-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .appointments-list {
     display: flex;
     flex-direction: column;
@@ -198,41 +203,33 @@
   .appointment-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     padding: 16px 24px;
     border-bottom: 1px solid var(--slate-100);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
 
     &:hover {
-      background: rgba(248, 250, 252, 0.8);
-
-      .patient-avatar.small {
-        background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
-
-        span {
-          color: var(--primary-700);
-        }
-      }
-
-      .video-btn {
-        opacity: 1;
-      }
+      background: var(--slate-50);
     }
 
     &:last-child {
       border-bottom: none;
     }
 
-    .appointment-details {
+    .appointment-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       flex: 1;
       min-width: 0;
     }
 
-    .appointment-actions {
+    .appointment-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       flex-shrink: 0;
     }
   }

@@ -141,15 +141,21 @@ export class Dashboard implements OnInit, OnDestroy {
   getRelativeTime(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((targetDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 1) {
+      return this.t.instant('dashboard.inDays', { count: String(diffDays) });
+    } else if (diffDays === 1) {
+      return this.t.instant('dashboard.tomorrow');
+    }
+
     const diffMs = date.getTime() - now.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays > 0) {
-      return diffDays === 1
-        ? this.t.instant('dashboard.tomorrow')
-        : this.t.instant('dashboard.inDays', { count: String(diffDays) });
-    } else if (diffHours > 0) {
+    if (diffHours > 0) {
       return this.t.instant('dashboard.inHours', { count: String(diffHours) });
     } else {
       return this.t.instant('dashboard.soon');

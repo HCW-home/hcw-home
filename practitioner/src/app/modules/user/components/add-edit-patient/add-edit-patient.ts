@@ -135,7 +135,6 @@ export class AddEditPatient implements OnInit, OnDestroy {
     });
 
     if (this.isEditMode) {
-      this.form.get('email')?.disable();
       if (p?.temporary) {
         this.form.addControl('temporary', this.fb.control(true));
       }
@@ -153,12 +152,10 @@ export class AddEditPatient implements OnInit, OnDestroy {
     });
 
     if (p) {
-      this.form.get('email')?.disable();
       if (p.temporary && !this.form.get('temporary')) {
         this.form.addControl('temporary', this.fb.control(true));
       }
     } else {
-      this.form.get('email')?.enable();
       if (this.form.get('temporary')) {
         this.form.removeControl('temporary');
       }
@@ -196,6 +193,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
 
     if (this.isEditMode) {
       const updateData: IPatientUpdateRequest = {
+        email: formValue.email,
         first_name: formValue.first_name,
         last_name: formValue.last_name,
         mobile_phone_number: formValue.mobile_phone_number,

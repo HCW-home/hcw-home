@@ -107,8 +107,17 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         read_only_fields = [
             "is_online",
             "is_practitioner",
-            UserModel.EMAIL_FIELD,
         ]
+
+    def validate_email(self, value):
+        if self.instance and value:
+            # Check if email is being changed and if new email already exists
+            if self.instance.email != value:
+                if UserModel.objects.filter(email=value).exclude(pk=self.instance.pk).exists():
+                    raise serializers.ValidationError(
+                        "A user with this email already exists."
+                    )
+        return value
 
     def validate_temporary(self, value):
         if self.instance and not self.instance.temporary and value:

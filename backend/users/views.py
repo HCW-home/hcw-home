@@ -665,6 +665,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Prevent a practitioner from updating another practitioner
+        if request.user.is_practitioner and user.is_practitioner:
+            return Response(
+                {"detail": "Cannot update another practitioner."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
@@ -678,10 +685,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Prevent updating users who belong to any group
-        if user.groups.exists():
+
+        # Prevent a practitioner from updating another practitioner
+        if request.user.is_practitioner and user.is_practitioner:
             return Response(
-                {"detail": "Cannot update users who belong to a group."},
+                {"detail": "Cannot update another practitioner."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 

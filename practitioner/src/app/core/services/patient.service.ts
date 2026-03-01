@@ -19,6 +19,7 @@ export interface IPatientCreateRequest {
 }
 
 export interface IPatientUpdateRequest {
+  email?: string;
   first_name?: string;
   last_name?: string;
   mobile_phone_number?: string;

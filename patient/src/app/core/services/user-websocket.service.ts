@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, firstValueFrom } from 'rxjs';
 import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
@@ -53,8 +53,12 @@ export class UserWebSocketService implements OnDestroy {
     this.wsService.connect({
       url: wsUrl,
       urlProvider: async () => {
-        const freshToken = await this.authService.getToken();
-        return freshToken ? `${environment.wsUrl}/user/?token=${freshToken}` : null;
+        try {
+          const response = await firstValueFrom(this.authService.refreshToken());
+          return response.access ? `${environment.wsUrl}/user/?token=${response.access}` : null;
+        } catch {
+          return null;
+        }
       },
       reconnect: true,
       reconnectAttempts: 10,

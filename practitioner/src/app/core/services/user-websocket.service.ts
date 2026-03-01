@@ -5,6 +5,7 @@ import {
   Subject,
   Subscription,
   distinctUntilChanged,
+  firstValueFrom,
 } from 'rxjs';
 import { WebSocketService } from './websocket.service';
 import { ToasterService } from './toaster.service';
@@ -73,8 +74,16 @@ export class UserWebSocketService implements OnDestroy {
     this.wsService.connect({
       url: wsUrl,
       urlProvider: async () => {
-        const freshToken = this.authService.getToken();
-        return freshToken ? `${environment.wsUrl}/user/?token=${freshToken}` : null;
+        try {
+          const response = await firstValueFrom(this.authService.refreshAccessToken());
+          this.authService.setToken(response.access);
+          if (response.refresh) {
+            this.authService.setRefreshToken(response.refresh);
+          }
+          return `${environment.wsUrl}/user/?token=${response.access}`;
+        } catch {
+          return null;
+        }
       },
       reconnect: true,
       reconnectAttempts: 10,

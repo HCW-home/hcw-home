@@ -9,6 +9,7 @@ class ConsultationQuerySet(models.QuerySet):
     def active(self):
         return self.filter(closed_at__isnull=True)
 
+
 class ConsultationManager(models.Manager):
     """Custom Manager for Consultation model"""
 
@@ -17,7 +18,5 @@ class ConsultationManager(models.Manager):
 
     def accessible_by(self, user):
         return self.filter(
-            Q(owned_by=user)
-            | Q(created_by=user)
-            | Q(group__users=user),
+            Q(owned_by=user) | Q(created_by=user) | Q(group__users=user),
         ).distinct()

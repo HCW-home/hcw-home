@@ -1,32 +1,10 @@
-* [OK] (only email for now) Magic link login, this should accept phone number or email in body, and just send email or sms to that phone number or email It should navigte to /verification?token=xxxxxxx we need verfy patient access token , which should return current accesss token and create user if user doesn't exists with that emil or phone nuber
 
-* [OK] patient active conultations, patient closed consultation, one api with (type|status) filter
-* [OK] / notifications screen
-* [OK] settings, where they can configure notification settings
-* [OK] book an apointnmen button, where they can create consultation
-they can jump to active consultation screen, means consultation room, and messaging, file shareing
-update patient user information
-
-* Add some field in user
-* Add location field
-* On sent action appointement, I would track partitipant
-* Add message logic and send link and datetime of appointment
-* Add calculated status field for participant (participant : sent, read, accepted)
 * Add validation on phone number
-
-* edit appointment > reset participant notification status
-
 
 ## Top priority
 
-# Toast
-
-- Add toast with title, description (details or error if backend give)
-- Add traceback with detail and copy button in case of error (Gor)
-
 # Misc
 
-- Remove arrow on Patient page list (click on line is enough)
 - Implement system message in backend in consultation, to log system event, created_by will be empty
 
 ![alt text](image.png)

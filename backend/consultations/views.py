@@ -315,16 +315,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # For list, retrieve, and join actions: filter by participants or consultation access
+        # For list, retrieve, and join actions: filter by participants, creator, or consultation access
         if self.action in ["list", "retrieve", "join"]:
             return Appointment.objects.filter(
                 Q(participant__user=user, participant__is_active=True)
+                | Q(created_by=user)
                 | Q(consultation__in=Consultation.objects.accessible_by(user))
             ).distinct()
 
-        # For create, update, partial_update, etc.: use consultation access logic
+        # For create, update, partial_update, etc.: use consultation access logic or creator
         return Appointment.objects.filter(
-            consultation__in=Consultation.objects.accessible_by(user)
+            Q(created_by=user)
+            | Q(consultation__in=Consultation.objects.accessible_by(user))
         ).distinct()
 
     @extend_schema(

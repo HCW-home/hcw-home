@@ -25,87 +25,21 @@
         >{{ 'messageList.noMessagesYet' | translate }}</app-typography
       >
     </div>
-    } @else { @for (message of messages; track message.id) {
+    } @else { @for (message of messages; track message.id; let i = $index) {
+    @if (shouldShowDateSeparator(i)) {
+    <div class="date-separator">
+      <span class="date-separator-text">{{ formatDateSeparator(message.timestamp) }}</span>
+    </div>
+    }
     @if (message.isSystem) {
-    <div class="message-item system-message">
-      <div class="message-meta">
-        <app-typography
-          [variant]="TypographyTypeEnum['body-xs-regular']"
-          class="message-time">
-          {{ formatTime(message.timestamp) }}
-        </app-typography>
-      </div>
-      <div class="message-content">
-        @if (message.message) {
-        <app-typography [variant]="TypographyTypeEnum['body-s-regular']"
-          >{{ message.message }}</app-typography
-        >
-        }
-        @if (message.attachment) { @if
-        (isImageAttachment(message.attachment)) { @if (getImageUrl(message.id))
-        {
-        <div
-          class="message-image-attachment"
-          (click)="openImageViewer(message)">
-          <img
-            [src]="getImageUrl(message.id)"
-            [alt]="message.attachment.file_name"
-            class="attachment-image-preview" />
-        </div>
-        } @else {
-        <div class="message-attachment loading">
-          <app-svg
-            src="image"
-            [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-          <span class="attachment-name">{{ 'messageList.loadingImage' | translate }}</span>
-        </div>
-        } } @else {
-        <div
-          class="message-attachment clickable"
-          tabindex="0"
-          role="button"
-          (click)="downloadAttachment(message)"
-          (keydown.enter)="downloadAttachment(message)"
-          (keydown.space)="downloadAttachment(message)">
-          <div class="attachment-info">
-            <app-svg
-              [src]="getAttachmentIcon(message.attachment)"
-              [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-            <div class="attachment-details">
-              <span class="attachment-name"
-                >{{ message.attachment.file_name }}</span
-              >
-            </div>
-          </div>
-          <app-svg
-            src="arrow-down"
-            [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--primary-600)'}"></app-svg>
-        </div>
-        } }
-        @if (isRecording(message)) {
-        <div
-          class="message-attachment recording clickable"
-          tabindex="0"
-          role="button"
-          (click)="downloadRecording(message)"
-          (keydown.enter)="downloadRecording(message)"
-          (keydown.space)="downloadRecording(message)">
-          <div class="attachment-info">
-            <app-svg
-              src="video"
-              [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-            <div class="attachment-details">
-              <span class="attachment-name"
-                >{{ getRecordingFilename(message.recording_url!) }}</span
-              >
-            </div>
-          </div>
-          <app-svg
-            src="arrow-down"
-            [svgStyle]="{'width.px': 20, 'height.px': 20, 'color': 'var(--primary-600)'}"></app-svg>
-        </div>
-        }
-      </div>
+    <div class="system-message">
+      @if (message.message) {
+      <app-typography
+        [variant]="TypographyTypeEnum['body-xs-regular']"
+        class="system-message-text">
+        {{ formatTime(message.timestamp) }} - {{ message.message }}
+      </app-typography>
+      }
     </div>
     } @else {
     <div

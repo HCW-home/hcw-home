@@ -94,10 +94,38 @@
     background: var(--slate-100);
   }
 
-  &.system-message {
-    align-self: center;
-    background: var(--slate-100);
-  }
+}
+
+.date-separator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 16px 0 8px;
+}
+
+.date-separator-text {
+  background: var(--slate-200);
+  color: var(--slate-600);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.system-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.system-message-text {
+  text-align: center;
+  color: var(--slate-500);
+  font-style: italic;
 }
 
 .message-header {

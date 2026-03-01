@@ -245,6 +245,41 @@ export class MessageList
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  shouldShowDateSeparator(index: number): boolean {
+    if (index === 0) return true;
+
+    const currentMessage = this.messages[index];
+    const previousMessage = this.messages[index - 1];
+
+    const currentDate = new Date(currentMessage.timestamp);
+    const previousDate = new Date(previousMessage.timestamp);
+
+    return currentDate.toDateString() !== previousDate.toDateString();
+  }
+
+  formatDateSeparator(timestamp: string): string {
+    const messageDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const messageDateStr = messageDate.toDateString();
+    const todayStr = today.toDateString();
+    const yesterdayStr = yesterday.toDateString();
+
+    if (messageDateStr === todayStr) {
+      return this.t.instant('messageList.today');
+    } else if (messageDateStr === yesterdayStr) {
+      return this.t.instant('messageList.yesterday');
+    } else {
+      return messageDate.toLocaleDateString([], {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+  }
+
   isImageAttachment(attachment: MessageAttachment): boolean {
     return attachment.mime_type.startsWith('image/');
   }

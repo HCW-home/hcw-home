@@ -381,7 +381,9 @@
     "loadingImage": "Chargement de l'image...",
     "typeAMessage": "Tapez un message...",
     "send": "Envoyer",
-    "edited": "(modifié)"
+    "edited": "(modifié)",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
   },
   "userSearchSelect": {
     "searchingUsers": "Recherche d'utilisateurs...",

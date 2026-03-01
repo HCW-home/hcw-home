@@ -18,6 +18,7 @@ from .models import (
     Appointment,
     AppointmentRecording,
     AppointmentStatus,
+    Consultation,
     Participant,
     Request,
 )
@@ -179,3 +180,16 @@ def check_recording_ready(self, recording_id):
     logger.info(
         f"Recording message created for AppointmentRecording {recording_id}: message {message.id}"
     )
+
+
+@shared_task
+def auto_delete_closed_consultations():
+    hours = int(config.consultation_auto_delete_hours)
+    if hours == 0:
+        logger.info("Auto-delete of closed consultations is disabled (0 hours)")
+        return
+
+    cutoff = timezone.now() - timedelta(hours=hours)
+    qs = Consultation.objects.filter(closed_at__isnull=False, closed_at__lte=cutoff)
+    count, _ = qs.delete()
+    logger.info(f"Auto-deleted {count} closed consultation(s) older than {hours}h")

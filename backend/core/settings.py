@@ -345,6 +345,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "consultations.tasks.handle_reminders",
         "schedule": crontab(minute="*", hour="*"),
     },
+    "auto_delete_closed_consultations": {
+        "task": "consultations.tasks.auto_delete_closed_consultations",
+        "schedule": crontab(minute=0),
+    },
+    "auto_delete_temporary_users": {
+        "task": "users.tasks.auto_delete_temporary_users",
+        "schedule": crontab(minute=0),
+    },
 }
 
 FIREBASE_APP = initialize_app()
@@ -705,6 +713,14 @@ CONSTANCE_CONFIG = {
         "10",
         "When to send last appointment reminder, in minute before the appointment time",
     ),
+    "consultation_auto_delete_hours": (
+        0,
+        "Hours after closure before a follow-up is automatically deleted (0 to disable)",
+    ),
+    "temporary_user_auto_delete": (
+        True,
+        "Automatically delete temporary users with no future appointments",
+    ),
 }
 
 
@@ -712,6 +728,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "General Options": ("site_name",),
     "URLs": ("patient_base_url", "practitioner_base_url"),
     "Scheduling": ("appointment_first_reminder", "appointment_last_reminder"),
+    "Data Retention": ("consultation_auto_delete_hours", "temporary_user_auto_delete"),
 }
 
 # CORS Configuration

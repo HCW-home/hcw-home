@@ -645,6 +645,12 @@
       align-items: center;
       gap: 12px;
 
+      .appointment-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--slate-800);
+      }
+
       .date-time {
         display: flex;
         align-items: center;

@@ -457,6 +457,9 @@
               [class.highlighted]="highlightedAppointmentId() === appointment.id">
               <div class="appointment-header">
                 <div class="appointment-info">
+                  @if (appointment.title) {
+                    <span class="appointment-title">{{ appointment.title }}</span>
+                  }
                   <div class="date-time">
                     <app-svg
                       src="calendar"

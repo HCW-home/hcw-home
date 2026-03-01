@@ -25,7 +25,7 @@ import {
   AppointmentStatus,
 } from '../../../../core/models/consultation';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
-import { getAppointmentBadgeType } from '../../../../shared/tools/helper';
+import { getAppointmentBadgeType, parseDateWithoutTimezone } from '../../../../shared/tools/helper';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
@@ -139,7 +139,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   getRelativeTime(dateStr: string): string {
-    const date = new Date(dateStr);
+    const date = parseDateWithoutTimezone(dateStr) || new Date(dateStr);
     const now = new Date();
 
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

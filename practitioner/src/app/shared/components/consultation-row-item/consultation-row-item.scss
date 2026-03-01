@@ -14,6 +14,18 @@
 
   .row-header {
     margin-bottom: 8px;
+
+    .title-block {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .consultation-id {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-400);
+    }
   }
 
   .row-details {

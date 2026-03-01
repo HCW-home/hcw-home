@@ -1,8 +1,11 @@
 <div class="consultation-row" (click)="onClick()">
   <div class="row-header">
-    <app-typography [variant]="TypographyTypeEnum['body-l-semibold']" color="var(--slate-800)">
-      {{ getFormattedId() }} - {{ consultation().title || ('consultationRowItem.untitledConsultation' | translate) }}
-    </app-typography>
+    <div class="title-block">
+      <app-typography [variant]="TypographyTypeEnum['body-l-semibold']" color="var(--slate-800)">
+        {{ consultation().title || ('consultationRowItem.untitledConsultation' | translate) }}
+      </app-typography>
+      <span class="consultation-id">{{ getFormattedId() }}</span>
+    </div>
   </div>
 
   <div class="row-details">

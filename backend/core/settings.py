@@ -176,9 +176,10 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
         minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))
     ),
-    "ROTATE_REFRESH_TOKENS": timedelta(
-        minutes=int(os.getenv("ROTATE_REFRESH_TOKENS", 60))
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 1))
     ),
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"

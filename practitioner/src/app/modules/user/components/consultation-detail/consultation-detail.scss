@@ -229,6 +229,46 @@
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+
+      .calendar-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .nav-btn {
+          width: 36px;
+          height: 36px;
+          border: 1px solid var(--slate-200);
+          background: var(--White);
+          border-radius: 10px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          color: var(--slate-600);
+
+          &:hover {
+            background: var(--slate-50);
+            border-color: var(--slate-300);
+          }
+
+          &.today-btn {
+            width: auto;
+            padding: 0 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--slate-700);
+          }
+        }
+
+        .calendar-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--slate-800);
+          margin-left: 8px;
+        }
+      }
     }
   }
 

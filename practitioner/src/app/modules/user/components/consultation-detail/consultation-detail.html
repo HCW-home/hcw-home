@@ -370,6 +370,7 @@
                   {{ 'consultationDetail.filterAll' | translate }}
                 </button>
               </div>
+              @if (appointmentViewMode() === 'list') {
               <div class="time-filter">
                 <button
                   class="filter-btn"
@@ -390,17 +391,7 @@
                   {{ 'consultationDetail.filterAll' | translate }}
                 </button>
               </div>
-            </div>
-          </div>
-
-          @if (appointmentViewMode() === 'calendar') {
-          <div class="calendar-container">
-            @if (isLoadingAppointments()) {
-            <div class="calendar-loading-overlay">
-              <app-loader></app-loader>
-            </div>
-            }
-            <div class="calendar-header">
+              } @else {
               <div class="calendar-nav">
                 <button class="nav-btn" (click)="calendarPrev()">
                   <app-svg
@@ -415,9 +406,19 @@
                     src="chevron-right"
                     [svgStyle]="{'width.px': 20, 'height.px': 20}"></app-svg>
                 </button>
+                <span class="calendar-title">{{ getCalendarTitle() }}</span>
               </div>
-              <span class="calendar-title">{{ getCalendarTitle() }}</span>
+              }
             </div>
+          </div>
+
+          @if (appointmentViewMode() === 'calendar') {
+          <div class="calendar-container">
+            @if (isLoadingAppointments()) {
+            <div class="calendar-loading-overlay">
+              <app-loader></app-loader>
+            </div>
+            }
             <full-calendar
               #appointmentCalendar
               [options]="calendarOptions"

@@ -1445,24 +1445,30 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   }
 
   calendarPrev(): void {
-    const calendarApi = this.calendarComponent()?.getApi();
-    if (calendarApi) {
-      calendarApi.prev();
-    }
+    setTimeout(() => {
+      const calendarApi = this.calendarComponent()?.getApi();
+      if (calendarApi) {
+        calendarApi.prev();
+      }
+    });
   }
 
   calendarNext(): void {
-    const calendarApi = this.calendarComponent()?.getApi();
-    if (calendarApi) {
-      calendarApi.next();
-    }
+    setTimeout(() => {
+      const calendarApi = this.calendarComponent()?.getApi();
+      if (calendarApi) {
+        calendarApi.next();
+      }
+    });
   }
 
   calendarToday(): void {
-    const calendarApi = this.calendarComponent()?.getApi();
-    if (calendarApi) {
-      calendarApi.today();
-    }
+    setTimeout(() => {
+      const calendarApi = this.calendarComponent()?.getApi();
+      if (calendarApi) {
+        calendarApi.today();
+      }
+    });
   }
 
   getCalendarTitle(): string {

@@ -117,6 +117,22 @@
   min-height: 500px;
 }
 
+.video-call-section {
+  background: var(--slate-900);
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--slate-100);
+  overflow: hidden;
+  margin-bottom: 24px;
+
+  .video-container {
+    app-video-consultation {
+      display: block;
+      height: 500px;
+    }
+  }
+}
+
 .calendar-wrapper {
   background: var(--White);
   border-radius: 20px;

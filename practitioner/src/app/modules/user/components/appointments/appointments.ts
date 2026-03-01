@@ -38,6 +38,7 @@ import {
   ButtonSizeEnum,
 } from '../../../../shared/constants/button';
 import { ConsultationService } from '../../../../core/services/consultation.service';
+import { IncomingCallService } from '../../../../core/services/incoming-call.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import {
   Appointment,
@@ -58,6 +59,7 @@ import { TranslationService } from '../../../../core/services/translation.servic
 import { UserService } from '../../../../core/services/user.service';
 import { ConfirmPresenceModal } from './confirm-presence-modal/confirm-presence-modal';
 import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
+import { VideoConsultationComponent } from '../video-consultation/video-consultation';
 
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
 
@@ -75,6 +77,7 @@ type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
     TranslatePipe,
     ConfirmPresenceModal,
     AppointmentFormModal,
+    VideoConsultationComponent,
   ],
   templateUrl: './appointments.html',
   styleUrl: './appointments.scss',
@@ -87,6 +90,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   private toasterService = inject(ToasterService);
   private userService = inject(UserService);
   private el = inject(ElementRef);
+  private incomingCallService = inject(IncomingCallService);
   private t = inject(TranslationService);
 
   protected readonly getAppointmentBadgeType = getAppointmentBadgeType;
@@ -115,6 +119,10 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   editingAppointment = signal<Appointment | null>(null);
   selectedStartDate = signal<Date | null>(null);
   selectedEndDate = signal<Date | null>(null);
+
+  inCall = signal(false);
+  activeAppointmentId = signal<number | null>(null);
+  isVideoMinimized = signal(false);
 
   private readonly pageSize = 20;
   private listCurrentPage = 1;
@@ -698,6 +706,31 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.loadAppointments();
   }
 
+  joinVideoCall(appointment: Appointment, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeAppointmentId.set(appointment.id);
+    this.inCall.set(true);
+    this.incomingCallService.setActiveCall(appointment.id);
+  }
+
+  onCallEnded(): void {
+    this.inCall.set(false);
+    this.activeAppointmentId.set(null);
+    this.isVideoMinimized.set(false);
+    this.incomingCallService.clearActiveCall();
+  }
+
+  toggleVideoSize(): void {
+    this.isVideoMinimized.update(v => !v);
+  }
+
+  canJoinVideoCall(appointment: Appointment): boolean {
+    return (
+      appointment.status === AppointmentStatus.SCHEDULED &&
+      appointment.type === AppointmentType.ONLINE
+    );
+  }
+
   closeContextMenu(): void {
     this.selectedAppointmentForMenu.set(null);
   }
@@ -736,6 +769,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
           );
         },
       });
+  }
+
+  joinVideoCallFromMenu(appointment: Appointment, event: MouseEvent): void {
+    event.stopPropagation();
+    this.closeContextMenu();
+    this.activeAppointmentId.set(appointment.id);
+    this.inCall.set(true);
+    this.incomingCallService.setActiveCall(appointment.id);
   }
 
   viewConsultationFromMenu(appointment: Appointment, event: MouseEvent): void {

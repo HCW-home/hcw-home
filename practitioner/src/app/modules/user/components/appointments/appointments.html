@@ -86,7 +86,7 @@
         <span>{{ 'appointments.noAppointmentsFound' | translate }}</span>
       </div>
       } @else { @for (appointment of appointments(); track appointment.id) {
-      <div class="appointment-item" (click)="viewAppointment(appointment)">
+      <div class="appointment-item" [class.highlighted]="highlightedAppointmentId() === appointment.id" (click)="viewAppointment(appointment)">
         <div class="appointment-date">
           <span class="day"
             >{{ appointment.scheduled_at | localDate:'dd' }}</span

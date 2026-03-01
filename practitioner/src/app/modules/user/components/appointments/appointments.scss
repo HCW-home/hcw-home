@@ -188,6 +188,11 @@
   &:hover {
     background: var(--slate-50);
   }
+
+  &.highlighted {
+    background: var(--primary-50);
+    border-left: 3px solid var(--primary-500);
+  }
 }
 
 .appointment-context-menu {

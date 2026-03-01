@@ -120,6 +120,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   selectedStartDate = signal<Date | null>(null);
   selectedEndDate = signal<Date | null>(null);
 
+  highlightedAppointmentId = signal<number | null>(null);
   inCall = signal(false);
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
@@ -176,8 +177,20 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const participantId = params['participantId'];
+      const appointmentId = params['appointmentId'];
+
       if (participantId) {
         this.openConfirmPresenceModal(Number(participantId));
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
+      }
+
+      if (appointmentId) {
+        this.highlightedAppointmentId.set(Number(appointmentId));
+        this.setView('list');
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {},
@@ -303,7 +316,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
       status: AppointmentStatus.SCHEDULED,
     };
 
-    if (this.currentDateRange) {
+    if (this.currentDateRange && !this.highlightedAppointmentId()) {
       params['scheduled_at__date__gte'] = this.currentDateRange.start;
       params['scheduled_at__date__lte'] = this.currentDateRange.end;
     }
@@ -316,6 +329,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
           this.appointments.set(response.results);
           this.hasMore.set(!!response.next);
           this.loading.set(false);
+          this.scrollToHighlightedAppointment();
         },
         error: err => {
           this.toasterService.show(
@@ -326,6 +340,18 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
           this.loading.set(false);
         },
       });
+  }
+
+  private scrollToHighlightedAppointment(): void {
+    const id = this.highlightedAppointmentId();
+    if (!id) return;
+
+    setTimeout(() => {
+      const element = this.el.nativeElement.querySelector('.appointment-item.highlighted');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
   }
 
   loadMore(): void {

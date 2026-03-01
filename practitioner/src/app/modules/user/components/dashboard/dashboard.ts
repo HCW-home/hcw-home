@@ -68,9 +68,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   hasValidNextAppointment(): boolean {
     const apt = this.nextAppointment();
-    return (
-      apt !== null && apt.scheduled_at !== null && apt.consultation_id !== null
-    );
+    return apt !== null && apt.scheduled_at !== null;
   }
 
   protected readonly TypographyTypeEnum = TypographyTypeEnum;
@@ -183,27 +181,45 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   viewAppointment(appointment: Appointment): void {
-    this.router.navigate(['/app/consultations', appointment.consultation_id], {
-      queryParams: { appointmentId: appointment.id },
-    });
+    if (appointment.consultation_id) {
+      this.router.navigate(['/app/consultations', appointment.consultation_id], {
+        queryParams: { appointmentId: appointment.id },
+      });
+    } else {
+      this.router.navigate(['/app/appointments'], {
+        queryParams: { appointmentId: appointment.id },
+      });
+    }
   }
 
   joinNextAppointment(event: Event): void {
     event.stopPropagation();
     const apt = this.nextAppointment();
-    if (apt && apt.id && apt.consultation_id) {
-      this.router.navigate(['/app/consultations', apt.consultation_id], {
-        queryParams: { join: true, appointmentId: apt.id },
-      });
+    if (apt && apt.id) {
+      if (apt.consultation_id) {
+        this.router.navigate(['/app/consultations', apt.consultation_id], {
+          queryParams: { join: true, appointmentId: apt.id },
+        });
+      } else {
+        this.router.navigate(['/app/appointments'], {
+          queryParams: { appointmentId: apt.id },
+        });
+      }
     }
   }
 
   viewNextAppointment(): void {
     const apt = this.nextAppointment();
-    if (apt && apt.consultation_id) {
-      this.router.navigate(['/app/consultations', apt.consultation_id], {
-        queryParams: { appointmentId: apt.id },
-      });
+    if (apt) {
+      if (apt.consultation_id) {
+        this.router.navigate(['/app/consultations', apt.consultation_id], {
+          queryParams: { appointmentId: apt.id },
+        });
+      } else {
+        this.router.navigate(['/app/appointments'], {
+          queryParams: { appointmentId: apt.id },
+        });
+      }
     }
   }
 

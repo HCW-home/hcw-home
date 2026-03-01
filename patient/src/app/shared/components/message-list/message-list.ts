@@ -221,17 +221,41 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
 
   formatTime(timestamp: string): string {
     const date = new Date(timestamp);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
-    if (diffDays === 0) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays === 1) {
+  shouldShowDateSeparator(index: number): boolean {
+    if (index === 0) return true;
+
+    const currentMessage = this.messages[index];
+    const previousMessage = this.messages[index - 1];
+
+    const currentDate = new Date(currentMessage.timestamp);
+    const previousDate = new Date(previousMessage.timestamp);
+
+    return currentDate.toDateString() !== previousDate.toDateString();
+  }
+
+  formatDateSeparator(timestamp: string): string {
+    const messageDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const messageDateStr = messageDate.toDateString();
+    const todayStr = today.toDateString();
+    const yesterdayStr = yesterday.toDateString();
+
+    if (messageDateStr === todayStr) {
+      return this.t.instant('messageList.today');
+    } else if (messageDateStr === yesterdayStr) {
       return this.t.instant('messageList.yesterday');
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString([], { weekday: 'short' });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return messageDate.toLocaleDateString([], {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
     }
   }
 

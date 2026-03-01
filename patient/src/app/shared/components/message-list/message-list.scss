@@ -128,12 +128,40 @@
       color: var(--app-text-primary);
     }
   }
+}
 
-  &.system-message {
-    align-self: center;
-    background: var(--app-card-background);
-    border: 1px solid var(--app-border-color);
-  }
+.date-separator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 16px 0 8px;
+}
+
+.date-separator-text {
+  background: var(--app-border-color);
+  color: var(--app-text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.system-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.system-message-text {
+  text-align: center;
+  color: var(--app-text-muted);
+  font-style: italic;
+  font-size: 0.8125rem;
+  margin: 0;
 }
 
 .message-header {

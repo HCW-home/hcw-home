@@ -65,6 +65,9 @@ export const authInterceptor: HttpInterceptorFn = (
           switchMap(response => {
             isRefreshing = false;
             auth.setToken(response.access);
+            if (response.refresh) {
+              auth.setRefreshToken(response.refresh);
+            }
             const retryReq = addAuthHeaders(req, response.access, lang);
             return next(retryReq);
           }),

@@ -53,9 +53,9 @@ export class Auth {
     this.isAuthenticatedSubject.next(false);
   }
 
-  refreshAccessToken(): Observable<{ access: string }> {
+  refreshAccessToken(): Observable<{ access: string; refresh?: string }> {
     const refresh = this.getRefreshToken();
-    return this.http.post<{ access: string }>(
+    return this.http.post<{ access: string; refresh?: string }>(
       `${environment.apiUrl}/auth/token/refresh/`,
       { refresh }
     );

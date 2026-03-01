@@ -82,7 +82,11 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsPractitioner]
     pagination_class = ConsultationPagination
     filterset_class = ConsultationFilter
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [
+        filters.SearchFilter,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
     search_fields = [
         "title",
         "description",
@@ -120,7 +124,9 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
             return Response(
                 {
                     "error": _(
-                        _("Unable to close consultation with appointment scheduled in future")
+                        _(
+                            "Unable to close consultation with appointment scheduled in future"
+                        )
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -375,7 +381,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if now < earliest_join:
             return Response(
                 {
-                    "detail": _("Too early to join. The meeting starts at %(time)s. You can join 5 minutes before the scheduled time.")
+                    "detail": _(
+                        "Too early to join. The meeting starts at %(time)s. You can join 5 minutes before the scheduled time."
+                    )
                     % {"time": appointment.scheduled_at.strftime("%H:%M")},
                     "scheduled_at": appointment.scheduled_at.isoformat(),
                     "code": "too_early",
@@ -1088,6 +1096,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 class CustomFieldViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only endpoint to list available custom fields, filterable by target_model."""
+
     serializer_class = CustomFieldSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["target_model"]
@@ -1114,10 +1123,9 @@ class DashboardPractitionerView(APIView):
         consultations_qs = Consultation.objects.accessible_by(user).active
 
         upcoming_appointments = Appointment.objects.filter(
-            consultation__in=consultations_qs,
+            participants=user,
             status=AppointmentStatus.scheduled,
             scheduled_at__gte=now,
-            # scheduled_at__lt=tomorrow,
         )
 
         next_appointment = upcoming_appointments.first()
@@ -1129,15 +1137,22 @@ class DashboardPractitionerView(APIView):
 
         return Response(
             {
-                "next_appointment": AppointmentCreateSerializer(next_appointment, context=ctx).data,
+                "next_appointment": AppointmentCreateSerializer(
+                    next_appointment, context=ctx
+                ).data,
                 "upcoming_appointments": AppointmentCreateSerializer(
                     remaining_appointments, many=True, context=ctx
                 ).data,
                 "overdue_consultations": ConsultationSerializer(
                     consultations_qs.active.exclude(
-                        appointments__scheduled_at__gte=timezone.now() - timedelta(hours=2),
+                        appointments__scheduled_at__gte=timezone.now()
+                        - timedelta(hours=2),
                         appointments__status=AppointmentStatus.scheduled,
-                    ).distinct().order_by("-created_at")[:3], many=True, context=ctx
+                    )
+                    .distinct()
+                    .order_by("-created_at")[:3],
+                    many=True,
+                    context=ctx,
                 ).data,
             },
             status=status.HTTP_200_OK,

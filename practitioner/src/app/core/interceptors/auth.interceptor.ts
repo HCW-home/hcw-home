@@ -7,7 +7,7 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../services/auth';
 import { TranslationService } from '../services/translation.service';
@@ -17,6 +17,7 @@ import { getErrorMessage } from '../utils/error-helper';
 export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 function addAuthHeaders(
   req: HttpRequest<unknown>,
@@ -56,11 +57,24 @@ export const authInterceptor: HttpInterceptorFn = (
       if (
         error.status === 401 &&
         error.error?.code === 'token_not_valid' &&
-        !isRefreshing &&
         auth.getRefreshToken() &&
         !req.url.includes('/auth/token/refresh/')
       ) {
+        if (isRefreshing) {
+          // Another refresh is already in progress, wait for it
+          return refreshTokenSubject.pipe(
+            filter((token): token is string => token !== null),
+            take(1),
+            switchMap(newToken => {
+              const retryReq = addAuthHeaders(req, newToken, lang);
+              return next(retryReq);
+            })
+          );
+        }
+
         isRefreshing = true;
+        refreshTokenSubject.next(null);
+
         return auth.refreshAccessToken().pipe(
           switchMap(response => {
             isRefreshing = false;
@@ -68,11 +82,13 @@ export const authInterceptor: HttpInterceptorFn = (
             if (response.refresh) {
               auth.setRefreshToken(response.refresh);
             }
+            refreshTokenSubject.next(response.access);
             const retryReq = addAuthHeaders(req, response.access, lang);
             return next(retryReq);
           }),
           catchError(refreshError => {
             isRefreshing = false;
+            refreshTokenSubject.next(null);
             auth.removeToken();
             router.navigate(['/auth/login']);
             return throwError(() => refreshError);
@@ -80,7 +96,7 @@ export const authInterceptor: HttpInterceptorFn = (
         );
       }
 
-      if (error.status === 401 && error.error?.code === 'token_not_valid') {
+      if (error.status === 401) {
         auth.removeToken();
         router.navigate(['/auth/login']);
       } else if (error.status === 0) {

@@ -22,11 +22,14 @@
                   formControlName="title">
                 </app-input>
                 } @else {
-                <h2 class="consultation-title">
-                  {{ consultation()?.title ||
-                  ('consultationDetail.consultationNumber' | translate: { id:
-                  consultation()?.id }) }}
-                </h2>
+                <div class="consultation-title-block">
+                  <h2 class="consultation-title">
+                    {{ consultation()?.title ||
+                    ('consultationDetail.consultationNumber' | translate: { id:
+                    consultation()?.id }) }}
+                  </h2>
+                  <span class="consultation-id">{{ formatConsultationId(consultation()!.id) }}</span>
+                </div>
                 }
                 <app-badge
                   [type]="consultation()?.closed_at ? BadgeTypeEnum.gray : BadgeTypeEnum.green">

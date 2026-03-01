@@ -111,6 +111,7 @@
     "inDays": "In {{count}} days",
     "inHours": "In {{count}} hours",
     "soon": "Soon",
+    "now": "Now",
     "upcomingAppointments": "Upcoming Appointments",
     "scheduledAppointments": "Your scheduled appointments",
     "viewAll": "View All",

@@ -521,6 +521,7 @@
     "inDays": "Dans {{count}} jours",
     "inHours": "Dans {{count}} heures",
     "soon": "Bientôt",
+    "now": "Maintenant",
     "upcomingAppointments": "Rendez-vous à venir",
     "scheduledAppointments": "Vos rendez-vous planifiés",
     "viewAll": "Voir tout",

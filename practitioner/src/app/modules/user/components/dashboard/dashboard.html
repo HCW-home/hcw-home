@@ -63,6 +63,11 @@
                       <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
                         {{ nextAppointment()!.title || getAppointmentTypeLabel(nextAppointment()!.type!) }}
                       </app-typography>
+                      @if (nextAppointment()!.consultation_id) {
+                        <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-400)">
+                          {{ formatConsultationId(nextAppointment()!.consultation_id!) }} {{ nextAppointment()!.consultation_title ? '- ' + nextAppointment()!.consultation_title : '' }}
+                        </app-typography>
+                      }
                       <span class="appointment-time-row">
                         <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
                           {{ nextAppointment()!.scheduled_at | localDate : 'MMM d, HH:mm' }}
@@ -98,6 +103,11 @@
                     <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
                       {{ appointment.title || getAppointmentTypeLabel(appointment.type) }}
                     </app-typography>
+                    @if (appointment.consultation_id) {
+                      <app-typography [variant]="TypographyTypeEnum['body-xs-regular']" color="var(--slate-400)">
+                        {{ formatConsultationId(appointment.consultation_id) }} {{ appointment.consultation_title ? '- ' + appointment.consultation_title : '' }}
+                      </app-typography>
+                    }
                     <span class="appointment-time-row">
                       <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
                         {{ appointment.scheduled_at | localDate : 'MMM d, HH:mm' }}

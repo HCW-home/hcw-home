@@ -75,6 +75,7 @@ export interface Appointment {
   created_at: string;
   participants: Participant[];
   consultation_id: number;
+  consultation_title?: string | null;
   is_recording?: boolean;
   egress_id?: string | null;
   recording_started_at?: string | null;
@@ -260,6 +261,7 @@ export interface DashboardNextAppointment {
   end_expected_at: string | null;
   type: string | null;
   consultation_id: number | null;
+  consultation_title: string | null;
   status: string | null;
   participants: Participant[];
   dont_invite_beneficiary: boolean;

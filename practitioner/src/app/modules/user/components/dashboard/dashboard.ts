@@ -153,12 +153,15 @@ export class Dashboard implements OnInit, OnDestroy {
     }
 
     const diffMs = date.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
     if (diffHours > 0) {
       return this.t.instant('dashboard.inHours', { count: String(diffHours) });
-    } else {
+    } else if (diffMinutes > 0) {
       return this.t.instant('dashboard.soon');
+    } else {
+      return this.t.instant('dashboard.now');
     }
   }
 
@@ -176,6 +179,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   navigateToAvailability(): void {
     this.router.navigate(['/app/availability']);
+  }
+
+  formatConsultationId(id: number): string {
+    return `#${String(id).padStart(6, '0')}`;
   }
 
   navigateToSystemTest(): void {

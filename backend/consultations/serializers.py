@@ -336,6 +336,9 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)
     consultation_id = serializers.IntegerField(required=False, allow_null=True)
+    consultation_title = serializers.CharField(
+        source="consultation.title", read_only=True, default=None
+    )
     participants = ParticipantReadSerializer(
         many=True, read_only=True, required=False, source="participant_set"
     )
@@ -356,6 +359,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "type",
             "title",
             "consultation_id",
+            "consultation_title",
             "created_by",
             "status",
             "created_at",

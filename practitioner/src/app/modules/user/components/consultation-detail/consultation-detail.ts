@@ -1477,4 +1477,8 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   getCalendarTitle(): string {
     return this.calendarTitle();
   }
+
+  formatConsultationId(id: number): string {
+    return `#${String(id).padStart(6, '0')}`;
+  }
 }

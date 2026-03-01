@@ -93,11 +93,23 @@
       flex-wrap: wrap;
     }
 
+    .consultation-title-block {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
     .consultation-title {
       font-size: 26px;
       font-weight: 700;
       color: var(--slate-800);
       margin: 0;
+    }
+
+    .consultation-id {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-400);
     }
 
     .created-date {

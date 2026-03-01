@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { SKIP_ERROR_TOAST } from '../interceptors/auth.interceptor';
 import { environment } from '../../../environments/environment';
 import { PaginatedResponse } from '../models/global';
-import { IUser, ISpeciality } from '../../modules/user/models/user';
+import { IUser } from '../../modules/user/models/user';
 import { IHealthMetricResponse } from '../../modules/user/models/patient';
 
 export interface IPatientCreateRequest {
@@ -59,11 +60,15 @@ export class PatientService {
   }
 
   createPatient(data: IPatientCreateRequest): Observable<IUser> {
-    return this.http.post<IUser>(`${this.apiUrl}/users/`, data);
+    return this.http.post<IUser>(`${this.apiUrl}/users/`, data, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
   }
 
   updatePatient(id: number, data: IPatientUpdateRequest): Observable<IUser> {
-    return this.http.patch<IUser>(`${this.apiUrl}/users/${id}/`, data);
+    return this.http.patch<IUser>(`${this.apiUrl}/users/${id}/`, data, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
   }
 
   deletePatient(id: number): Observable<void> {

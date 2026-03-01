@@ -19,7 +19,7 @@ import {
   FullCalendarModule,
   FullCalendarComponent,
 } from '@fullcalendar/angular';
-import { CalendarOptions, EventInput, EventClickArg } from '@fullcalendar/core';
+import { CalendarOptions, EventInput, EventClickArg, DatesSetArg } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -147,9 +147,11 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   appointmentStatusFilter = signal<AppointmentStatusFilter>('scheduled');
   appointmentTimeFilter = signal<AppointmentTimeFilter>('upcoming');
   calendarComponent = viewChild<FullCalendarComponent>('appointmentCalendar');
+  calendarTitle = signal<string>('');
   highlightedAppointmentId = signal<number | null>(null);
   private pendingScrollToAppointmentId: number | null = null;
   private recentlyModifiedAppointmentIds = new Set<number>();
+  private calendarDateRange: { start: string; end: string } | null = null;
 
   @ViewChildren('appointmentCard') appointmentCards!: QueryList<ElementRef>;
 
@@ -180,6 +182,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     selectable: false,
     dayMaxEvents: 3,
     eventClick: this.handleCalendarEventClick.bind(this),
+    datesSet: this.handleDatesSet.bind(this),
     slotMinTime: '06:00:00',
     slotMaxTime: '22:00:00',
     allDaySlot: false,
@@ -825,6 +828,47 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  loadAppointmentsForCalendar(): void {
+    if (!this.calendarDateRange) return;
+
+    this.isLoadingAppointments.set(true);
+    const statusFilter = this.appointmentStatusFilter();
+
+    const params: {
+      status?: string;
+      page_size?: number;
+      scheduled_at__date__gte?: string;
+      scheduled_at__date__lte?: string;
+    } = {
+      page_size: 100,
+      scheduled_at__date__gte: this.calendarDateRange.start,
+      scheduled_at__date__lte: this.calendarDateRange.end,
+    };
+
+    if (statusFilter !== 'all') {
+      params.status = statusFilter;
+    }
+
+    this.consultationService
+      .getConsultationAppointments(this.consultationId, params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: response => {
+          this.appointments.set(response.results);
+          this.hasMoreAppointments.set(false);
+          this.isLoadingAppointments.set(false);
+        },
+        error: error => {
+          this.isLoadingAppointments.set(false);
+          this.toasterService.show(
+            'error',
+            this.t.instant('consultationDetail.errorLoadingAppointments'),
+            getErrorMessage(error)
+          );
+        },
+      });
+  }
+
   sendAppointment(appointment: Appointment): void {
     this.consultationService
       .sendAppointment(appointment.id)
@@ -1317,12 +1361,27 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   }
 
   setAppointmentViewMode(mode: AppointmentViewMode): void {
+    const previousMode = this.appointmentViewMode();
     this.appointmentViewMode.set(mode);
+
+    if (mode === 'calendar' && previousMode === 'list') {
+      // En mode calendrier, recharger avec les dates du calendrier
+      if (this.calendarDateRange) {
+        this.loadAppointmentsForCalendar();
+      }
+    } else if (mode === 'list' && previousMode === 'calendar') {
+      // En mode liste, recharger avec les filtres de liste
+      this.loadAppointments();
+    }
   }
 
   setAppointmentStatusFilter(filter: AppointmentStatusFilter): void {
     this.appointmentStatusFilter.set(filter);
-    this.loadAppointments();
+    if (this.appointmentViewMode() === 'calendar') {
+      this.loadAppointmentsForCalendar();
+    } else {
+      this.loadAppointments();
+    }
   }
 
   setAppointmentTimeFilter(tabId: string): void {
@@ -1360,6 +1419,31 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  handleDatesSet(arg: DatesSetArg): void {
+    this.calendarTitle.set(arg.view.title);
+
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const newStart = formatDate(arg.start);
+    const newEnd = formatDate(arg.end);
+
+    if (
+      !this.calendarDateRange ||
+      this.calendarDateRange.start !== newStart ||
+      this.calendarDateRange.end !== newEnd
+    ) {
+      this.calendarDateRange = { start: newStart, end: newEnd };
+      if (this.appointmentViewMode() === 'calendar') {
+        this.loadAppointmentsForCalendar();
+      }
+    }
+  }
+
   calendarPrev(): void {
     const calendarApi = this.calendarComponent()?.getApi();
     if (calendarApi) {
@@ -1382,7 +1466,6 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getCalendarTitle(): string {
-    const calendarApi = this.calendarComponent()?.getApi();
-    return calendarApi?.view.title || '';
+    return this.calendarTitle();
   }
 }

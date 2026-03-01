@@ -393,30 +393,13 @@
             </div>
           </div>
 
-          @if (isLoadingAppointments()) {
-          <div class="loading-container small">
-            <app-loader></app-loader>
-            <span class="loading-text"
-              >{{ 'consultationDetail.loadingAppointments' | translate }}</span
-            >
-          </div>
-          } @else if (appointments().length === 0) {
-          <div class="empty-state">
-            <app-svg
-              src="calendar"
-              [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
-            <span class="empty-title"
-              >{{ 'consultationDetail.noAppointments' | translate }}</span
-            >
-            <span class="empty-text">
-              @if (appointmentStatusFilter() !== 'all') { {{
-              'consultationDetail.noFilteredAppointments' | translate: { status:
-              appointmentStatusFilter() } }} } @else { {{
-              'consultationDetail.createToGetStarted' | translate }} }
-            </span>
-          </div>
-          } @else if (appointmentViewMode() === 'calendar') {
+          @if (appointmentViewMode() === 'calendar') {
           <div class="calendar-container">
+            @if (isLoadingAppointments()) {
+            <div class="calendar-loading-overlay">
+              <app-loader></app-loader>
+            </div>
+            }
             <div class="calendar-header">
               <div class="calendar-nav">
                 <button class="nav-btn" (click)="calendarPrev()">
@@ -440,6 +423,28 @@
               [options]="calendarOptions"
               [events]="calendarEvents()">
             </full-calendar>
+          </div>
+          } @else if (isLoadingAppointments()) {
+          <div class="loading-container small">
+            <app-loader></app-loader>
+            <span class="loading-text"
+              >{{ 'consultationDetail.loadingAppointments' | translate }}</span
+            >
+          </div>
+          } @else if (appointments().length === 0) {
+          <div class="empty-state">
+            <app-svg
+              src="calendar"
+              [svgStyle]="{'width.px': 48, 'height.px': 48, 'opacity': 0.3}"></app-svg>
+            <span class="empty-title"
+              >{{ 'consultationDetail.noAppointments' | translate }}</span
+            >
+            <span class="empty-text">
+              @if (appointmentStatusFilter() !== 'all') { {{
+              'consultationDetail.noFilteredAppointments' | translate: { status:
+              appointmentStatusFilter() } }} } @else { {{
+              'consultationDetail.createToGetStarted' | translate }} }
+            </span>
           </div>
           } @else {
           <div class="appointments-list">

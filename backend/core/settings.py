@@ -422,22 +422,30 @@ UNFOLD = {
                             "users.view_user"
                         ),
                     },
-                    {
-                        "title": _("Health Metric"),
-                        "icon": "people",
-                        "link": reverse_lazy("admin:users_healthmetric_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "users.view_healthmetric"
-                        ),
-                    },
+                    # {
+                    #     "title": _("Health Metric"),
+                    #     "icon": "people",
+                    #     "link": reverse_lazy("admin:users_healthmetric_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "users.view_healthmetric"
+                    #     ),
+                    # },
                     {
                         "title": _("Groups"),
-                        "icon": "group",
-                        "link": reverse_lazy("admin:auth_group_changelist"),
+                        "icon": "group_work",
+                        "link": reverse_lazy("admin:consultations_queue_changelist"),
                         "permission": lambda request: request.user.has_perm(
-                            "auth.view_group"
+                            "consultations.view_queue"
                         ),
                     },
+                    # {
+                    #     "title": _("Groups"),
+                    #     "icon": "group",
+                    #     "link": reverse_lazy("admin:auth_group_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "auth.view_group"
+                    #     ),
+                    # },
                     {
                         "title": _("Organizations"),
                         "icon": "business",
@@ -470,16 +478,16 @@ UNFOLD = {
                             "users.view_speciality"
                         ),
                     },
-                    {
-                        "title": _("FCM Devices"),
-                        "icon": "phone_android",
-                        "link": reverse_lazy(
-                            "admin:users_fcmdeviceoverride_changelist"
-                        ),
-                        "permission": lambda request: request.user.has_perm(
-                            "users.view_fcmdeviceoverride"
-                        ),
-                    },
+                    # {
+                    #     "title": _("FCM Devices"),
+                    #     "icon": "phone_android",
+                    #     "link": reverse_lazy(
+                    #         "admin:users_fcmdeviceoverride_changelist"
+                    #     ),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "users.view_fcmdeviceoverride"
+                    #     ),
+                    # },
                 ],
             },
             {
@@ -487,42 +495,34 @@ UNFOLD = {
                 "separator": True,
                 "collapsible": True,
                 "items": [
-                    {
-                        "title": _("Consultations"),
-                        "icon": "medical_services",
-                        "link": reverse_lazy(
-                            "admin:consultations_consultation_changelist"
-                        ),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_consultation"
-                        ),
-                    },
-                    {
-                        "title": _("Queues"),
-                        "icon": "group_work",
-                        "link": reverse_lazy("admin:consultations_queue_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_queue"
-                        ),
-                    },
-                    {
-                        "title": _("Appointments"),
-                        "icon": "schedule",
-                        "link": reverse_lazy(
-                            "admin:consultations_appointment_changelist"
-                        ),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_appointment"
-                        ),
-                    },
-                    {
-                        "title": _("Messages"),
-                        "icon": "message",
-                        "link": reverse_lazy("admin:consultations_message_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_message"
-                        ),
-                    },
+                    # {
+                    #     "title": _("Consultations"),
+                    #     "icon": "medical_services",
+                    #     "link": reverse_lazy(
+                    #         "admin:consultations_consultation_changelist"
+                    #     ),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "consultations.view_consultation"
+                    #     ),
+                    # },
+                    # {
+                    #     "title": _("Appointments"),
+                    #     "icon": "schedule",
+                    #     "link": reverse_lazy(
+                    #         "admin:consultations_appointment_changelist"
+                    #     ),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "consultations.view_appointment"
+                    #     ),
+                    # },
+                    # {
+                    #     "title": _("Messages"),
+                    #     "icon": "message",
+                    #     "link": reverse_lazy("admin:consultations_message_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "consultations.view_message"
+                    #     ),
+                    # },
                     {
                         "title": _("Reasons"),
                         "icon": "list",
@@ -531,34 +531,24 @@ UNFOLD = {
                             "consultations.view_reason"
                         ),
                     },
-                    {
-                        "title": _("Requests"),
-                        "icon": "inbox",
-                        "link": reverse_lazy("admin:consultations_request_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_request"
-                        ),
-                    },
-                    {
-                        "title": _("Booking slots"),
-                        "icon": "event",
-                        "link": reverse_lazy(
-                            "admin:consultations_bookingslot_changelist"
-                        ),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_bookingslot"
-                        ),
-                    },
-                    {
-                        "title": _("Custom Fields"),
-                        "icon": "tune",
-                        "link": reverse_lazy(
-                            "admin:consultations_customfield_changelist"
-                        ),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_customfield"
-                        ),
-                    },
+                    # {
+                    #     "title": _("Requests"),
+                    #     "icon": "inbox",
+                    #     "link": reverse_lazy("admin:consultations_request_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "consultations.view_request"
+                    #     ),
+                    # },
+                    # {
+                    #     "title": _("Booking slots"),
+                    #     "icon": "event",
+                    #     "link": reverse_lazy(
+                    #         "admin:consultations_bookingslot_changelist"
+                    #     ),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "consultations.view_bookingslot"
+                    #     ),
+                    # },
                 ],
             },
             {
@@ -576,14 +566,14 @@ UNFOLD = {
                             "messaging.view_messagingprovider"
                         ),
                     },
-                    {
-                        "title": _("Messages"),
-                        "icon": "message",
-                        "link": reverse_lazy("admin:messaging_message_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "messaging.view_messagingprovider"
-                        ),
-                    },
+                    # {
+                    #     "title": _("Messages"),
+                    #     "icon": "message",
+                    #     "link": reverse_lazy("admin:messaging_message_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "messaging.view_messagingprovider"
+                    #     ),
+                    # },
                     {
                         "title": _("Templates"),
                         "icon": "description",
@@ -617,70 +607,80 @@ UNFOLD = {
                             "mediaserver.view_server"
                         ),
                     },
-                    {
-                        "title": _("TURN Server"),
-                        "icon": "router",
-                        "link": reverse_lazy("admin:mediaserver_turn_changelist"),
-                        "permission": lambda request: request.user.has_perm(
-                            "mediaserver.view_turn"
-                        ),
-                    },
+                    # {
+                    #     "title": _("TURN Server"),
+                    #     "icon": "router",
+                    #     "link": reverse_lazy("admin:mediaserver_turn_changelist"),
+                    #     "permission": lambda request: request.user.has_perm(
+                    #         "mediaserver.view_turn"
+                    #     ),
+                    # },
                 ],
             },
-            {
-                "title": _("Celery Tasks"),
-                "collapsible": True,
-                "separator": True,
-                "items": [
-                    {
-                        "title": _("Clocked"),
-                        "icon": "hourglass_bottom",
-                        "link": reverse_lazy(
-                            "admin:django_celery_beat_clockedschedule_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Crontabs"),
-                        "icon": "update",
-                        "link": reverse_lazy(
-                            "admin:django_celery_beat_crontabschedule_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Intervals"),
-                        "icon": "timer",
-                        "link": reverse_lazy(
-                            "admin:django_celery_beat_intervalschedule_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Periodic tasks"),
-                        "icon": "task",
-                        "link": reverse_lazy(
-                            "admin:django_celery_beat_periodictask_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Solar events"),
-                        "icon": "event",
-                        "link": reverse_lazy(
-                            "admin:django_celery_beat_solarschedule_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Task results"),
-                        "icon": "checklist",
-                        "link": reverse_lazy(
-                            "admin:django_celery_results_taskresult_changelist"
-                        ),
-                    },
-                ],
-            },
+            # {
+            #     "title": _("Celery Tasks"),
+            #     "collapsible": True,
+            #     "separator": True,
+            #     "items": [
+            #         {
+            #             "title": _("Clocked"),
+            #             "icon": "hourglass_bottom",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_beat_clockedschedule_changelist"
+            #             ),
+            #         },
+            #         {
+            #             "title": _("Crontabs"),
+            #             "icon": "update",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_beat_crontabschedule_changelist"
+            #             ),
+            #         },
+            #         {
+            #             "title": _("Intervals"),
+            #             "icon": "timer",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_beat_intervalschedule_changelist"
+            #             ),
+            #         },
+            #         {
+            #             "title": _("Periodic tasks"),
+            #             "icon": "task",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_beat_periodictask_changelist"
+            #             ),
+            #         },
+            #         {
+            #             "title": _("Solar events"),
+            #             "icon": "event",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_beat_solarschedule_changelist"
+            #             ),
+            #         },
+            #         {
+            #             "title": _("Task results"),
+            #             "icon": "checklist",
+            #             "link": reverse_lazy(
+            #                 "admin:django_celery_results_taskresult_changelist"
+            #             ),
+            #         },
+            #     ],
+            # },
             {
                 "title": _("Settings"),
                 "separator": True,
                 "collapsible": True,
                 "items": [
+                    {
+                        "title": _("Custom Fields"),
+                        "icon": "tune",
+                        "link": reverse_lazy(
+                            "admin:consultations_customfield_changelist"
+                        ),
+                        "permission": lambda request: request.user.has_perm(
+                            "consultations.view_customfield"
+                        ),
+                    },
                     {
                         "title": _("Translation Overrides"),
                         "icon": "translate",

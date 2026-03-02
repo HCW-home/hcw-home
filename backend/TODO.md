@@ -34,4 +34,3 @@ Feedback Gilles
 - http://localhost:8001/new-request > validation synchrone ?
 
 - Tableau on comprend pas cliquable
-- Notification pour appel vidéo

@@ -709,7 +709,7 @@
     "systemTestSubtitle": "Tester votre audio et vidéo"
   },
   "incomingCall": {
-    "isCalling": "appelle...",
+    "isCalling": "a rejoint l'appel vidéo",
     "accept": "Accepter",
     "decline": "Refuser"
   },

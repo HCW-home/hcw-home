@@ -82,7 +82,6 @@ export class IncomingCallService {
 
     this.currentNotification.onclick = () => {
       window.focus();
-      this.acceptCall();
       this.currentNotification?.close();
     };
   }
@@ -135,7 +134,7 @@ export class IncomingCallService {
   private playRingtone(): void {
     try {
       this.audioElement = new Audio('/audio/ringtone.mp3');
-      this.audioElement.loop = true;
+      this.audioElement.loop = false;
       this.audioElement.play().catch(() => {});
     } catch {
     }

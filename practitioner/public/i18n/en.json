@@ -943,7 +943,7 @@
     "me": "Me"
   },
   "incomingCall": {
-    "isCalling": "is calling...",
+    "isCalling": "wants to join the video call",
     "accept": "Accept",
     "decline": "Decline"
   },

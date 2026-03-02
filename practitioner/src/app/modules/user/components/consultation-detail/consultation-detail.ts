@@ -521,7 +521,13 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
           // Only add if it doesn't already exist
           const exists = this.messages().some(m => m.id === event.data.id);
           if (!exists) {
-            this.messages.update(msgs => [...msgs, newMessage]);
+            this.messages.update(msgs => {
+              // Double-check to avoid race conditions
+              if (msgs.some(m => m.id === event.data.id)) {
+                return msgs;
+              }
+              return [...msgs, newMessage];
+            });
           }
         } else if (event.state === 'updated' || event.state === 'deleted') {
           this.loadMessages();
@@ -675,7 +681,12 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
               };
             })
             .reverse();
-          this.messages.set(loadedMessages);
+
+          // Deduplicate messages by ID
+          const uniqueMessages = Array.from(
+            new Map(loadedMessages.map(msg => [msg.id, msg])).values()
+          );
+          this.messages.set(uniqueMessages);
         },
         error: error => {
           this.toasterService.show(
@@ -727,7 +738,15 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
               };
             })
             .reverse();
-          this.messages.update(msgs => [...olderMessages, ...msgs]);
+
+          // Merge and deduplicate messages
+          this.messages.update(msgs => {
+            const allMessages = [...olderMessages, ...msgs];
+            const uniqueMessages = Array.from(
+              new Map(allMessages.map(msg => [msg.id, msg])).values()
+            );
+            return uniqueMessages;
+          });
           this.isLoadingMore.set(false);
         },
         error: error => {

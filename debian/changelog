@@ -1,3 +1,72 @@
+hcw (0.9.40) bookworm; urgency=medium
+
+  * Fix warning
+  * Fix dependancy issue
+  * Fix dependancy issue
+  * Fix google font cdn and build
+  * Fix build
+  * Fix cryptography issue
+  * Fix cryptography issue
+  * New fix for depends
+  * Fix build again
+  * Fix practitioner cannot update practitioner
+  * Prevent duplication error
+  * Update chat
+  * Improve chat
+  * Fix creating appointment during wizard
+  * Fix calendar pagination in patient app
+  * Fix calendar pagination
+  * Appointment can be updated by creator
+  * Only show my appointment in Dashboard
+  * Add button to join from calendar
+  * Send user to appointment
+  * Improve dashboard
+  * Fix dashboard
+  * Fix join when no consultation
+  * Add appointment title
+  * Improve calendar view
+  * Fix missing ID
+  * Fix now appointment
+  * Fix refresh token issue
+  * Add variable for JWT handling
+  * Fix refresh token
+  * Fix interceptor
+  * Avoid race condition on temporary user creating
+  * Fix websocket reconnect on JWT expiry
+  * Simplify sidebar
+  * Add link on text message
+  * Fix language get from API
+  * Fix multiple call for user profile
+  * Fix error 500 in some situation for request slot
+  * Add traceback only on dev
+  * Handle consultation event
+  * Don't show any kind of refresh on consultation update
+  * Add message on consultation join
+  * Fix message when self send
+  * Add notification message on join
+  * Show message when joining is too early
+  * Add filter on appointment
+  * Fix placeholder for patient avatar
+  * Button greyed up when it's not possible to go back
+  * Fix color on slot
+  * today is highlighted
+  * Fix http://localhost:4200/app/consultations/63\?appointmentId\=114\&join\=true
+  * Improve call event
+  * Confirmation to leave page
+  * Fix close tab but stay in call
+  * Confirmation message if patient close tab by mistake
+  * Fix hang up patient
+  * Add confirmation message
+  * Fix NG warning
+  * Don't sent patient back to lobbying
+  * Add message when meeting is leaved
+  * Issue temporary user on demand instead
+  * Handle configurable temporary user
+  * Add helper on slot
+  * Improve digit page
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Mon, 02 Mar 2026 20:43:29 +0100
+
 hcw (0.9.39) bookworm; urgency=medium
 
   [ Olivier Bitsch ]

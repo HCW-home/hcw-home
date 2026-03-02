@@ -62,6 +62,7 @@ import { AppointmentFormModal } from '../consultation-detail/appointment-form-mo
 import { VideoConsultationComponent } from '../video-consultation/video-consultation';
 
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'list';
+type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
 
 @Component({
   selector: 'app-appointments',
@@ -125,6 +126,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
 
+  appointmentTimeFilter = signal<AppointmentTimeFilter>('upcoming');
   tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
 
   private readonly pageSize = 20;
@@ -320,10 +322,17 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.loading.set(true);
     this.listCurrentPage = 1;
 
+    const timeFilter = this.appointmentTimeFilter();
     const params: Record<string, unknown> = {
       page_size: this.pageSize,
       status: AppointmentStatus.SCHEDULED,
     };
+
+    if (timeFilter === 'upcoming') {
+      params['future'] = true;
+    } else if (timeFilter === 'past') {
+      params['future'] = false;
+    }
 
     if (this.currentDateRange && !this.highlightedAppointmentId()) {
       params['scheduled_at__date__gte'] = this.currentDateRange.start;
@@ -369,11 +378,18 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     this.loadingMore.set(true);
     this.listCurrentPage++;
 
+    const timeFilter = this.appointmentTimeFilter();
     const params: Record<string, unknown> = {
       page_size: this.pageSize,
       page: this.listCurrentPage,
       status: AppointmentStatus.SCHEDULED,
     };
+
+    if (timeFilter === 'upcoming') {
+      params['future'] = true;
+    } else if (timeFilter === 'past') {
+      params['future'] = false;
+    }
 
     if (this.currentDateRange) {
       params['scheduled_at__date__gte'] = this.currentDateRange.start;
@@ -863,5 +879,10 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
 
   hasConsultation(appointment: Appointment): boolean {
     return !!(appointment.consultation_id || appointment.consultation);
+  }
+
+  setAppointmentTimeFilter(filter: AppointmentTimeFilter): void {
+    this.appointmentTimeFilter.set(filter);
+    this.loadAllAppointments();
   }
 }

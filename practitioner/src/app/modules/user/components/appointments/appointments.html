@@ -28,6 +28,29 @@
           <span class="current-date">{{ currentTitle() }}</span>
         </div>
 
+        @if (currentView() === 'list') {
+          <div class="view-toggle time-filter">
+            <button
+              class="view-btn"
+              [class.active]="appointmentTimeFilter() === 'upcoming'"
+              (click)="setAppointmentTimeFilter('upcoming')">
+              {{ 'consultationDetail.filterUpcoming' | translate }}
+            </button>
+            <button
+              class="view-btn"
+              [class.active]="appointmentTimeFilter() === 'past'"
+              (click)="setAppointmentTimeFilter('past')">
+              {{ 'consultationDetail.filterPast' | translate }}
+            </button>
+            <button
+              class="view-btn"
+              [class.active]="appointmentTimeFilter() === 'all'"
+              (click)="setAppointmentTimeFilter('all')">
+              {{ 'consultationDetail.filterAll' | translate }}
+            </button>
+          </div>
+        }
+
         <div class="view-toggle">
           <button
             class="view-btn"

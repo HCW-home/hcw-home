@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, of, shareReplay, finalize } from 'rxjs';
 import {
   IUser,
   ILanguage,
@@ -21,13 +21,25 @@ export class UserService {
 
   private currentUserSubject = new BehaviorSubject<IUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private currentUserRequest$: Observable<IUser> | null = null;
 
   get currentUserValue(): IUser | null {
     return this.currentUserSubject.getValue();
   }
 
-  getCurrentUser(): Observable<IUser> {
-    return this.http
+  getCurrentUser(forceRefresh = false): Observable<IUser> {
+    // If we already have a user and not forcing refresh, return it
+    if (!forceRefresh && this.currentUserValue) {
+      return of(this.currentUserValue);
+    }
+
+    // If a request is already in progress, return the same observable
+    if (this.currentUserRequest$) {
+      return this.currentUserRequest$;
+    }
+
+    // Otherwise, make a new request
+    this.currentUserRequest$ = this.http
       .get<IUser>(`${this.apiUrl}/auth/user/`)
       .pipe(
         tap(user => {
@@ -35,8 +47,14 @@ export class UserService {
           if (user.preferred_language) {
             this.translationService.setLanguage(String(user.preferred_language));
           }
+        }),
+        shareReplay(1),
+        finalize(() => {
+          this.currentUserRequest$ = null;
         })
       );
+
+    return this.currentUserRequest$;
   }
 
   updateCurrentUser(data: IUserUpdateRequest): Observable<IUser> {
@@ -57,7 +75,14 @@ export class UserService {
     formData.append('picture', file);
     return this.http
       .patch<IUser>(`${this.apiUrl}/auth/user/`, formData)
-      .pipe(tap(user => this.currentUserSubject.next(user)));
+      .pipe(
+        tap(user => {
+          this.currentUserSubject.next(user);
+          if (user.preferred_language) {
+            this.translationService.setLanguage(String(user.preferred_language));
+          }
+        })
+      );
   }
 
   searchUsers(

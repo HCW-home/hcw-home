@@ -32,3 +32,14 @@ Feedback Gilles
 
 - image cannot be svg
 - http://localhost:8001/new-request > validation synchrone ?
+
+- Dashboard replace [--] calendar
+- Rejoindre > infobulle 
+- Tableau on comprend pas cliquable
+- On consultation update - consultation not refresh
+- Virer les erreurs traceback et les logguer plutot
+
+- griser http://localhost:8001/new-request pour aller dans le passé
+- ajouter un highlight sur aujourd'hui
+
+- Notification pour appel vidéo

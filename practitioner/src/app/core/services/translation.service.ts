@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { TranslateService, TranslationObject } from '@ngx-translate/core';
-import { catchError, EMPTY } from 'rxjs';
+import { catchError, EMPTY, Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface AppLanguage {
@@ -41,6 +41,8 @@ export class TranslationService {
   private currentLanguageSignal = signal<string>(DEFAULT_LANGUAGE);
   private availableLanguagesSignal = signal<AppLanguage[]>(DEFAULT_FALLBACK);
   private http = new HttpClient(inject(HttpBackend));
+  private loadedLanguages = new Set<string>();
+  private pendingRequests = new Map<string, Observable<Record<string, string>>>();
 
   readonly currentLanguage = this.currentLanguageSignal.asReadonly();
   readonly availableLanguages = this.availableLanguagesSignal.asReadonly();
@@ -77,8 +79,15 @@ export class TranslationService {
   }
 
   setLanguage(langCode: string): void {
+    const currentLang = this.currentLanguageSignal();
+
     this.translate.use(langCode);
-    this.fetchAndApplyOverrides(langCode);
+
+    // Only fetch overrides if language changed and not already loaded
+    if (langCode !== currentLang) {
+      this.fetchAndApplyOverrides(langCode);
+    }
+
     this.currentLanguageSignal.set(langCode);
     localStorage.setItem(STORAGE_KEY, langCode);
     document.documentElement.lang = langCode;
@@ -93,14 +102,35 @@ export class TranslationService {
   }
 
   private fetchAndApplyOverrides(langCode: string): void {
-    this.http.get<Record<string, string>>(`${environment.apiUrl}/translations/practitioner/${langCode}/`)
-      .pipe(catchError(() => EMPTY))
-      .subscribe(overrides => {
-        if (overrides && Object.keys(overrides).length > 0) {
-          const nested = this.expandDotNotation(overrides);
-          this.translate.setTranslation(langCode, nested, true);
-        }
-      });
+    // If already loaded, skip
+    if (this.loadedLanguages.has(langCode)) {
+      return;
+    }
+
+    // If a request is already in progress for this language, skip
+    if (this.pendingRequests.has(langCode)) {
+      return;
+    }
+
+    // Create a new request with shareReplay to avoid duplicate calls
+    const request$ = this.http
+      .get<Record<string, string>>(`${environment.apiUrl}/translations/practitioner/${langCode}/`)
+      .pipe(
+        catchError(() => EMPTY),
+        shareReplay(1)
+      );
+
+    this.pendingRequests.set(langCode, request$);
+
+    request$.subscribe(overrides => {
+      this.pendingRequests.delete(langCode);
+      this.loadedLanguages.add(langCode);
+
+      if (overrides && Object.keys(overrides).length > 0) {
+        const nested = this.expandDotNotation(overrides);
+        this.translate.setTranslation(langCode, nested, true);
+      }
+    });
   }
 
   private expandDotNotation(flat: Record<string, string>): TranslationObject {

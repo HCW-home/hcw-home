@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, shareReplay } from 'rxjs';
 import { SuccessResponse } from '../models/succesResponse';
 import { environment } from '../../../environments/environment';
 import { SKIP_ERROR_TOAST } from '../interceptors/auth.interceptor';
@@ -25,6 +25,7 @@ export class Auth {
   );
   public isAuthenticated$: Observable<boolean> =
     this.isAuthenticatedSubject.asObservable();
+  private configCache$: Observable<IOpenIDConfig> | null = null;
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
@@ -91,7 +92,17 @@ export class Auth {
   }
 
   getOpenIDConfig(): Observable<IOpenIDConfig> {
-    return this.http.get<IOpenIDConfig>(`${environment.apiUrl}/config/`);
+    // Return cached config if available
+    if (this.configCache$) {
+      return this.configCache$;
+    }
+
+    // Otherwise, make a new request and cache it
+    this.configCache$ = this.http
+      .get<IOpenIDConfig>(`${environment.apiUrl}/config/`)
+      .pipe(shareReplay(1));
+
+    return this.configCache$;
   }
 
   loginWithOpenID(authorizationCode: string): Observable<IResponseLogin> {

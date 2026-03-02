@@ -790,7 +790,7 @@ class ReasonSlotsView(APIView):
         appointment_lookup = {}
         for apt in existing_appointments:
             consultation = apt.consultation
-            if consultation.owned_by:
+            if consultation and consultation.owned_by:
                 practitioner_id = consultation.owned_by.id
                 apt_start = apt.scheduled_at
                 apt_end = apt.end_expected_at or (

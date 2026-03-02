@@ -240,9 +240,10 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
   };
 
   ngOnDestroy(): void {
-    console.log('[VideoConsultationPage] ngOnDestroy called - cleaning up resources');
+    console.log('[VideoConsultationPage] ngOnDestroy called - cleaning up and disconnecting');
     this.destroy$.next();
     this.destroy$.complete();
+    this.livekitService.disconnect();
     this.wsService.disconnect();
     this.cleanupMediaElements();
     this.stopDurationTimer();
@@ -631,6 +632,7 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
 
   private async performEndCall(): Promise<void> {
     await this.livekitService.disconnect();
+    this.phase.set('lobby'); // Prevent the guard from triggering on navigation
     this.stopDurationTimer();
     this.incomingCallService.clearActiveCall();
 

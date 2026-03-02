@@ -432,5 +432,11 @@
     "failedUpdate": "Échec de la mise à jour du message",
     "messageDeleted": "Message supprimé",
     "failedDelete": "Échec de la suppression du message"
+  },
+  "videoCall": {
+    "leaveCallTitle": "Quitter l'appel vidéo ?",
+    "leaveCallMessage": "Vous êtes actuellement en appel vidéo. Si vous quittez cette page, l'appel sera interrompu. Voulez-vous vraiment quitter ?",
+    "leaveCallConfirm": "Quitter l'appel",
+    "leaveCallCancel": "Rester"
   }
 }

@@ -128,6 +128,9 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
     this.loadCurrentUser();
     this.setupSubscriptions();
     this.setupWebSocketSubscriptions();
+
+    // Prevent tab/window close during video call
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
   }
 
   private loadCurrentUser(): void {
@@ -225,14 +228,26 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
       });
   }
 
+  private handleBeforeUnload = (event: BeforeUnloadEvent): string | undefined => {
+    if (this.phase() === 'in-call') {
+      console.log('[VideoConsultationPage] beforeunload - User is in call, showing confirmation dialog');
+      // Prevent the page from closing without confirmation
+      event.preventDefault();
+      // Modern browsers ignore custom messages, but we still need to return a value
+      return event.returnValue = '';
+    }
+    return undefined;
+  };
+
   ngOnDestroy(): void {
+    console.log('[VideoConsultationPage] ngOnDestroy called - cleaning up resources');
     this.destroy$.next();
     this.destroy$.complete();
-    this.livekitService.disconnect();
     this.wsService.disconnect();
     this.cleanupMediaElements();
     this.stopDurationTimer();
     this.incomingCallService.clearActiveCall();
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
   }
 
   private setupSubscriptions(): void {

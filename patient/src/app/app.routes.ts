@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { TermsGuard } from './core/guards/terms.guard';
+import { canDeactivateVideoCall } from './core/guards/video-call.guard';
 
 export const routes: Routes = [
   {
@@ -74,5 +75,6 @@ export const routes: Routes = [
     path: 'consultation/:id/video',
     loadComponent: () => import('./pages/video-consultation/video-consultation.page').then(m => m.VideoConsultationPage),
     canActivate: [AuthGuard, TermsGuard],
+    canDeactivate: [canDeactivateVideoCall],
   },
 ];

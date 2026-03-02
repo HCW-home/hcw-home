@@ -431,5 +431,11 @@
     "failedUpdate": "Failed to update message",
     "messageDeleted": "Message deleted",
     "failedDelete": "Failed to delete message"
+  },
+  "videoCall": {
+    "leaveCallTitle": "Leave video call?",
+    "leaveCallMessage": "You are currently in a video call. If you leave this page, the call will be disconnected. Do you really want to leave?",
+    "leaveCallConfirm": "Leave call",
+    "leaveCallCancel": "Stay"
   }
 }

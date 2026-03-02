@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LocalVideoTrack, LocalTrack } from 'livekit-client';
 
@@ -452,6 +452,17 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
     });
 
     if (confirmed) {
+      // Notifier le backend du départ
+      if (this.appointmentId) {
+        try {
+          await firstValueFrom(
+            this.consultationService.leaveAppointment(this.appointmentId)
+          );
+        } catch (error) {
+          console.error('Failed to notify leave:', error);
+        }
+      }
+
       await this.livekitService.disconnect();
       this.leave.emit();
     }

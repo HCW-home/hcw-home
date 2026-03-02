@@ -119,6 +119,13 @@ export class ConsultationService {
     );
   }
 
+  leaveAppointment(appointmentId: number): Observable<{detail: string}> {
+    return this.api.post<{detail: string}>(
+      `/user/appointments/${appointmentId}/leave/`,
+      {}
+    );
+  }
+
   confirmAppointmentPresence(appointmentId: number, isPresent: boolean): Observable<{
     detail: string;
     is_confirmed: boolean;

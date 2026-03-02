@@ -642,6 +642,58 @@ class UserAppointmentsViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+    @action(detail=True, methods=["post"])
+    def leave(self, request, pk=None):
+        """Mark user as having left the consultation"""
+        appointment = self.get_object()
+
+        # Vérifications
+        if not appointment.consultation:
+            return Response(
+                {"detail": _("No consultation associated")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if appointment.consultation.closed_at:
+            return Response(
+                {"detail": _("Consultation is already closed")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Créer message système "participant left"
+        user_name = request.user.name or request.user.email
+        consultation_id = str(appointment.consultation.id).zfill(6)
+        ConsultationMessage.objects.create(
+            consultation=appointment.consultation,
+            created_by=None,  # Message système
+            event="participant_left",
+            content=_("%(user_name)s left the meeting #%(consultation_id)s") % {"user_name": user_name, "consultation_id": consultation_id},
+        )
+
+        # Notifier les autres participants via WebSocket
+        channel_layer = get_channel_layer()
+        active_participants = appointment.participant_set.filter(is_active=True)
+
+        for participant in active_participants:
+            if participant.user.pk == request.user.pk:
+                continue
+
+            async_to_sync(channel_layer.group_send)(
+                f"user_{participant.user.pk}",
+                {
+                    "type": "appointment",
+                    "consultation_id": appointment.consultation.pk,
+                    "appointment_id": appointment.pk,
+                    "state": "participant_left",
+                    "data": {
+                        "user_id": request.user.pk,
+                        "user_name": user_name,
+                    },
+                },
+            )
+
+        return Response({"detail": _("Left successfully")})
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """

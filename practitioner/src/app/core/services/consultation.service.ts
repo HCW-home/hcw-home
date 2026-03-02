@@ -320,6 +320,13 @@ export class ConsultationService {
     );
   }
 
+  leaveAppointment(appointmentId: number): Observable<{detail: string}> {
+    return this.http.post<{detail: string}>(
+      `${this.apiUrl}/appointments/${appointmentId}/leave/`,
+      {}
+    );
+  }
+
   getMessageAttachment(messageId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/messages/${messageId}/attachment/`, {
       responseType: 'blob',

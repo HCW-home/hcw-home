@@ -13,7 +13,7 @@ import {
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
-import { Subject, interval, Subscription } from 'rxjs';
+import { Subject, interval, Subscription, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LocalVideoTrack, LocalTrack } from 'livekit-client';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -632,6 +632,19 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
 
   private async performEndCall(): Promise<void> {
     this.phase.set('lobby'); // Prevent the guard from triggering on navigation
+
+    // Notifier le backend du départ
+    if (this.appointmentId) {
+      try {
+        await firstValueFrom(
+          this.consultationService.leaveAppointment(this.appointmentId)
+        );
+      } catch (error) {
+        console.error('Failed to notify leave:', error);
+        // Continuer la déconnexion même en cas d'erreur
+      }
+    }
+
     await this.livekitService.disconnect();
     this.stopDurationTimer();
     this.incomingCallService.clearActiveCall();

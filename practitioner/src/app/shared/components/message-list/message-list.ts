@@ -104,6 +104,7 @@ export class MessageList
   private isInitialLoad = true;
   private previousScrollHeight = 0;
   private previousMessagesLength = 0;
+  private lastMessageId: number | null = null;
 
   viewingImage = signal<{ url: string; fileName: string } | null>(null);
   imageUrls = signal<Map<number, string>>(new Map());
@@ -123,11 +124,21 @@ export class MessageList
     if (changes['messages']) {
       this.loadImageAttachments();
       const currentLength = this.messages.length;
+      const currentLastMessage = this.messages[currentLength - 1];
+      const currentLastMessageId = currentLastMessage?.id ?? null;
+
+      // Check if this is a new message at the bottom (not a load more at the top)
+      const isNewMessageAtBottom =
+        currentLastMessageId !== null &&
+        currentLastMessageId !== this.lastMessageId;
+
+      // Check if messages were loaded at the top (load more)
       const wasLoadingMore =
         this.previousMessagesLength > 0 &&
-        currentLength > this.previousMessagesLength;
+        currentLength > this.previousMessagesLength &&
+        !isNewMessageAtBottom;
 
-      if (this.isInitialLoad || !wasLoadingMore) {
+      if (this.isInitialLoad || isNewMessageAtBottom) {
         this.shouldScrollToBottom = true;
       }
 
@@ -137,6 +148,7 @@ export class MessageList
       }
 
       this.previousMessagesLength = currentLength;
+      this.lastMessageId = currentLastMessageId;
     }
   }
 

@@ -76,10 +76,7 @@ def message_saved(sender, instance: Message, created, **kwargs):
 
     # Send notifications to each user
     for user_pk in get_users_to_notification_consultation(instance.consultation):
-        if instance.created_by and instance.created_by.pk == user_pk:
-            continue
-
-        # Send WebSocket notification
+        # Send WebSocket notification (including to the message creator for multi-tab sync)
         async_to_sync(channel_layer.group_send)(
             f"user_{user_pk}",
             {
@@ -90,6 +87,10 @@ def message_saved(sender, instance: Message, created, **kwargs):
                 "state": "created" if created else "updated",
             },
         )
+
+        # Skip external notifications for the message creator
+        if instance.created_by and instance.created_by.pk == user_pk:
+            continue
 
         # Send external notification if user is offline and message is newly created
         if created and not user_online_service.is_user_online(user_pk):

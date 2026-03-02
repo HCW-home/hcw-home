@@ -463,44 +463,33 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       this.isWebSocketConnected.set(state === 'CONNECTED');
     });
 
-    this.wsService.messages$.pipe(takeUntil(this.destroy$)).subscribe(event => {
-      const newMessage: Message = {
-        id: event.data.id,
-        username: event.data.username,
-        message: event.data.message,
-        timestamp: event.data.timestamp,
-        isCurrentUser: false,
-        recording_url: event.data.recording_url,
-        isEdited: event.data.is_edited,
-        updatedAt: event.data.updated_at,
-      };
-      this.messages.update(msgs => [...msgs, newMessage]);
-    });
-
     this.wsService.messageUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
         if (event.state === 'created') {
+          const currentUser = this.currentUser();
+          const isSystem = !event.data.created_by;
+
+          const newMessage: Message = {
+            id: event.data.id,
+            username: isSystem
+              ? ''
+              : `${event.data.created_by.first_name} ${event.data.created_by.last_name}`,
+            message: event.data.content,
+            timestamp: event.data.created_at,
+            isCurrentUser: isSystem
+              ? false
+              : currentUser?.pk === event.data.created_by.id,
+            isSystem,
+            attachment: event.data.attachment,
+            recording_url: event.data.recording_url,
+            isEdited: event.data.is_edited,
+            updatedAt: event.data.updated_at,
+          };
+
+          // Only add if it doesn't already exist
           const exists = this.messages().some(m => m.id === event.data.id);
           if (!exists) {
-            const currentUser = this.currentUser();
-            const isSystem = !event.data.created_by;
-            const newMessage: Message = {
-              id: event.data.id,
-              username: isSystem
-                ? ''
-                : `${event.data.created_by.first_name} ${event.data.created_by.last_name}`,
-              message: event.data.content,
-              timestamp: event.data.created_at,
-              isCurrentUser: isSystem
-                ? false
-                : currentUser?.pk === event.data.created_by.id,
-              isSystem,
-              attachment: event.data.attachment,
-              recording_url: event.data.recording_url,
-              isEdited: event.data.is_edited,
-              updatedAt: event.data.updated_at,
-            };
             this.messages.update(msgs => [...msgs, newMessage]);
           }
         } else if (event.state === 'updated' || event.state === 'deleted') {
@@ -599,20 +588,6 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onSendMessage(data: SendMessageData): void {
-    const user = this.currentUser();
-    const tempId = Date.now();
-    const newMessage: Message = {
-      id: tempId,
-      username: user?.first_name || user?.email || 'You',
-      message: data.content || '',
-      timestamp: new Date().toISOString(),
-      isCurrentUser: true,
-      attachment: data.attachment
-        ? { file_name: data.attachment.name, mime_type: data.attachment.type }
-        : null,
-    };
-    this.messages.update(msgs => [...msgs, newMessage]);
-
     this.consultationService
       .sendConsultationMessage(this.consultationId, {
         content: data.content,
@@ -620,18 +595,8 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: savedMessage => {
-          this.messages.update(msgs =>
-            msgs.map(m =>
-              m.id === tempId
-                ? {
-                    ...m,
-                    id: savedMessage.id,
-                    attachment: savedMessage.attachment,
-                  }
-                : m
-            )
-          );
+        next: () => {
+          // Message will be added via WebSocket
         },
         error: error => {
           this.toasterService.show(
@@ -639,7 +604,6 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
             this.t.instant('consultationDetail.errorSendingMessage'),
             getErrorMessage(error)
           );
-          this.messages.update(msgs => msgs.filter(m => m.id !== tempId));
         },
       });
   }

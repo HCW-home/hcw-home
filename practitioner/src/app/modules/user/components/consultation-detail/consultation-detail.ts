@@ -157,6 +157,8 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
 
+  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+
   isExportingPdf = signal(false);
 
   showCreateAppointmentModal = signal(false);
@@ -1200,6 +1202,28 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   }
 
   joinVideoCall(appointmentId: number): void {
+    const appointment = this.appointments().find(a => a.id === appointmentId);
+    if (!appointment) {
+      this.toasterService.show('error', this.t.instant('consultationDetail.error'), this.t.instant('consultationDetail.appointmentNotFound'));
+      return;
+    }
+
+    // Check if it's at least 5 minutes before the scheduled time
+    const now = new Date();
+    const scheduledTime = new Date(appointment.scheduled_at);
+    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+
+    if (now < fiveMinutesBefore) {
+      const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      setTimeout(() => {
+        if (this.tooEarlyError()?.appointmentId === appointment.id) {
+          this.tooEarlyError.set(null);
+        }
+      }, 5000);
+      return;
+    }
+
     this.activeAppointmentId.set(appointmentId);
     this.inCall.set(true);
     this.incomingCallService.setActiveCall(appointmentId);

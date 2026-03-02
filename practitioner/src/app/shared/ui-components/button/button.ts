@@ -38,6 +38,7 @@ export class Button implements OnInit {
   style = input<ButtonStyle>(ButtonStyleEnum.primary);
   state = input<ButtonState>(ButtonStateEnum.default);
   text = input<string>('');
+  title = input<string>();
 
   @HostBinding('class.block') hostBlockClass = false;
 

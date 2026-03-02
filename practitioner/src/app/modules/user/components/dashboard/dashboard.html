@@ -83,13 +83,21 @@
                       {{ 'dashboard.nextAppointment' | translate }}
                     </app-badge>
                     @if (isOnlineAppointment(nextAppointment()!.type)) {
-                      <app-button
-                        [text]="'dashboard.joinNow' | translate"
-                        leftIcon="video"
-                        [size]="ButtonSizeEnum.small"
-                        [style]="ButtonStyleEnum.primary"
-                        (buttonClick)="joinNextAppointment($event)">
-                      </app-button>
+                      <div class="join-button-container">
+                        <app-button
+                          [text]="'dashboard.joinNow' | translate"
+                          leftIcon="video"
+                          [size]="ButtonSizeEnum.small"
+                          [style]="ButtonStyleEnum.primary"
+                          (buttonClick)="joinNextAppointment($event)">
+                        </app-button>
+                        @if (tooEarlyError()?.appointmentId === nextAppointment()!.id) {
+                          <div class="join-error-bubble">
+                            <app-svg src="clock" [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--amber-600)'}"></app-svg>
+                            <span>{{ 'consultationDetail.tooEarlyToJoinMessage' | translate: { time: tooEarlyError()!.time } }}</span>
+                          </div>
+                        }
+                      </div>
                     }
                   </div>
                 </div>
@@ -119,13 +127,21 @@
                   </div>
                   <div class="appointment-right">
                     @if (isOnlineAppointment(appointment.type)) {
-                      <app-button
-                        [text]="'consultationDetail.join' | translate"
-                        leftIcon="video"
-                        [size]="ButtonSizeEnum.small"
-                        [style]="ButtonStyleEnum.stroke"
-                        (buttonClick)="joinAppointment(appointment, $event)">
-                      </app-button>
+                      <div class="join-button-container">
+                        <app-button
+                          [text]="'consultationDetail.join' | translate"
+                          leftIcon="video"
+                          [size]="ButtonSizeEnum.small"
+                          [style]="ButtonStyleEnum.stroke"
+                          (buttonClick)="joinAppointment(appointment, $event)">
+                        </app-button>
+                        @if (tooEarlyError()?.appointmentId === appointment.id) {
+                          <div class="join-error-bubble">
+                            <app-svg src="clock" [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--amber-600)'}"></app-svg>
+                            <span>{{ 'consultationDetail.tooEarlyToJoinMessage' | translate: { time: tooEarlyError()!.time } }}</span>
+                          </div>
+                        }
+                      </div>
                     }
                   </div>
                 </div>

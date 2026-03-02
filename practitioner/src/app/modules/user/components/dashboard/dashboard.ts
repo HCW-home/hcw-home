@@ -84,6 +84,8 @@ export class Dashboard implements OnInit, OnDestroy {
   upcomingAppointments = signal<Appointment[]>([]);
   overdueConsultations = signal<Consultation[]>([]);
 
+  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+
   protected readonly getAppointmentBadgeType = getAppointmentBadgeType;
   protected readonly BadgeTypeEnum = BadgeTypeEnum;
 
@@ -245,6 +247,23 @@ export class Dashboard implements OnInit, OnDestroy {
 
   joinAppointment(appointment: Appointment, event: Event): void {
     event.stopPropagation();
+
+    // Check if it's at least 5 minutes before the scheduled time
+    const now = new Date();
+    const scheduledTime = new Date(appointment.scheduled_at);
+    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+
+    if (now < fiveMinutesBefore) {
+      const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      setTimeout(() => {
+        if (this.tooEarlyError()?.appointmentId === appointment.id) {
+          this.tooEarlyError.set(null);
+        }
+      }, 5000);
+      return;
+    }
+
     if (appointment.consultation_id) {
       this.router.navigate(['/app/consultations', appointment.consultation_id], {
         queryParams: { join: true, appointmentId: appointment.id },
@@ -259,7 +278,23 @@ export class Dashboard implements OnInit, OnDestroy {
   joinNextAppointment(event: Event): void {
     event.stopPropagation();
     const apt = this.nextAppointment();
-    if (apt && apt.id) {
+    if (apt && apt.id && apt.scheduled_at) {
+      // Check if it's at least 5 minutes before the scheduled time
+      const now = new Date();
+      const scheduledTime = new Date(apt.scheduled_at);
+      const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+
+      if (now < fiveMinutesBefore) {
+        const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        this.tooEarlyError.set({ appointmentId: apt.id, time: scheduledTimeStr });
+        setTimeout(() => {
+          if (this.tooEarlyError()?.appointmentId === apt.id) {
+            this.tooEarlyError.set(null);
+          }
+        }, 5000);
+        return;
+      }
+
       if (apt.consultation_id) {
         this.router.navigate(['/app/consultations', apt.consultation_id], {
           queryParams: { join: true, appointmentId: apt.id },

@@ -1,6 +1,7 @@
 <button
   class="app-button"
   [type]="type()"
+  [title]="title() || ''"
   [style.color]="color() ? color() : null"
   [style.background-color]="backgroundColor() ? backgroundColor() : null"
   [style.box-shadow]="boxShadow() ? boxShadow() : null"

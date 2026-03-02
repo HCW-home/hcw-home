@@ -125,6 +125,8 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
 
+  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+
   private readonly pageSize = 20;
   private listCurrentPage = 1;
   private currentDateRange: { start: string; end: string } | null = null;
@@ -741,6 +743,23 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
 
   joinVideoCall(appointment: Appointment, event: MouseEvent): void {
     event.stopPropagation();
+
+    // Check if it's at least 5 minutes before the scheduled time
+    const now = new Date();
+    const scheduledTime = new Date(appointment.scheduled_at);
+    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+
+    if (now < fiveMinutesBefore) {
+      const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      setTimeout(() => {
+        if (this.tooEarlyError()?.appointmentId === appointment.id) {
+          this.tooEarlyError.set(null);
+        }
+      }, 5000);
+      return;
+    }
+
     this.activeAppointmentId.set(appointment.id);
     this.inCall.set(true);
     this.incomingCallService.setActiveCall(appointment.id);
@@ -807,6 +826,23 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   joinVideoCallFromMenu(appointment: Appointment, event: MouseEvent): void {
     event.stopPropagation();
     this.closeContextMenu();
+
+    // Check if it's at least 5 minutes before the scheduled time
+    const now = new Date();
+    const scheduledTime = new Date(appointment.scheduled_at);
+    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+
+    if (now < fiveMinutesBefore) {
+      const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      setTimeout(() => {
+        if (this.tooEarlyError()?.appointmentId === appointment.id) {
+          this.tooEarlyError.set(null);
+        }
+      }, 5000);
+      return;
+    }
+
     this.activeAppointmentId.set(appointment.id);
     this.inCall.set(true);
     this.incomingCallService.setActiveCall(appointment.id);

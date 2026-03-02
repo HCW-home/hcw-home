@@ -549,13 +549,21 @@
                 </app-button>
                 } @if (appointment.status === AppointmentStatus.SCHEDULED &&
                 appointment.type === AppointmentType.ONLINE) {
-                <app-button
-                  [text]="'consultationDetail.join' | translate"
-                  leftIcon="video"
-                  [size]="ButtonSizeEnum.small"
-                  [style]="ButtonStyleEnum.primary"
-                  (buttonClick)="joinVideoCall(appointment.id)">
-                </app-button>
+                <div class="join-button-container">
+                  <app-button
+                    [text]="'consultationDetail.join' | translate"
+                    leftIcon="video"
+                    [size]="ButtonSizeEnum.small"
+                    [style]="ButtonStyleEnum.primary"
+                    (buttonClick)="joinVideoCall(appointment.id)">
+                  </app-button>
+                  @if (tooEarlyError()?.appointmentId === appointment.id) {
+                    <div class="join-error-bubble">
+                      <app-svg src="clock" [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--amber-600)'}"></app-svg>
+                      <span>{{ 'consultationDetail.tooEarlyToJoinMessage' | translate: { time: tooEarlyError()!.time } }}</span>
+                    </div>
+                  }
+                </div>
                 } @if (appointment.status === AppointmentStatus.SCHEDULED &&
                 !consultation()?.closed_at) {
                 <app-button

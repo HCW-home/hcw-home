@@ -947,6 +947,12 @@
     "accept": "Accept",
     "decline": "Decline"
   },
+  "videoCall": {
+    "leaveCallTitle": "Leave video call?",
+    "leaveCallMessage": "You are currently in a video call. If you leave this page, the call will be disconnected. Do you really want to leave?",
+    "leaveCallConfirm": "Leave call",
+    "leaveCallCancel": "Stay"
+  },
   "websocket": {
     "disconnected": "Connection lost",
     "disconnectedMessage": "The connection to the server has been lost. Some features may not work.",

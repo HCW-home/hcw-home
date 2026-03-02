@@ -900,6 +900,12 @@
     "german": "Allemand",
     "french": "Français"
   },
+  "videoCall": {
+    "leaveCallTitle": "Quitter l'appel vidéo ?",
+    "leaveCallMessage": "Vous êtes actuellement en appel vidéo. Si vous quittez cette page, l'appel sera interrompu. Voulez-vous vraiment quitter ?",
+    "leaveCallConfirm": "Quitter l'appel",
+    "leaveCallCancel": "Rester"
+  },
   "websocket": {
     "disconnected": "Connexion perdue",
     "disconnectedMessage": "La connexion au serveur a été perdue. Certaines fonctionnalités peuvent ne pas fonctionner.",

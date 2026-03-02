@@ -11,6 +11,7 @@ import { Patients } from './components/patients/patients';
 import { PatientDetail } from './components/patient-detail/patient-detail';
 import { Appointments } from './components/appointments/appointments';
 import { Availability } from './components/availability/availability';
+import { canDeactivateVideoCall } from './guards/video-call.guard';
 
 const routes: Routes = [
   {
@@ -44,6 +45,7 @@ const routes: Routes = [
       {
         path: RoutePaths.CONSULTATION_DETAIL,
         component: ConsultationDetail,
+        canDeactivate: [canDeactivateVideoCall],
       },
       {
         path: RoutePaths.PROFILE,

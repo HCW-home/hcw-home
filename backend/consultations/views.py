@@ -420,6 +420,39 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     },
                 )
 
+            # Create a system message for participant joined
+            from .models import Message
+            user_name = request.user.name or request.user.email
+            system_message = Message.objects.create(
+                consultation=appointment.consultation,
+                created_by=None,  # System message has no author
+                event="participant_joined",
+                content=f"{user_name} a rejoint la réunion",
+            )
+
+            # Send the system message via WebSocket to all participants
+            for participant in active_participants:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{participant.user.pk}",
+                    {
+                        "type": "message",
+                        "consultation_id": appointment.consultation.pk,
+                        "message_id": system_message.pk,
+                        "state": "created",
+                        "data": {
+                            "id": system_message.pk,
+                            "content": system_message.content,
+                            "attachment": None,
+                            "recording_url": None,
+                            "created_at": system_message.created_at.isoformat(),
+                            "updated_at": system_message.updated_at.isoformat(),
+                            "created_by": None,  # System message
+                            "is_edited": False,
+                            "deleted_at": None,
+                        },
+                    },
+                )
+
             return Response(
                 {
                     "url": server.url,

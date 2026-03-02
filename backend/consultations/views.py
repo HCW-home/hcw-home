@@ -451,18 +451,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         """Mark user as having left the consultation"""
         appointment = self.get_object()
 
-        # Vérifications
+        # Si pas de consultation, retourner succès sans créer de message
         if not appointment.consultation:
-            return Response(
-                {"detail": _("No consultation associated")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"detail": _("Left successfully")})
 
+        # Si consultation fermée, retourner succès sans créer de message
         if appointment.consultation.closed_at:
-            return Response(
-                {"detail": _("Consultation is already closed")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"detail": _("Left successfully")})
 
         # Créer message système "participant left"
         user_name = request.user.name or request.user.email

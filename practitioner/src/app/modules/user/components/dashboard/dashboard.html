@@ -56,8 +56,9 @@
               @if (hasValidNextAppointment()) {
                 <div class="next-appointment-card" (click)="viewNextAppointment()" [@fadeIn]>
                   <div class="appointment-left">
-                    <div class="patient-avatar">
-                      <span>--</span>
+                    <div class="appointment-date">
+                      <span class="day">{{ nextAppointment()!.scheduled_at | localDate:'dd' }}</span>
+                      <span class="month">{{ nextAppointment()!.scheduled_at | localDate:'MMM' }}</span>
                     </div>
                     <div class="appointment-info">
                       <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">
@@ -104,8 +105,9 @@
               }
               @for (appointment of upcomingAppointments(); track appointment.id) {
                 <div class="appointment-item" (click)="viewAppointment(appointment)">
-                  <div class="patient-avatar small">
-                    <span>--</span>
+                  <div class="appointment-date small">
+                    <span class="day">{{ appointment.scheduled_at | localDate:'dd' }}</span>
+                    <span class="month">{{ appointment.scheduled_at | localDate:'MMM' }}</span>
                   </div>
                   <div class="appointment-info">
                     <app-typography [variant]="TypographyTypeEnum['body-semibold']" color="var(--slate-800)">

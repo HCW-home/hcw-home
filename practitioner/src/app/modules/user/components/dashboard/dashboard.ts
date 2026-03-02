@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { Page } from '../../../../core/components/page/page';
 import { Typography } from '../../../../shared/ui-components/typography/typography';
 import { Button } from '../../../../shared/ui-components/button/button';
@@ -48,6 +49,24 @@ import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
   providers: [DatePipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
+  animations: [
+    trigger('listAnimation', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(-10px)' }),
+          stagger(50, [
+            animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class Dashboard implements OnInit, OnDestroy {
   private consultationService = inject(ConsultationService);
@@ -87,7 +106,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.userWsService.consultationEvent$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.loadDashboardData();
+        this.loadDashboardData(true);
       });
   }
 
@@ -96,8 +115,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadDashboardData(): void {
-    this.loading.set(true);
+  loadDashboardData(silent = false): void {
+    if (!silent) {
+      this.loading.set(true);
+    }
     this.error.set(null);
 
     this.consultationService

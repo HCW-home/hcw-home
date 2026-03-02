@@ -4,6 +4,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
 import {
@@ -95,6 +96,7 @@ export const appConfig: ApplicationConfig = {
     provideEnvironmentNgxMask(),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideAnimations(),
     provideRouter(routes),
     provideIcons({
       heroCalendar,

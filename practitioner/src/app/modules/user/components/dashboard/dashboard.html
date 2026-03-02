@@ -52,9 +52,9 @@
               </app-typography>
             </div>
           } @else {
-            <div class="appointments-list">
+            <div class="appointments-list" [@listAnimation]="upcomingAppointments().length">
               @if (hasValidNextAppointment()) {
-                <div class="next-appointment-card" (click)="viewNextAppointment()">
+                <div class="next-appointment-card" (click)="viewNextAppointment()" [@fadeIn]>
                   <div class="appointment-left">
                     <div class="patient-avatar">
                       <span>--</span>
@@ -164,11 +164,12 @@
                 </app-typography>
               </div>
             } @else {
-              <div class="overdue-list">
+              <div class="overdue-list" [@listAnimation]="overdueConsultations().length">
                 @for (consultation of overdueConsultations(); track consultation.id) {
                   <app-consultation-row-item
                     [consultation]="consultation"
-                    (rowClick)="viewConsultation($event)">
+                    (rowClick)="viewConsultation($event)"
+                    [@fadeIn]>
                   </app-consultation-row-item>
                 }
               </div>

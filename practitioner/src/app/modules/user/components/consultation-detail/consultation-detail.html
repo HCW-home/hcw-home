@@ -451,11 +451,12 @@
             </span>
           </div>
           } @else {
-          <div class="appointments-list">
+          <div class="appointments-list" [@listAnimation]="appointments().length">
             @for (appointment of appointments(); track appointment.id) {
             <div
               class="appointment-card"
               #appointmentCard
+              [@fadeIn]
               [attr.data-appointment-id]="appointment.id"
               [class.highlighted]="highlightedAppointmentId() === appointment.id">
               <div class="appointment-header">

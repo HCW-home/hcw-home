@@ -15,6 +15,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, takeUntil, map } from 'rxjs';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import {
   FullCalendarModule,
   FullCalendarComponent,
@@ -110,6 +111,24 @@ type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
     UserAvatar,
     TranslatePipe,
   ],
+  animations: [
+    trigger('listAnimation', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(-10px)' }),
+          stagger(50, [
+            animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
@@ -524,7 +543,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     this.wsService.consultationUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.loadConsultation();
+        this.loadConsultation(true);
       });
 
     this.wsService.userOnlineStatus$
@@ -728,8 +747,10 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  loadConsultation(): void {
-    this.isLoadingConsultation.set(true);
+  loadConsultation(silent = false): void {
+    if (!silent) {
+      this.isLoadingConsultation.set(true);
+    }
     this.consultationService
       .getConsultation(this.consultationId)
       .pipe(takeUntil(this.destroy$))

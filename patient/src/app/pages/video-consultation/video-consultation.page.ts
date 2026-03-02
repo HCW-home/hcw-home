@@ -631,14 +631,13 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
   }
 
   private async performEndCall(): Promise<void> {
-    await this.livekitService.disconnect();
     this.phase.set('lobby'); // Prevent the guard from triggering on navigation
+    await this.livekitService.disconnect();
     this.stopDurationTimer();
     this.incomingCallService.clearActiveCall();
 
-    setTimeout(() => {
-      this.navCtrl.back();
-    }, 1500);
+    // Navigate immediately without showing lobby
+    this.navCtrl.back();
   }
 
   openChat(): void {

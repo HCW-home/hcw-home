@@ -17,6 +17,7 @@ import {
 } from '../../../../shared/constants/button';
 import { ConsultationService } from '../../../../core/services/consultation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
+import { UserWebSocketService } from '../../../../core/services/user-websocket.service';
 import {
   Consultation,
   Appointment,
@@ -54,6 +55,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private router = inject(Router);
   private t = inject(TranslationService);
   private datePipe = inject(DatePipe);
+  private userWsService = inject(UserWebSocketService);
   private destroy$ = new Subject<void>();
 
   loading = signal(true);
@@ -78,6 +80,15 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDashboardData();
+    this.setupWebSocketListeners();
+  }
+
+  private setupWebSocketListeners(): void {
+    this.userWsService.consultationEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadDashboardData();
+      });
   }
 
   ngOnDestroy(): void {

@@ -18,6 +18,7 @@ import {
   NotificationEvent,
   StatusChangedEvent,
   AppointmentJoinedEvent,
+  ConsultationEvent,
 } from '../models/websocket';
 
 const WS_CONNECTION_TOAST_ID = 'ws-connection-status';
@@ -31,6 +32,7 @@ export class UserWebSocketService implements OnDestroy {
   private messagesSubject = new Subject<UserMessageEvent>();
   private notificationsSubject = new Subject<NotificationEvent>();
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
+  private consultationEventSubject = new Subject<ConsultationEvent>();
   private stateSubscription: Subscription | null = null;
   private hadConnectionIssue = false;
   private wasConnected = false;
@@ -45,6 +47,8 @@ export class UserWebSocketService implements OnDestroy {
     this.notificationsSubject.asObservable();
   public appointmentJoined$: Observable<AppointmentJoinedEvent> =
     this.appointmentJoinedSubject.asObservable();
+  public consultationEvent$: Observable<ConsultationEvent> =
+    this.consultationEventSubject.asObservable();
 
   constructor(
     private wsService: WebSocketService,
@@ -131,32 +135,44 @@ export class UserWebSocketService implements OnDestroy {
   private setupEventListeners(): void {
     this.wsService
       .on('status_changed')
-      .subscribe((event: StatusChangedEvent) => {
-        this.isOnlineSubject.next(event.data.is_online);
-        this.connectionCountSubject.next(event.data.connection_count);
+      .subscribe(event => {
+        const statusEvent = event as StatusChangedEvent;
+        this.isOnlineSubject.next(statusEvent.data.is_online);
+        this.connectionCountSubject.next(statusEvent.data.connection_count);
       });
 
-    this.wsService.on('user_message').subscribe((event: UserMessageEvent) => {
-      this.messagesSubject.next(event);
+    this.wsService.on('user_message').subscribe(event => {
+      this.messagesSubject.next(event as UserMessageEvent);
     });
 
-    this.wsService.on('notification').subscribe((event: NotificationEvent) => {
-      console.log('[UserWS] Notification event received:', event);
-      this.notificationsSubject.next(event);
+    this.wsService.on('notification').subscribe(event => {
+      const notificationEvent = event as NotificationEvent;
+      console.log('[UserWS] Notification event received:', notificationEvent);
+      this.notificationsSubject.next(notificationEvent);
     });
 
     this.wsService
       .on('appointment')
-      .subscribe((event: AppointmentJoinedEvent) => {
-        console.log('[UserWS] Appointment event received:', event);
-        if (event.state === 'participant_joined') {
+      .subscribe(event => {
+        const appointmentEvent = event as AppointmentJoinedEvent;
+        console.log('[UserWS] Appointment event received:', appointmentEvent);
+        if (appointmentEvent.state === 'participant_joined') {
           console.log('[UserWS] participant_joined - showing incoming call');
-          this.appointmentJoinedSubject.next(event);
+          this.appointmentJoinedSubject.next(appointmentEvent);
         }
       });
 
+    this.wsService
+      .on('consultation')
+      .subscribe(event => {
+        const consultationEvent = event as ConsultationEvent;
+        console.log('[UserWS] Consultation event received:', consultationEvent);
+        this.consultationEventSubject.next(consultationEvent);
+      });
+
     this.wsService.on('error').subscribe(event => {
-      console.error('WebSocket error:', event.message);
+      const errorEvent = event as { message: string };
+      console.error('WebSocket error:', errorEvent.message);
     });
   }
 

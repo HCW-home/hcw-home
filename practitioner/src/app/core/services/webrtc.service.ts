@@ -32,26 +32,36 @@ export class WebRTCService {
 
   private setupWebSocketListeners(): void {
     this.wsService.allEvents$.subscribe(event => {
-      switch (event.type) {
+      const eventType = (event as { type?: string }).type;
+      switch (eventType) {
         case 'ice_config':
-          this.iceConfig = {
-            iceServers: event.data.iceServers,
-            iceCandidatePoolSize: event.data.iceCandidatePoolSize,
-            bundlePolicy: event.data.bundlePolicy as RTCBundlePolicy,
-            rtcpMuxPolicy: event.data.rtcpMuxPolicy as RTCRtcpMuxPolicy,
-            iceTransportPolicy: event.data.iceTransportPolicy as RTCIceTransportPolicy,
-          };
+          {
+            const iceEvent = event as { data: { iceServers: RTCIceServer[]; iceCandidatePoolSize: number; bundlePolicy: string; rtcpMuxPolicy: string; iceTransportPolicy: string } };
+            this.iceConfig = {
+              iceServers: iceEvent.data.iceServers,
+              iceCandidatePoolSize: iceEvent.data.iceCandidatePoolSize,
+              bundlePolicy: iceEvent.data.bundlePolicy as RTCBundlePolicy,
+              rtcpMuxPolicy: iceEvent.data.rtcpMuxPolicy as RTCRtcpMuxPolicy,
+              iceTransportPolicy: iceEvent.data.iceTransportPolicy as RTCIceTransportPolicy,
+            };
+          }
           break;
 
         case 'room_created':
           break;
 
         case 'janus_event':
-          this.handleJanusEvent(event.payload);
+          {
+            const janusEvent = event as { payload: { janus?: string; jsep?: JanusJsep; feed_id?: number; plugindata?: unknown } };
+            this.handleJanusEvent(janusEvent.payload);
+          }
           break;
 
         case 'participants':
-          this.handleParticipants(event.data);
+          {
+            const participantsEvent = event as { data: JanusParticipant[] };
+            this.handleParticipants(participantsEvent.data);
+          }
           break;
       }
     });

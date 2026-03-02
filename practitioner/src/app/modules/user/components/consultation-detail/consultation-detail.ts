@@ -521,6 +521,12 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
         this.loadAppointments();
       });
 
+    this.wsService.consultationUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadConsultation();
+      });
+
     this.wsService.userOnlineStatus$
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {

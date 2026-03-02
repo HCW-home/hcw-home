@@ -13,6 +13,7 @@ import {
   UserOnlineStatusEvent,
   ConsultationParticipant,
   ConsultationIncomingEvent,
+  ConsultationEvent,
 } from '../models/websocket';
 
 @Injectable({
@@ -31,6 +32,7 @@ export class ConsultationWebSocketService implements OnDestroy {
   private participantLeftSubject = new Subject<ParticipantLeftEvent>();
   private appointmentUpdatedSubject = new Subject<AppointmentUpdatedEvent>();
   private userOnlineStatusSubject = new Subject<UserOnlineStatusEvent>();
+  private consultationUpdatedSubject = new Subject<ConsultationEvent>();
   private allEventsSubject = new Subject<ConsultationIncomingEvent>();
 
   public state$: Observable<WebSocketState>;
@@ -48,6 +50,8 @@ export class ConsultationWebSocketService implements OnDestroy {
     this.appointmentUpdatedSubject.asObservable();
   public userOnlineStatus$: Observable<UserOnlineStatusEvent> =
     this.userOnlineStatusSubject.asObservable();
+  public consultationUpdated$: Observable<ConsultationEvent> =
+    this.consultationUpdatedSubject.asObservable();
   public allEvents$: Observable<ConsultationIncomingEvent> =
     this.allEventsSubject.asObservable();
 
@@ -109,6 +113,7 @@ export class ConsultationWebSocketService implements OnDestroy {
     }
 
     if (eventType === 'consultation') {
+      this.consultationUpdatedSubject.next(message as ConsultationEvent);
       return;
     }
 

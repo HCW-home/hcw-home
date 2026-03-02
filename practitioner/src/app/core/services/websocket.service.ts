@@ -81,14 +81,16 @@ export class WebSocketService {
     }
   }
 
-  on<T extends UserIncomingEvent['type']>(
+  on<T extends string>(
     type: T
-  ): Observable<Extract<UserIncomingEvent, { type: T }>> {
+  ): Observable<UserIncomingEvent> {
     return this.messages$.pipe(
       filter(
-        (msg): msg is Extract<UserIncomingEvent, { type: T }> =>
-          msg.type === type ||
-          (msg as unknown as { event?: string }).event === type
+        (msg): msg is UserIncomingEvent => {
+          const msgType = (msg as { type?: string }).type;
+          const msgEvent = (msg as { event?: string }).event;
+          return msgType === type || msgEvent === type;
+        }
       )
     );
   }

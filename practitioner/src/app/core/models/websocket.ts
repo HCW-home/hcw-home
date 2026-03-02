@@ -152,7 +152,8 @@ export type UserIncomingEvent =
   | GroupJoinedEvent
   | GroupLeftEvent
   | ErrorEvent
-  | AppointmentJoinedEvent;
+  | AppointmentJoinedEvent
+  | ConsultationEvent;
 
 export interface ConsultationParticipant {
   id: number;
@@ -267,6 +268,13 @@ export interface UserOnlineStatusEvent {
   };
 }
 
+export interface ConsultationEvent {
+  event: 'consultation';
+  state: string;
+  consultation_id: number;
+  data?: unknown;
+}
+
 export interface JanusEventData {
   type: 'janus_event';
   payload: {
@@ -298,6 +306,8 @@ export type ConsultationIncomingEvent =
   | ParticipantJoinedEvent
   | ParticipantLeftEvent
   | AppointmentUpdatedEvent
+  | UserOnlineStatusEvent
+  | ConsultationEvent
   | JanusEventData
   | GroupJoinedEvent
   | GroupLeftEvent

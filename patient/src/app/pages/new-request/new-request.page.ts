@@ -381,6 +381,13 @@ export class NewRequestPage implements OnInit, OnDestroy {
     return date.getDate().toString();
   }
 
+  isToday(date: Date): boolean {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  }
+
   formatSlotTime(slot: Slot): string {
     return `${slot.start_time.substring(0, 5)} - ${slot.end_time.substring(0, 5)}`;
   }

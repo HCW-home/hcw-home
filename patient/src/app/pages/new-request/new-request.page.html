@@ -101,7 +101,7 @@
 
           <div class="slots-container">
             @for (date of weekDates(); track date.getTime()) {
-              <div class="day-column">
+              <div class="day-column" [class.today]="isToday(date)">
                 <div class="day-header">
                   <span class="day-name">{{ formatDayName(date) }}</span>
                   <span class="day-date">{{ formatDayNumber(date) }}</span>

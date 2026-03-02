@@ -255,6 +255,12 @@ ion-header {
   border: 1px solid var(--app-border-color);
   min-height: 160px;
 
+  &.today {
+    background: var(--ion-color-primary-bg);
+    border: 2px solid var(--ion-color-primary);
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.15);
+  }
+
   .day-header {
     display: flex;
     flex-direction: column;

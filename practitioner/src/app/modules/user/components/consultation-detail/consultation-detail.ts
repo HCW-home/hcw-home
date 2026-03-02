@@ -171,6 +171,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   calendarTitle = signal<string>('');
   highlightedAppointmentId = signal<number | null>(null);
   private pendingScrollToAppointmentId: number | null = null;
+  private pendingJoinAppointmentId: number | null = null;
   private recentlyModifiedAppointmentIds = new Set<number>();
   private calendarDateRange: { start: string; end: string } | null = null;
 
@@ -409,10 +410,22 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
           this.highlightAndScrollToAppointment(appointmentId);
 
           if (queryParams['join'] === 'true') {
-            this.joinVideoCall(appointmentId);
+            this.pendingJoinAppointmentId = appointmentId;
+            this.checkPendingJoin();
           }
         }
       });
+  }
+
+  private checkPendingJoin(): void {
+    if (!this.pendingJoinAppointmentId) return;
+
+    const appointment = this.appointments().find(a => a.id === this.pendingJoinAppointmentId);
+    if (appointment) {
+      const appointmentId = this.pendingJoinAppointmentId;
+      this.pendingJoinAppointmentId = null;
+      this.joinVideoCall(appointmentId);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -766,6 +779,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
           this.appointments.set(response.results);
           this.hasMoreAppointments.set(response.next !== null);
           this.isLoadingAppointments.set(false);
+          this.checkPendingJoin();
         },
         error: error => {
           this.isLoadingAppointments.set(false);
@@ -811,6 +825,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
           this.appointments.set([...currentAppointments, ...response.results]);
           this.hasMoreAppointments.set(response.next !== null);
           this.isLoadingMoreAppointments.set(false);
+          this.checkPendingJoin();
         },
         error: error => {
           this.appointmentPage--;
@@ -853,6 +868,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
           this.appointments.set(response.results);
           this.hasMoreAppointments.set(false);
           this.isLoadingAppointments.set(false);
+          this.checkPendingJoin();
         },
         error: error => {
           this.isLoadingAppointments.set(false);

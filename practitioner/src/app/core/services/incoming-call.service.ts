@@ -21,12 +21,21 @@ export class IncomingCallService {
   private audioElement: HTMLAudioElement | null = null;
   private activeCallAppointmentId: number | null = null;
   private currentCallData: IncomingCallData | null = null;
+  private currentNotification: Notification | null = null;
 
   constructor(
     private router: Router,
     private toasterService: ToasterService,
     private t: TranslationService
-  ) {}
+  ) {
+    this.requestNotificationPermission();
+  }
+
+  private async requestNotificationPermission(): Promise<void> {
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }
 
   showIncomingCall(data: IncomingCallData): void {
     if (this.currentCallData) {
@@ -40,6 +49,7 @@ export class IncomingCallService {
     this.currentCallData = data;
     this.playRingtone();
     this.startTimeout();
+    this.showSystemNotification(data);
 
     this.toasterService.show('neutral', `${data.callerName}`, this.t.instant('incomingCall.isCalling'), {
       id: INCOMING_CALL_TOAST_ID,
@@ -53,11 +63,43 @@ export class IncomingCallService {
     });
   }
 
+  private showSystemNotification(data: IncomingCallData): void {
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+
+    const title = this.t.instant('incomingCall.isCalling');
+    const body = data.callerName;
+
+    this.currentNotification = new Notification(title, {
+      body,
+      icon: '/images/logo.svg',
+      badge: '/images/logo.svg',
+      tag: 'incoming-call',
+      requireInteraction: true,
+      silent: false,
+    });
+
+    this.currentNotification.onclick = () => {
+      window.focus();
+      this.acceptCall();
+      this.currentNotification?.close();
+    };
+  }
+
   dismissIncomingCall(): void {
     this.stopRingtone();
     this.clearTimeout();
     this.currentCallData = null;
     this.toasterService.dismiss(INCOMING_CALL_TOAST_ID);
+    this.closeSystemNotification();
+  }
+
+  private closeSystemNotification(): void {
+    if (this.currentNotification) {
+      this.currentNotification.close();
+      this.currentNotification = null;
+    }
   }
 
   acceptCall(): void {
@@ -70,6 +112,7 @@ export class IncomingCallService {
     this.clearTimeout();
     this.currentCallData = null;
     this.toasterService.dismiss(INCOMING_CALL_TOAST_ID);
+    this.closeSystemNotification();
 
     this.router.navigate([
       '/',

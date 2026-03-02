@@ -34,9 +34,4 @@ Feedback Gilles
 - http://localhost:8001/new-request > validation synchrone ?
 
 - Tableau on comprend pas cliquable
-
-
-- griser http://localhost:8001/new-request pour aller dans le passé
-- ajouter un highlight sur aujourd'hui
-
 - Notification pour appel vidéo

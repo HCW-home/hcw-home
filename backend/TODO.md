@@ -39,6 +39,7 @@ Feedback Gilles
 - On consultation update - consultation not refresh
 - Virer les erreurs traceback et les logguer plutot
 
+
 - griser http://localhost:8001/new-request pour aller dans le passé
 - ajouter un highlight sur aujourd'hui
 

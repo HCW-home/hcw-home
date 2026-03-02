@@ -5,6 +5,7 @@ import random
 import uuid
 import secrets
 
+from django.utils.translation import gettext as _
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.openid_connect.views import (
     OpenIDConnectOAuth2Adapter,
@@ -615,6 +616,17 @@ class UserAppointmentsViewSet(viewsets.ReadOnlyModelViewSet):
                             "user_name": request.user.name or request.user.email,
                         },
                     },
+                )
+
+            # Create a system message for participant joined
+            # The message_saved signal will automatically send WebSocket notifications
+            if appointment.consultation:
+                user_name = request.user.name or request.user.email
+                ConsultationMessage.objects.create(
+                    consultation=appointment.consultation,
+                    created_by=None,  # System message has no author
+                    event="participant_joined",
+                    content=_("%(user_name)s joined the meeting") % {"user_name": user_name},
                 )
 
             return Response(

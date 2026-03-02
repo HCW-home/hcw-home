@@ -21,6 +21,7 @@ import { LiveKitService, ParticipantInfo, ConnectionStatus } from '../../../../c
 import { ConsultationService } from '../../../../core/services/consultation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { IncomingCallService } from '../../../../core/services/incoming-call.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { IPreJoinSettings } from '../../../../core/models/media-device';
 import { Button } from '../../../../shared/ui-components/button/button';
 import { Svg } from '../../../../shared/ui-components/svg/svg';
@@ -96,6 +97,7 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
     private consultationService: ConsultationService,
     private toasterService: ToasterService,
     private incomingCallService: IncomingCallService,
+    private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef,
     translationService: TranslationService
   ) {
@@ -441,8 +443,18 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   async leaveCall(): Promise<void> {
-    await this.livekitService.disconnect();
-    this.leave.emit();
+    const confirmed = await this.confirmationService.confirm({
+      title: this.t.instant('videoCall.leaveCallTitle'),
+      message: this.t.instant('videoCall.leaveCallMessage'),
+      confirmText: this.t.instant('videoCall.leaveCallConfirm'),
+      cancelText: this.t.instant('videoCall.leaveCallCancel'),
+      confirmStyle: 'danger',
+    });
+
+    if (confirmed) {
+      await this.livekitService.disconnect();
+      this.leave.emit();
+    }
   }
 
   onToggleSize(): void {

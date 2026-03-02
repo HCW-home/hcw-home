@@ -1,205 +1,279 @@
 .verify-content {
+  --background: linear-gradient(135deg, var(--app-background-secondary) 0%, var(--ion-color-primary-bg) 50%, var(--app-background-secondary) 100%);
 
+  &::part(scroll) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+  }
 
-  .verify-container {
-    height: 100%;
+  .auth-card {
+    display: flex;
+    width: 90%;
+    max-width: 900px;
+    min-height: 520px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    background: #fff;
+  }
+
+  .left-side {
+    flex: 1;
+    background: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+
+    .left-content {
+      text-align: center;
+      color: #fff;
+
+      .logo-img {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 12px;
+      }
+
+      p {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        max-width: 280px;
+        margin: 0 auto;
+      }
+    }
+  }
+
+  .right-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+
+    .right-content {
+      width: 100%;
+      max-width: 360px;
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--app-text-primary);
+        margin: 0 0 4px;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        color: var(--app-text-secondary);
+        margin: 0 0 28px;
+        display: block;
+      }
+    }
+  }
+
+  @keyframes fadeSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .step-animate {
+    animation: fadeSlideIn 0.3s ease-out;
+  }
+
+  .loading-state {
     display: flex;
     flex-direction: column;
-    padding: var(--app-spacing-xl);
-    justify-content: center;
     align-items: center;
+    gap: 16px;
 
-    .verify-header {
-      text-align: center;
-      margin-bottom: 40px;
-      display: flex;
+    ion-spinner {
+      width: 48px;
+      height: 48px;
+      color: var(--ion-color-primary);
+    }
+
+    .loading-text {
+      font-size: 0.9rem;
+      color: var(--app-text-secondary);
+    }
+  }
+
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+
+    .error-icon {
+      font-size: 64px;
+      color: var(--ion-color-danger);
+      margin-bottom: 20px;
+    }
+
+    .error-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--app-text-primary);
+    }
+
+    .error-message {
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      color: var(--app-text-secondary);
+    }
+
+    .action-button {
+      width: 100%;
+      --background: var(--ion-color-primary);
+      --padding-top: 14px;
+      --padding-bottom: 14px;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+  }
+
+  .verification-form {
+    .input-item {
+      margin-bottom: 16px;
+      --background: var(--app-input-background, #f7f8fa);
+      --border-radius: 10px;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --inner-padding-end: 16px;
+      border-radius: 10px;
+
+      ion-icon {
+        margin-right: 10px;
+        color: var(--app-text-tertiary);
+      }
+
+      ion-input {
+        --padding-top: 14px;
+        --padding-bottom: 14px;
+        color: var(--app-input-text);
+        --placeholder-color: var(--app-input-placeholder);
+      }
+    }
+
+    .error-message {
+      display: block;
+      margin: -10px 0 10px 16px;
+
+      .error-text {
+        font-size: 0.75rem;
+      }
+    }
+
+    .action-button {
+      --background: var(--ion-color-primary);
+      --padding-top: 14px;
+      --padding-bottom: 14px;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-top: 4px;
+      height: 50px;
+    }
+  }
+
+  .resend-code {
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+
+    .resend-text {
+      font-size: 0.85rem;
+    }
+
+    .link-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+
+      &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    }
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+
+    .link-text {
+      font-size: 0.85rem;
+      cursor: pointer;
+
+      &:last-child {
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .verify-content {
+
+    .auth-card {
       flex-direction: column;
-      align-items: center;
+      width: 100%;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
+      min-height: 100%;
+    }
 
-      .logo {
-        margin-bottom: var(--app-spacing-md);
+    .left-side {
+      padding: 32px 24px;
+      min-height: auto;
 
+      .left-content {
         .logo-img {
-          width: 64px;
-          height: 64px;
-        }
-      }
-
-      .logo-text-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-
-        .title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: var(--app-text-primary);
-          line-height: 1.2;
+          max-width: 56px;
+          max-height: 56px;
+          margin-bottom: 12px;
         }
 
-        .title-subtitle {
-          font-size: 1rem;
-          font-weight: 500;
-          color: var(--app-text-secondary);
-          line-height: 1;
+        h1 {
+          font-size: 1.5rem;
+          margin-bottom: 8px;
+        }
+
+        p {
+          font-size: 0.85rem;
         }
       }
     }
 
-    .loading-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--app-spacing-lg);
+    .right-side {
+      padding: 24px;
 
-      ion-spinner {
-        width: 48px;
-        height: 48px;
-        color: var(--ion-color-primary);
-      }
-
-      .loading-text {
-        font-size: var(--app-font-size-base);
-      }
-    }
-
-    .error-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      width: 100%;
-
-      .error-icon {
-        font-size: 64px;
-        color: var(--ion-color-danger);
-        margin-bottom: var(--app-spacing-lg);
-      }
-
-      .error-title {
-        font-size: var(--app-font-size-lg);
-        font-weight: var(--app-font-weight-semibold);
-        margin-bottom: var(--app-spacing-sm);
-      }
-
-      .error-message {
-        font-size: var(--app-font-size-base);
-        margin-bottom: var(--app-spacing-2xl);
-      }
-
-      .action-button {
-        width: 100%;
-        --background: var(--ion-color-primary);
-        --padding-top: var(--app-button-padding-vertical);
-        --padding-bottom: var(--app-button-padding-vertical);
-        font-weight: var(--app-font-weight-semibold);
-        font-size: var(--app-font-size-base);
-      }
-    }
-
-    .verification-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      width: 100%;
-
-      .verification-icon {
-        font-size: 64px;
-        color: var(--ion-color-primary);
-        margin-bottom: var(--app-spacing-lg);
-      }
-
-      .verification-title {
-        font-size: var(--app-font-size-lg);
-        font-weight: var(--app-font-weight-semibold);
-        color: var(--app-text-primary);
-        margin-bottom: var(--app-spacing-sm);
-      }
-
-      .verification-message {
-        font-size: var(--app-font-size-base);
-        margin-bottom: var(--app-spacing-2xl);
-      }
-
-      .verification-form {
-        width: 100%;
-
-        .input-item {
-          margin-bottom: var(--app-spacing-lg);
-          --background: var(--app-input-background);
-          --border-radius: var(--app-button-radius);
-          --padding-start: var(--app-spacing-lg);
-          --padding-end: var(--app-spacing-lg);
-          --inner-padding-end: var(--app-spacing-lg);
-
-          ion-icon {
-            margin-right: var(--app-spacing-md);
-            color: var(--app-text-tertiary);
-          }
-
-          ion-input {
-            --padding-top: var(--app-spacing-lg);
-            --padding-bottom: var(--app-spacing-lg);
-            color: var(--app-input-text);
-            --placeholder-color: var(--app-input-placeholder);
-            text-align: center;
-            font-size: var(--app-font-size-lg);
-            letter-spacing: 8px;
-          }
-        }
-
-        .error-text {
-          display: block;
-          font-size: var(--app-font-size-xs);
-          margin: calc(var(--app-spacing-md) * -1) 0 var(--app-spacing-md) 0;
-        }
-
-        .action-button {
-          --background: var(--ion-color-primary);
-          --padding-top: var(--app-button-padding-vertical);
-          --padding-bottom: var(--app-button-padding-vertical);
-          font-weight: var(--app-font-weight-semibold);
-          font-size: var(--app-font-size-base);
-          margin-top: var(--app-spacing-lg);
-        }
-      }
-
-      .resend-code {
-        margin-top: var(--app-spacing-xl);
-        display: flex;
-        gap: var(--app-spacing-xs);
-
-        .resend-text {
-          font-size: var(--app-font-size-sm);
-        }
-
-        .resend-action {
-          font-size: var(--app-font-size-sm);
-          font-weight: var(--app-font-weight-semibold);
-          cursor: pointer;
-
-          &.disabled {
-            opacity: 0.6;
-            pointer-events: none;
-          }
-        }
-      }
-
-      .login-link {
-        margin-top: var(--app-spacing-lg);
-        display: flex;
-        gap: var(--app-spacing-xs);
-
-        .link-text {
-          font-size: var(--app-font-size-sm);
-        }
-
-        .link-action {
-          font-size: var(--app-font-size-sm);
-          font-weight: var(--app-font-weight-semibold);
-          cursor: pointer;
-        }
+      .right-content {
+        max-width: 100%;
       }
     }
   }

@@ -106,6 +106,7 @@
     "verifyingCode": "Verifying your code...",
     "authenticating": "Authenticating...",
     "authFailed": "Authentication Failed",
+    "welcomeMessage": "Welcome! Access your consultation with ease",
     "goToLogin": "Go to Login",
     "verificationRequired": "Verification Required",
     "codeSentMessage": "A verification code has been sent to your email or phone. Please enter it below.",

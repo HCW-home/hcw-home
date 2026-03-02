@@ -1,100 +1,100 @@
-<ion-content class="verify-content">
-  <div class="verify-container">
-    <div class="verify-header">
-      <div class="logo">
-        <img src="assets/images/logo.svg" alt="HCW Logo" class="logo-img">
-      </div>
-      <div class="logo-text-group">
-        <span class="title">HCW</span>
-        <span class="title-subtitle">Patient</span>
+<ion-content class="verify-content" [scrollY]="false">
+  <div class="auth-card">
+    <div class="left-side">
+      <div class="left-content">
+        <img src="assets/images/logo.svg" alt="Logo" class="logo-img" />
+        <h1>{{ branding }}</h1>
+        <p>{{ 'verifyInvite.welcomeMessage' | translate }}</p>
       </div>
     </div>
-
-    @if (isLoading) {
-      <div class="loading-state">
-        <ion-spinner name="crescent"></ion-spinner>
-        <ion-text class="loading-text" color="medium">
-          @if (requiresVerification) {
-            {{ 'verifyInvite.verifyingCode' | translate }}
-          } @else {
-            {{ 'verifyInvite.authenticating' | translate }}
-          }
-        </ion-text>
-      </div>
-    } @else if (errorMessage) {
-      <div class="error-state">
-        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
-        <ion-text class="error-title" color="danger">{{ 'verifyInvite.authFailed' | translate }}</ion-text>
-        <ion-text class="error-message" color="medium">{{ errorMessage }}</ion-text>
-        <ion-button
-          expand="block"
-          shape="round"
-          (click)="goToLogin()"
-          class="action-button">
-          {{ 'verifyInvite.goToLogin' | translate }}
-        </ion-button>
-      </div>
-    } @else if (requiresVerification) {
-      <div class="verification-state">
-        <ion-icon name="shield-checkmark-outline" class="verification-icon"></ion-icon>
-        <ion-text class="verification-title">{{ 'verifyInvite.verificationRequired' | translate }}</ion-text>
-        <ion-text class="verification-message" color="medium">
-          {{ 'verifyInvite.codeSentMessage' | translate }}
-        </ion-text>
-
-        <form [formGroup]="verificationForm" (ngSubmit)="submitVerificationCode()" class="verification-form">
-          <ion-item lines="full" class="input-item">
-            <ion-icon name="keypad-outline" slot="start"></ion-icon>
-            <ion-input
-              type="text"
-              [placeholder]="'verifyInvite.enterCode' | translate"
-              formControlName="verification_code"
-              maxlength="6"
-              inputmode="numeric">
-            </ion-input>
-          </ion-item>
-          @if (verificationForm.get('verification_code')?.invalid && verificationForm.get('verification_code')?.touched) {
-            <ion-text color="danger" class="error-text">
-              {{ 'verifyInvite.invalidCode' | translate }}
+    <div class="right-side">
+      <div class="right-content">
+        @if (isLoading) {
+          <div class="loading-state">
+            <ion-spinner name="crescent"></ion-spinner>
+            <ion-text class="loading-text" color="medium">
+              @if (requiresVerification) {
+                {{ 'verifyInvite.verifyingCode' | translate }}
+              } @else {
+                {{ 'verifyInvite.authenticating' | translate }}
+              }
             </ion-text>
-          }
+          </div>
+        } @else if (errorMessage) {
+          <div class="error-state">
+            <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+            <ion-text class="error-title" color="danger">{{ 'verifyInvite.authFailed' | translate }}</ion-text>
+            <ion-text class="error-message" color="medium">{{ errorMessage }}</ion-text>
+            <ion-button
+              expand="block"
+              shape="round"
+              (click)="goToLogin()"
+              class="action-button">
+              {{ 'verifyInvite.goToLogin' | translate }}
+            </ion-button>
+          </div>
+        } @else if (requiresVerification) {
+          <div class="verification-state step-animate">
+            <h2>{{ 'verifyInvite.verificationRequired' | translate }}</h2>
+            <p class="subtitle">{{ 'verifyInvite.codeSentMessage' | translate }}</p>
 
-          <ion-button
-            expand="block"
-            shape="round"
-            type="submit"
-            [disabled]="verificationForm.invalid || isLoading"
-            class="action-button">
-            {{ 'verifyInvite.verifyCode' | translate }}
-          </ion-button>
-        </form>
+            <form [formGroup]="verificationForm" (ngSubmit)="submitVerificationCode()" class="verification-form">
+              <ion-item lines="full" class="input-item">
+                <ion-icon name="keypad-outline" slot="start"></ion-icon>
+                <ion-input
+                  type="text"
+                  [placeholder]="'verifyInvite.enterCode' | translate"
+                  formControlName="verification_code"
+                  maxlength="6"
+                  inputmode="numeric">
+                </ion-input>
+              </ion-item>
+              @if (verificationForm.get('verification_code')?.invalid && verificationForm.get('verification_code')?.touched) {
+                <ion-text color="danger" class="error-message">
+                  <span class="error-text">{{ 'verifyInvite.invalidCode' | translate }}</span>
+                </ion-text>
+              }
 
-        <div class="resend-code">
-          <ion-text class="resend-text" color="medium">
-            {{ 'verifyInvite.didntReceive' | translate }}
-          </ion-text>
-          <ion-text
-            color="primary"
-            (click)="resendVerificationCode()"
-            [class.disabled]="isResending"
-            class="resend-action">
-            @if (isResending) {
-              {{ 'verifyInvite.sending' | translate }}
-            } @else {
-              {{ 'verifyInvite.resendCode' | translate }}
-            }
-          </ion-text>
-        </div>
+              <ion-button
+                expand="block"
+                shape="round"
+                type="submit"
+                [disabled]="verificationForm.invalid || isLoading"
+                class="action-button">
+                {{ 'verifyInvite.verifyCode' | translate }}
+              </ion-button>
+            </form>
 
-        <div class="login-link">
-          <ion-text class="link-text" color="medium">
-            {{ 'verifyInvite.havingTrouble' | translate }}
-          </ion-text>
-          <ion-text color="primary" (click)="goToLogin()" class="link-action">
-            {{ 'verifyInvite.signInManually' | translate }}
-          </ion-text>
-        </div>
+            <div class="resend-code">
+              <ion-text class="resend-text" color="medium">
+                {{ 'verifyInvite.didntReceive' | translate }}
+              </ion-text>
+              <ion-text
+                color="primary"
+                (click)="resendVerificationCode()"
+                [class.disabled]="isResending"
+                class="link-text">
+                @if (isResending) {
+                  {{ 'verifyInvite.sending' | translate }}
+                } @else {
+                  {{ 'verifyInvite.resendCode' | translate }}
+                }
+              </ion-text>
+            </div>
+
+            <div class="login-link">
+              <ion-text class="link-text" color="medium">
+                {{ 'verifyInvite.havingTrouble' | translate }}
+              </ion-text>
+              <ion-text color="primary" (click)="goToLogin()" class="link-text">
+                {{ 'verifyInvite.signInManually' | translate }}
+              </ion-text>
+            </div>
+          </div>
+        }
+
+        <app-language-selector></app-language-selector>
       </div>
-    }
+    </div>
   </div>
 </ion-content>

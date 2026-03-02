@@ -18,6 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ActionHandlerService } from '../../core/services/action-handler.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 
 @Component({
   selector: 'app-verify-invite',
@@ -34,7 +35,8 @@ import { TranslationService } from '../../core/services/translation.service';
     IonIcon,
     IonText,
     IonSpinner,
-    TranslatePipe
+    TranslatePipe,
+    LanguageSelectorComponent
   ]
 })
 export class VerifyInvitePage implements OnInit, OnDestroy {
@@ -48,6 +50,7 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
   requiresVerification = false;
   errorMessage: string | null = null;
   isResending = false;
+  branding = "HCW@Home";
 
   verificationForm: FormGroup;
 
@@ -65,6 +68,16 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load config
+    this.authService.getConfig().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (config: any) => {
+        if (config.branding) {
+          this.branding = config.branding;
+        }
+      },
+      error: (err: any) => console.error('Failed to load config', err)
+    });
+
     this.authToken = this.route.snapshot.queryParamMap.get('auth');
     this.action = this.route.snapshot.queryParamMap.get('action');
     this.actionId = this.route.snapshot.queryParamMap.get('id');

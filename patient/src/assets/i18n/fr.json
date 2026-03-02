@@ -106,6 +106,7 @@
     "verifyingCode": "Vérification du code...",
     "authenticating": "Authentification...",
     "authFailed": "Échec de l'authentification",
+    "welcomeMessage": "Bienvenue ! Accédez à votre consultation en toute simplicité",
     "goToLogin": "Aller à la connexion",
     "verificationRequired": "Vérification requise",
     "codeSentMessage": "Un code de vérification a été envoyé à votre adresse e-mail ou téléphone. Veuillez le saisir ci-dessous.",

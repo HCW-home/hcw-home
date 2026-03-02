@@ -90,7 +90,7 @@
           <p class="step-description">{{ 'newRequest.selectTimeSlotDesc' | translate }}</p>
 
           <div class="week-navigation">
-            <ion-button fill="clear" (click)="previousWeek()">
+            <ion-button fill="clear" (click)="previousWeek()" [disabled]="!canGoPreviousWeek()">
               <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
             </ion-button>
             <span class="week-label">{{ formatDisplayDate(weekDates()[0]) }} - {{ formatDisplayDate(weekDates()[6]) }}</span>

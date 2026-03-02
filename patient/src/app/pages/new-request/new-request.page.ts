@@ -110,6 +110,14 @@ export class NewRequestPage implements OnInit, OnDestroy {
     return dates;
   });
 
+  canGoPreviousWeek = computed(() => {
+    const current = this.currentWeekStart();
+    const prev = new Date(current);
+    prev.setDate(current.getDate() - 7);
+    const today = this.getStartOfWeek(new Date());
+    return prev >= today;
+  });
+
   constructor(
     private navCtrl: NavController,
     private toastCtrl: ToastController,

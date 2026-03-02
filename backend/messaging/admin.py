@@ -354,8 +354,11 @@ class TemplateAdmin(ModelAdmin, TabbedTranslationAdmin, ImportExportModelAdmin):
     @display(description="Render example")
     def example(self, obj):
         try:
+            factory = obj.factory_instance
+            if not factory:
+                return "-"
             rendered_subject, rendered_text = obj.render_from_template(
-                obj=obj.factory_instance.build()
+                obj=factory.build()
             )
             if rendered_subject:
                 return rendered_subject, rendered_text

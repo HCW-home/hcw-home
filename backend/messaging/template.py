@@ -21,6 +21,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         ),
         "template_content": _(
             """Your consultation appointment start at {{ obj.appointment.scheduled_at|time }}\n"""
+            """Join the consultation: {{access_link}}"""
         ),
         "template_content_html": _(
             """<p>Your consultation appointment start at <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"""
@@ -60,7 +61,8 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         "template_content": _(
             """Your appointment previously scheduled for {{ obj.appointment.previous_scheduled_at|date }} """
             """at {{ obj.appointment.previous_scheduled_at|time }} is now scheduled for """
-            """{{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }}"""
+            """{{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }}\n"""
+            """Please confirm your presence: {{access_link}}"""
         ),
         "template_content_html": _(
             """<p>Your appointment previously scheduled for <strong>{{ obj.appointment.previous_scheduled_at|date }}</strong> """
@@ -87,8 +89,9 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         "template_subject": _("New message in consultation"),
         "template_content": _(
             "{{ obj.created_by.name }} sent you a message "
-            'in consultation "{{ obj.consultation.title }}":'
-            "{{ obj.content }}"
+            'in consultation "{{ obj.consultation.title }}": '
+            "{{ obj.content }}\n"
+            "Answer here: {{access_link}}"
         ),
         "template_content_html": _(
             "<p>{{ obj.created_by.name }} sent you a message "
@@ -103,7 +106,8 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "email_verification": {
         "template_subject": _("Verify your email address"),
         "template_content": _(
-            "Please verify your email address by clicking the link below."
+            "Please verify your email address by clicking the link below:\n"
+            "{{access_link}}"
         ),
         "template_content_html": _(
             "<p>Please verify your email address by clicking the link below.</p>"
@@ -116,7 +120,8 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "reset_password": {
         "template_subject": _("Reset your password"),
         "template_content": _(
-            "You requested a password change, delete this email if it was not requested by email."
+            "You requested a password change, delete this email if it was not requested by email.\n"
+            "Reset your password here: {{access_link}}"
         ),
         "template_content_html": _(
             "<p>You requested a password change, delete this email if it was not requested by email.</p>"

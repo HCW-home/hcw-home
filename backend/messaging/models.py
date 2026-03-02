@@ -356,7 +356,7 @@ class Template(models.Model):
         if self.model:
             app_label, model_name = self.model.split(".", 1)
             factory_module = import_module(f"{app_label}.factories")
-            return getattr(factory_module, f"{model_name}Factory")
+            return getattr(factory_module, f"{model_name}Factory", None)
 
     class Meta:
         verbose_name = _("template")
@@ -366,6 +366,7 @@ class Template(models.Model):
         """Validate Jinja2 template syntax"""
         super().clean()
         env = jinja2.Environment()
+        env.filters.update(register.filters)
 
         # Validate template_text
         try:
@@ -422,6 +423,7 @@ class Template(models.Model):
             render_context["obj"] = obj
 
         env = jinja2.Environment()
+        env.filters.update(register.filters)
 
         # Render template text
         text_template = env.from_string(self.template_content)
@@ -522,6 +524,7 @@ class Template(models.Model):
 
         try:
             env = jinja2.Environment()
+            env.filters.update(register.filters)
 
             # Extract variables from template_text
             if self.template_content:

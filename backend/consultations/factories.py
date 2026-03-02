@@ -11,6 +11,7 @@ from consultations.models import (
     AppointmentStatus,
     BookingSlot,
     Consultation,
+    Message,
     Participant,
     Queue,
     Reason,
@@ -113,6 +114,15 @@ class ConsultationFactory(DjangoModelFactory):
     beneficiary = factory.SubFactory(PatientFactory)
 
 
+class MessageFactory(DjangoModelFactory):
+    class Meta:
+        model = Message
+
+    consultation = factory.SubFactory(ConsultationFactory)
+    created_by = factory.SubFactory(UserFactory)
+    content = factory.Faker("text", max_nb_chars=200)
+
+
 class RequestFactory(DjangoModelFactory):
     class Meta:
         model = Request
@@ -152,7 +162,6 @@ class ParticipantFactory(DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     is_invited = True
     is_confirmed = False
-    communication_method = "email"
 
 
 class BookingSlotFactory(DjangoModelFactory):

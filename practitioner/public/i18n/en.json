@@ -200,6 +200,7 @@
     "loadingAvailability": "Loading availability...",
     "availabilitySlots": "Availability Slots",
     "addSlot": "Add Slot",
+    "slotsInfoMessage": "These slots are only used to allow patients to request consultations. They do not prevent your colleagues from assigning you appointments outside these slots.",
     "break": "Break",
     "noBreak": "No break",
     "validUntil": "Valid until: {{date}}",

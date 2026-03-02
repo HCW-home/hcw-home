@@ -15,6 +15,11 @@
           <app-button [text]="'configuration.addSlot' | translate" leftIcon="plus" [size]="ButtonSizeEnum.small" [style]="ButtonStyleEnum.primary" (buttonClick)="openSlotModal('create')"></app-button>
         </div>
 
+        <div class="info-banner">
+          <app-svg src="info" [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
+          <span>{{ 'configuration.slotsInfoMessage' | translate }}</span>
+        </div>
+
         <div class="slots-list">
           @for (slot of bookingSlots(); track slot.id) {
             <div class="slot-item">

@@ -440,6 +440,7 @@
     "loadingAvailability": "Chargement des disponibilités...",
     "availabilitySlots": "Créneaux de disponibilité",
     "addSlot": "Ajouter un créneau",
+    "slotsInfoMessage": "Ces créneaux sont utilisés uniquement pour permettre aux patients de demander des consultations. Ils n'empêchent pas vos collègues de vous assigner des rendez-vous en dehors des créneaux.",
     "break": "Pause",
     "noBreak": "Pas de pause",
     "validUntil": "Valide jusqu'au : {{date}}",

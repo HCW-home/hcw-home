@@ -40,6 +40,27 @@
     }
   }
 
+  .info-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--blue-50, #eff6ff);
+    border-bottom: 1px solid var(--blue-100, #dbeafe);
+    color: var(--blue-800, #1e40af);
+    font-size: 13px;
+    line-height: 1.5;
+
+    app-svg {
+      flex-shrink: 0;
+      color: var(--blue-500, #3b82f6);
+    }
+
+    span {
+      flex: 1;
+    }
+  }
+
   .slots-card {
     .slots-list {
       padding: 20px;

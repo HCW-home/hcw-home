@@ -129,10 +129,7 @@ export class Login implements OnInit {
           this.loadingButton = false;
 
           this.userService.getCurrentUser().subscribe({
-            next: user => {
-              if (user.preferred_language) {
-                this.t.setLanguage(String(user.preferred_language));
-              }
+            next: () => {
               this.navigateAfterLogin();
             },
             error: () => {

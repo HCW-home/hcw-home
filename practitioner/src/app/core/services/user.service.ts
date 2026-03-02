@@ -9,6 +9,7 @@ import {
 } from '../../modules/user/models/user';
 import { environment } from '../../../environments/environment';
 import { PaginatedResponse } from '../models/global';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ import { PaginatedResponse } from '../models/global';
 export class UserService {
   private apiUrl = environment.apiUrl;
   http = inject(HttpClient);
+  private translationService = inject(TranslationService);
 
   private currentUserSubject = new BehaviorSubject<IUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -27,13 +29,27 @@ export class UserService {
   getCurrentUser(): Observable<IUser> {
     return this.http
       .get<IUser>(`${this.apiUrl}/auth/user/`)
-      .pipe(tap(user => this.currentUserSubject.next(user)));
+      .pipe(
+        tap(user => {
+          this.currentUserSubject.next(user);
+          if (user.preferred_language) {
+            this.translationService.setLanguage(String(user.preferred_language));
+          }
+        })
+      );
   }
 
   updateCurrentUser(data: IUserUpdateRequest): Observable<IUser> {
     return this.http
       .patch<IUser>(`${this.apiUrl}/auth/user/`, data)
-      .pipe(tap(user => this.currentUserSubject.next(user)));
+      .pipe(
+        tap(user => {
+          this.currentUserSubject.next(user);
+          if (user.preferred_language) {
+            this.translationService.setLanguage(String(user.preferred_language));
+          }
+        })
+      );
   }
 
   uploadProfilePicture(file: File): Observable<IUser> {

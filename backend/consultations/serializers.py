@@ -149,7 +149,7 @@ class QueueSerializer(serializers.ModelSerializer):
 class ParticipantReadSerializer(serializers.ModelSerializer):
     user = ConsultationUserSerializer(read_only=True)
     status = serializers.CharField(read_only=True)
-    access_url = serializers.CharField(read_only=True)
+    requires_manual_access = serializers.SerializerMethodField()
 
     class Meta:
         model = Participant
@@ -161,9 +161,15 @@ class ParticipantReadSerializer(serializers.ModelSerializer):
             "is_confirmed",
             "is_invited",
             "is_notified",
-            "access_url",
+            "requires_manual_access",
         ]
         read_only_fields = fields
+
+    def get_requires_manual_access(self, obj):
+        """Indique si ce participant nécessite un accès manuel (lien d'invitation)"""
+        if not obj.user:
+            return False
+        return obj.user.temporary and not obj.user.email and not obj.user.mobile_phone_number
 
 
 class ParticipantSerializer(serializers.Serializer):

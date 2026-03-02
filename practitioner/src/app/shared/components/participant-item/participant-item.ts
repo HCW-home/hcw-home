@@ -15,12 +15,14 @@ import {
 } from '../../../core/models/consultation';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToasterService } from '../../../core/services/toaster.service';
+import { ConsultationService } from '../../../core/services/consultation.service';
 
 import { Svg } from '../../ui-components/svg/svg';
 import { Button } from '../../ui-components/button/button';
 import { Badge } from '../badge/badge';
 import { UserAvatar } from '../user-avatar/user-avatar';
 import { ModalComponent } from '../modal/modal.component';
+import { LocalDatePipe } from '../../pipes/local-date.pipe';
 import {
   ButtonStyleEnum,
   ButtonSizeEnum,
@@ -41,11 +43,13 @@ import { getParticipantBadgeType } from '../../tools/helper';
     UserAvatar,
     ModalComponent,
     TranslatePipe,
+    LocalDatePipe,
   ],
 })
 export class ParticipantItem {
   private t = inject(TranslationService);
   private toasterService = inject(ToasterService);
+  private consultationService = inject(ConsultationService);
 
   @Input() participant: Participant | null = null;
   @Input() pendingParticipant: CreateParticipantRequest | null = null;
@@ -190,18 +194,43 @@ export class ParticipantItem {
 
   showLinkModal = signal(false);
   linkCopied = signal(false);
+  accessUrl = signal<string>('');
+  expiresAt = signal<string | null>(null);
+  loadingAccessUrl = signal(false);
 
   hasAccessUrl(): boolean {
-    return !!this.participant?.access_url;
+    return !!this.participant?.requires_manual_access;
   }
 
   getInviteLink(): string {
-    return this.participant?.access_url || '';
+    return this.accessUrl();
   }
 
   openLinkModal(): void {
     this.linkCopied.set(false);
     this.showLinkModal.set(true);
+
+    // Charger l'access_url depuis l'API
+    if (this.participant?.id && !this.accessUrl()) {
+      this.loadingAccessUrl.set(true);
+      this.consultationService
+        .getParticipantAccessUrl(this.participant.id)
+        .subscribe({
+          next: (response) => {
+            this.accessUrl.set(response.access_url);
+            this.expiresAt.set(response.expires_at);
+            this.loadingAccessUrl.set(false);
+          },
+          error: (error) => {
+            this.loadingAccessUrl.set(false);
+            this.toasterService.show(
+              'error',
+              this.t.instant('participantItem.errorLoadingLink')
+            );
+            this.closeLinkModal();
+          },
+        });
+    }
   }
 
   closeLinkModal(): void {
@@ -210,6 +239,8 @@ export class ParticipantItem {
 
   copyLink(): void {
     const link = this.getInviteLink();
+    if (!link) return;
+
     navigator.clipboard.writeText(link).then(() => {
       this.linkCopied.set(true);
       this.toasterService.show(

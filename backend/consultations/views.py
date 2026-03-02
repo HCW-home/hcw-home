@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+import uuid
 
 import boto3
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from core.mixins import CreatedByMixin
 from django.conf import settings
+from constance import config
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import HttpResponse, StreamingHttpResponse
@@ -641,6 +643,61 @@ class ParticipantViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # When creating via direct participant endpoint, appointment must be provided
         serializer.save()
+
+    @action(detail=True, methods=["post"])
+    def access_url(self, request, pk=None):
+        """Get or regenerate access URL for temporary participant"""
+        participant = self.get_object()
+        user = participant.user
+
+        # Vérifications
+        if not user:
+            return Response(
+                {"detail": _("No user associated with this participant")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not user.temporary:
+            return Response(
+                {"detail": _("Access URL is only available for temporary users")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if user.email or user.mobile_phone_number:
+            return Response(
+                {"detail": _("Access URL is only available for users without email or phone")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Vérifier si le token existe et s'il est expiré (7 jours)
+        TOKEN_EXPIRY = timedelta(days=7)
+        now = timezone.now()
+        token_expired = (
+            not user.one_time_auth_token
+            or not user.verification_code_created_at
+            or (now - user.verification_code_created_at) > TOKEN_EXPIRY
+        )
+
+        # Renouveler le token si expiré
+        if token_expired:
+            user.one_time_auth_token = str(uuid.uuid4())
+            user.verification_code_created_at = now
+            user.save(update_fields=["one_time_auth_token", "verification_code_created_at"])
+
+        # Générer l'access_url
+        access_url = f"{config.patient_base_url}/?auth={user.one_time_auth_token}"
+
+        # Calculer expires_at et le convertir dans la timezone de l'utilisateur
+        expires_at = user.verification_code_created_at + TOKEN_EXPIRY if user.verification_code_created_at else None
+        if expires_at and request.user.is_authenticated:
+            user_tz = request.user.user_tz
+            expires_at = expires_at.astimezone(user_tz).isoformat()
+
+        return Response({
+            "access_url": access_url,
+            "token_created_at": user.verification_code_created_at,
+            "expires_at": expires_at,
+        })
 
 
 class QueueViewSet(viewsets.ReadOnlyModelViewSet):

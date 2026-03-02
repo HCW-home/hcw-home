@@ -392,4 +392,16 @@ export class ConsultationService {
       { params: new HttpParams().set('target_model', targetModel) }
     );
   }
+
+  getParticipantAccessUrl(participantId: number): Observable<{
+    access_url: string;
+    token_created_at: string;
+    expires_at: string;
+  }> {
+    return this.http.post<{
+      access_url: string;
+      token_created_at: string;
+      expires_at: string;
+    }>(`${this.apiUrl}/participants/${participantId}/access_url/`, {});
+  }
 }

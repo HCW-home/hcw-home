@@ -42,7 +42,7 @@ export interface Participant {
   user: User | null;
   is_active: boolean;
   status?: ParticipantStatus;
-  access_url?: string | null;
+  requires_manual_access?: boolean;
 }
 
 export type ParticipantStatus =

@@ -366,7 +366,9 @@
     "copyLink": "Copier le lien",
     "copied": "Copié !",
     "linkCopied": "Lien copié dans le presse-papiers",
-    "singleUseWarning": "Ce lien n'est utilisable qu'une seule fois. Une fois que le participant l'aura ouvert, un nouveau lien devra être généré.",
+    "linkExpires": "Ce lien expire le",
+    "loadingLink": "Génération du lien d'invitation...",
+    "errorLoadingLink": "Erreur lors de la génération du lien d'invitation",
     "temporary": "temporaire"
   },
   "messageList": {

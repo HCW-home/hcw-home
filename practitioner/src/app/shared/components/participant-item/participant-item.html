@@ -81,6 +81,11 @@
   size="small"
   (closed)="closeLinkModal()">
   <div class="link-modal-content">
+    @if (loadingAccessUrl()) {
+    <div class="loading-container">
+      <span>{{ 'participantItem.loadingLink' | translate }}</span>
+    </div>
+    } @else {
     <div class="link-box">
       <code class="link-text">{{ getInviteLink() }}</code>
       <app-button
@@ -91,11 +96,14 @@
         (buttonClick)="copyLink()">
       </app-button>
     </div>
+    @if (expiresAt()) {
     <div class="link-warning">
       <app-svg
-        src="info"
+        src="clock"
         [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-      <span>{{ 'participantItem.singleUseWarning' | translate }}</span>
+      <span>{{ 'participantItem.linkExpires' | translate }} {{ expiresAt() | localDate:'MMM d, y, HH:mm' }}</span>
     </div>
+    }
+    }
   </div>
 </app-modal>

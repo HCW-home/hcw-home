@@ -721,6 +721,10 @@ CONSTANCE_CONFIG = {
         True,
         "Automatically delete temporary users with no future appointments",
     ),
+    "temporary_participant_token_expiry_hours": (
+        1,
+        "Hours before a temporary participant access token expires",
+    ),
 }
 
 
@@ -729,6 +733,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "URLs": ("patient_base_url", "practitioner_base_url"),
     "Scheduling": ("appointment_first_reminder", "appointment_last_reminder"),
     "Data Retention": ("consultation_auto_delete_hours", "temporary_user_auto_delete"),
+    "Security": ("temporary_participant_token_expiry_hours",),
 }
 
 # CORS Configuration

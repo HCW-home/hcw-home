@@ -669,13 +669,13 @@ class ParticipantViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Vérifier si le token existe et s'il est expiré (7 jours)
-        TOKEN_EXPIRY = timedelta(days=7)
+        # Vérifier si le token existe et s'il est expiré
+        token_expiry = timedelta(hours=config.temporary_participant_token_expiry_hours)
         now = timezone.now()
         token_expired = (
             not user.one_time_auth_token
             or not user.verification_code_created_at
-            or (now - user.verification_code_created_at) > TOKEN_EXPIRY
+            or (now - user.verification_code_created_at) > token_expiry
         )
 
         # Renouveler le token si expiré
@@ -688,7 +688,7 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         access_url = f"{config.patient_base_url}/?auth={user.one_time_auth_token}"
 
         # Calculer expires_at et le convertir dans la timezone de l'utilisateur
-        expires_at = user.verification_code_created_at + TOKEN_EXPIRY if user.verification_code_created_at else None
+        expires_at = user.verification_code_created_at + token_expiry if user.verification_code_created_at else None
         if expires_at and request.user.is_authenticated:
             user_tz = request.user.user_tz
             expires_at = expires_at.astimezone(user_tz).isoformat()

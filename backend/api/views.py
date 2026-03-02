@@ -1,6 +1,7 @@
 import secrets
 from datetime import timedelta
 
+from constance import config
 from consultations.models import Participant
 from django.conf import settings as django_settings
 from django.contrib.contenttypes.models import ContentType
@@ -132,73 +133,100 @@ class AnonymousTokenAuthView(APIView):
             user = User.objects.get(one_time_auth_token=auth_token)
 
             now = timezone.now()
-            token_within_grace = (
-                user.verification_code_created_at
-                and (now - user.verification_code_created_at) < TOKEN_GRACE_PERIOD
+
+            # Check if user is temporary without email or phone
+            is_manual_access = (
+                user.temporary
+                and not user.email
+                and not user.mobile_phone_number
             )
 
-            if token_within_grace:
-                # Within grace period: direct authentication
-                user.verification_code_created_at = now
-                user.save(update_fields=["verification_code_created_at"])
-            else:
-                # Grace period expired: verification code required
-                if not verification_code:
-                    user.verification_code = 100000 + secrets.randbelow(900000)
-                    user.verification_attempts = 0
-                    user.save(
-                        update_fields=["verification_code", "verification_attempts"]
-                    )
+            if is_manual_access:
+                # For temporary users without contact info, use longer expiry period
+                token_expiry = timedelta(hours=config.temporary_participant_token_expiry_hours)
+                token_valid = (
+                    user.verification_code_created_at
+                    and (now - user.verification_code_created_at) < token_expiry
+                )
 
-                    Message.objects.create(
-                        sent_to=user,
-                        template_system_name="your_authentication_code",
-                        content_type=ContentType.objects.get_for_model(user),
-                        object_id=user.pk,
-                    )
-
+                if not token_valid:
                     return Response(
-                        {
-                            "requires_verification": True,
-                            "message": "Verification code sent. Please provide verification_code in next request.",
-                        },
-                        status=status.HTTP_202_ACCEPTED,
-                    )
-
-                if user.verification_attempts >= MAX_VERIFICATION_ATTEMPTS:
-                    user.verification_code = None
-                    user.verification_attempts = 0
-                    user.save(
-                        update_fields=["verification_code", "verification_attempts"]
-                    )
-                    return Response(
-                        {
-                            "error": "Too many verification attempts. Please request a new code."
-                        },
-                        status=status.HTTP_429_TOO_MANY_REQUESTS,
-                    )
-
-                if str(user.verification_code).zfill(6) != str(verification_code).zfill(
-                    6
-                ):
-                    user.verification_attempts += 1
-                    user.save(update_fields=["verification_attempts"])
-                    return Response(
-                        {"error": "Invalid verification_code"},
+                        {"error": "Token expired. Please request a new access link."},
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
 
-                # Successful verification: reset and start new grace period
-                user.verification_code = None
-                user.verification_attempts = 0
+                # Token is valid, authenticate directly
                 user.verification_code_created_at = now
-                user.save(
-                    update_fields=[
-                        "verification_code",
-                        "verification_attempts",
-                        "verification_code_created_at",
-                    ]
+                user.save(update_fields=["verification_code_created_at"])
+            else:
+                # For regular users, use grace period + verification code flow
+                token_within_grace = (
+                    user.verification_code_created_at
+                    and (now - user.verification_code_created_at) < TOKEN_GRACE_PERIOD
                 )
+
+                if token_within_grace:
+                    # Within grace period: direct authentication
+                    user.verification_code_created_at = now
+                    user.save(update_fields=["verification_code_created_at"])
+                else:
+                    # Grace period expired: verification code required
+                    if not verification_code:
+                        user.verification_code = 100000 + secrets.randbelow(900000)
+                        user.verification_attempts = 0
+                        user.save(
+                            update_fields=["verification_code", "verification_attempts"]
+                        )
+
+                        Message.objects.create(
+                            sent_to=user,
+                            template_system_name="your_authentication_code",
+                            content_type=ContentType.objects.get_for_model(user),
+                            object_id=user.pk,
+                        )
+
+                        return Response(
+                            {
+                                "requires_verification": True,
+                                "message": "Verification code sent. Please provide verification_code in next request.",
+                            },
+                            status=status.HTTP_202_ACCEPTED,
+                        )
+
+                    if user.verification_attempts >= MAX_VERIFICATION_ATTEMPTS:
+                        user.verification_code = None
+                        user.verification_attempts = 0
+                        user.save(
+                            update_fields=["verification_code", "verification_attempts"]
+                        )
+                        return Response(
+                            {
+                                "error": "Too many verification attempts. Please request a new code."
+                            },
+                            status=status.HTTP_429_TOO_MANY_REQUESTS,
+                        )
+
+                    if str(user.verification_code).zfill(6) != str(verification_code).zfill(
+                        6
+                    ):
+                        user.verification_attempts += 1
+                        user.save(update_fields=["verification_attempts"])
+                        return Response(
+                            {"error": "Invalid verification_code"},
+                            status=status.HTTP_401_UNAUTHORIZED,
+                        )
+
+                    # Successful verification: reset and start new grace period
+                    user.verification_code = None
+                    user.verification_attempts = 0
+                    user.verification_code_created_at = now
+                    user.save(
+                        update_fields=[
+                            "verification_code",
+                            "verification_attempts",
+                            "verification_code_created_at",
+                        ]
+                    )
 
             refresh = RefreshToken.for_user(user)
 

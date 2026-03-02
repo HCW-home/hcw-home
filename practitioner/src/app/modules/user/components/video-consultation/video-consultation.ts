@@ -110,9 +110,9 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   ngOnDestroy(): void {
+    console.log('[VideoConsultation] ngOnDestroy called - cleaning up (no disconnect)');
     this.destroy$.next();
     this.destroy$.complete();
-    this.livekitService.disconnect();
     this.cleanupMediaElements();
   }
 

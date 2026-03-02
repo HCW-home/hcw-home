@@ -332,6 +332,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.setupWebSocketListeners();
+
+    // Prevent tab/window close during video call
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
   }
 
   private initEditForm(): void {
@@ -463,10 +466,23 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private handleBeforeUnload = (event: BeforeUnloadEvent): string | undefined => {
+    if (this.inCall()) {
+      console.log('[ConsultationDetail] beforeunload - User is in call, showing confirmation dialog');
+      // Prevent the page from closing without confirmation
+      event.preventDefault();
+      // Modern browsers ignore custom messages, but we still need to return a value
+      return event.returnValue = '';
+    }
+    return undefined;
+  };
+
   ngOnDestroy(): void {
+    console.log('[ConsultationDetail] ngOnDestroy called - cleaning up resources');
     this.destroy$.next();
     this.destroy$.complete();
     this.wsService.disconnect();
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
   }
 
   private connectWebSocket(): void {

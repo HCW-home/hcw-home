@@ -78,6 +78,7 @@ export class LiveKitService implements OnDestroy {
       const roomOptions: RoomOptions = {
         adaptiveStream: true,
         dynacast: true,
+        disconnectOnPageLeave: false, // Don't auto-disconnect, let our beforeunload handler manage it
         publishDefaults: {
           videoCodec: 'vp9',
         },
@@ -301,6 +302,7 @@ export class LiveKitService implements OnDestroy {
 
   async disconnect(): Promise<void> {
     if (this.room) {
+      console.log('[LiveKitService] disconnect() called - disconnecting room');
       await this.room.disconnect();
       this.cleanup();
     }

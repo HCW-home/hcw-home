@@ -82,6 +82,12 @@ export class Header implements OnInit, OnDestroy {
 
   protected readonly NotificationStatus = NotificationStatus;
 
+  private handleDocumentClick = (): void => {
+    if (this.showOnboardingHint()) {
+      this.dismissOnboardingHint();
+    }
+  };
+
   ngOnInit() {
     this.userService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -101,6 +107,9 @@ export class Header implements OnInit, OnDestroy {
     this.updatePageInfo();
     this.checkOnboardingHint();
     this.notificationService.loadNotifications();
+
+    // Close onboarding hint on any click outside
+    document.addEventListener('click', this.handleDocumentClick);
 
     this.userWsService.notifications$
       .pipe(takeUntil(this.destroy$))
@@ -170,6 +179,7 @@ export class Header implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    document.removeEventListener('click', this.handleDocumentClick);
   }
 
   private checkOnboardingHint(): void {

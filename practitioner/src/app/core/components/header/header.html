@@ -398,7 +398,8 @@
 <div
   class="onboarding-hint"
   [style.top.px]="hintTop()"
-  [style.left.px]="hintLeft()">
+  [style.left.px]="hintLeft()"
+  (click)="$event.stopPropagation()">
   <div class="hint-arrow"></div>
   <span>{{ 'onboarding.welcomeMessage' | translate }}</span>
   <button class="hint-close" (click)="dismissOnboardingHint()">&times;</button>

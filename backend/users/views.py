@@ -846,7 +846,16 @@ class OpenIDView(SocialLoginView):
         if "code" in request.data and "callback_url" not in request.data:
             request.data["callback_url"] = callback_url
 
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        # If login successful, set is_practitioner to True
+        if response.status_code == 200 and hasattr(self, 'user'):
+            user = self.user
+            if not user.is_practitioner:
+                user.is_practitioner = True
+                user.save(update_fields=['is_practitioner'])
+
+        return response
 
 
 class AppConfigView(APIView):

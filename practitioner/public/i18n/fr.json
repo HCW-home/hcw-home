@@ -566,6 +566,7 @@
     "backToConsultations": "Retour aux suivis",
     "consultationDetails": "Détails du suivi",
     "selectBeneficiary": "Sélectionner le bénéficiaire",
+    "selectContact": "Sélectionner un contact",
     "searchByNameOrEmail": "Rechercher par nom ou email...",
     "beneficiaryHelperText": "Il est possible de créer une consultation anonyme, le bénéficiaire n'est pas obligatoire.",
     "reason": "Motif",

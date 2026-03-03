@@ -150,18 +150,28 @@
       </div>
       } @if (currentStep() === 2) {
       <div class="step-content">
-        <div class="step-header">
-          <app-typography
-            [variant]="TypographyTypeEnum['body-l-bold']"
-            style="margin-bottom: 8px; display: block">
-            {{ 'consultationForm.scheduleAppointment' | translate }}
-          </app-typography>
-          <app-typography
-            [variant]="TypographyTypeEnum['body-s-regular']"
-            color="var(--slate-500)"
-            style="display: block">
-            {{ 'consultationForm.scheduleOptional' | translate }}
-          </app-typography>
+        <div class="form-card">
+          <div class="step-header">
+            <app-typography
+              [variant]="TypographyTypeEnum['body-l-bold']"
+              style="margin-bottom: 8px; display: block">
+              {{ 'consultationForm.scheduleAppointment' | translate }}
+            </app-typography>
+            <app-typography
+              [variant]="TypographyTypeEnum['body-s-regular']"
+              color="var(--slate-500)"
+              style="display: block">
+              {{ 'consultationForm.scheduleOptional' | translate }}
+            </app-typography>
+          </div>
+
+          <app-button
+            class="add-appointment-btn"
+            [text]="'consultationForm.addAppointment' | translate"
+            leftIcon="plus"
+            [style]="ButtonStyleEnum.stroke"
+            (buttonClick)="addAppointment()">
+          </app-button>
         </div>
 
         <div class="appointments-container" formArrayName="appointments">
@@ -373,6 +383,7 @@
                   @if (isParticipantExistingUser(i, j)) {
                   <div class="form-group">
                     <app-user-search-select
+                      [label]="'consultationForm.selectContact' | translate"
                       [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
                       (userSelected)="onParticipantUserSelected(i, j, $event)">
                     </app-user-search-select>
@@ -469,19 +480,7 @@
               </div>
             </div>
           </div>
-          } } @else {
-          <div class="form-card empty-appointments">
-            <app-button
-              [text]="'consultationForm.addAppointment' | translate"
-              leftIcon="plus"
-              [style]="ButtonStyleEnum.stroke"
-              (buttonClick)="addAppointment()">
-            </app-button>
-            <p class="empty-text">
-              {{ 'consultationForm.clickToSchedule' | translate }}
-            </p>
-          </div>
-          }
+          } }
         </div>
       </div>
       }

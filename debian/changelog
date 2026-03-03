@@ -1,3 +1,13 @@
+hcw (0.9.42) bookworm; urgency=medium
+
+  * Fix tooltip on first startup
+  * Fix tooltip
+  * Improve new followup form
+  * Improve onboarding
+  * Fix new followup card
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Tue, 03 Mar 2026 10:10:36 +0100
+
 hcw (0.9.41) bookworm; urgency=medium
 
   * Fix small error was leaving call

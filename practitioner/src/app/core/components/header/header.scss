@@ -858,7 +858,7 @@
   white-space: normal;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   z-index: 1200;
-  animation: hintBounce 2s ease-in-out infinite;
+  animation: hintEcho 2s ease-in-out infinite;
 
   .hint-arrow {
     position: absolute;
@@ -887,12 +887,17 @@
   }
 }
 
-@keyframes hintBounce {
+@keyframes hintEcho {
   0%,
   100% {
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
   50% {
-    transform: translateX(-50%) translateY(-4px);
+    transform: translateX(-50%);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.2),
+      0 0 0 8px rgba(6, 182, 212, 0.2),
+      0 0 0 16px rgba(6, 182, 212, 0.1);
   }
 }

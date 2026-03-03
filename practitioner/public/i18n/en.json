@@ -488,6 +488,7 @@
     "consultationDetails": "Follow-up Details",
     "selectBeneficiary": "Select Beneficiary",
     "searchByNameOrEmail": "Search by name or email...",
+    "beneficiaryHelperText": "It is possible to create an anonymous consultation, the beneficiary is not mandatory.",
     "reason": "Reason",
     "reasonPlaceholder": "e.g., Follow-up, Initial assessment...",
     "description": "Description",

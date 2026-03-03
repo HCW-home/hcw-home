@@ -566,6 +566,7 @@
     "consultationDetails": "Détails du suivi",
     "selectBeneficiary": "Sélectionner le bénéficiaire",
     "searchByNameOrEmail": "Rechercher par nom ou email...",
+    "beneficiaryHelperText": "Il est possible de créer une consultation anonyme, le bénéficiaire n'est pas obligatoire.",
     "reason": "Motif",
     "reasonPlaceholder": "ex. Suivi, Évaluation initiale...",
     "description": "Description",

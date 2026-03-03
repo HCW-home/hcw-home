@@ -339,6 +339,7 @@
     "commWhatsApp": "WhatsApp",
     "commPush": "Notification push",
     "commManual": "Contact manuel",
+    "commNone": "Aucun",
     "tabProfile": "Profil",
     "tabSystemTest": "Test système"
   },
@@ -667,6 +668,7 @@
     "subtitle": "Avant de commencer, veuillez configurer vos préférences.",
     "description": "Configurez vos préférences de communication pour que nous puissions mieux vous accompagner.",
     "communicationMethod": "Méthode de communication préférée",
+    "communicationHelperText": "Ce moyen de communication sera utilisé pour vous notifier d'événements importants lorsque vous n'êtes pas connecté à la plateforme.",
     "timezone": "Fuseau horaire",
     "preferredLanguage": "Langue préférée",
     "selectLanguage": "Sélectionner une langue",

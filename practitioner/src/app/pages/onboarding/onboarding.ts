@@ -75,16 +75,16 @@ export class OnboardingPage implements OnInit, OnDestroy {
         label: this.t.instant('userProfile.commEmail'),
         value: CommunicationMethodEnum.EMAIL,
       },
+      // {
+      //   label: this.t.instant('userProfile.commWhatsApp'),
+      //   value: CommunicationMethodEnum.WHATSAPP,
+      // },
+      // {
+      //   label: this.t.instant('userProfile.commPush'),
+      //   value: CommunicationMethodEnum.PUSH,
+      // },
       {
-        label: this.t.instant('userProfile.commWhatsApp'),
-        value: CommunicationMethodEnum.WHATSAPP,
-      },
-      {
-        label: this.t.instant('userProfile.commPush'),
-        value: CommunicationMethodEnum.PUSH,
-      },
-      {
-        label: this.t.instant('userProfile.commManual'),
+        label: this.t.instant('userProfile.commNone'),
         value: CommunicationMethodEnum.MANUAL,
       },
     ];

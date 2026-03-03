@@ -315,6 +315,7 @@
     "subtitle": "Before you begin, please configure your preferences.",
     "description": "Set up your communication preferences so we can best assist you.",
     "communicationMethod": "Preferred communication method",
+    "communicationHelperText": "This communication method will be used to notify you of important events when you are not connected to the platform.",
     "timezone": "Timezone",
     "preferredLanguage": "Preferred language",
     "selectLanguage": "Select a language",
@@ -894,6 +895,7 @@
     "commWhatsApp": "WhatsApp",
     "commPush": "Push Notification",
     "commManual": "Manual Contact",
+    "commNone": "None",
     "tabProfile": "Profile",
     "tabSystemTest": "System Test"
   },

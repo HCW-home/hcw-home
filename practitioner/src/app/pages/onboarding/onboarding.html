@@ -50,6 +50,9 @@
               [options]="communicationMethods"
               [invalid]="(onboardingForm.get('communication_method')?.invalid && onboardingForm.get('communication_method')?.touched) || false">
             </app-select>
+            <span class="field-helper-text">
+              {{ 'onboarding.communicationHelperText' | translate }}
+            </span>
           </div>
 
           <div class="form-group">

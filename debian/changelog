@@ -1,3 +1,10 @@
+hcw (0.9.41) bookworm; urgency=medium
+
+  * Fix small error was leaving call
+  * Auto define is_practitioner on login with openid
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Tue, 03 Mar 2026 08:51:09 +0100
+
 hcw (0.9.40) bookworm; urgency=medium
 
   * Fix warning

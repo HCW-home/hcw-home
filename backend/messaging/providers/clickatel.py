@@ -1,6 +1,9 @@
 from . import BaseMessagingProvider
 from typing import TYPE_CHECKING, Tuple, Any
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..models import Message, MessageStatus, MessagingProvider
@@ -11,55 +14,75 @@ class Main(BaseMessagingProvider):
     communication_method = "sms"
     required_fields = ['from_phone', 'api_key']
     
-    def send(self, message: 'Message') -> 'MessageStatus':
-        from ..models import MessageStatus
-        
-        try:
-            if not message.recipient_phone:
-                return MessageStatus.failed
-            
-            api_key = self.messaging_provider.api_key
-            if not api_key:
-                return MessageStatus.failed
-            
-            from_number = self.messaging_provider.from_phone
-            if not from_number:
-                return MessageStatus.failed
-            
-            url = "https://platform.clickatell.com/messages"
-            
-            headers = {
-                'Authorization': f"Bearer {api_key}",
-                'Content-Type': 'application/json'
-            }
+    def send(self, message: 'Message'):
+        logger.info(f"Sending SMS via Clickatel to {message.phone_number}")
 
-            # Append access link if action exists
-            message_text = message.content
-            if message.access_link:
-                message_text = f"{message.content}\n{message.access_link}"
+        if not message.phone_number:
+            error_msg = "Missing recipient phone number"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
 
-            data = {
-                "messages": [{
-                    "to": [message.recipient_phone],
-                    "from": from_number,
-                    "text": message_text
-                }]
-            }
-            
-            response = requests.post(url, json=data, headers=headers)
-            
-            if response.status_code in [200, 201, 202]:
-                response_data = response.json()
-                messages = response_data.get('messages', [])
-                if messages and messages[0].get('accepted'):
-                    return MessageStatus.sent
-                else:
-                    return MessageStatus.failed
+        api_key = self.messaging_provider.api_key
+        if not api_key:
+            error_msg = "Missing Clickatel API key"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
+
+        from_number = self.messaging_provider.from_phone
+        if not from_number:
+            error_msg = "Missing from_phone configuration"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
+
+        url = "https://platform.clickatell.com/messages"
+
+        headers = {
+            'Authorization': f"Bearer {api_key}",
+            'Content-Type': 'application/json'
+        }
+
+        # Append access link if action exists
+        message_text = message.content
+        if message.access_link:
+            message_text = f"{message.content}\n{message.access_link}"
+            logger.info(f"Added access_link to message: {message.access_link}")
+
+        data = {
+            "messages": [{
+                "to": [message.phone_number],
+                "from": from_number,
+                "text": message_text
+            }]
+        }
+
+        logger.info(f"Sending POST request to Clickatel SMS API: {url}")
+        response = requests.post(url, json=data, headers=headers)
+        logger.info(f"Clickatel response status: {response.status_code}")
+
+        message.task_logs += f"Clickatel API response: {response.status_code}\n"
+        message.task_logs += f"Response body: {response.text}\n"
+        message.save()
+
+        if response.status_code in [200, 201, 202]:
+            response_data = response.json()
+            messages = response_data.get('messages', [])
+            if messages and messages[0].get('accepted'):
+                logger.info("SMS sent successfully via Clickatel")
+                return
             else:
-                return MessageStatus.failed
-                
-        except Exception:
-            return MessageStatus.failed
+                error_msg = f"Clickatel rejected message: {response_data}"
+                logger.error(error_msg)
+                raise Exception(error_msg)
+        else:
+            error_msg = f"Clickatel API error: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def test_connection(self) -> Tuple[bool, Any]:
         try:

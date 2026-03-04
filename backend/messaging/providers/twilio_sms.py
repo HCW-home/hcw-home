@@ -2,6 +2,9 @@ from . import BaseMessagingProvider
 from typing import TYPE_CHECKING, Tuple, Any
 import requests
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..models import Message, MessageStatus, MessagingProvider
@@ -21,49 +24,67 @@ class Main(BaseMessagingProvider):
         encoded_credentials = base64.b64encode(credentials.encode()).decode()
         return f"Basic {encoded_credentials}"
     
-    def send(self, message: 'Message') -> 'MessageStatus':
-        from ..models import MessageStatus
-        
-        try:
-            if not message.recipient_phone:
-                return MessageStatus.failed
-            
-            auth_header = self._get_auth_header()
-            if not auth_header:
-                return MessageStatus.failed
-                
-            account_sid = self.messaging_provider.account_sid
-            from_phone = self.messaging_provider.from_phone
-            if not from_phone:
-                return MessageStatus.failed
-            
-            url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+    def send(self, message: 'Message'):
+        logger.info(f"Sending SMS via Twilio to {message.phone_number}")
 
-            # Append access link if action exists
-            message_text = message.content
-            if message.access_link:
-                message_text = f"{message.content}\n{message.access_link}"
+        if not message.phone_number:
+            error_msg = "Missing recipient phone number"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
 
-            data = {
-                'From': from_phone,
-                'To': message.recipient_phone,
-                'Body': message_text
-            }
-            
-            headers = {
-                'Authorization': auth_header,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-            
-            response = requests.post(url, data=data, headers=headers)
-            
-            if response.status_code == 201:
-                return MessageStatus.sent
-            else:
-                return MessageStatus.failed
-                
-        except Exception:
-            return MessageStatus.failed
+        auth_header = self._get_auth_header()
+        if not auth_header:
+            error_msg = "Missing Twilio credentials (account_sid or auth_token)"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
+
+        account_sid = self.messaging_provider.account_sid
+        from_phone = self.messaging_provider.from_phone
+        if not from_phone:
+            error_msg = "Missing from_phone configuration"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
+
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+
+        # Append access link if action exists
+        message_text = message.content
+        if message.access_link:
+            message_text = f"{message.content}\n{message.access_link}"
+            logger.info(f"Added access_link to message: {message.access_link}")
+
+        data = {
+            'From': from_phone,
+            'To': message.phone_number,
+            'Body': message_text
+        }
+
+        headers = {
+            'Authorization': auth_header,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        logger.info(f"Sending POST request to Twilio SMS API: {url}")
+        response = requests.post(url, data=data, headers=headers)
+        logger.info(f"Twilio response status: {response.status_code}")
+
+        message.task_logs += f"Twilio API response: {response.status_code}\n"
+        message.task_logs += f"Response body: {response.text}\n"
+        message.save()
+
+        if response.status_code == 201:
+            logger.info("SMS sent successfully via Twilio")
+            return
+        else:
+            error_msg = f"Twilio API error: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def test_connection(self) -> Tuple[bool, Any]:
         try:

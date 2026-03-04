@@ -151,12 +151,12 @@ class Main(BaseMessagingProvider):
         return f"Basic {encoded_credentials}"
 
     def send(self, message: "Message"):
-        if not message.recipient_phone:
+        if not message.phone_number:
             raise ProviderException("Missing recipient phone")
 
-        if not self.messaging_provider.matches_phone_prefix(message.recipient_phone):
+        if not self.messaging_provider.matches_phone_prefix(message.phone_number):
             raise ProviderException(
-                f"Unable to send, phone is not matching prefix {message.recipient_phone}"
+                f"Unable to send, phone is not matching prefix {message.phone_number}"
             )
 
         auth_header = self._get_auth_header()
@@ -169,7 +169,7 @@ class Main(BaseMessagingProvider):
 
         data = {
             "From": self.messaging_provider.from_phone,
-            "To": message.recipient_phone,
+            "To": message.phone_number,
             "Body": message.content,
         }
 

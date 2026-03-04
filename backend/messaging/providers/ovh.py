@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import time
 from typing import TYPE_CHECKING
 
@@ -7,6 +8,8 @@ import requests
 from django.utils.translation import gettext_lazy as _
 
 from . import BaseMessagingProvider
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..models import Message
@@ -47,9 +50,15 @@ class Main(BaseMessagingProvider):
         return "$1$" + sha1.hexdigest()
 
     def send(self, message: "Message"):
-        phone = message.recipient_phone or message.sent_to.mobile_phone_number
+        logger.info(f"Sending SMS via OVH to {message.phone_number}")
+
+        phone = message.phone_number or message.sent_to.mobile_phone_number
         if not phone:
-            raise Exception("Recipient phone number is required")
+            error_msg = "Recipient phone number is required"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
 
         application_key = self.messaging_provider.application_key
         consumer_key = self.messaging_provider.consumer_key
@@ -57,7 +66,11 @@ class Main(BaseMessagingProvider):
         sender = self.messaging_provider.sender_id
 
         if not all([application_key, consumer_key, service_name, sender]):
-            raise Exception("Missing OVH configuration fields")
+            error_msg = "Missing OVH configuration fields (application_key, consumer_key, service_name, or sender_id)"
+            logger.error(error_msg)
+            message.task_logs += f"{error_msg}\n"
+            message.save()
+            raise Exception(error_msg)
 
         url = f"https://eu.api.ovh.com/1.0/sms/{service_name}/jobs"
 
@@ -65,10 +78,11 @@ class Main(BaseMessagingProvider):
         message_text = message.content
         if message.access_link:
             message_text = f"{message.content}\n{message.access_link}"
+            logger.info(f"Added access_link to message: {message.access_link}")
 
         body = {
             "message": message_text,
-            "receivers": [message.recipient_phone],
+            "receivers": [message.phone_number],
             "sender": sender,
             "senderForResponse": True,
         }
@@ -85,8 +99,21 @@ class Main(BaseMessagingProvider):
             "Content-Type": "application/json",
         }
 
+        logger.info(f"Sending POST request to OVH SMS API: {url}")
         response = requests.post(url, json=body, headers=headers)
-        response.raise_for_status()
+        logger.info(f"OVH response status: {response.status_code}")
+
+        message.task_logs += f"OVH API response: {response.status_code}\n"
+        message.task_logs += f"Response body: {response.text}\n"
+        message.save()
+
+        try:
+            response.raise_for_status()
+            logger.info("SMS sent successfully via OVH")
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"OVH API error: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg) from e
 
     def test_connection(self):
         application_key = self.messaging_provider.application_key

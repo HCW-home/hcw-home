@@ -242,6 +242,14 @@ export class UserWebSocketService implements OnDestroy {
         id: WS_CONNECTION_TOAST_ID,
         delay: -1,
         closable: true,
+        actions: [
+          {
+            label: this.t.instant('common.refresh'),
+            callback: () => {
+              window.location.reload();
+            },
+          },
+        ],
       });
     }, 200);
   }

@@ -20,14 +20,13 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             "Your appointment will start in {{config.last_appointment_reminder}}"
         ),
         "template_content": _(
-            """Your consultation appointment start at {{ obj.appointment.scheduled_at|time }}\n"""
-            """Join the consultation: {{access_link}}"""
+            """Your consultation appointment start at {{ obj.appointment.scheduled_at|time }}"""
         ),
         "template_content_html": _(
             """<p>Your consultation appointment start at <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"""
         ),
         "action": "join",
-        "action_label": _("Click here to join consultation"),
+        "action_label": _("Join the consultation"),
         "model": "consultations.Participant",
         "helper_text": "Last reminder when it's time to join appointment",
     },
@@ -36,8 +35,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         "template_content": _(
             """Hello,\n"""
             """Your consultation has been successfully scheduled. \n"""
-            """Appointment is scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})\n"""
-            """Please confirm your presence: {{access_link}}"""
+            """Appointment is scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})"""
         ),
         "template_content_html": _(
             """<p>Hello,</p>"""
@@ -45,7 +43,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             """<p>Appointment is scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong> ({{ obj.appointment.scheduled_at }})</p>"""
         ),
         "action": "presence",
-        "action_label": _("Click here to confirm your presence"),
+        "action_label": _("Confirm your presence"),
         "model": "consultations.Participant",
         "helper_text": "Message sent to participant with invitation to join a consultation at a later time",
     },
@@ -90,8 +88,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         "template_content": _(
             "{{ obj.created_by.name }} sent you a message "
             'in consultation "{{ obj.consultation.title }}": '
-            "{{ obj.content }}\n"
-            "Answer here: {{access_link}}"
+            "{{ obj.content }}"
         ),
         "template_content_html": _(
             "<p>{{ obj.created_by.name }} sent you a message "
@@ -106,8 +103,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "email_verification": {
         "template_subject": _("Verify your email address"),
         "template_content": _(
-            "Please verify your email address by clicking the link below:\n"
-            "{{access_link}}"
+            "Please verify your email address."
         ),
         "template_content_html": _(
             "<p>Please verify your email address by clicking the link below.</p>"
@@ -120,16 +116,15 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "reset_password": {
         "template_subject": _("Reset your password"),
         "template_content": _(
-            "You requested a password change, delete this email if it was not requested by email.\n"
-            "Reset your password here: {{access_link}}"
+            "You requested a password change, ignore this message if it was not requested by you."
         ),
         "template_content_html": _(
-            "<p>You requested a password change, delete this email if it was not requested by email.</p>"
+            "<p>You requested a password change, ignore this message if it was not requested by you.</p>"
         ),
         "model": "consultations.Message",
         "helper_text": "Notification sent user request to change password",
         "action": "reset",
-        "action_label": _("Click here to reset your password"),
+        "action_label": _("Reset your password"),
     },
 }
 

@@ -1,3 +1,11 @@
+hcw (0.9.44) bookworm; urgency=medium
+
+  * Add disable password for practitioner
+  * Fix refresh websocket + fix missing refresh endpoint
+  * Return other doctor based on configuration .env
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 12:40:47 +0100
+
 hcw (0.9.43) bookworm; urgency=medium
 
   * Update twilio template submittion to use call to action

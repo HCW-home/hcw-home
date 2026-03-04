@@ -1,28 +1,49 @@
 map $http_upgrade $connection_upgrade {
-        default upgrade;
-        '' close;
-    }
+    default upgrade;
+    '' close;
+}
 
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
 
     root /usr/share/hcw/practitioner;
-
     index index.html;
-
     server_name _;
 
-    location / {
-            try_files $uri $uri/ /index.html;
+    # Static backend files with aggressive caching
+    location /static/ {
+        alias /usr/share/hcw/backend/statics/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
 
-    location /api {
+    # Static assets (JS, CSS, images, fonts) with caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # index.html - NEVER cache
+    location = /index.html {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+        expires off;
+    }
+
+    # API and WebSocket - no cache
+    location ~* ^/(api|ws) {
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
         proxy_set_header Host $host;
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+    }
+
+    # SPA fallback - no cache on HTML
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
     }
 }
 
@@ -31,20 +52,34 @@ server {
     listen [::]:80;
 
     root /usr/share/hcw/patient;
-
     index index.html;
+    server_name patient.example.com;
 
-    server_name _;
-
-    location / {
-            try_files $uri $uri/ /index.html;
+    # Static assets with caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
 
-    location /api {
-       proxy_set_header Host $host;
-       proxy_pass http://127.0.0.1:8000;
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection "upgrade";
+    # index.html - NEVER cache
+    location = /index.html {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+        expires off;
+    }
+
+    # API and WebSocket - no cache
+    location ~* ^/(api|ws) {
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    # SPA fallback - no cache on HTML
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
     }
 }

@@ -1007,7 +1007,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     let message = this.t.instant('consultationDetail.closeConsultationMessage');
     if (this.consultationAutoDeleteHours > 0) {
       message = this.t.instant('consultationDetail.closeConsultationMessageWithDeletion', {
-        hours: this.consultationAutoDeleteHours
+        hours: this.consultationAutoDeleteHours.toString()
       });
     }
 

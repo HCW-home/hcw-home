@@ -64,6 +64,7 @@ export interface IOpenIDConfig {
   primary_color_patient: string | null;
   primary_color_practitioner: string | null;
   communication_methods: string[];
+  consultation_auto_delete_hours: number;
 }
 
 export interface IOpenIDLoginBody {

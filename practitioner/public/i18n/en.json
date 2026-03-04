@@ -651,6 +651,7 @@
     "errorCancellingAppointment": "Error Cancelling Appointment",
     "closeConsultationTitle": "Close Follow-up",
     "closeConsultationMessage": "Are you sure you want to close this follow-up?",
+    "closeConsultationMessageWithDeletion": "Are you sure you want to close this follow-up? It will be automatically deleted after {{hours}} hour(s).",
     "close": "Close",
     "consultationClosed": "Follow-up Closed",
     "consultationClosedMessage": "Follow-up closed successfully",

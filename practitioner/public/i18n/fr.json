@@ -799,6 +799,7 @@
     "errorCancellingAppointment": "Erreur lors de l'annulation",
     "closeConsultationTitle": "Fermer le suivi",
     "closeConsultationMessage": "Êtes-vous sûr de vouloir fermer ce suivi ?",
+    "closeConsultationMessageWithDeletion": "Êtes-vous sûr de vouloir fermer ce suivi ? Il sera automatiquement supprimé après {{hours}} heure(s).",
     "close": "Fermer",
     "consultationClosed": "Suivi fermé",
     "consultationClosedMessage": "Le suivi a été fermé avec succès",

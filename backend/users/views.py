@@ -1003,6 +1003,7 @@ class AppConfigView(APIView):
                 "languages": languages,
                 "communication_methods": communication_methods,
                 "vapid_public_key": settings.WEBPUSH_VAPID_PUBLIC_KEY,
+                "consultation_auto_delete_hours": int(constance_config.consultation_auto_delete_hours),
             }
         )
 

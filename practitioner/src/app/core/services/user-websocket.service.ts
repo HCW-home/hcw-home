@@ -86,11 +86,14 @@ export class UserWebSocketService implements OnDestroy {
           }
           return `${environment.wsUrl}/user/?token=${response.access}`;
         } catch {
-          return null;
+          // If refresh fails (e.g., backend down), return URL with current token
+          // to allow reconnection attempts to continue
+          const currentToken = this.authService.getToken();
+          return currentToken ? `${environment.wsUrl}/user/?token=${currentToken}` : null;
         }
       },
       reconnect: true,
-      reconnectAttempts: 10,
+      reconnectAttempts: 5,
       reconnectInterval: 3000,
       pingInterval: 30000,
     });
@@ -194,8 +197,9 @@ export class UserWebSocketService implements OnDestroy {
             break;
 
           case WebSocketState.FAILED:
-            // FAILED can be transient (onerror fires right before onclose → RECONNECTING).
-            // Defer the toast so RECONNECTING can cancel it.
+            // FAILED can be transient during reconnection attempts.
+            // Defer the toast with a longer delay (5s) so RECONNECTING can cancel it.
+            // If we stay in FAILED for 5s, it means all retry attempts are exhausted.
             this.scheduleErrorToast(
               this.t.instant('websocket.failed'),
               this.t.instant('websocket.failedMessage')
@@ -203,7 +207,8 @@ export class UserWebSocketService implements OnDestroy {
             break;
 
           case WebSocketState.DISCONNECTED:
-            if (this.wasConnected) {
+            // Only show error if we were previously connected and are not already handling reconnection
+            if (this.wasConnected && !this.hadConnectionIssue) {
               this.scheduleErrorToast(
                 this.t.instant('websocket.disconnected'),
                 this.t.instant('websocket.disconnectedMessage')
@@ -251,7 +256,7 @@ export class UserWebSocketService implements OnDestroy {
           },
         ],
       });
-    }, 200);
+    }, 5000);
   }
 
   private clearErrorToastTimer(): void {

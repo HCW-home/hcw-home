@@ -31,6 +31,7 @@ import { ToasterService } from '../../../../core/services/toaster.service';
 import { ConsultationWebSocketService } from '../../../../core/services/consultation-websocket.service';
 import { UserService } from '../../../../core/services/user.service';
 import { IncomingCallService } from '../../../../core/services/incoming-call.service';
+import { Auth } from '../../../../core/services/auth';
 import {
   Consultation,
   Appointment,
@@ -301,12 +302,25 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   private wsService = inject(ConsultationWebSocketService);
   private userService = inject(UserService);
   private incomingCallService = inject(IncomingCallService);
+  private authService = inject(Auth);
   private t = inject(TranslationService);
+
+  consultationAutoDeleteHours = 0;
 
   ngOnInit(): void {
     this.initEditForm();
     this.loadQueues();
     this.loadCustomFields();
+
+    // Load app config to get consultation_auto_delete_hours
+    this.authService.getOpenIDConfig().subscribe({
+      next: config => {
+        this.consultationAutoDeleteHours = config.consultation_auto_delete_hours || 0;
+      },
+      error: err => {
+        console.error('Failed to get app config:', err);
+      },
+    });
 
     this.userService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -990,9 +1004,16 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   async closeConsultation(): Promise<void> {
     if (!this.consultation()) return;
 
+    let message = this.t.instant('consultationDetail.closeConsultationMessage');
+    if (this.consultationAutoDeleteHours > 0) {
+      message = this.t.instant('consultationDetail.closeConsultationMessageWithDeletion', {
+        hours: this.consultationAutoDeleteHours
+      });
+    }
+
     const confirmed = await this.confirmationService.confirm({
       title: this.t.instant('consultationDetail.closeConsultationTitle'),
-      message: this.t.instant('consultationDetail.closeConsultationMessage'),
+      message: message,
       confirmText: this.t.instant('consultationDetail.close'),
       cancelText: this.t.instant('consultationDetail.cancel'),
       confirmStyle: 'danger',

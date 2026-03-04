@@ -174,7 +174,7 @@ DATABASES = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))
+        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 3600))
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=int(os.getenv("REFRESH_TOKEN_LIFETIME_DAYS", 1))

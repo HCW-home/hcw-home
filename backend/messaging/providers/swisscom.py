@@ -62,11 +62,16 @@ class Main(BaseMessagingProvider):
                 'Authorization': f"Bearer {access_token}",
                 'Content-Type': 'application/json'
             }
-            
+
+            # Append access link if action exists
+            message_text = message.content
+            if message.access_link:
+                message_text = f"{message.content}\n{message.access_link}"
+
             data = {
                 "from": sender,
                 "to": message.recipient_phone,
-                "text": message.content
+                "text": message_text
             }
             
             response = requests.post(url, json=data, headers=headers)

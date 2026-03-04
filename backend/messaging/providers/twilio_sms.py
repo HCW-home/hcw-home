@@ -38,11 +38,16 @@ class Main(BaseMessagingProvider):
                 return MessageStatus.failed
             
             url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
-            
+
+            # Append access link if action exists
+            message_text = message.content
+            if message.access_link:
+                message_text = f"{message.content}\n{message.access_link}"
+
             data = {
                 'From': from_phone,
                 'To': message.recipient_phone,
-                'Body': message.content
+                'Body': message_text
             }
             
             headers = {

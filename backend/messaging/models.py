@@ -213,7 +213,7 @@ class MessagingProvider(models.Model):
     class Meta:
         verbose_name = _("messaging provider")
         verbose_name_plural = _("messaging providers")
-        unique_together = ["communication_method", "priority"]
+        # unique_together = ["communication_method", "priority"]
 
 
 def get_model_choices():

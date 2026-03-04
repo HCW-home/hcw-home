@@ -32,12 +32,17 @@ class Main(BaseMessagingProvider):
                 'Authorization': f"Bearer {api_key}",
                 'Content-Type': 'application/json'
             }
-            
+
+            # Append access link if action exists
+            message_text = message.content
+            if message.access_link:
+                message_text = f"{message.content}\n{message.access_link}"
+
             data = {
                 "messages": [{
                     "to": [message.recipient_phone],
                     "from": from_number,
-                    "text": message.content
+                    "text": message_text
                 }]
             }
             

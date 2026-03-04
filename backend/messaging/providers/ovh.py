@@ -61,8 +61,13 @@ class Main(BaseMessagingProvider):
 
         url = f"https://eu.api.ovh.com/1.0/sms/{service_name}/jobs"
 
+        # Append access link if action exists
+        message_text = message.content
+        if message.access_link:
+            message_text = f"{message.content}\n{message.access_link}"
+
         body = {
-            "message": message.content,
+            "message": message_text,
             "receivers": [message.recipient_phone],
             "sender": sender,
             "senderForResponse": True,

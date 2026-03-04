@@ -1,3 +1,11 @@
+hcw (0.9.48) bookworm; urgency=medium
+
+  * Update nginx sample file
+  * Add licence and readme
+  * Fix terms logic
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 15:59:01 +0100
+
 hcw (0.9.47) bookworm; urgency=medium
 
   * Fix npm build error

@@ -1,3 +1,9 @@
+hcw (0.9.49) bookworm; urgency=medium
+
+  * Fix onboarding process with first user
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 16:17:48 +0100
+
 hcw (0.9.48) bookworm; urgency=medium
 
   * Update nginx sample file

@@ -703,6 +703,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet for users - read only with GET endpoint
     Supports search by first name, last name, and email
+    Visibility controlled by USERS_VISIBILITY setting
     """
 
     queryset = User.objects.filter(
@@ -714,6 +715,69 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ["first_name", "last_name", "email"]
     filterset_class = UserFilter
+
+    def get_queryset(self):
+        """
+        Filter users based on USERS_VISIBILITY setting:
+        - "" (empty): All users (default behavior)
+        - "alone": Only patients and self
+        - "organization": Only patients and practitioners from same organization
+        """
+        base_queryset = User.objects.filter(
+            Q(email__gt='') | Q(first_name__gt='') | Q(last_name__gt='')
+        )
+
+        visibility = settings.USERS_VISIBILITY
+        current_user = self.request.user
+
+        if not visibility:
+            # Empty or not set: return all users (default behavior)
+            return base_queryset
+
+        elif visibility == "alone":
+            # Only patients and self
+            return base_queryset.filter(
+                Q(is_practitioner=False) | Q(id=current_user.id)
+            )
+
+        elif visibility == "organization":
+            # All patients and practitioners from same organization(s)
+            user_orgs = list(current_user.organisations.values_list('id', flat=True))
+            has_main_org = current_user.main_organisation is not None
+            has_orgs = len(user_orgs) > 0
+
+            if has_main_org or has_orgs:
+                practitioner_filters = []
+
+                # Include practitioners with same main_organisation
+                if has_main_org:
+                    practitioner_filters.append(
+                        Q(main_organisation=current_user.main_organisation)
+                    )
+
+                # Include practitioners who share at least one organisation
+                if has_orgs:
+                    practitioner_filters.append(
+                        Q(organisations__id__in=user_orgs)
+                    )
+
+                # Combine filters with OR
+                combined_practitioner_filter = practitioner_filters[0]
+                for f in practitioner_filters[1:]:
+                    combined_practitioner_filter |= f
+
+                return base_queryset.filter(
+                    Q(is_practitioner=False) |
+                    (Q(is_practitioner=True) & combined_practitioner_filter)
+                ).distinct()
+            else:
+                # If user has no organization, fallback to "alone" behavior
+                return base_queryset.filter(
+                    Q(is_practitioner=False) | Q(id=current_user.id)
+                )
+
+        # Fallback to default if invalid value
+        return base_queryset
 
     def update(self, request, *args, **kwargs):
         """Prevent updating users with superuser, staff access, or users in groups."""

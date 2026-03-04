@@ -765,6 +765,7 @@ CORS_ALLOW_HEADERS = [
 
 ENABLE_REGISTRATION = os.getenv("ENABLE_REGISTRATION", "False") == "True"
 DISABLE_PASSWORD_LOGIN = os.getenv("DISABLE_PASSWORD_LOGIN", "False") == "True"
+USERS_VISIBILITY = os.getenv("USERS_VISIBILITY", "")  # Options: "", "alone", "organization"
 
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]

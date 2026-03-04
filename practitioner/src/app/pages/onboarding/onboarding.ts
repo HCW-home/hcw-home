@@ -150,8 +150,8 @@ export class OnboardingPage implements OnInit, OnDestroy {
           this.onboardingForm.patchValue({
             communication_method: user.communication_method || 'email',
             timezone:
-              user.timezone ||
               Intl.DateTimeFormat().resolvedOptions().timeZone ||
+              user.timezone ||
               'UTC',
             preferred_language: currentLang?.code || null,
             mobile_phone_number: user.mobile_phone_number || '',

@@ -144,13 +144,16 @@ export class OnboardingPage implements OnInit, OnDestroy {
               return { label, value: lang.code };
             })
           );
+          // Get current language from TranslationService (might have been changed in CGU page)
+          const currentLang = this.t.getCurrentLanguage();
+
           this.onboardingForm.patchValue({
             communication_method: user.communication_method || 'email',
             timezone:
               user.timezone ||
               Intl.DateTimeFormat().resolvedOptions().timeZone ||
               'UTC',
-            preferred_language: user.preferred_language || null,
+            preferred_language: currentLang?.code || null,
             mobile_phone_number: user.mobile_phone_number || '',
           });
           this.loading = false;

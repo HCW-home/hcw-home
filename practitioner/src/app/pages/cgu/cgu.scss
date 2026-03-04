@@ -51,6 +51,11 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+
+      .language-selector {
+        display: flex;
+        justify-content: center;
+      }
     }
 
     .accept-checkbox {

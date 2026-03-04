@@ -11,13 +11,14 @@ import { Auth } from '../../core/services/auth';
 import { ITerm } from '../../modules/user/models/user';
 import { RoutePaths } from '../../core/constants/routes';
 import { Typography } from '../../shared/ui-components/typography/typography';
+import { LanguageSelector } from '../../shared/components/language-selector/language-selector';
 import { Loader } from '../../shared/components/loader/loader';
 import { TypographyTypeEnum } from '../../shared/constants/typography';
 
 @Component({
   selector: 'app-cgu',
   standalone: true,
-  imports: [FormsModule, Typography, Loader, TranslatePipe],
+  imports: [FormsModule, Typography, LanguageSelector, Loader, TranslatePipe],
   templateUrl: './cgu.html',
   styleUrl: './cgu.scss',
 })
@@ -54,6 +55,11 @@ export class CguPage implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         switchMap(({ user, config }) => {
+          // Load available languages
+          if (config.languages?.length) {
+            this.t.loadLanguages(config.languages);
+          }
+
           let termId = user.main_organisation?.default_term;
 
           // If user's organization doesn't have a default term, check the config
@@ -90,7 +96,7 @@ export class CguPage implements OnInit, OnDestroy {
       .acceptTerm(this.term.id)
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(() => this.userService.getCurrentUser())
+        switchMap(() => this.userService.getCurrentUser(true))
       )
       .subscribe({
         next: () => {

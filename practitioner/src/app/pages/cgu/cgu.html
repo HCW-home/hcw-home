@@ -16,6 +16,10 @@
 
     <div class="terms-footer">
       <div class="footer-inner">
+        <div class="language-selector">
+          <app-language-selector></app-language-selector>
+        </div>
+
         <label class="accept-checkbox">
           <input type="checkbox" [(ngModel)]="accepted" />
           <span>{{ 'cgu.acceptCheckbox' | translate }}</span>

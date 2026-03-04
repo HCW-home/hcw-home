@@ -754,6 +754,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# CSRF Configuration
+csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
+
 # PRACTITIONER_URL = os.getenv("PRACTITIONER_URL", "http://localhost:4200")
 # PATIENT_URL = os.getenv("PATIENT_URL", "http://localhost:4201")
 

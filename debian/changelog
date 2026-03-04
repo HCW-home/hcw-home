@@ -1,3 +1,10 @@
+hcw (0.9.47) bookworm; urgency=medium
+
+  * Fix npm build error
+  * Use relative URL in environment
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 14:17:26 +0100
+
 hcw (0.9.46) bookworm; urgency=medium
 
   * More details message about deleting consultation + fix reconnect websocket

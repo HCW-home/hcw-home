@@ -1,3 +1,12 @@
+hcw (0.9.43) bookworm; urgency=medium
+
+  * Update twilio template submittion to use call to action
+  * Default JWT to one hour
+  * Improve messaging system
+  * Working Whatsapp SMS
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 11:54:37 +0100
+
 hcw (0.9.42) bookworm; urgency=medium
 
   * Fix tooltip on first startup

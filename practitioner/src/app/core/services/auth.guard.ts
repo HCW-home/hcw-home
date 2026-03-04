@@ -3,6 +3,7 @@ import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { RoutePaths } from '../constants/routes';
 import { UserService } from './user.service';
+import { Auth } from './auth';
 
 export const redirectIfAuthenticated: CanMatchFn = () => {
   const token = localStorage.getItem('token');
@@ -60,6 +61,7 @@ export const redirectIfTermsNotAccepted: CanActivateFn = async () => {
   }
 
   const userService = inject(UserService);
+  const authService = inject(Auth);
   const router = inject(Router);
 
   try {
@@ -68,7 +70,14 @@ export const redirectIfTermsNotAccepted: CanActivateFn = async () => {
       user = await firstValueFrom(userService.getCurrentUser());
     }
 
-    const requiredTermId = user?.main_organisation?.default_term;
+    let requiredTermId = user?.main_organisation?.default_term;
+
+    // If user's organization doesn't have a default term, check the config
+    if (requiredTermId == null) {
+      const config = await firstValueFrom(authService.getOpenIDConfig());
+      requiredTermId = config.main_organization?.default_term;
+    }
+
     if (requiredTermId == null) {
       return true;
     }

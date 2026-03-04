@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, switchMap } from 'rxjs';
+import { Subject, takeUntil, switchMap, forkJoin, of } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { UserService } from '../../core/services/user.service';
 import { TermsService } from '../../core/services/terms.service';
 import { ToasterService } from '../../core/services/toaster.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { Auth } from '../../core/services/auth';
 import { ITerm } from '../../modules/user/models/user';
 import { RoutePaths } from '../../core/constants/routes';
 import { Typography } from '../../shared/ui-components/typography/typography';
@@ -24,6 +25,7 @@ export class CguPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private userService = inject(UserService);
   private termsService = inject(TermsService);
+  private authService = inject(Auth);
   private toasterService = inject(ToasterService);
   private t = inject(TranslationService);
   private destroy$ = new Subject<void>();
@@ -45,22 +47,32 @@ export class CguPage implements OnInit, OnDestroy {
   }
 
   private loadTerm(): void {
-    this.userService
-      .getCurrentUser()
+    forkJoin({
+      user: this.userService.getCurrentUser(),
+      config: this.authService.getOpenIDConfig()
+    })
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(user => {
-          const termId = user.main_organisation?.default_term;
+        switchMap(({ user, config }) => {
+          let termId = user.main_organisation?.default_term;
+
+          // If user's organization doesn't have a default term, check the config
+          if (termId == null) {
+            termId = config.main_organization?.default_term;
+          }
+
           if (!termId) {
             this.router.navigate([`/${RoutePaths.USER}`]);
-            throw new Error('No term required');
+            return of(null);
           }
           return this.termsService.getTerm(termId);
         })
       )
       .subscribe({
         next: term => {
-          this.term = term;
+          if (term) {
+            this.term = term;
+          }
           this.loading = false;
         },
         error: () => {

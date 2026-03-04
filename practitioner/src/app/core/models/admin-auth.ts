@@ -46,6 +46,7 @@ export interface IOrganization {
   name: string;
   footer_patient: string | null;
   footer_practitioner: string | null;
+  default_term?: number;
   [key: string]: unknown;
 }
 

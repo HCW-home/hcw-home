@@ -1,3 +1,9 @@
+hcw (0.9.46) bookworm; urgency=medium
+
+  * More details message about deleting consultation + fix reconnect websocket
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 04 Mar 2026 14:07:37 +0100
+
 hcw (0.9.45) bookworm; urgency=medium
 
   * Fix missing CSRF url

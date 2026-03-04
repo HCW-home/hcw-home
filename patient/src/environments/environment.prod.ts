@@ -1,5 +1,8 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://hcw.dev.oniabsis.com/api',
-  wsUrl: 'wss://hcw.dev.oniabsis.com/ws'
+  apiUrl: '/api',
+  get wsUrl() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/ws`;
+  }
 };

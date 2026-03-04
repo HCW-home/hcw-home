@@ -54,6 +54,7 @@ export interface IOpenIDConfig {
   client_id: string | null;
   authorization_url: string | null;
   provider_name: string | null;
+  disable_password_login: boolean;
   languages: IConfigLanguage[];
   branding: string;
   site_logo: string | null;

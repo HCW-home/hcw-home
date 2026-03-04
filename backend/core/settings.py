@@ -764,6 +764,7 @@ CORS_ALLOW_HEADERS = [
 # MFA_GRACE_WINDOW_DAYS = 7
 
 ENABLE_REGISTRATION = os.getenv("ENABLE_REGISTRATION", "False") == "True"
+DISABLE_PASSWORD_LOGIN = os.getenv("DISABLE_PASSWORD_LOGIN", "False") == "True"
 
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]

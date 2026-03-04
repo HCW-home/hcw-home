@@ -53,6 +53,7 @@ export class Login implements OnInit {
   loadingButton = false;
   openIdEnabled = false;
   openIdProviderName = '';
+  disablePasswordLogin = false;
   siteLogoWhite: string | null = null;
   branding = 'HCW@Home';
   private router = inject(Router);
@@ -85,6 +86,7 @@ export class Login implements OnInit {
       next: config => {
         this.openIdEnabled = config.enabled;
         this.openIdProviderName = config.provider_name || 'OpenID';
+        this.disablePasswordLogin = config.disable_password_login || false;
         this.siteLogoWhite = config.site_logo_white;
         if (config.branding) {
           this.branding = config.branding;
@@ -98,6 +100,11 @@ export class Login implements OnInit {
         }
         if (config.primary_color_practitioner) {
           this.themeService.applyPrimaryColor(config.primary_color_practitioner);
+        }
+
+        // If password login is disabled and OpenID is enabled, redirect to SSO
+        if (this.disablePasswordLogin && this.openIdEnabled) {
+          this.onOpenIDLogin();
         }
       },
       error: err => {

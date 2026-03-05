@@ -560,7 +560,7 @@
                   @if (tooEarlyError()?.appointmentId === appointment.id) {
                     <div class="join-error-bubble">
                       <app-svg src="clock" [svgStyle]="{'width.px': 16, 'height.px': 16, 'color': 'var(--amber-600)'}"></app-svg>
-                      <span>{{ 'consultationDetail.tooEarlyToJoinMessage' | translate: { time: tooEarlyError()!.time } }}</span>
+                      <span>{{ 'consultationDetail.tooEarlyToJoinMessage' | translate: { time: tooEarlyError()!.time, minutes: tooEarlyError()!.minutes } }}</span>
                     </div>
                   }
                 </div>

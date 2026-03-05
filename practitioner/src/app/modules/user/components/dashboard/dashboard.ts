@@ -30,6 +30,7 @@ import { getErrorMessage } from '../../../../core/utils/error-helper';
 import { getAppointmentBadgeType, parseDateWithoutTimezone } from '../../../../shared/tools/helper';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { Auth } from '../../../../core/services/auth';
 import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
 
 @Component({
@@ -74,6 +75,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private router = inject(Router);
   private t = inject(TranslationService);
   private datePipe = inject(DatePipe);
+  private authService = inject(Auth);
   private userWsService = inject(UserWebSocketService);
   private destroy$ = new Subject<void>();
 
@@ -84,7 +86,8 @@ export class Dashboard implements OnInit, OnDestroy {
   upcomingAppointments = signal<Appointment[]>([]);
   overdueConsultations = signal<Consultation[]>([]);
 
-  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+  tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
+  appointmentEarlyJoinMinutes = 5; // Default value
 
   protected readonly getAppointmentBadgeType = getAppointmentBadgeType;
   protected readonly BadgeTypeEnum = BadgeTypeEnum;
@@ -100,6 +103,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected readonly AppointmentType = AppointmentType;
 
   ngOnInit(): void {
+    this.loadConfig();
     this.loadDashboardData();
     this.setupWebSocketListeners();
   }
@@ -115,6 +119,21 @@ export class Dashboard implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  loadConfig(): void {
+    this.authService.getOpenIDConfig()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (config) => {
+          if (config.appointment_early_join_minutes) {
+            this.appointmentEarlyJoinMinutes = config.appointment_early_join_minutes;
+          }
+        },
+        error: () => {
+          // Use default value on error
+        }
+      });
   }
 
   loadDashboardData(silent = false): void {
@@ -248,14 +267,14 @@ export class Dashboard implements OnInit, OnDestroy {
   joinAppointment(appointment: Appointment, event: Event): void {
     event.stopPropagation();
 
-    // Check if it's at least 5 minutes before the scheduled time
+    // Check if it's at least X minutes before the scheduled time
     const now = new Date();
     const scheduledTime = new Date(appointment.scheduled_at);
-    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+    const earliestJoin = new Date(scheduledTime.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
-    if (now < fiveMinutesBefore) {
+    if (now < earliestJoin) {
       const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr, minutes: this.appointmentEarlyJoinMinutes });
       setTimeout(() => {
         if (this.tooEarlyError()?.appointmentId === appointment.id) {
           this.tooEarlyError.set(null);
@@ -279,14 +298,14 @@ export class Dashboard implements OnInit, OnDestroy {
     event.stopPropagation();
     const apt = this.nextAppointment();
     if (apt && apt.id && apt.scheduled_at) {
-      // Check if it's at least 5 minutes before the scheduled time
+      // Check if it's at least X minutes before the scheduled time
       const now = new Date();
       const scheduledTime = new Date(apt.scheduled_at);
-      const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+      const earliestJoin = new Date(scheduledTime.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
-      if (now < fiveMinutesBefore) {
+      if (now < earliestJoin) {
         const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        this.tooEarlyError.set({ appointmentId: apt.id, time: scheduledTimeStr });
+        this.tooEarlyError.set({ appointmentId: apt.id, time: scheduledTimeStr, minutes: this.appointmentEarlyJoinMinutes });
         setTimeout(() => {
           if (this.tooEarlyError()?.appointmentId === apt.id) {
             this.tooEarlyError.set(null);

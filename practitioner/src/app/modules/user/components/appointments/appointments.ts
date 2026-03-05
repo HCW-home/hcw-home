@@ -57,6 +57,7 @@ import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { UserService } from '../../../../core/services/user.service';
+import { Auth } from '../../../../core/services/auth';
 import { ConfirmPresenceModal } from './confirm-presence-modal/confirm-presence-modal';
 import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
 import { VideoConsultationComponent } from '../video-consultation/video-consultation';
@@ -90,6 +91,7 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   private consultationService = inject(ConsultationService);
   private toasterService = inject(ToasterService);
   private userService = inject(UserService);
+  private authService = inject(Auth);
   private el = inject(ElementRef);
   private incomingCallService = inject(IncomingCallService);
   private t = inject(TranslationService);
@@ -127,7 +129,8 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   isVideoMinimized = signal(false);
 
   appointmentTimeFilter = signal<AppointmentTimeFilter>('upcoming');
-  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+  tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
+  appointmentEarlyJoinMinutes = 5; // Default value
 
   private readonly pageSize = 20;
   private listCurrentPage = 1;
@@ -179,6 +182,8 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.loadConfig();
+
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const participantId = params['participantId'];
       const appointmentId = params['appointmentId'];
@@ -209,6 +214,21 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
         });
       }
     });
+  }
+
+  loadConfig(): void {
+    this.authService.getOpenIDConfig()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (config) => {
+          if (config.appointment_early_join_minutes) {
+            this.appointmentEarlyJoinMinutes = config.appointment_early_join_minutes;
+          }
+        },
+        error: () => {
+          // Use default value on error
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -760,14 +780,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
   joinVideoCall(appointment: Appointment, event: MouseEvent): void {
     event.stopPropagation();
 
-    // Check if it's at least 5 minutes before the scheduled time
+    // Check if it's at least X minutes before the scheduled time
     const now = new Date();
     const scheduledTime = new Date(appointment.scheduled_at);
-    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+    const earliestJoin = new Date(scheduledTime.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
-    if (now < fiveMinutesBefore) {
+    if (now < earliestJoin) {
       const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr, minutes: this.appointmentEarlyJoinMinutes });
       setTimeout(() => {
         if (this.tooEarlyError()?.appointmentId === appointment.id) {
           this.tooEarlyError.set(null);
@@ -843,14 +863,14 @@ export class Appointments implements OnInit, OnDestroy, AfterViewInit {
     event.stopPropagation();
     this.closeContextMenu();
 
-    // Check if it's at least 5 minutes before the scheduled time
+    // Check if it's at least X minutes before the scheduled time
     const now = new Date();
     const scheduledTime = new Date(appointment.scheduled_at);
-    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+    const earliestJoin = new Date(scheduledTime.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
-    if (now < fiveMinutesBefore) {
+    if (now < earliestJoin) {
       const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr, minutes: this.appointmentEarlyJoinMinutes });
       setTimeout(() => {
         if (this.tooEarlyError()?.appointmentId === appointment.id) {
           this.tooEarlyError.set(null);

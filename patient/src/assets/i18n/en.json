@@ -156,7 +156,7 @@
     "statusClosed": "Closed",
     "statusDraft": "Draft",
     "tooEarlyTitle": "Meeting not yet available",
-    "tooEarlyMessage": "The meeting is scheduled at {{time}}. You can only join 5 minutes before the scheduled time."
+    "tooEarlyMessage": "The meeting is scheduled at {{time}}. You can only join {{minutes}} minutes before the scheduled time."
   },
   "newRequest": {
     "selectSpecialty": "Select Specialty",

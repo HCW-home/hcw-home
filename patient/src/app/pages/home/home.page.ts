@@ -60,6 +60,7 @@ export class HomePage implements OnInit, OnDestroy {
   consultations = signal<Consultation[]>([]);
   appointments = signal<Appointment[]>([]);
   isLoading = signal(false);
+  appointmentEarlyJoinMinutes = 5; // Default value
 
   totalRequests = computed(() => this.requests().length);
   totalConsultations = computed(() => this.consultations().length);
@@ -89,6 +90,22 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadUserData();
     this.loadDashboard();
     this.listenToWebSocketChanges();
+    this.loadConfig();
+  }
+
+  loadConfig(): void {
+    this.authService.getConfig()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (config) => {
+          if (config.appointment_early_join_minutes) {
+            this.appointmentEarlyJoinMinutes = config.appointment_early_join_minutes;
+          }
+        },
+        error: () => {
+          // Use default value on error
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -325,13 +342,13 @@ export class HomePage implements OnInit, OnDestroy {
   private async tryJoinAppointment(appointment: Appointment): Promise<void> {
     const now = new Date();
     const scheduledAt = new Date(appointment.scheduled_at);
-    const earliestJoin = new Date(scheduledAt.getTime() - 5 * 60 * 1000);
+    const earliestJoin = new Date(scheduledAt.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
     if (now < earliestJoin) {
       const time = scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const alert = await this.alertController.create({
         header: this.t.instant('home.tooEarlyTitle'),
-        message: this.t.instant('home.tooEarlyMessage', { time }),
+        message: this.t.instant('home.tooEarlyMessage', { time, minutes: this.appointmentEarlyJoinMinutes.toString() }),
         buttons: ['OK']
       });
       await alert.present();

@@ -713,6 +713,10 @@ CONSTANCE_CONFIG = {
         "10",
         "When to send last appointment reminder, in minute before the appointment time",
     ),
+    "appointment_early_join_minutes": (
+        10,
+        "Minutes before appointment scheduled time that participants can join",
+    ),
     "consultation_auto_delete_hours": (
         0,
         "Hours after closure before a follow-up is automatically deleted (0 to disable)",
@@ -731,7 +735,7 @@ CONSTANCE_CONFIG = {
 CONSTANCE_CONFIG_FIELDSETS = {
     "General Options": ("site_name",),
     "URLs": ("patient_base_url", "practitioner_base_url"),
-    "Scheduling": ("appointment_first_reminder", "appointment_last_reminder"),
+    "Scheduling": ("appointment_first_reminder", "appointment_last_reminder", "appointment_early_join_minutes"),
     "Data Retention": ("consultation_auto_delete_hours", "temporary_user_auto_delete"),
     "Security": ("temporary_participant_token_expiry_hours",),
 }

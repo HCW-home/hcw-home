@@ -586,11 +586,36 @@ class UserAppointmentsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=["get"])
     def join(self, request, pk=None):
         """Join consultation call"""
+        from constance import config
+        from datetime import timedelta
+        from consultations.models import Type
+
         appointment = self.get_object()
         if appointment.consultation.closed_at:
             return Response(
                 {"error": "Cannot join call in closed consultation"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if appointment.type != Type.online:
+            return Response(
+                {"detail": _("Cannot join consultation if not online")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        earliest_join = appointment.scheduled_at - timedelta(minutes=config.appointment_early_join_minutes)
+        if now < earliest_join:
+            return Response(
+                {
+                    "detail": _(
+                        "Too early to join. The meeting starts at %(time)s. You can join %(minutes)d minutes before the scheduled time."
+                    )
+                    % {"time": appointment.scheduled_at.strftime("%H:%M"), "minutes": config.appointment_early_join_minutes},
+                    "scheduled_at": appointment.scheduled_at.isoformat(),
+                    "code": "too_early",
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
@@ -1032,6 +1057,7 @@ class AppConfigView(APIView):
                 "communication_methods": communication_methods,
                 "vapid_public_key": settings.WEBPUSH_VAPID_PUBLIC_KEY,
                 "consultation_auto_delete_hours": int(constance_config.consultation_auto_delete_hours),
+                "appointment_early_join_minutes": int(constance_config.appointment_early_join_minutes),
             }
         )
 

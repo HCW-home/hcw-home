@@ -642,7 +642,7 @@
     "send": "Send",
     "join": "Join",
     "tooEarlyToJoin": "Too early to join",
-    "tooEarlyToJoinMessage": "The meeting starts at {{time}}. You can join 5 minutes before the scheduled time.",
+    "tooEarlyToJoinMessage": "The meeting starts at {{time}}. You can join {{minutes}} minutes before the scheduled time.",
     "appointmentNotFound": "Appointment not found",
     "viewMore": "View More",
     "you": "You",

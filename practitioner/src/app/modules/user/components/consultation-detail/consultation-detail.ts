@@ -158,7 +158,8 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
 
-  tooEarlyError = signal<{ appointmentId: number; time: string } | null>(null);
+  tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
+  appointmentEarlyJoinMinutes = 5; // Default value
 
   isExportingPdf = signal(false);
 
@@ -312,12 +313,13 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     this.loadQueues();
     this.loadCustomFields();
 
-    // Load app config to get consultation_auto_delete_hours
+    // Load app config to get consultation_auto_delete_hours and appointment_early_join_minutes
     this.authService.getOpenIDConfig().subscribe({
-      next: config => {
+      next: (config) => {
         this.consultationAutoDeleteHours = config.consultation_auto_delete_hours || 0;
+        this.appointmentEarlyJoinMinutes = config.appointment_early_join_minutes || 5;
       },
-      error: err => {
+      error: (err: unknown) => {
         console.error('Failed to get app config:', err);
       },
     });
@@ -1280,14 +1282,14 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Check if it's at least 5 minutes before the scheduled time
+    // Check if it's at least X minutes before the scheduled time
     const now = new Date();
     const scheduledTime = new Date(appointment.scheduled_at);
-    const fiveMinutesBefore = new Date(scheduledTime.getTime() - 5 * 60 * 1000);
+    const earliestJoin = new Date(scheduledTime.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
-    if (now < fiveMinutesBefore) {
+    if (now < earliestJoin) {
       const scheduledTimeStr = scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr });
+      this.tooEarlyError.set({ appointmentId: appointment.id, time: scheduledTimeStr, minutes: this.appointmentEarlyJoinMinutes });
       setTimeout(() => {
         if (this.tooEarlyError()?.appointmentId === appointment.id) {
           this.tooEarlyError.set(null);

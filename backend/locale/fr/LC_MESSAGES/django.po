@@ -412,11 +412,11 @@ msgstr "Impossible de participer à la consultation si vous n'êtes pas en ligne
 #: consultations/views.py:387
 #, python-format
 msgid ""
-"Too early to join. The meeting starts at %(time)s. You can join 5 minutes "
-"before the scheduled time."
+"Too early to join. The meeting starts at %(time)s. You can join %(minutes)d "
+"minutes before the scheduled time."
 msgstr ""
 "Trop tôt pour rejoindre. La réunion commence à %(time)s. Vous pouvez "
-"rejoindre 5 minutes avant l'heure prévue."
+"rejoindre %(minutes)d minutes avant l'heure prévue."
 
 #: consultations/views.py:433 users/views.py:633
 #, python-format

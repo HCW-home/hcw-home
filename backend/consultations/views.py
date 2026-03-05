@@ -379,14 +379,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             )
 
         now = timezone.now()
-        earliest_join = appointment.scheduled_at - timedelta(minutes=5)
+        earliest_join = appointment.scheduled_at - timedelta(minutes=config.appointment_early_join_minutes)
         if now < earliest_join:
             return Response(
                 {
                     "detail": _(
-                        "Too early to join. The meeting starts at %(time)s. You can join 5 minutes before the scheduled time."
+                        "Too early to join. The meeting starts at %(time)s. You can join %(minutes)d minutes before the scheduled time."
                     )
-                    % {"time": appointment.scheduled_at.strftime("%H:%M")},
+                    % {"time": appointment.scheduled_at.strftime("%H:%M"), "minutes": config.appointment_early_join_minutes},
                     "scheduled_at": appointment.scheduled_at.isoformat(),
                     "code": "too_early",
                 },

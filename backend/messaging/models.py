@@ -905,6 +905,7 @@ class Message(ModelCeleryAbstract):
                     translation.ngettext,
                     newstyle=True,
                 )
+                env.filters['localtime'] = timezone.localtime
                 env.filters.update(register.filters)
 
                 template_str = str(getattr(self.template, field))

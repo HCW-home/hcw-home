@@ -4,13 +4,13 @@ from django.conf import settings
 DEFAULT_NOTIFICATION_MESSAGES = {
     "appointment_first_reminder": {
         "template_subject": _(
-            "Your appointment planned {{ obj.appointment.scheduled_at|date }}"
+            "Your appointment planned {{ obj.appointment.scheduled_at|localtime|date }}"
         ),
         "template_content": _(
-            "This is a reminder for your appointment scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }}."
+            "This is a reminder for your appointment scheduled for {{ obj.appointment.scheduled_at|localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }}."
         ),
         "template_content_html": _(
-            "<p>This is a reminder for your appointment scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong>.</p>"
+            "<p>This is a reminder for your appointment scheduled for <strong>{{ obj.appointment.scheduled_at|localtime|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong>.</p>"
         ),
         "model": "consultations.Participant",
         "helper_text": "First reminder about appointment",
@@ -20,10 +20,10 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             "Your appointment will start in {{config.appointment_last_reminder}} minutes"
         ),
         "template_content": _(
-            """Your consultation appointment start at {{ obj.appointment.scheduled_at|time }}"""
+            """Your consultation appointment start at {{ obj.appointment.scheduled_at|localtime|time }}"""
         ),
         "template_content_html": _(
-            """<p>Your consultation appointment start at <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"""
+            """<p>Your consultation appointment start at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong></p>"""
         ),
         "action": "join",
         "action_label": _("Join the consultation"),
@@ -33,11 +33,11 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "invitation_to_appointment": {
         "template_subject": _("Your consultation has been scheduled"),
         "template_content": _(
-            """Your consultation has been scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})"""
+            """Your consultation has been scheduled for {{ obj.appointment.scheduled_at|localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }} ({{ obj.appointment.scheduled_at }})"""
         ),
         "template_content_html": _(
             """<p>Your consultation has been successfully scheduled.</p>"""
-            """<p>Appointment is scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong> ({{ obj.appointment.scheduled_at }})</p>"""
+            """<p>Appointment is scheduled for <strong>{{ obj.appointment.scheduled_at|localtime|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong> ({{ obj.appointment.scheduled_at }})</p>"""
         ),
         "action": "presence",
         "action_label": _("Confirm your presence"),
@@ -46,22 +46,22 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     },
     "appointment_cancelled": {
         "template_subject": _("Your appointment has been cancelled"),
-        "template_content": _("Your appointment scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} has been cancelled."),
-        "template_content_html": _("<p>Your appointment scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} has been cancelled.</p>"),
+        "template_content": _("Your appointment scheduled for {{ obj.appointment.scheduled_at|localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }} has been cancelled."),
+        "template_content_html": _("<p>Your appointment scheduled for {{ obj.appointment.scheduled_at|localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }} has been cancelled.</p>"),
         "model": "consultations.Participant",
         "helper_text": "Message sent to participant when appointment is cancelled",
     },
     "appointment_updated": {
         "template_subject": _("Your appointment has been updated"),
         "template_content": _(
-            """Your appointment previously scheduled for {{ obj.appointment.previous_scheduled_at|date }} """
-            """at {{ obj.appointment.previous_scheduled_at|time }} is now scheduled for """
-            """{{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }}\n"""
+            """Your appointment previously scheduled for {{ obj.appointment.previous_scheduled_at|localtime|date }} """
+            """at {{ obj.appointment.previous_scheduled_at|localtime|time }} is now scheduled for """
+            """{{ obj.appointment.scheduled_at|localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }}\n"""
         ),
         "template_content_html": _(
-            """<p>Your appointment previously scheduled for <strong>{{ obj.appointment.previous_scheduled_at|date }}</strong> """
-            """at <strong>{{ obj.appointment.previous_scheduled_at|time }}</strong> is now scheduled for """
-            """<strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"""
+            """<p>Your appointment previously scheduled for <strong>{{ obj.appointment.previous_scheduled_at|localtime|date }}</strong> """
+            """at <strong>{{ obj.appointment.previous_scheduled_at|localtime|time }}</strong> is now scheduled for """
+            """<strong>{{ obj.appointment.scheduled_at|localtime|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong></p>"""
         ),
         "action": "presence",
         "action_label": _("Confirm your presence"),

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 10:46+0000\n"
+"POT-Creation-Date: 2026-03-05 13:17+0000\n"
 "PO-Revision-Date: 2026-03-05 11:13+0000\n"
 "Last-Translator: Olivier Bitsch <olivier.b@iabsis.com>\n"
 "Language-Team: French <https://translate.iabsis.com/projects/hcwhome-v6/"
@@ -1197,7 +1197,7 @@ msgstr "téléphone du destinataire"
 msgid "recipient email"
 msgstr "email du destinataire"
 
-#: messaging/models.py:925
+#: messaging/models.py:933
 msgid ""
 "You must specify at least a recipient phone, a recipient email or a user in "
 "Sent to"
@@ -1205,25 +1205,25 @@ msgstr ""
 "Vous devez spécifier au moins un téléphone destinataire, un email "
 "destinataire ou un utilisateur dans Envoyé à"
 
-#: messaging/models.py:940
+#: messaging/models.py:948
 msgid "The Sent to user has no phone number, so recipient phone is mandatory"
 msgstr ""
 "L'utilisateur destinataire n'a pas de numéro de téléphone, le téléphone "
 "destinataire est donc obligatoire"
 
-#: messaging/models.py:949
+#: messaging/models.py:957
 msgid "The Sent to user has no email, so recipient email is mandatory"
 msgstr ""
 "L'utilisateur destinataire n'a pas d'email, l'email destinataire est donc "
 "obligatoire"
 
-#: messaging/models.py:958
+#: messaging/models.py:966
 msgid "Communication method is required if no sent to user"
 msgstr ""
 "La méthode de communication est requise s'il n'y a pas d'utilisateur "
 "destinataire"
 
-#: messaging/models.py:976
+#: messaging/models.py:984
 #, python-format
 msgid ""
 "The linked object type (%(actual)s) does not match the expected model "
@@ -1275,8 +1275,11 @@ msgstr ""
 "time }}."
 
 #: messaging/template.py:20
-msgid "Your appointment will start in {{config.appointment_last_reminder}} minutes"
-msgstr "Votre rendez-vous commencera dans {{config.appointment_last_reminder}} minutes"
+msgid ""
+"Your appointment will start in {{config.appointment_last_reminder}} minutes"
+msgstr ""
+"Votre rendez-vous commencera dans {{config.appointment_last_reminder}} "
+"minutes"
 
 #: messaging/template.py:23
 #, fuzzy
@@ -1284,7 +1287,7 @@ msgstr "Votre rendez-vous commencera dans {{config.appointment_last_reminder}} m
 msgid ""
 "Your consultation appointment start at {{ obj.appointment.scheduled_at|"
 "time }}"
-msgstr "Votre rendez-vous prévu le {{ obj.appointment.scheduled_at|date }}"
+msgstr "Votre rendez-vous démarre à {{ obj.appointment.scheduled_at|date }}"
 
 #: messaging/template.py:26
 #, fuzzy
@@ -1292,7 +1295,7 @@ msgstr "Votre rendez-vous prévu le {{ obj.appointment.scheduled_at|date }}"
 msgid ""
 "<p>Your consultation appointment start at "
 "<strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"
-msgstr "Votre rendez-vous prévu le {{ obj.appointment.scheduled_at|date }}"
+msgstr "Votre rendez-vous démarre à {{ obj.appointment.scheduled_at|date }}"
 
 #: messaging/template.py:29
 #, fuzzy
@@ -1422,11 +1425,11 @@ msgid ""
 "scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at "
 "<strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"
 msgstr ""
-"<p>Votre rendez-vous initialement prévu le <strong>{{ obj.appointment."
-"previous_scheduled_at|date }}</strong> à <strong>{{ obj.appointment."
-"previous_scheduled_at|time }}</strong> est désormais prévu le <strong>{{ obj."
-"appointment.scheduled_at|date }}</strong> à <strong>{{ obj.appointment."
-"scheduled_at|time }}</strong></p>"
+"<p>Votre rendez-vous initialement prévu le "
+"<strong>{{ obj.appointment.previous_scheduled_at|date }}</strong> à "
+"<strong>{{ obj.appointment.previous_scheduled_at|time }}</strong> est "
+"désormais prévu le <strong>{{ obj.appointment.scheduled_at|date }}</strong> "
+"à <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"
 
 #: messaging/template.py:72
 msgid "Your confirmation code"
@@ -1459,16 +1462,16 @@ msgid ""
 "{{ obj.created_by.name }} sent you a message in consultation "
 "\"{{ obj.consultation.title }}\": {{ obj.content }}"
 msgstr ""
-"{{ obj.created_by.name }} vous a envoyé un message dans la consultation \"{{ "
-"obj.consultation.title }}\" : {{ obj.content }}"
+"{{ obj.created_by.name }} vous a envoyé un message dans la consultation "
+"\"{{ obj.consultation.title }}\" : {{ obj.content }}"
 
 #: messaging/template.py:90
 msgid ""
 "<p>{{ obj.created_by.name }} sent you a message in consultation "
 "\"{{ obj.consultation.title }}\":</p><p>{{ obj.content }}</p>"
 msgstr ""
-"<p>{{ obj.created_by.name }} vous a envoyé un message dans la consultation \""
-"{{ obj.consultation.title }}\" : </p><p>{{ obj.content }}</p>"
+"<p>{{ obj.created_by.name }} vous a envoyé un message dans la consultation "
+"\"{{ obj.consultation.title }}\" : </p><p>{{ obj.content }}</p>"
 
 #: messaging/template.py:97
 msgid "Click here to answer"

@@ -649,8 +649,8 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
     this.stopDurationTimer();
     this.incomingCallService.clearActiveCall();
 
-    // Navigate immediately without showing lobby
-    this.navCtrl.back();
+    // Navigate to home page
+    this.navCtrl.navigateRoot('/home');
   }
 
   openChat(): void {

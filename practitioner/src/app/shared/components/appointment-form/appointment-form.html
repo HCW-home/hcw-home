@@ -192,6 +192,8 @@
               type="email"
               [label]="'appointmentForm.emailAddress' | translate"
               [required]="true"
+              [invalid]="!!getParticipantFieldError('email')"
+              [invalidMessage]="getParticipantFieldError('email')"
               leftIcon="email"
               [placeholder]="'appointmentForm.emailPlaceholder' | translate"
               formControlName="email">
@@ -203,6 +205,8 @@
               type="tel"
               [label]="'appointmentForm.phoneNumber' | translate"
               [required]="true"
+              [invalid]="!!getParticipantFieldError('phone')"
+              [invalidMessage]="getParticipantFieldError('phone')"
               leftIcon="phone"
               [placeholder]="'appointmentForm.phonePlaceholder' | translate"
               formControlName="phone">
@@ -251,6 +255,8 @@
               <app-select
                 [label]="'appointmentForm.communicationMethod' | translate"
                 [required]="hasMultipleCommunicationMethods"
+                [invalid]="!!getParticipantFieldError('communication_method')"
+                [invalidMessage]="getParticipantFieldError('communication_method')"
                 formControlName="communication_method"
                 [options]="communicationMethods"
                 [placeholder]="'appointmentForm.selectMethod' | translate">

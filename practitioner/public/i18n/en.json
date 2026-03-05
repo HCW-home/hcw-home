@@ -749,6 +749,8 @@
     "rolePatient": "Patient",
     "rolePractitioner": "Practitioner",
     "roleYou": "You",
+    "fieldRequired": "This field is required",
+    "invalidEmail": "The email address is not valid",
     "cancelButton": "Cancel",
     "saveChanges": "Save Changes",
     "createAppointment": "Create Appointment",

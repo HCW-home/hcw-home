@@ -398,6 +398,19 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     return '';
   }
 
+  getParticipantFieldError(fieldName: string): string {
+    const control = this.participantForm.get(fieldName);
+    if (control && control.invalid && control.touched) {
+      if (control.hasError('required')) {
+        return this.t.instant('appointmentForm.fieldRequired');
+      }
+      if (control.hasError('email')) {
+        return this.t.instant('appointmentForm.invalidEmail');
+      }
+    }
+    return '';
+  }
+
   private populateFormForEdit(): void {
     if (!this.editingAppointment) return;
 
@@ -521,6 +534,16 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   addParticipant(): void {
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.participantForm.controls).forEach(key => {
+      this.participantForm.get(key)?.markAsTouched();
+    });
+
+    // Check if form is valid
+    if (this.participantForm.invalid) {
+      return;
+    }
+
     const formValue = this.participantForm.value;
     const data: CreateParticipantRequest = {};
 
@@ -546,13 +569,6 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       data.mobile_phone_number = formValue.phone;
     } else if (formValue.contact_type === 'manual') {
       // Manual contact: no email/phone required, link will be shared manually
-    } else {
-      this.toasterService.show(
-        'error',
-        this.t.instant('appointmentForm.missingInfo'),
-        this.t.instant('appointmentForm.provideContact')
-      );
-      return;
     }
 
     this.pendingParticipants.update(list => [...list, data]);

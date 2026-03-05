@@ -897,6 +897,8 @@
     "rolePatient": "Patient",
     "rolePractitioner": "Praticien",
     "roleYou": "Vous",
+    "fieldRequired": "Ce champ est obligatoire",
+    "invalidEmail": "L'adresse email n'est pas valide",
     "cancelButton": "Annuler",
     "saveChanges": "Enregistrer",
     "createAppointment": "Créer le rendez-vous",

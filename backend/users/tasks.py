@@ -28,15 +28,13 @@ def auto_delete_temporary_users():
         logger.info("Auto-delete of temporary users is disabled")
         return
 
-    now = timezone.now()
-    grace = now - timedelta(minutes=10)
+    two_hours_ago = timezone.now() - timedelta(hours=2)
     # Temporary users created more than 10 min ago with no future scheduled appointment
     users = User.objects.filter(
-        temporary=True,
-        date_joined__lte=grace,
+        temporary=True
     ).exclude(
         appointments_participating__status="scheduled",
-        appointments_participating__scheduled_at__gt=now,
+        appointments_participating__scheduled_at__gt=two_hours_ago,
     )
     count, _ = users.delete()
     logger.info(f"Auto-deleted {count} temporary user(s) with no future appointments")

@@ -766,6 +766,34 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
             "participants",
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+            user_tz = request.user.user_tz
+
+            # Convert datetime fields to user timezone
+            if data.get("scheduled_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["scheduled_at"].replace("Z", "+00:00")
+                )
+                data["scheduled_at"] = dt.astimezone(user_tz).isoformat()
+
+            if data.get("end_expected_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["end_expected_at"].replace("Z", "+00:00")
+                )
+                data["end_expected_at"] = dt.astimezone(user_tz).isoformat()
+
+            if data.get("created_at"):
+                dt = timezone.datetime.fromisoformat(
+                    data["created_at"].replace("Z", "+00:00")
+                )
+                data["created_at"] = dt.astimezone(user_tz).isoformat()
+
+        return data
+
 
 class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     created_by = ConsultationUserSerializer(read_only=True)

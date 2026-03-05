@@ -45,8 +45,3 @@ je veux que tu simplifie le status user online :
 - en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
 - coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
 
-
-Problème endpoint
-=================
-
-Corrige les dates retournées par http://localhost:8000/api/user/participants/249/ qui sont en UTC au lieu du user timezone.

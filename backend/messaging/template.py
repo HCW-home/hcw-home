@@ -33,12 +33,9 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "invitation_to_appointment": {
         "template_subject": _("Your consultation has been scheduled"),
         "template_content": _(
-            """Hello,\n"""
-            """Your consultation has been successfully scheduled. \n"""
-            """Appointment is scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})"""
+            """Your consultation has been scheduled for {{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})"""
         ),
         "template_content_html": _(
-            """<p>Hello,</p>"""
             """<p>Your consultation has been successfully scheduled.</p>"""
             """<p>Appointment is scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong> ({{ obj.appointment.scheduled_at }})</p>"""
         ),
@@ -60,7 +57,6 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             """Your appointment previously scheduled for {{ obj.appointment.previous_scheduled_at|date }} """
             """at {{ obj.appointment.previous_scheduled_at|time }} is now scheduled for """
             """{{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|time }}\n"""
-            """Please confirm your presence: {{access_link}}"""
         ),
         "template_content_html": _(
             """<p>Your appointment previously scheduled for <strong>{{ obj.appointment.previous_scheduled_at|date }}</strong> """
@@ -68,7 +64,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             """<strong>{{ obj.appointment.scheduled_at|date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"""
         ),
         "action": "presence",
-        "action_label": _("Click here to confirm your presence"),
+        "action_label": _("Confirm your presence"),
         "model": "consultations.Participant",
         "helper_text": "Message sent to participant when appointment date and time is updated",
     },
@@ -103,10 +99,10 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     "email_verification": {
         "template_subject": _("Verify your email address"),
         "template_content": _(
-            "Please verify your email address."
+            "We are requiring to verify your email address."
         ),
         "template_content_html": _(
-            "<p>Please verify your email address by clicking the link below.</p>"
+            "<p>We are requiring to verify your email address.</p>"
         ),
         "model": "users.User",
         "helper_text": "Message sent to user to verify their email address after registration",

@@ -77,16 +77,10 @@ class Main(BaseMessagingProvider):
             'Content-Type': 'application/json'
         }
 
-        # Append access link if action exists
-        message_text = message.render_content
-        if message.access_link:
-            message_text = f"{message.content}\n{message.access_link}"
-            logger.info(f"Added access_link to message: {message.access_link}")
-
         data = {
             "from": sender,
             "to": message.phone_number,
-            "text": message_text
+            "text": message.render_content_sms
         }
 
         logger.info(f"Sending POST request to Swisscom SMS API: {url}")

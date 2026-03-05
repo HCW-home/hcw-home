@@ -126,6 +126,7 @@ class MessageAdmin(ModelAdmin):
         "display_render_subject",
         "display_render_content",
         "display_render_content_html",
+        "display_render_content_sms",
         "display_template_is_valid",
         "status",
         "sent_at",
@@ -165,6 +166,7 @@ class MessageAdmin(ModelAdmin):
                     "display_render_subject",
                     "display_render_content",
                     "display_render_content_html",
+                    "display_render_content_sms",
                     "display_template_is_valid",
                     "subject",
                     "content",
@@ -258,6 +260,13 @@ class MessageAdmin(ModelAdmin):
     def display_render_content(self, instance):
         try:
             return instance.render_content
+        except Exception as e:
+            return f"Unable to render: {e}"
+
+    @display(description=_("Rendered text content SMS"))
+    def display_render_content_sms(self, instance):
+        try:
+            return instance.render_content_sms
         except Exception as e:
             return f"Unable to render: {e}"
 

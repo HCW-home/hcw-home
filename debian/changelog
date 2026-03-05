@@ -1,3 +1,16 @@
+hcw (0.9.50) bookworm; urgency=medium
+
+  [ Olivier Bitsch ]
+  * Attempt to get timezone from browser
+  * Refactor add appointment during step
+  * Fix button size
+  * Remove hover effect
+
+  [ Gor Grigoryan ]
+  * fix appointment-info row
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 09:49:43 +0100
+
 hcw (0.9.49) bookworm; urgency=medium
 
   * Fix onboarding process with first user

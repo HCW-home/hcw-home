@@ -1,3 +1,9 @@
+hcw (0.9.57) bookworm; urgency=medium
+
+  * Fix form communication_method
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 13:18:30 +0100
+
 hcw (0.9.56) bookworm; urgency=medium
 
   * missing librairy

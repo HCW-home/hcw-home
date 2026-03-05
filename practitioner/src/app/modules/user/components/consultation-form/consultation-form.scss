@@ -694,7 +694,8 @@
 
         .appointment-info {
           display: flex;
-          align-items: flex-start;
+          flex-direction: row;
+          align-items: flex-end;
           gap: 12px;
 
           .appointment-title {

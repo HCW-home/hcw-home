@@ -663,7 +663,11 @@
     "english": "Anglais",
     "french": "Français",
     "spanish": "Espagnol",
-    "german": "Allemand"
+    "german": "Allemand",
+    "pending": "En attente",
+    "createAppointment": "Créer le rendez-vous",
+    "noAppointments": "Aucun rendez-vous planifié",
+    "someAppointmentsNotCreated": "Certains rendez-vous n'ont pas pu être créés"
   },
   "onboarding": {
     "title": "Bienvenue !",

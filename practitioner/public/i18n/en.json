@@ -585,7 +585,11 @@
     "english": "English",
     "french": "French",
     "spanish": "Spanish",
-    "german": "German"
+    "german": "German",
+    "pending": "Pending",
+    "createAppointment": "Create Appointment",
+    "noAppointments": "No scheduled appointments",
+    "someAppointmentsNotCreated": "Some appointments could not be created"
   },
   "consultationDetail": {
     "loadingConsultation": "Loading follow-up...",

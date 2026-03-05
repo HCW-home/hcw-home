@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { Appointment, User } from '../../../../../core/models/consultation';
+import { Appointment, User, CreateAppointmentRequest } from '../../../../../core/models/consultation';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { AppointmentForm } from '../../../../../shared/components/appointment-form/appointment-form';
 import { TranslationService } from '../../../../../core/services/translation.service';
@@ -30,6 +30,7 @@ export class AppointmentFormModal {
   @Output() closed = new EventEmitter<void>();
   @Output() appointmentCreated = new EventEmitter<Appointment>();
   @Output() appointmentUpdated = new EventEmitter<Appointment>();
+  @Output() appointmentDataReady = new EventEmitter<CreateAppointmentRequest>();
 
   @ViewChild(AppointmentForm) appointmentForm!: AppointmentForm;
 
@@ -55,6 +56,11 @@ export class AppointmentFormModal {
 
   onAppointmentUpdated(appointment: Appointment): void {
     this.appointmentUpdated.emit(appointment);
+    this.onClose();
+  }
+
+  onAppointmentDataReady(data: CreateAppointmentRequest): void {
+    this.appointmentDataReady.emit(data);
     this.onClose();
   }
 }

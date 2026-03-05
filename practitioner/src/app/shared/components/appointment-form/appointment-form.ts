@@ -89,6 +89,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   @Output() cancelled = new EventEmitter<void>();
   @Output() appointmentCreated = new EventEmitter<Appointment>();
   @Output() appointmentUpdated = new EventEmitter<Appointment>();
+  @Output() appointmentDataReady = new EventEmitter<CreateAppointmentRequest>();
 
   private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
@@ -302,6 +303,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   private initParticipantForm(): void {
+    const currentUserData = this.currentUser();
     this.participantForm = this.fb.group({
       user_id: [null],
       first_name: [''],
@@ -309,13 +311,14 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       email: ['', [Validators.email]],
       phone: [''],
       contact_type: ['email', [Validators.required]],
-      timezone: [''],
-      communication_method: [''],
-      preferred_language: [''],
+      timezone: [currentUserData?.timezone || ''],
+      communication_method: [currentUserData?.communication_method || ''],
+      preferred_language: [currentUserData?.preferred_language || ''],
     });
   }
 
   resetForm(): void {
+    const currentUserData = this.currentUser();
     this.appointmentForm.reset({
       type: AppointmentType.ONLINE,
       dont_invite_beneficiary: false,
@@ -329,9 +332,9 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     this.selectedParticipantUser.set(null);
     this.participantForm.reset({
       contact_type: 'email',
-      timezone: '',
-      communication_method: '',
-      preferred_language: '',
+      timezone: currentUserData?.timezone || '',
+      communication_method: currentUserData?.communication_method || '',
+      preferred_language: currentUserData?.preferred_language || '',
     });
     this.backendErrors.set({});
   }
@@ -416,11 +419,12 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   setParticipantType(isExisting: boolean): void {
     this.isExistingUser.set(isExisting);
     this.selectedParticipantUser.set(null);
+    const currentUserData = this.currentUser();
     this.participantForm.reset({
       contact_type: 'email',
-      timezone: '',
-      communication_method: '',
-      preferred_language: '',
+      timezone: currentUserData?.timezone || '',
+      communication_method: currentUserData?.communication_method || '',
+      preferred_language: currentUserData?.preferred_language || '',
       user_id: null,
     });
   }
@@ -491,11 +495,12 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   private resetParticipantForm(): void {
+    const currentUserData = this.currentUser();
     this.participantForm.reset({
       contact_type: 'email',
-      timezone: '',
-      communication_method: '',
-      preferred_language: '',
+      timezone: currentUserData?.timezone || '',
+      communication_method: currentUserData?.communication_method || '',
+      preferred_language: currentUserData?.preferred_language || '',
     });
     this.isExistingUser.set(true);
     this.selectedParticipantUser.set(null);
@@ -562,7 +567,15 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
         participants_ids,
         temporary_participants,
       };
-      this.createAppointment(createData);
+
+      // Si pas de consultationId, on émet juste les données sans faire le POST
+      // Le parent créera l'appointment après avoir créé la consultation
+      if (!this.consultationId) {
+        this.isSubmitting.set(false);
+        this.appointmentDataReady.emit(createData);
+      } else {
+        this.createAppointment(createData);
+      }
     }
   }
 

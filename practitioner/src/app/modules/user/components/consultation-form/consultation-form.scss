@@ -578,9 +578,6 @@
       gap: 12px;
 
       .appointment-card {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         padding: 16px 20px;
         background: var(--White);
         border: 1px solid var(--slate-200);
@@ -682,6 +679,78 @@
         border-radius: 12px;
       }
     }
+
+    .appointment-card {
+      background: var(--slate-50);
+      border-radius: 16px;
+      padding: 24px;
+      border: 2px solid var(--slate-100);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      animation: slideIn 0.3s ease-out;
+      margin-top: 16px;
+
+      &.pending {
+        border-color: var(--amber-300);
+
+        &:hover {
+          border-color: var(--amber-400);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+        }
+      }
+
+      .appointment-header {
+        margin-bottom: 12px;
+
+        .appointment-info {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+
+          .appointment-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--slate-800);
+          }
+
+          .date-time {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--slate-800);
+          }
+
+          .appointment-type {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--slate-200);
+            color: var(--slate-600);
+
+            &.online {
+              background: var(--primary-100);
+              color: var(--primary-700);
+            }
+          }
+        }
+      }
+
+      .expected-end {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--slate-500);
+        margin-bottom: 16px;
+      }
+
+      .appointment-actions {
+        display: flex;
+        gap: 8px;
+      }
+    }
   }
 }
 
@@ -699,6 +768,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

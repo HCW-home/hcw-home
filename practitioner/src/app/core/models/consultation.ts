@@ -241,6 +241,7 @@ export interface UpdateAppointmentRequest {
   end_expected_at?: string;
   participants_ids?: number[];
   temporary_participants?: ITemporaryParticipant[];
+  consultation?: number;
 }
 
 export interface CreateParticipantRequest {

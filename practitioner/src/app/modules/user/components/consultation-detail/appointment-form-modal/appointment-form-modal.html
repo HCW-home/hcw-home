@@ -10,8 +10,10 @@
     [owner]="owner"
     [initialStartDate]="initialStartDate"
     [initialEndDate]="initialEndDate"
+    [showActions]="true"
     (cancelled)="onClose()"
     (appointmentCreated)="onAppointmentCreated($event)"
-    (appointmentUpdated)="onAppointmentUpdated($event)">
+    (appointmentUpdated)="onAppointmentUpdated($event)"
+    (appointmentDataReady)="onAppointmentDataReady($event)">
   </app-appointment-form>
 </app-modal>

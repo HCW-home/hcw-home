@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  FormArray,
   FormBuilder,
   FormGroup,
   FormsModule,
@@ -16,7 +15,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, takeUntil, debounceTime, distinctUntilChanged, map } from 'rxjs';
 
 import { ConsultationService } from '../../../../core/services/consultation.service';
@@ -25,52 +23,22 @@ import { ValidationService } from '../../../../core/services/validation.service'
 import {
   Appointment,
   AppointmentType,
-  AppointmentStatus,
   Consultation,
   CreateConsultationRequest,
   CreateAppointmentRequest,
   CustomField,
-  ITemporaryParticipant,
   Queue,
 } from '../../../../core/models/consultation';
 
-interface IAppointmentFormValue {
-  id: number | null;
-  title: string;
-  date: string;
-  time: string;
-  type: AppointmentType;
-  dont_invite_beneficiary: boolean;
-  dont_invite_practitioner: boolean;
-  dont_invite_me: boolean;
-  participants: IParticipantFormValue[];
-}
-
-interface IParticipantFormValue {
-  id: number | null;
-  user_id: number | null;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  timezone: string;
-  communication_method: string;
-  preferred_language: string;
-  is_existing_user: boolean;
-  contact_type: 'email' | 'phone';
-}
-
 import { Page } from '../../../../core/components/page/page';
 import { Loader } from '../../../../shared/components/loader/loader';
-import { UserSearchSelect } from '../../../../shared/components/user-search-select/user-search-select';
-import { ParticipantItem } from '../../../../shared/components/participant-item/participant-item';
 import { IUser } from '../../models/user';
 import { UserService } from '../../../../core/services/user.service';
 import { CommunicationMethodEnum } from '../../constants/user';
 import { Stepper } from '../../../../shared/components/stepper/stepper';
 import { IStep } from '../../../../shared/components/stepper/stepper-models';
 import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
-import { Switch } from '../../../../shared/ui-components/switch/switch';
+import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
 
 import { Typography } from '../../../../shared/ui-components/typography/typography';
 import { Select, AsyncSearchFn, AsyncSearchResult } from '../../../../shared/ui-components/select/select';
@@ -78,6 +46,7 @@ import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
 import { Button } from '../../../../shared/ui-components/button/button';
+import { Badge } from '../../../../shared/components/badge/badge';
 
 import { TypographyTypeEnum } from '../../../../shared/constants/typography';
 import { ButtonStateEnum } from '../../../../shared/constants/button';
@@ -85,6 +54,7 @@ import {
   ButtonSizeEnum,
   ButtonStyleEnum,
 } from '../../../../shared/constants/button';
+import { BadgeTypeEnum } from '../../../../shared/constants/badge';
 import { SelectOption } from '../../../../shared/models/select';
 import { IBreadcrumb } from '../../../../shared/models/breadcrumb';
 import { RoutePaths } from '../../../../core/constants/routes';
@@ -102,8 +72,6 @@ import { TranslationService } from '../../../../core/services/translation.servic
     ReactiveFormsModule,
     Page,
     Loader,
-    UserSearchSelect,
-    ParticipantItem,
     Stepper,
     Typography,
     Select,
@@ -112,9 +80,10 @@ import { TranslationService } from '../../../../core/services/translation.servic
     Textarea,
     Button,
     Checkbox,
-    Switch,
     FormsModule,
     TranslatePipe,
+    AppointmentFormModal,
+    Badge,
   ],
 })
 export class ConsultationForm implements OnInit, OnDestroy {
@@ -147,6 +116,12 @@ export class ConsultationForm implements OnInit, OnDestroy {
   currentUser = signal<IUser | null>(null);
   private practitionerCache = new Map<number, IUser>();
   private beneficiaryCache = new Map<number, IUser>();
+
+  // Modal state
+  isAppointmentModalOpen = signal(false);
+  editingAppointment = signal<Appointment | null>(null);
+  appointments = signal<Appointment[]>([]);
+  pendingAppointmentRequests = signal<CreateAppointmentRequest[]>([]);
 
   consultationForm!: FormGroup;
 
@@ -182,6 +157,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
   protected readonly ButtonStyleEnum = ButtonStyleEnum;
   protected readonly ButtonStateEnum = ButtonStateEnum;
   protected readonly AppointmentType = AppointmentType;
+  protected readonly BadgeTypeEnum = BadgeTypeEnum;
 
   breadcrumbs = computed<IBreadcrumb[]>(() => [
     { label: this.t.instant('consultations.tabActive'), link: '/user/consultations' },
@@ -255,12 +231,56 @@ export class ConsultationForm implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private t = inject(TranslationService);
 
-  get appointmentsFormArray(): FormArray {
-    return this.consultationForm.get('appointments') as FormArray;
-  }
-
   constructor() {
     this.initForm();
+  }
+
+  openAppointmentModal(appointment?: Appointment): void {
+    this.editingAppointment.set(appointment || null);
+    this.isAppointmentModalOpen.set(true);
+  }
+
+  closeAppointmentModal(): void {
+    this.isAppointmentModalOpen.set(false);
+    this.editingAppointment.set(null);
+  }
+
+  onAppointmentCreated(appointment: Appointment): void {
+    this.appointments.update(list => [...list, appointment]);
+    this.closeAppointmentModal();
+  }
+
+  onAppointmentUpdated(appointment: Appointment): void {
+    this.appointments.update(list =>
+      list.map(a => a.id === appointment.id ? appointment : a)
+    );
+    this.closeAppointmentModal();
+  }
+
+  onAppointmentDataReady(data: CreateAppointmentRequest): void {
+    this.pendingAppointmentRequests.update(list => [...list, data]);
+    this.closeAppointmentModal();
+  }
+
+  deleteAppointment(appointment: Appointment): void {
+    if (!appointment.id) return;
+
+    this.consultationService
+      .deleteAppointment(appointment.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.appointments.update(list => list.filter(a => a.id !== appointment.id));
+          this.toasterService.show('success', this.t.instant('consultationForm.appointmentRemoved'), this.t.instant('consultationForm.appointmentRemovedMessage'));
+        },
+        error: (error) => {
+          this.toasterService.show('error', this.t.instant('consultationForm.errorRemovingAppointment'), getErrorMessage(error));
+        },
+      });
+  }
+
+  removePendingAppointment(index: number): void {
+    this.pendingAppointmentRequests.update(list => list.filter((_, i) => i !== index));
   }
 
   private initForm(): void {
@@ -278,7 +298,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
       beneficiary_id: [''],
       owned_by_id: [''],
       visible_by_patient: [true],
-      appointments: this.fb.array([]),
     });
     this.formReady.set(true);
   }
@@ -410,10 +429,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: response => {
-          this.appointmentsFormArray.clear();
-          response.results.forEach((appointment: Appointment) => {
-            this.addAppointmentFromData(appointment);
-          });
+          this.appointments.set(response.results);
         },
         error: (error) => {
           this.toasterService.show('error', this.t.instant('consultationForm.errorLoadingAppointments'), getErrorMessage(error));
@@ -421,44 +437,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
       });
   }
 
-  private addAppointmentFromData(appointment: Appointment): void {
-    const scheduledDate = appointment.scheduled_at ? new Date(appointment.scheduled_at) : new Date();
-    const date = scheduledDate.toISOString().split('T')[0];
-    const time = scheduledDate.toTimeString().slice(0, 5);
-
-    const appointmentGroup = this.fb.group({
-      id: [appointment.id],
-      title: [appointment.title || ''],
-      date: [date, Validators.required],
-      time: [time, Validators.required],
-      type: [appointment.type || AppointmentType.ONLINE, Validators.required],
-      dont_invite_beneficiary: [false],
-      dont_invite_practitioner: [false],
-      dont_invite_me: [false],
-      participants: this.fb.array([]),
-    });
-
-    if (appointment.participants) {
-      const participantsArray = appointmentGroup.get('participants') as FormArray;
-      appointment.participants.forEach(p => {
-        participantsArray.push(this.createParticipantGroup({
-          id: p.id,
-          user_id: p.user?.id,
-          first_name: p.user?.first_name || '',
-          last_name: p.user?.last_name || '',
-          email: p.user?.email || '',
-          phone: p.user?.mobile_phone_number || '',
-          timezone: p.user?.timezone || '',
-          communication_method: p.user?.communication_method || '',
-          preferred_language: p.user?.preferred_language || '',
-          is_existing_user: !!p.user,
-          contact_type: p.user?.mobile_phone_number ? 'phone' : 'email',
-        }));
-      });
-    }
-
-    this.appointmentsFormArray.push(appointmentGroup);
-  }
 
   private setupAutoSave(): void {
     this.consultationForm.valueChanges
@@ -516,10 +494,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validateAppointments()) {
-      return;
-    }
-
     this.isSaving.set(true);
 
     if (this.mode === 'create') {
@@ -527,31 +501,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
     } else {
       this.updateConsultation();
     }
-  }
-
-  private validateAppointments(): boolean {
-    let isValid = true;
-    for (let i = 0; i < this.appointmentsFormArray.length; i++) {
-      const appointment = this.appointmentsFormArray.at(i);
-      const dateControl = appointment.get('date');
-      const timeControl = appointment.get('time');
-
-      if (dateControl?.invalid || timeControl?.invalid) {
-        dateControl?.markAsTouched();
-        timeControl?.markAsTouched();
-        isValid = false;
-      }
-    }
-
-    if (!isValid) {
-      this.toasterService.show(
-        'error',
-        this.t.instant('consultationForm.validationError'),
-        this.t.instant('consultationForm.fillAppointmentFields')
-      );
-    }
-
-    return isValid;
   }
 
   createConsultation(): void {
@@ -577,8 +526,9 @@ export class ConsultationForm implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: consultation => {
-          if (this.appointmentsFormArray.length > 0) {
-            this.createAppointmentsForConsultation(consultation.id);
+          // Si des appointments en attente, on les crée avec le consultationId
+          if (this.pendingAppointmentRequests().length > 0) {
+            this.createPendingAppointments(consultation.id);
           } else {
             this.toasterService.show(
               'success',
@@ -599,49 +549,40 @@ export class ConsultationForm implements OnInit, OnDestroy {
       });
   }
 
-  private createAppointmentsForConsultation(consultationId: number): void {
-    const appointments = this.appointmentsFormArray.value as IAppointmentFormValue[];
+  private createPendingAppointments(consultationId: number): void {
+    const pendingRequests = this.pendingAppointmentRequests();
     let completed = 0;
+    let errors = 0;
 
-    appointments.forEach((apt: IAppointmentFormValue) => {
-      const scheduledAt = this.combineDateTime(apt.date, apt.time);
-      const { participants_ids, temporary_participants } = this.mapParticipantsForRequest(apt.participants);
-
-      const appointmentData: CreateAppointmentRequest = {
-        scheduled_at: scheduledAt,
-        type: apt.type,
-        title: apt.title || undefined,
-        dont_invite_beneficiary: apt.dont_invite_beneficiary,
-        dont_invite_practitioner: apt.dont_invite_practitioner,
-        dont_invite_me: apt.dont_invite_me,
-        participants_ids,
-        temporary_participants,
-      };
-
+    pendingRequests.forEach(appointmentData => {
       this.consultationService
         .createConsultationAppointment(consultationId, appointmentData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
             completed++;
-            if (completed === appointments.length) {
+            if (completed + errors === pendingRequests.length) {
+              this.isSaving.set(false);
               this.toasterService.show(
                 'success',
-                'Consultation Created',
-                'Consultation created successfully'
+                this.t.instant('consultationForm.consultationCreated'),
+                this.t.instant('consultationForm.consultationCreatedMessage')
               );
-              this.isSaving.set(false);
               this.router.navigate([
                 `/${RoutePaths.USER}/${RoutePaths.CONSULTATIONS}`,
                 consultationId,
               ]);
             }
           },
-          error: (error: HttpErrorResponse) => {
-            this.toasterService.show('error', this.t.instant('consultationForm.errorCreatingAppointment'), getErrorMessage(error));
-            completed++;
-            if (completed === appointments.length) {
+          error: () => {
+            errors++;
+            if (completed + errors === pendingRequests.length) {
               this.isSaving.set(false);
+              this.toasterService.show(
+                'warning',
+                this.t.instant('consultationForm.consultationCreated'),
+                this.t.instant('consultationForm.someAppointmentsNotCreated')
+              );
               this.router.navigate([
                 `/${RoutePaths.USER}/${RoutePaths.CONSULTATIONS}`,
                 consultationId,
@@ -651,6 +592,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
         });
     });
   }
+
 
   updateConsultation(): void {
     if (!this.consultationId) return;
@@ -725,7 +667,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
     } else {
       this.consultationForm.patchValue({ owned_by_id: '' });
     }
-    this.updateInviteCheckboxStates();
   }
 
   private setupOwnerSync(): void {
@@ -738,8 +679,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
         } else {
           this.selectedOwner.set(null);
         }
-        this.updateInviteCheckboxStates();
-      });
+          });
 
     this.consultationForm.get('beneficiary_id')?.valueChanges
       .pipe(takeUntil(this.destroy$))
@@ -750,8 +690,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
         } else {
           this.selectedBeneficiary.set(null);
         }
-        this.updateInviteCheckboxStates();
-      });
+          });
   }
 
   nextStep(): void {
@@ -803,262 +742,10 @@ export class ConsultationForm implements OnInit, OnDestroy {
     }
   }
 
-  addAppointment(): void {
-    const appointmentGroup = this.fb.group({
-      id: [null],
-      title: [''],
-      date: ['', Validators.required],
-      time: ['', Validators.required],
-      type: [AppointmentType.ONLINE, Validators.required],
-      dont_invite_beneficiary: [{ value: false, disabled: this.isBeneficiaryCheckboxDisabled() }],
-      dont_invite_practitioner: [{ value: false, disabled: this.isPractitionerCheckboxDisabled() }],
-      dont_invite_me: [false],
-      participants: this.fb.array([]),
-    });
-    this.appointmentsFormArray.push(appointmentGroup);
-  }
 
-  updateInviteCheckboxStates(): void {
-    const beneficiaryDisabled = this.isBeneficiaryCheckboxDisabled();
-    const practitionerDisabled = this.isPractitionerCheckboxDisabled();
 
-    for (let i = 0; i < this.appointmentsFormArray.length; i++) {
-      const appointment = this.appointmentsFormArray.at(i);
-      const beneficiaryControl = appointment.get('dont_invite_beneficiary');
-      const practitionerControl = appointment.get('dont_invite_practitioner');
 
-      if (beneficiaryDisabled) {
-        beneficiaryControl?.disable();
-      } else {
-        beneficiaryControl?.enable();
-      }
 
-      if (practitionerDisabled) {
-        practitionerControl?.disable();
-      } else {
-        practitionerControl?.enable();
-      }
-    }
-  }
-
-  removeAppointment(index: number): void {
-    const appointment = this.appointmentsFormArray.at(index);
-    const appointmentId = appointment.get('id')?.value;
-
-    if (appointmentId && this.mode === 'edit') {
-      this.consultationService
-        .deleteAppointment(appointmentId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.appointmentsFormArray.removeAt(index);
-            this.toasterService.show('success', this.t.instant('consultationForm.appointmentRemoved'), this.t.instant('consultationForm.appointmentRemovedMessage'));
-          },
-          error: (error) => {
-            this.toasterService.show('error', this.t.instant('consultationForm.errorRemovingAppointment'), getErrorMessage(error));
-          },
-        });
-    } else {
-      this.appointmentsFormArray.removeAt(index);
-    }
-  }
-
-  saveAppointment(index: number): void {
-    if (!this.consultationId) return;
-
-    const appointment = this.appointmentsFormArray.at(index);
-    const appointmentId = appointment.get('id')?.value;
-    const formValue = appointment.value as IAppointmentFormValue;
-
-    const scheduledAt = this.combineDateTime(formValue.date, formValue.time);
-    const { participants_ids, temporary_participants } = this.mapParticipantsForRequest(formValue.participants);
-
-    const saving = new Set(this.savingAppointments());
-    saving.add(index);
-    this.savingAppointments.set(saving);
-
-    if (appointmentId) {
-      this.consultationService
-        .updateAppointment(appointmentId, {
-          scheduled_at: scheduledAt,
-          type: formValue.type,
-          title: formValue.title || undefined,
-          participants_ids,
-          temporary_participants,
-        })
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            const s = new Set(this.savingAppointments());
-            s.delete(index);
-            this.savingAppointments.set(s);
-            this.toasterService.show('success', this.t.instant('consultationForm.appointmentUpdated'), this.t.instant('consultationForm.appointmentUpdatedMessage'));
-          },
-          error: (error) => {
-            const s = new Set(this.savingAppointments());
-            s.delete(index);
-            this.savingAppointments.set(s);
-            this.toasterService.show('error', this.t.instant('consultationForm.errorUpdatingAppointment'), getErrorMessage(error));
-          },
-        });
-    } else {
-      const appointmentData: CreateAppointmentRequest = {
-        scheduled_at: scheduledAt,
-        type: formValue.type,
-        title: formValue.title || undefined,
-        dont_invite_beneficiary: formValue.dont_invite_beneficiary,
-        dont_invite_practitioner: formValue.dont_invite_practitioner,
-        dont_invite_me: formValue.dont_invite_me,
-        participants_ids,
-        temporary_participants,
-      };
-
-      this.consultationService
-        .createConsultationAppointment(this.consultationId, appointmentData)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (created: Appointment) => {
-            appointment.patchValue({ id: created.id });
-            const s = new Set(this.savingAppointments());
-            s.delete(index);
-            this.savingAppointments.set(s);
-            this.toasterService.show('success', this.t.instant('consultationForm.appointmentCreated'), this.t.instant('consultationForm.appointmentCreatedMessage'));
-          },
-          error: (error: HttpErrorResponse) => {
-            const s = new Set(this.savingAppointments());
-            s.delete(index);
-            this.savingAppointments.set(s);
-            this.toasterService.show('error', this.t.instant('consultationForm.errorCreatingAppointment'), getErrorMessage(error));
-          },
-        });
-    }
-  }
-
-  isAppointmentSaving(index: number): boolean {
-    return this.savingAppointments().has(index);
-  }
-
-  hasAppointmentId(index: number): boolean {
-    const appointment = this.appointmentsFormArray.at(index);
-    return !!appointment?.get('id')?.value;
-  }
-
-  isAppointmentFieldInvalid(appointmentIndex: number, fieldName: string): boolean {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    const field = appointment?.get(fieldName);
-    return (field?.invalid && field?.touched) || false;
-  }
-
-  getAppointmentFieldError(appointmentIndex: number, fieldName: string): string {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    const field = appointment?.get(fieldName);
-    if (field?.errors && field?.touched) {
-      if (field.errors['required']) {
-        return this.t.instant('consultationForm.fieldRequired', { field: fieldName });
-      }
-    }
-    return '';
-  }
-
-  getParticipantsFormArray(appointmentIndex: number): FormArray {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    return appointment.get('participants') as FormArray;
-  }
-
-  addParticipantToAppointment(appointmentIndex: number): void {
-    const participantsArray = this.getParticipantsFormArray(appointmentIndex);
-    participantsArray.push(this.createParticipantGroup());
-  }
-
-  removeParticipantFromAppointment(appointmentIndex: number, participantIndex: number): void {
-    const participantsArray = this.getParticipantsFormArray(appointmentIndex);
-    participantsArray.removeAt(participantIndex);
-  }
-
-  private createParticipantGroup(data?: Record<string, unknown>): FormGroup {
-    return this.fb.group({
-      id: [data?.['id'] || null],
-      user_id: [data?.['user_id'] || null],
-      first_name: [data?.['first_name'] || ''],
-      last_name: [data?.['last_name'] || ''],
-      email: [data?.['email'] || ''],
-      phone: [data?.['phone'] || ''],
-      timezone: [data?.['timezone'] || ''],
-      communication_method: [data?.['communication_method'] || ''],
-      preferred_language: [data?.['preferred_language'] || ''],
-      is_existing_user: [data?.['is_existing_user'] !== undefined ? data['is_existing_user'] : true],
-      contact_type: [data?.['contact_type'] || 'email'],
-    });
-  }
-
-  isParticipantExistingUser(appointmentIndex: number, participantIndex: number): boolean {
-    const participant = this.getParticipantsFormArray(appointmentIndex).at(participantIndex);
-    return participant?.get('is_existing_user')?.value || false;
-  }
-
-  setParticipantType(appointmentIndex: number, participantIndex: number, isExistingUser: boolean): void {
-    const participant = this.getParticipantsFormArray(appointmentIndex).at(participantIndex);
-    participant.patchValue({ is_existing_user: isExistingUser });
-    if (isExistingUser) {
-      participant.patchValue({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
-      });
-    } else {
-      participant.patchValue({ user_id: null });
-    }
-  }
-
-  getParticipantContactType(appointmentIndex: number, participantIndex: number): string {
-    const participant = this.getParticipantsFormArray(appointmentIndex).at(participantIndex);
-    return participant?.get('contact_type')?.value || 'email';
-  }
-
-  setParticipantContactType(appointmentIndex: number, participantIndex: number, contactType: string): void {
-    const participant = this.getParticipantsFormArray(appointmentIndex).at(participantIndex);
-    participant.patchValue({ contact_type: contactType, email: '', phone: '' });
-  }
-
-  onParticipantUserSelected(appointmentIndex: number, participantIndex: number, user: IUser | null): void {
-    const participant = this.getParticipantsFormArray(appointmentIndex).at(participantIndex);
-    if (user) {
-      participant.patchValue({
-        user_id: user.pk,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-      });
-    } else {
-      participant.patchValue({
-        user_id: null,
-        first_name: '',
-        last_name: '',
-        email: '',
-      });
-    }
-  }
-
-  setAppointmentType(appointmentIndex: number, type: AppointmentType): void {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    appointment.patchValue({ type });
-  }
-
-  getAppointmentType(appointmentIndex: number): AppointmentType {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    return appointment?.get('type')?.value || AppointmentType.ONLINE;
-  }
-
-  getAppointmentControl(appointmentIndex: number, controlName: string): { value: boolean } {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    return appointment?.get(controlName) || { value: false };
-  }
-
-  toggleInvite(appointmentIndex: number, controlName: string, invited: boolean): void {
-    const appointment = this.appointmentsFormArray.at(appointmentIndex);
-    appointment?.get(controlName)?.setValue(!invited);
-  }
 
   getBeneficiaryUser(): IUser | null {
     const beneficiary = this.selectedBeneficiary();
@@ -1110,13 +797,6 @@ export class ConsultationForm implements OnInit, OnDestroy {
     return this.currentUser();
   }
 
-  isBeneficiaryCheckboxDisabled(): boolean {
-    return !this.getBeneficiaryUser();
-  }
-
-  isPractitionerCheckboxDisabled(): boolean {
-    return !this.getOwnerUser();
-  }
 
   onBeneficiarySelected(user: IUser | null): void {
     this.selectedBeneficiary.set(user);
@@ -1125,53 +805,8 @@ export class ConsultationForm implements OnInit, OnDestroy {
     } else {
       this.consultationForm.patchValue({ beneficiary_id: '' });
     }
-    this.updateInviteCheckboxStates();
   }
 
-  private mapParticipantsForRequest(participants: IParticipantFormValue[]): {
-    participants_ids: number[];
-    temporary_participants: ITemporaryParticipant[];
-  } {
-    const participants_ids: number[] = [];
-    const temporary_participants: ITemporaryParticipant[] = [];
-
-    if (!participants || participants.length === 0) {
-      return { participants_ids, temporary_participants };
-    }
-
-    for (const p of participants) {
-      if (p.is_existing_user && p.user_id) {
-        participants_ids.push(p.user_id);
-      } else {
-        const tempParticipant: ITemporaryParticipant = {};
-
-        if (p.first_name) {
-          tempParticipant.first_name = p.first_name;
-        }
-        if (p.last_name) {
-          tempParticipant.last_name = p.last_name;
-        }
-        if (p.contact_type === 'email' && p.email) {
-          tempParticipant.email = p.email;
-        } else if (p.contact_type === 'phone' && p.phone) {
-          tempParticipant.mobile_phone_number = p.phone;
-        }
-        if (p.timezone) {
-          tempParticipant.timezone = p.timezone;
-        }
-        if (p.communication_method) {
-          tempParticipant.communication_method = p.communication_method;
-        }
-        if (p.preferred_language) {
-          tempParticipant.preferred_language = p.preferred_language;
-        }
-
-        temporary_participants.push(tempParticipant);
-      }
-    }
-
-    return { participants_ids, temporary_participants };
-  }
 
   getCustomFieldOptions(field: CustomField): SelectOption[] {
     return (field.options || []).map(o => ({ value: o, label: o }));
@@ -1189,7 +824,4 @@ export class ConsultationForm implements OnInit, OnDestroy {
       }));
   }
 
-  private combineDateTime(date: string, time: string): string {
-    return `${date}T${time}:00`;
-  }
 }

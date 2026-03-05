@@ -184,6 +184,7 @@
             <app-input
               type="email"
               [label]="'appointmentForm.emailAddress' | translate"
+              [required]="true"
               leftIcon="email"
               [placeholder]="'appointmentForm.emailPlaceholder' | translate"
               formControlName="email">
@@ -194,6 +195,7 @@
             <app-input
               type="tel"
               [label]="'appointmentForm.phoneNumber' | translate"
+              [required]="true"
               leftIcon="phone"
               [placeholder]="'appointmentForm.phonePlaceholder' | translate"
               formControlName="phone">
@@ -237,10 +239,11 @@
                 [placeholder]="'appointmentForm.selectTimezone' | translate">
               </app-select>
             </div>
-            @if (participantForm.get('contact_type')?.value !== 'email' && participantForm.get('contact_type')?.value !== 'manual') {
+            @if (shouldShowCommunicationMethodField) {
             <div class="form-group">
               <app-select
                 [label]="'appointmentForm.communicationMethod' | translate"
+                [required]="hasMultipleCommunicationMethods"
                 formControlName="communication_method"
                 [options]="communicationMethods"
                 [placeholder]="'appointmentForm.selectMethod' | translate">

@@ -144,6 +144,25 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     return options;
   }
 
+  get hasMultipleCommunicationMethods(): boolean {
+    return this.communicationMethods.length > 1;
+  }
+
+  get shouldShowCommunicationMethodField(): boolean {
+    const contactType = this.participantForm?.get('contact_type')?.value;
+    return contactType === 'sms' && this.communicationMethods.length > 0;
+  }
+
+  get defaultContactType(): string {
+    if (this.hasEmailMethod) {
+      return 'email';
+    } else if (this.hasPhoneMethod) {
+      return 'sms';
+    } else {
+      return 'manual';
+    }
+  }
+
   get languageOptions(): SelectOption[] {
     return [
       { value: 'en', label: this.t.instant('appointmentForm.english') },
@@ -208,13 +227,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
             config.communication_methods || []
           );
           // Set default contact_type based on available methods
-          if (this.hasEmailMethod) {
-            this.participantForm.patchValue({ contact_type: 'email' });
-          } else if (this.hasPhoneMethod) {
-            this.participantForm.patchValue({ contact_type: 'sms' });
-          } else {
-            this.participantForm.patchValue({ contact_type: 'manual' });
-          }
+          this.participantForm.patchValue({ contact_type: this.defaultContactType });
         },
       });
   }
@@ -309,13 +322,50 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       user_id: [null],
       first_name: [''],
       last_name: [''],
-      email: ['', [Validators.email]],
+      email: [''],
       phone: [''],
       contact_type: ['email', [Validators.required]],
       timezone: [currentUserData?.timezone || ''],
       communication_method: [currentUserData?.communication_method || ''],
       preferred_language: [currentUserData?.preferred_language || ''],
     });
+
+    // Update validators when contact_type changes
+    this.participantForm.get('contact_type')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(contactType => {
+        this.updateParticipantValidators(contactType);
+      });
+  }
+
+  private updateParticipantValidators(contactType: string): void {
+    const emailControl = this.participantForm.get('email');
+    const phoneControl = this.participantForm.get('phone');
+    const communicationMethodControl = this.participantForm.get('communication_method');
+
+    // Reset validators
+    emailControl?.clearValidators();
+    phoneControl?.clearValidators();
+    communicationMethodControl?.clearValidators();
+
+    // Apply validators based on contact type
+    if (contactType === 'email') {
+      emailControl?.setValidators([Validators.required, Validators.email]);
+    } else if (contactType === 'sms') {
+      phoneControl?.setValidators([Validators.required]);
+      if (this.hasMultipleCommunicationMethods) {
+        communicationMethodControl?.setValidators([Validators.required]);
+        communicationMethodControl?.enable();
+      } else {
+        // Disable if only one method available
+        communicationMethodControl?.disable();
+      }
+    }
+
+    // Update validity
+    emailControl?.updateValueAndValidity();
+    phoneControl?.updateValueAndValidity();
+    communicationMethodControl?.updateValueAndValidity();
   }
 
   resetForm(): void {
@@ -422,7 +472,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     this.selectedParticipantUser.set(null);
     const currentUserData = this.currentUser();
     this.participantForm.reset({
-      contact_type: 'email',
+      contact_type: this.defaultContactType,
       timezone: currentUserData?.timezone || '',
       communication_method: currentUserData?.communication_method || '',
       preferred_language: currentUserData?.preferred_language || '',
@@ -431,9 +481,23 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   setParticipantMessageType(type: string): void {
+    let communicationMethod = '';
+
+    if (type === 'email') {
+      communicationMethod = 'email';
+    } else if (type === 'manual') {
+      communicationMethod = 'manual';
+    } else if (type === 'sms') {
+      // Auto-select communication method if only one is available
+      const methods = this.communicationMethods;
+      if (methods.length === 1) {
+        communicationMethod = String(methods[0].value);
+      }
+    }
+
     this.participantForm.patchValue({
       contact_type: type,
-      communication_method: type === 'email' ? 'email' : type === 'manual' ? 'manual' : '',
+      communication_method: communicationMethod,
     });
   }
 
@@ -498,7 +562,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   private resetParticipantForm(): void {
     const currentUserData = this.currentUser();
     this.participantForm.reset({
-      contact_type: 'email',
+      contact_type: this.defaultContactType,
       timezone: currentUserData?.timezone || '',
       communication_method: currentUserData?.communication_method || '',
       preferred_language: currentUserData?.preferred_language || '',

@@ -1,3 +1,14 @@
+hcw (0.9.58) bookworm; urgency=medium
+
+  * Add validation for the appointment
+  * Improve consultation modal + remove patient field
+  * add back myself
+  * Fix filtering
+  * Fix rendering in user lang for notification
+  * Fix template for localtime
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 14:46:10 +0100
+
 hcw (0.9.57) bookworm; urgency=medium
 
   * Fix form communication_method

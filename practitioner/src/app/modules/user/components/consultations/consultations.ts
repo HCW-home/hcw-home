@@ -118,6 +118,9 @@ export class Consultations implements OnInit, OnDestroy {
   filterCreatedBy = signal<number | null>(null);
   filterOwnedBy = signal<number | null>(null);
   filterGroup = signal<number | null>(null);
+  filterBeneficiaryUser = signal<IUser | null>(null);
+  filterCreatedByUser = signal<IUser | null>(null);
+  filterOwnedByUser = signal<IUser | null>(null);
   activeFilterCount = computed(() => {
     let count = 0;
     if (this.filterBeneficiary()) count++;
@@ -394,16 +397,19 @@ export class Consultations implements OnInit, OnDestroy {
 
   onBeneficiaryChange(user: IUser | null): void {
     this.filterBeneficiary.set(user?.pk ?? null);
+    this.filterBeneficiaryUser.set(user);
     this.applyFilters();
   }
 
   onCreatedByChange(user: IUser | null): void {
     this.filterCreatedBy.set(user?.pk ?? null);
+    this.filterCreatedByUser.set(user);
     this.applyFilters();
   }
 
   onOwnedByChange(user: IUser | null): void {
     this.filterOwnedBy.set(user?.pk ?? null);
+    this.filterOwnedByUser.set(user);
     this.applyFilters();
   }
 

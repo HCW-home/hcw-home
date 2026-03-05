@@ -29,6 +29,7 @@
           <app-user-search-select
             [label]="'consultations.beneficiary' | translate"
             [placeholder]="'consultations.searchBeneficiary' | translate"
+            [initialUser]="filterBeneficiaryUser()"
             (userSelected)="onBeneficiaryChange($event)">
           </app-user-search-select>
         </div>
@@ -37,6 +38,7 @@
             [label]="'consultations.createdBy' | translate"
             [placeholder]="'consultations.searchCreator' | translate"
             [meUser]="currentUser()"
+            [initialUser]="filterCreatedByUser()"
             (userSelected)="onCreatedByChange($event)">
           </app-user-search-select>
         </div>
@@ -46,6 +48,7 @@
             [placeholder]="'consultations.searchPractitioner' | translate"
             [isPractitioner]="true"
             [meUser]="currentUser()"
+            [initialUser]="filterOwnedByUser()"
             (userSelected)="onOwnedByChange($event)">
           </app-user-search-select>
         </div>
@@ -54,7 +57,7 @@
             >{{ 'consultations.group' | translate }}</label
           >
           <div class="filter-select-wrapper">
-            <select class="filter-select" (change)="onGroupChange($event)">
+            <select class="filter-select" [value]="filterGroup() || ''" (change)="onGroupChange($event)">
               <option value="">
                 {{ 'consultations.allGroups' | translate }}
               </option>

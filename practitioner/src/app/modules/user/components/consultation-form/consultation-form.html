@@ -231,6 +231,26 @@
                   </div>
                 }
 
+                <div class="participants-section">
+                  <span class="participants-label">
+                    {{ 'consultationDetail.participantsCount' | translate: { count: getPendingAppointmentParticipants(pendingRequest).length } }}
+                  </span>
+                  @if (getPendingAppointmentParticipants(pendingRequest).length) {
+                  <div class="participants-list">
+                    @for (participant of getPendingAppointmentParticipants(pendingRequest); track $index) {
+                    <app-participant-item
+                      [pendingParticipant]="participant"
+                      [isPending]="true">
+                    </app-participant-item>
+                    }
+                  </div>
+                  } @else {
+                  <span class="no-participants">
+                    {{ 'consultationDetail.noParticipantsAdded' | translate }}
+                  </span>
+                  }
+                </div>
+
                 <div class="appointment-actions">
                   <app-button
                     [text]="'consultationForm.remove' | translate"

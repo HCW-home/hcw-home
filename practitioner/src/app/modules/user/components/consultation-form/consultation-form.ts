@@ -39,6 +39,7 @@ import { Stepper } from '../../../../shared/components/stepper/stepper';
 import { IStep } from '../../../../shared/components/stepper/stepper-models';
 import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
 import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
+import { ParticipantItem } from '../../../../shared/components/participant-item/participant-item';
 
 import { Typography } from '../../../../shared/ui-components/typography/typography';
 import { Select, AsyncSearchFn, AsyncSearchResult } from '../../../../shared/ui-components/select/select';
@@ -82,6 +83,7 @@ import { TranslationService } from '../../../../core/services/translation.servic
     FormsModule,
     TranslatePipe,
     AppointmentFormModal,
+    ParticipantItem,
   ],
 })
 export class ConsultationForm implements OnInit, OnDestroy {
@@ -820,6 +822,47 @@ export class ConsultationForm implements OnInit, OnDestroy {
         field: parseInt(fieldId, 10),
         value: value as string | null,
       }));
+  }
+
+  getPendingAppointmentParticipants(appointmentRequest: CreateAppointmentRequest): any[] {
+    const participants: any[] = [];
+
+    // Add beneficiary if not excluded
+    if (!appointmentRequest.dont_invite_beneficiary && this.getBeneficiaryUser()) {
+      const beneficiary = this.getBeneficiaryUser()!;
+      participants.push({
+        first_name: beneficiary.first_name,
+        last_name: beneficiary.last_name,
+        email: beneficiary.email,
+      });
+    }
+
+    // Add owner/practitioner if not excluded
+    if (!appointmentRequest.dont_invite_practitioner && this.getOwnerUser()) {
+      const owner = this.getOwnerUser()!;
+      participants.push({
+        first_name: owner.first_name,
+        last_name: owner.last_name,
+        email: owner.email,
+      });
+    }
+
+    // Add current user if not excluded
+    if (!appointmentRequest.dont_invite_me && this.getCurrentUserForInvite()) {
+      const currentUser = this.getCurrentUserForInvite()!;
+      participants.push({
+        first_name: currentUser.first_name,
+        last_name: currentUser.last_name,
+        email: currentUser.email,
+      });
+    }
+
+    // Add temporary participants
+    if (appointmentRequest.temporary_participants) {
+      participants.push(...appointmentRequest.temporary_participants);
+    }
+
+    return participants;
   }
 
 }

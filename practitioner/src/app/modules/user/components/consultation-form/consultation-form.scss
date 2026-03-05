@@ -437,6 +437,26 @@
           }
         }
       }
+
+      .participants-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate-500);
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .no-participants {
+        font-size: 13px;
+        color: var(--slate-400);
+        font-style: italic;
+      }
+
+      .participants-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
     }
 
     .btn-text {
@@ -736,6 +756,30 @@
         font-size: 13px;
         color: var(--slate-500);
         margin-bottom: 16px;
+      }
+
+      .participants-section {
+        margin-bottom: 16px;
+
+        .participants-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--slate-500);
+          margin-bottom: 12px;
+          display: block;
+        }
+
+        .no-participants {
+          font-size: 13px;
+          color: var(--slate-400);
+          font-style: italic;
+        }
+
+        .participants-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
       }
 
       .appointment-actions {

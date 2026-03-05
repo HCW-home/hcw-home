@@ -732,9 +732,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         elif visibility == "alone":
             # Only patients and self
-            return base_queryset.filter(
-                Q(is_practitioner=False) | Q(id=current_user.id)
-            )
+            return base_queryset.exclude(is_practitioner=True)
 
         elif visibility == "organization":
             # All patients and practitioners from same organization(s)

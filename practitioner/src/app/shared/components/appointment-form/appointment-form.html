@@ -148,35 +148,41 @@
             <label class="form-label"
               >{{ 'appointmentForm.contactMethod' | translate }}</label
             >
-            <div class="contact-toggle">
+            <div class="type-toggle compact">
               @if (hasEmailMethod) {
-              <app-button
-                [text]="'appointmentForm.email' | translate"
-                leftIcon="email"
-                [block]="true"
-                [style]="participantForm.get('contact_type')?.value === 'email' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                [size]="ButtonSizeEnum.small"
-                (buttonClick)="setParticipantMessageType('email')">
-              </app-button>
+              <button
+                type="button"
+                class="type-btn"
+                [class.active]="participantForm.get('contact_type')?.value === 'email'"
+                (click)="setParticipantMessageType('email')">
+                <app-svg
+                  src="email"
+                  [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+                {{ 'appointmentForm.email' | translate }}
+              </button>
               }
               @if (hasPhoneMethod) {
-              <app-button
-                [text]="'appointmentForm.phone' | translate"
-                leftIcon="phone"
-                [block]="true"
-                [style]="participantForm.get('contact_type')?.value === 'sms' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                [size]="ButtonSizeEnum.small"
-                (buttonClick)="setParticipantMessageType('sms')">
-              </app-button>
+              <button
+                type="button"
+                class="type-btn"
+                [class.active]="participantForm.get('contact_type')?.value === 'sms'"
+                (click)="setParticipantMessageType('sms')">
+                <app-svg
+                  src="phone"
+                  [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+                {{ 'appointmentForm.phone' | translate }}
+              </button>
               }
-              <app-button
-                [text]="'appointmentForm.manual' | translate"
-                leftIcon="link"
-                [block]="true"
-                [style]="participantForm.get('contact_type')?.value === 'manual' ? ButtonStyleEnum.primary : ButtonStyleEnum.stroke"
-                [size]="ButtonSizeEnum.small"
-                (buttonClick)="setParticipantMessageType('manual')">
-              </app-button>
+              <button
+                type="button"
+                class="type-btn"
+                [class.active]="participantForm.get('contact_type')?.value === 'manual'"
+                (click)="setParticipantMessageType('manual')">
+                <app-svg
+                  src="link"
+                  [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+                {{ 'appointmentForm.manual' | translate }}
+              </button>
             </div>
           </div>
 
@@ -265,7 +271,7 @@
             [text]="'appointmentForm.addParticipant' | translate"
             leftIcon="plus"
             [style]="ButtonStyleEnum.primary"
-            [size]="ButtonSizeEnum.small"
+            [size]="ButtonSizeEnum.medium"
             [disabled]="isAddingParticipant()"
             [loading]="isAddingParticipant()"
             (buttonClick)="addParticipant()">
@@ -348,7 +354,7 @@
     <app-button
       [text]="submitButtonText"
       [size]="ButtonSizeEnum.medium"
-      [style]="ButtonStyleEnum.primary"
+      [style]="showAddParticipantForm() ? ButtonStyleEnum.stroke : ButtonStyleEnum.primary"
       [disabled]="appointmentForm.invalid || isSubmitting()"
       [loading]="isSubmitting()"
       (buttonClick)="submit()">

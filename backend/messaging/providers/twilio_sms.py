@@ -54,7 +54,7 @@ class Main(BaseMessagingProvider):
         url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
 
         # Append access link if action exists
-        message_text = message.content
+        message_text = message.render_content
         if message.access_link:
             message_text = f"{message.content}\n{message.access_link}"
             logger.info(f"Added access_link to message: {message.access_link}")

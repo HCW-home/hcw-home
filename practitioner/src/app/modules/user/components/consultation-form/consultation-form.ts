@@ -46,7 +46,6 @@ import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
 import { Button } from '../../../../shared/ui-components/button/button';
-import { Badge } from '../../../../shared/components/badge/badge';
 
 import { TypographyTypeEnum } from '../../../../shared/constants/typography';
 import { ButtonStateEnum } from '../../../../shared/constants/button';
@@ -83,7 +82,6 @@ import { TranslationService } from '../../../../core/services/translation.servic
     FormsModule,
     TranslatePipe,
     AppointmentFormModal,
-    Badge,
   ],
 })
 export class ConsultationForm implements OnInit, OnDestroy {

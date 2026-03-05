@@ -1,3 +1,9 @@
+hcw (0.9.54) bookworm; urgency=medium
+
+  * Fix sentense
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 12:34:05 +0100
+
 hcw (0.9.53) bookworm; urgency=medium
 
   * Fix template text

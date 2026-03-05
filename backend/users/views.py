@@ -706,9 +706,7 @@ class UserViewSet(viewsets.ModelViewSet):
     Visibility controlled by USERS_VISIBILITY setting
     """
 
-    queryset = User.objects.filter(
-        Q(email__gt='') | Q(first_name__gt='') | Q(last_name__gt='')
-    )
+    queryset = User.objects.exclude(temporary=True)
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated, IsPractitioner]
     pagination_class = UniversalPagination
@@ -723,9 +721,7 @@ class UserViewSet(viewsets.ModelViewSet):
         - "alone": Only patients and self
         - "organization": Only patients and practitioners from same organization
         """
-        base_queryset = User.objects.filter(
-            Q(email__gt='') | Q(first_name__gt='') | Q(last_name__gt='')
-        )
+        base_queryset = self.queryset
 
         visibility = settings.USERS_VISIBILITY
         current_user = self.request.user
@@ -778,6 +774,38 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # Fallback to default if invalid value
         return base_queryset
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new user or merge with existing temporary user.
+        If a temporary user with the same email exists, update it instead.
+        """
+        email = request.data.get('email')
+
+        if email:
+            try:
+                # Check if a temporary user with this email exists
+                existing_user = User.objects.get(email=email, temporary=True)
+
+                # Update the existing temporary user with new data
+                serializer = self.get_serializer(existing_user, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+
+                # Remove temporary flag
+                serializer.validated_data['temporary'] = False
+
+                # Save the updated user
+                serializer.save()
+
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+            except User.DoesNotExist:
+                # No temporary user exists, proceed with normal creation
+                pass
+
+        # Normal user creation
+        return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Prevent updating users with superuser, staff access, or users in groups."""

@@ -1,1 +1,9 @@
-{}
+{
+  "common": {
+    "newVersionAvailable": "Eine neue Version der Anwendung ist verfuegbar",
+    "update": "Aktualisieren",
+    "later": "Spaeter",
+    "appNeedsReload": "Die Anwendung muss neu geladen werden, um fortzufahren",
+    "reload": "Neu laden"
+  }
+}

@@ -11,6 +11,7 @@ import { IncomingCallService } from './core/services/incoming-call.service';
 import { BrowserNotificationService } from './core/services/browser-notification.service';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { ConsultationService } from './core/services/consultation.service';
+import { AppUpdateService } from './core/services/app-update.service';
 import { RoutePaths } from './core/constants/routes';
 
 @Component({
@@ -32,6 +33,7 @@ export class App implements OnInit, OnDestroy {
     private browserNotificationService: BrowserNotificationService,
     private pushNotificationService: PushNotificationService,
     private consultationService: ConsultationService,
+    private appUpdateService: AppUpdateService,
     private router: Router
   ) {}
 
@@ -39,6 +41,7 @@ export class App implements OnInit, OnDestroy {
     this.handleDeepLinks();
     this.setupWebSocketSubscriptions();
     this.loadVapidKey();
+    this.appUpdateService.initialize();
 
     this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))

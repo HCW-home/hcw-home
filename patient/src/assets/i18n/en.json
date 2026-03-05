@@ -16,7 +16,12 @@
     "inPerson": "In person",
     "video": "Video",
     "videoCall": "Video Call",
-    "notSelected": "Not selected"
+    "notSelected": "Not selected",
+    "newVersionAvailable": "A new version of the application is available",
+    "update": "Update",
+    "later": "Later",
+    "appNeedsReload": "The application needs to be reloaded to continue",
+    "reload": "Reload"
   },
   "login": {
     "title": "Sign In",

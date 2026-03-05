@@ -28,6 +28,10 @@
     "networkErrorMessage": "Impossible de joindre le serveur. Veuillez vérifier votre connexion.",
     "errorStatus": "Erreur {{status}}",
     "optional": "(Facultatif)",
+    "newVersionAvailable": "Une nouvelle version de l'application est disponible",
+    "later": "Plus tard",
+    "appNeedsReload": "L'application doit être rechargée pour continuer",
+    "reload": "Recharger",
     "hideDetails": "Masquer les détails",
     "showDetails": "Afficher les détails"
   },

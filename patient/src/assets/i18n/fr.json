@@ -16,7 +16,12 @@
     "inPerson": "En personne",
     "video": "Vidéo",
     "videoCall": "Appel vidéo",
-    "notSelected": "Non sélectionné"
+    "notSelected": "Non sélectionné",
+    "newVersionAvailable": "Une nouvelle version de l'application est disponible",
+    "update": "Mettre à jour",
+    "later": "Plus tard",
+    "appNeedsReload": "L'application doit être rechargée pour continuer",
+    "reload": "Recharger"
   },
   "login": {
     "title": "Se connecter",

@@ -28,6 +28,10 @@
     "networkErrorMessage": "Unable to reach the server. Please check your connection.",
     "errorStatus": "Error {{status}}",
     "optional": "(Optional)",
+    "newVersionAvailable": "A new version of the application is available",
+    "later": "Later",
+    "appNeedsReload": "The application needs to be reloaded to continue",
+    "reload": "Reload",
     "hideDetails": "Hide details",
     "showDetails": "Show details"
   },

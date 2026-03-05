@@ -15,7 +15,12 @@
     "online": "Online",
     "inPerson": "Vor Ort",
     "video": "Video",
-    "notSelected": "Nicht ausgewaehlt"
+    "notSelected": "Nicht ausgewaehlt",
+    "newVersionAvailable": "Eine neue Version der Anwendung ist verfuegbar",
+    "update": "Aktualisieren",
+    "later": "Spaeter",
+    "appNeedsReload": "Die Anwendung muss neu geladen werden, um fortzufahren",
+    "reload": "Neu laden"
   },
   "login": {
     "title": "Anmelden",

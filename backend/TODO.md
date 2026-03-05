@@ -15,7 +15,6 @@
 - patient will be redirected to patient app if login in doctor app
 
 
-- online status is not properly updated in consultations detail for participant
 - dashboard overdue consultations is missing profile picture full path
 - after openid login everything is 403 except for dashboard end-point
 - getting 403 on consultation messages in patient app
@@ -45,3 +44,9 @@ je veux que tu simplifie le status user online :
 - en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
 - coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
 
+
+
+Gérer les mises à jour frontend
+===============================
+
+Il faudrait avertir l'utilisateur lorsque le frontend est mis à jour.

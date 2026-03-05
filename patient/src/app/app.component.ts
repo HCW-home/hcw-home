@@ -15,6 +15,7 @@ import { ConsultationService } from "./core/services/consultation.service";
 import { IncomingCallComponent } from "./shared/components/incoming-call/incoming-call.component";
 import { TranslationService } from "./core/services/translation.service";
 import { PushNotificationService } from "./core/services/push-notification.service";
+import { AppUpdateService } from "./core/services/app-update.service";
 
 @Component({
   selector: "app-root",
@@ -27,6 +28,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private titleService = inject(Title);
   private translationService = inject(TranslationService);
   private pushNotificationService = inject(PushNotificationService);
+  private appUpdateService = inject(AppUpdateService);
 
   constructor(
     private authService: AuthService,
@@ -42,6 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.handleDeepLinks();
     this.setupWebSocketSubscriptions();
     this.loadBranding();
+    this.appUpdateService.initialize();
 
     this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))

@@ -17,7 +17,7 @@ DEFAULT_NOTIFICATION_MESSAGES = {
     },
     "appointment_last_reminder": {
         "template_subject": _(
-            "Your appointment will start in {{config.last_appointment_reminder}}"
+            "Your appointment will start in {{config.appointment_last_reminder}} minutes"
         ),
         "template_content": _(
             """Your consultation appointment start at {{ obj.appointment.scheduled_at|time }}"""

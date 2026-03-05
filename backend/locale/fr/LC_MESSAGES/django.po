@@ -1275,8 +1275,8 @@ msgstr ""
 "time }}."
 
 #: messaging/template.py:20
-msgid "Your appointment will start in {{config.last_appointment_reminder}}"
-msgstr "Votre rendez-vous commencera dans {{config.last_appointment_reminder}}"
+msgid "Your appointment will start in {{config.appointment_last_reminder}} minutes"
+msgstr "Votre rendez-vous commencera dans {{config.appointment_last_reminder}} minutes"
 
 #: messaging/template.py:23
 #, fuzzy

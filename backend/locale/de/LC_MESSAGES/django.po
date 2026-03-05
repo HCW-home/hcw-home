@@ -1135,7 +1135,7 @@ msgid ""
 msgstr ""
 
 #: messaging/template.py:20
-msgid "Your appointment will start in {{config.last_appointment_reminder}}"
+msgid "Your appointment will start in {{config.appointment_last_reminder}} minutes"
 msgstr ""
 
 #: messaging/template.py:23

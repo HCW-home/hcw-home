@@ -837,7 +837,9 @@ class Message(ModelCeleryAbstract):
     def render_content_sms(self):
         try:
             message_text = self.render("template_content")
-            return f"{message_text}\n{self.action_label} {self.access_link}"
+            if self.action_label:
+                return f"{message_text}\n{self.action_label} {self.access_link}"
+            return message_text
         except:
             return ""
 

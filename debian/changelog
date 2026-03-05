@@ -1,3 +1,13 @@
+hcw (0.9.53) bookworm; urgency=medium
+
+  * Fix template text
+  * Generating translation
+  * Generate statics
+  * Translated using Weblate (French)
+  * Added translation using Weblate (German)
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 12:26:38 +0100
+
 hcw (0.9.52) bookworm; urgency=medium
 
   * Fix sentense for adding participant

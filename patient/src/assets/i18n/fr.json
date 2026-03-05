@@ -156,7 +156,9 @@
     "statusClosed": "Clos",
     "statusDraft": "Brouillon",
     "tooEarlyTitle": "Réunion pas encore disponible",
-    "tooEarlyMessage": "La réunion est prévue à {{time}}. Vous ne pouvez rejoindre l'appel que {{minutes}} minutes avant l'heure prévue."
+    "tooEarlyMessage": "La réunion est prévue à {{time}}. Vous ne pouvez rejoindre l'appel que {{minutes}} minutes avant l'heure prévue.",
+    "appointmentNotFound": "Rendez-vous introuvable",
+    "failedToLoadParticipant": "Échec du chargement des informations du participant"
   },
   "newRequest": {
     "selectSpecialty": "Choisir une spécialité",

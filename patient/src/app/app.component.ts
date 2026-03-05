@@ -110,8 +110,8 @@ export class AppComponent implements OnInit, OnDestroy {
                   ? (consultation as { id: number }).id
                   : consultation;
               this.navCtrl.navigateRoot(
-                [`/consultation/${participant.appointment.id}/video`],
-                { queryParams: { type: "appointment", consultationId } },
+                [`/consultation/${consultationId}/video`],
+                { queryParams: { appointmentId: participant.appointment.id } },
               );
             },
             error: () => {

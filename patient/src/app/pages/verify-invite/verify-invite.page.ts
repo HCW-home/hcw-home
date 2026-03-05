@@ -17,6 +17,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ActionHandlerService } from '../../core/services/action-handler.service';
+import { ConsultationService } from '../../core/services/consultation.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 
@@ -60,7 +61,8 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
     private authService: AuthService,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
-    private actionHandler: ActionHandlerService
+    private actionHandler: ActionHandlerService,
+    private consultationService: ConsultationService
   ) {
     this.verificationForm = this.fb.group({
       verification_code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
@@ -172,8 +174,30 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
     });
     await toast.present();
 
-    const route = this.actionHandler.getRouteForAction(this.action, this.actionId);
-    this.navCtrl.navigateRoot(route);
+    if (this.action === 'join' && this.actionId) {
+      this.consultationService
+        .getParticipantById(Number(this.actionId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (participant) => {
+            const consultation = participant.appointment.consultation;
+            const consultationId =
+              typeof consultation === "object"
+                ? (consultation as { id: number }).id
+                : consultation;
+            this.navCtrl.navigateRoot(
+              [`/consultation/${consultationId}/video`],
+              { queryParams: { appointmentId: participant.appointment.id } },
+            );
+          },
+          error: () => {
+            this.navCtrl.navigateRoot([`/confirm-presence/${this.actionId}`]);
+          },
+        });
+    } else {
+      const route = this.actionHandler.getRouteForAction(this.action, this.actionId);
+      this.navCtrl.navigateRoot(route);
+    }
   }
 
   resendVerificationCode(): void {

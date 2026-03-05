@@ -156,7 +156,9 @@
     "statusClosed": "Closed",
     "statusDraft": "Draft",
     "tooEarlyTitle": "Meeting not yet available",
-    "tooEarlyMessage": "The meeting is scheduled at {{time}}. You can only join {{minutes}} minutes before the scheduled time."
+    "tooEarlyMessage": "The meeting is scheduled at {{time}}. You can only join {{minutes}} minutes before the scheduled time.",
+    "appointmentNotFound": "Appointment not found",
+    "failedToLoadParticipant": "Failed to load participant information"
   },
   "newRequest": {
     "selectSpecialty": "Select Specialty",

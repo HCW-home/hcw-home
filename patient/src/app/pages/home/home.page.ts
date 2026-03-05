@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import {
   IonIcon,
   IonContent,
@@ -69,6 +70,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private navCtrl: NavController,
+    private route: ActivatedRoute,
     private authService: AuthService,
     private consultationService: ConsultationService,
     private toastController: ToastController,
@@ -91,6 +93,37 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadDashboard();
     this.listenToWebSocketChanges();
     this.loadConfig();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const participantId = params['participantId'];
+        const join = params['join'];
+
+        if (participantId && join === 'true') {
+          // Clear query params to avoid re-triggering
+          this.navCtrl.navigateRoot('/home', { replaceUrl: true });
+
+          // Fetch participant to get appointment ID
+          this.consultationService.getParticipantById(Number(participantId))
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (participant) => {
+                if (participant.appointment) {
+                  this.tryJoinAppointment(participant.appointment);
+                } else {
+                  this.showError(this.t.instant('home.appointmentNotFound'));
+                }
+              },
+              error: (error) => {
+                this.showError(error?.error?.detail || this.t.instant('home.failedToLoadParticipant'));
+              }
+            });
+        }
+      });
   }
 
   loadConfig(): void {

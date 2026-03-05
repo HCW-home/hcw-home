@@ -649,6 +649,17 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
 
     const scheduledAt = `${formValue.date}T${formValue.time}`;
 
+    // Validate scheduled time is not in the past
+    const scheduledDate = new Date(scheduledAt);
+    if (scheduledDate < new Date()) {
+      this.backendErrors.set({
+        date: [this.t.instant('appointmentForm.scheduledInPast')],
+        time: [this.t.instant('appointmentForm.scheduledInPast')],
+      });
+      this.isSubmitting.set(false);
+      return;
+    }
+
     let endExpectedAt: string | undefined;
     if (formValue.end_date && formValue.end_time) {
       endExpectedAt = `${formValue.end_date}T${formValue.end_time}`;

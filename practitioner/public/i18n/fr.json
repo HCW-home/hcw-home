@@ -908,6 +908,7 @@
     "appointmentCreatedMessage": "Le rendez-vous a été créé avec succès",
     "errorCreatingAppointment": "Erreur de création du rendez-vous",
     "errorUpdatingAppointment": "Erreur de mise à jour du rendez-vous",
+    "scheduledInPast": "L'heure du rendez-vous ne peut pas être dans le passé",
     "manual": "Manuelle",
     "manualNotice": "Le lien d'invitation sera disponible à copier une fois le rendez-vous enregistré.",
     "sms": "SMS",

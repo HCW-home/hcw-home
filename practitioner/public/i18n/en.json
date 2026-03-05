@@ -760,6 +760,7 @@
     "appointmentCreatedMessage": "Appointment created successfully",
     "errorCreatingAppointment": "Error Creating Appointment",
     "errorUpdatingAppointment": "Error Updating Appointment",
+    "scheduledInPast": "Appointment time cannot be in the past",
     "manual": "Manual",
     "manualNotice": "The invitation link will be available to copy once the appointment is saved.",
     "sms": "SMS",

@@ -117,6 +117,7 @@ pywebpush==2.3.0
 PyYAML==6.0.3
 redis==7.2.1
 referencing==0.37.0
+reportlab==4.4.10
 requests==2.32.5
 rpds-py==0.30.0
 rsa==4.9.1

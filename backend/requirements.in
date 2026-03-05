@@ -37,3 +37,4 @@ fhir.resources
 django-storages
 boto3
 pywebpush
+reportlab

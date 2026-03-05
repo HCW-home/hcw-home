@@ -45,22 +45,6 @@ je veux que tu simplifie le status user online :
 - en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
 - coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
 
-Bug patient URL
-===============
-
-pour le patient, l'url avec action join n'envoi pas dans la réunion
-mais dans la fenêtre presence.
-lorsque l'url patient contient l'action join, directement faire le join sur l'id 
-fourni également
-
-Problème bulle
-==============
-
-Dans la page http://localhost:4200/app/consultations/86, la bulle
-
-La réunion commence à 16:00. Vous pouvez rejoindre {{minutes}} minutes avant l'heure prévue.
-
-Passe sous le sidebar, du coup le texte est coupé.
 
 Problème endpoint
 =================

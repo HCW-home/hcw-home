@@ -69,18 +69,16 @@ def handle_invites(appointment_id):
         if not participant.is_active:
             template_system_name = "appointment_cancelled"
 
-        sent_by = None
-        if appointment.consultation:
-            sent_by = appointment.consultation.created_by
-        elif appointment.created_by:
-            sent_by = appointment.created_by
+        # Don't notify creator
+        if appointment.created_by == participant.user:
+            continue
 
         message = Message.objects.create(
             communication_method=participant.user.communication_method,
             recipient_phone=participant.user.mobile_phone_number,
             recipient_email=participant.user.email,
             sent_to=participant.user,
-            sent_by=sent_by,
+            sent_by=appointment.created_by,
             template_system_name=template_system_name,
             content_type=ContentType.objects.get_for_model(participant),
             object_id=participant.pk,

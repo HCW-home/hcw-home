@@ -584,10 +584,6 @@
         border-radius: 12px;
         gap: 16px;
 
-        &:hover {
-          border-color: var(--slate-300);
-        }
-
         .appointment-info {
           display: flex;
           flex-direction: column;
@@ -691,11 +687,6 @@
 
       &.pending {
         border-color: var(--amber-300);
-
-        &:hover {
-          border-color: var(--amber-400);
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-        }
       }
 
       .appointment-header {

@@ -874,6 +874,7 @@
     "participantType": "Type de participant",
     "existingUser": "Utilisateur existant",
     "externalGuest": "Invité externe",
+    "selectContact": "Sélectionner un contact",
     "searchByNameOrEmail": "Rechercher par nom ou email...",
     "contactMethod": "Méthode de contact",
     "email": "Email",

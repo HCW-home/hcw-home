@@ -138,7 +138,8 @@
           @if (isExistingUser()) {
           <div class="form-group">
             <app-user-search-select
-              [placeholder]="'appointmentForm.searchByNameOrEmail' | translate"
+              [label]="'appointmentForm.selectContact' | translate"
+              [placeholder]="'appointmentForm.selectContact' | translate"
               (userSelected)="onParticipantUserSelected($event)">
             </app-user-search-select>
           </div>

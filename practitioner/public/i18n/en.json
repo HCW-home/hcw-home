@@ -726,6 +726,7 @@
     "participantType": "Participant Type",
     "existingUser": "Existing User",
     "externalGuest": "External Guest",
+    "selectContact": "Select contact",
     "searchByNameOrEmail": "Search by name or email...",
     "contactMethod": "Contact Method",
     "email": "Email",

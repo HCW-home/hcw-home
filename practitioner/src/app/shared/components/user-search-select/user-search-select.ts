@@ -42,7 +42,7 @@ export class UserSearchSelect
   @ViewChild('searchInputWrapper')
   searchInputWrapper!: ElementRef<HTMLDivElement>;
 
-  label = input<string>('Select Beneficiary');
+  label = input<string>('Select contact');
   placeholder = input<string>('Search by name or email...');
   required = input<boolean>(false);
   initialUser = input<IUser | null>(null);

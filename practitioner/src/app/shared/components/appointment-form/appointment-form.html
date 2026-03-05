@@ -45,15 +45,16 @@
             type="date"
             [label]="'appointmentForm.date' | translate"
             [required]="true"
-            [invalid]="!!getFieldError('date')"
-            [invalidMessage]="getFieldError('date')"
+            [invalid]="!!getAppointmentFieldError('date')"
+            [invalidMessage]="getAppointmentFieldError('date')"
             formControlName="date">
           </app-input>
           <app-input
             type="time"
             [label]="'appointmentForm.time' | translate"
             [required]="true"
-            [invalid]="!!getFieldError('time')"
+            [invalid]="!!getAppointmentFieldError('time')"
+            [invalidMessage]="getAppointmentFieldError('time')"
             formControlName="time">
           </app-input>
         </div>
@@ -361,7 +362,7 @@
       [text]="submitButtonText"
       [size]="ButtonSizeEnum.medium"
       [style]="showAddParticipantForm() ? ButtonStyleEnum.stroke : ButtonStyleEnum.primary"
-      [disabled]="appointmentForm.invalid || isSubmitting()"
+      [disabled]="isSubmitting()"
       [loading]="isSubmitting()"
       (buttonClick)="submit()">
     </app-button>

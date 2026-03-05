@@ -411,6 +411,23 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     return '';
   }
 
+  getAppointmentFieldError(fieldName: string): string {
+    // Check backend errors first
+    const backendError = this.getFieldError(fieldName);
+    if (backendError) {
+      return backendError;
+    }
+
+    // Check validation errors
+    const control = this.appointmentForm.get(fieldName);
+    if (control && control.invalid && control.touched) {
+      if (control.hasError('required')) {
+        return this.t.instant('appointmentForm.fieldRequired');
+      }
+    }
+    return '';
+  }
+
   private populateFormForEdit(): void {
     if (!this.editingAppointment) return;
 
@@ -611,6 +628,11 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   }
 
   submit(): void {
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.appointmentForm.controls).forEach(key => {
+      this.appointmentForm.get(key)?.markAsTouched();
+    });
+
     if (!this.appointmentForm.valid) return;
 
     this.isSubmitting.set(true);

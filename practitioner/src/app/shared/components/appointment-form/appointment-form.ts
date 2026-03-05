@@ -561,14 +561,11 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
-    const formValue = this.participantForm.value;
+    const formValue = this.participantForm.getRawValue();
     const data: CreateParticipantRequest = {};
 
     if (formValue.timezone) {
       data.timezone = formValue.timezone;
-    }
-    if (formValue.communication_method) {
-      data.communication_method = formValue.communication_method;
     }
     if (formValue.preferred_language) {
       data.preferred_language = formValue.preferred_language;
@@ -580,12 +577,24 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       data.last_name = formValue.last_name;
     }
 
-    if (formValue.contact_type === 'email' && formValue.email) {
+    // Determine communication_method based on contact_type
+    let communicationMethod = formValue.communication_method;
+    if (formValue.contact_type === 'email') {
+      communicationMethod = 'email';
       data.email = formValue.email;
-    } else if (formValue.contact_type === 'sms' && formValue.phone) {
+    } else if (formValue.contact_type === 'sms') {
       data.mobile_phone_number = formValue.phone;
+      // Use the selected method, or default to the first available if not set
+      if (!communicationMethod) {
+        const methods = this.communicationMethods;
+        communicationMethod = methods.length > 0 ? String(methods[0].value) : 'sms';
+      }
     } else if (formValue.contact_type === 'manual') {
-      // Manual contact: no email/phone required, link will be shared manually
+      communicationMethod = 'manual';
+    }
+
+    if (communicationMethod) {
+      data.communication_method = communicationMethod;
     }
 
     this.pendingParticipants.update(list => [...list, data]);

@@ -1,8 +1,8 @@
 import { Injectable, ApplicationRef } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, first, switchMap, interval, concat } from 'rxjs';
-import { ToastService } from './toast.service';
+import { filter, first, interval, concat } from 'rxjs';
+import { ToasterService } from './toaster.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ import { ToastService } from './toast.service';
 export class AppUpdateService {
   constructor(
     private swUpdate: SwUpdate,
-    private toastService: ToastService,
+    private toasterService: ToasterService,
     private translate: TranslateService,
     private appRef: ApplicationRef
   ) {}
@@ -43,9 +43,9 @@ export class AppUpdateService {
       .pipe(
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
       )
-      .subscribe(async (evt) => {
+      .subscribe((evt) => {
         console.log('New version available', evt);
-        await this.showUpdateNotification();
+        this.showUpdateNotification();
       });
 
     // Handle unrecoverable state
@@ -55,42 +55,42 @@ export class AppUpdateService {
     });
   }
 
-  private async showUpdateNotification(): Promise<void> {
+  private showUpdateNotification(): void {
     const message = this.translate.instant('common.newVersionAvailable');
     const updateButton = this.translate.instant('common.update');
     const laterButton = this.translate.instant('common.later');
 
-    this.toastService.show({
-      message,
-      type: 'info',
-      duration: 0,
+    this.toasterService.show('info', undefined, message, {
+      delay: -1,
+      closable: true,
       actions: [
         {
-          text: updateButton,
-          onClick: () => {
+          label: updateButton,
+          callback: () => {
             this.activateUpdate();
           }
         },
         {
-          text: laterButton,
-          onClick: () => {}
+          label: laterButton,
+          callback: () => {
+            // Do nothing, just close
+          }
         }
       ]
     });
   }
 
-  private async showUnrecoverableNotification(): Promise<void> {
+  private showUnrecoverableNotification(): void {
     const message = this.translate.instant('common.appNeedsReload');
     const reloadButton = this.translate.instant('common.reload');
 
-    this.toastService.show({
-      message,
-      type: 'error',
-      duration: 0,
+    this.toasterService.show('error', undefined, message, {
+      delay: -1,
+      closable: true,
       actions: [
         {
-          text: reloadButton,
-          onClick: () => {
+          label: reloadButton,
+          callback: () => {
             window.location.reload();
           }
         }

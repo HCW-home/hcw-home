@@ -871,6 +871,7 @@
     "participantsCount": "Participants ({{count}})",
     "cancelLabel": "Annuler",
     "addParticipant": "Ajouter un participant",
+    "addTheParticipant": "Ajouter le participant",
     "participantType": "Type de participant",
     "existingUser": "Utilisateur existant",
     "externalGuest": "Invité externe",

@@ -723,6 +723,7 @@
     "participantsCount": "Participants ({{count}})",
     "cancelLabel": "Cancel",
     "addParticipant": "Add participant",
+    "addTheParticipant": "Add this participant",
     "participantType": "Participant Type",
     "existingUser": "Existing User",
     "externalGuest": "External Guest",

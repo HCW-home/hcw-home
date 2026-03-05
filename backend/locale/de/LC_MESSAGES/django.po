@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-04 14:03+0000\n"
+"POT-Creation-Date: 2026-03-05 10:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -725,100 +725,104 @@ msgstr ""
 msgid "Test connection wiht selected providers"
 msgstr ""
 
-#: messaging/admin.py:149
+#: messaging/admin.py:150
 msgid "Sender & Recipient"
 msgstr ""
 
-#: messaging/admin.py:161
+#: messaging/admin.py:162
 msgid "Content"
 msgstr ""
 
-#: messaging/admin.py:176
+#: messaging/admin.py:178
 msgid "Delivery status"
 msgstr ""
 
-#: messaging/admin.py:189
+#: messaging/admin.py:191
 msgid "Link & Action"
 msgstr ""
 
-#: messaging/admin.py:204
+#: messaging/admin.py:206
 msgid "Technical"
 msgstr ""
 
-#: messaging/admin.py:222 messaging/admin.py:448 messaging/admin.py:469
+#: messaging/admin.py:224 messaging/admin.py:457 messaging/admin.py:478
 msgid "Status"
 msgstr ""
 
-#: messaging/admin.py:235
+#: messaging/admin.py:237
 msgid "Rendering is valid"
 msgstr ""
 
-#: messaging/admin.py:250
+#: messaging/admin.py:252
 msgid "Rendered subject"
 msgstr ""
 
-#: messaging/admin.py:257
+#: messaging/admin.py:259
 msgid "Rendered text content"
 msgstr ""
 
-#: messaging/admin.py:264
+#: messaging/admin.py:266
+msgid "Rendered text content SMS"
+msgstr ""
+
+#: messaging/admin.py:273
 msgid "Rendered HTML content"
 msgstr ""
 
-#: messaging/admin.py:383
+#: messaging/admin.py:392
 msgid ""
 "Hello {{ recipient.name }}!\n"
 "\n"
 "Your consultation is scheduled for {{ appointment.date }}."
 msgstr ""
 
-#: messaging/admin.py:435
+#: messaging/admin.py:444
 msgid "Template Information"
 msgstr ""
 
-#: messaging/admin.py:439
+#: messaging/admin.py:448
 msgid "Validation Details"
 msgstr ""
 
-#: messaging/admin.py:450
+#: messaging/admin.py:459
 msgid "Validation Response"
 msgstr ""
 
-#: messaging/admin.py:457
+#: messaging/admin.py:466
 msgid "Timestamps"
 msgstr ""
 
-#: messaging/admin.py:482
+#: messaging/admin.py:491
 msgid "Content changed"
 msgstr ""
 
-#: messaging/admin.py:507
+#: messaging/admin.py:516
 msgid "Submit templates for validation"
 msgstr ""
 
-#: messaging/admin.py:516
+#: messaging/admin.py:525
 #, python-format
 msgid "%(count)d template(s) submitted for validation."
 msgstr ""
 
-#: messaging/admin.py:520
+#: messaging/admin.py:529
 msgid "Check validation status"
 msgstr ""
 
-#: messaging/admin.py:529
+#: messaging/admin.py:538
 #, python-format
 msgid "Checking status for %(count)d template(s)."
 msgstr ""
 
-#: messaging/admin.py:534
+#: messaging/admin.py:543
 msgid "Generate WhatsApp validations"
 msgstr ""
 
-#: messaging/admin.py:545
+#: messaging/admin.py:554
 msgid "No active WhatsApp provider found."
 msgstr ""
 
-#: messaging/admin.py:566
+#: messaging/admin.py:575
 #, python-format
 msgid ""
 "%(created)d validation(s) created for %(providers)d WhatsApp provider(s)."
@@ -1079,25 +1083,25 @@ msgstr ""
 msgid "recipient email"
 msgstr ""
 
-#: messaging/models.py:917
+#: messaging/models.py:925
 msgid ""
 "You must specify at least a recipient phone, a recipient email or a user in "
 "Sent to"
 msgstr ""
 
-#: messaging/models.py:932
+#: messaging/models.py:940
 msgid "The Sent to user has no phone number, so recipient phone is mandatory"
 msgstr ""
 
-#: messaging/models.py:941
+#: messaging/models.py:949
 msgid "The Sent to user has no email, so recipient email is mandatory"
 msgstr ""
 
-#: messaging/models.py:950
+#: messaging/models.py:958
 msgid "Communication method is required if no sent to user"
 msgstr ""
 
-#: messaging/models.py:968
+#: messaging/models.py:976
 #, python-format
 msgid ""
 "The linked object type (%(actual)s) does not match the expected model "
@@ -1156,55 +1160,53 @@ msgstr ""
 
 #: messaging/template.py:36
 msgid ""
-"Hello,\n"
-"Your consultation has been successfully scheduled. \n"
-"Appointment is scheduled for {{ obj.appointment.scheduled_at|date }} at "
-"{{ obj.appointment.scheduled_at|time }} ({{ obj.appointment.scheduled_at }})"
+"Your consultation has been scheduled for {{ obj.appointment.scheduled_at|"
+"date }} at {{ obj.appointment.scheduled_at|time }} "
+"({{ obj.appointment.scheduled_at }})"
 msgstr ""
 
-#: messaging/template.py:41
+#: messaging/template.py:39
 msgid ""
-"<p>Hello,</p><p>Your consultation has been successfully scheduled.</"
-"p><p>Appointment is scheduled for <strong>{{ obj.appointment.scheduled_at|"
-"date }}</strong> at <strong>{{ obj.appointment.scheduled_at|time }}</strong> "
+"<p>Your consultation has been successfully scheduled.</p><p>Appointment is "
+"scheduled for <strong>{{ obj.appointment.scheduled_at|date }}</strong> at "
+"<strong>{{ obj.appointment.scheduled_at|time }}</strong> "
 "({{ obj.appointment.scheduled_at }})</p>"
 msgstr ""
 
-#: messaging/template.py:46
+#: messaging/template.py:43 messaging/template.py:67
 msgid "Confirm your presence"
 msgstr ""
 
-#: messaging/template.py:51
+#: messaging/template.py:48
 msgid "Your appointment has been cancelled"
 msgstr ""
 
-#: messaging/template.py:52
+#: messaging/template.py:49
 msgid ""
 "Your appointment scheduled for {{ obj.appointment.scheduled_at|date }} at "
 "{{ obj.appointment.scheduled_at|time }} has been cancelled."
 msgstr ""
 
-#: messaging/template.py:53
+#: messaging/template.py:50
 msgid ""
 "<p>Your appointment scheduled for {{ obj.appointment.scheduled_at|date }} at "
 "{{ obj.appointment.scheduled_at|time }} has been cancelled.</p>"
 msgstr ""
 
-#: messaging/template.py:58
+#: messaging/template.py:55
 msgid "Your appointment has been updated"
 msgstr ""
 
-#: messaging/template.py:60
+#: messaging/template.py:57
 msgid ""
 "Your appointment previously scheduled for "
 "{{ obj.appointment.previous_scheduled_at|date }} at "
 "{{ obj.appointment.previous_scheduled_at|time }} is now scheduled for "
 "{{ obj.appointment.scheduled_at|date }} at {{ obj.appointment.scheduled_at|"
 "time }}\n"
-"Please confirm your presence: {{access_link}}"
 msgstr ""
 
-#: messaging/template.py:66
+#: messaging/template.py:62
 msgid ""
 "<p>Your appointment previously scheduled for "
 "<strong>{{ obj.appointment.previous_scheduled_at|date }}</strong> at "
@@ -1213,73 +1215,69 @@ msgid ""
 "<strong>{{ obj.appointment.scheduled_at|time }}</strong></p>"
 msgstr ""
 
-#: messaging/template.py:71
-msgid "Click here to confirm your presence"
-msgstr ""
-
-#: messaging/template.py:76
+#: messaging/template.py:72
 msgid "Your confirmation code"
 msgstr ""
 
-#: messaging/template.py:78
+#: messaging/template.py:74
 msgid ""
 "To continue your login process, please use your the confirmation code: "
 "{{ obj.verification_code }}"
 msgstr ""
 
-#: messaging/template.py:81
+#: messaging/template.py:77
 msgid ""
 "<p>To continue your login process, please use your the confirmation code: "
 "<strong>{{ obj.verification_code }}</strong></p>"
 msgstr ""
 
-#: messaging/template.py:87
+#: messaging/template.py:83
 msgid "New message in consultation"
 msgstr ""
 
-#: messaging/template.py:89
+#: messaging/template.py:85
 msgid ""
 "{{ obj.created_by.name }} sent you a message in consultation "
 "\"{{ obj.consultation.title }}\": {{ obj.content }}"
 msgstr ""
 
-#: messaging/template.py:94
+#: messaging/template.py:90
 msgid ""
 "<p>{{ obj.created_by.name }} sent you a message in consultation "
 "\"{{ obj.consultation.title }}\":</p><p>{{ obj.content }}</p>"
 msgstr ""
 
-#: messaging/template.py:101
+#: messaging/template.py:97
 msgid "Click here to answer"
 msgstr ""
 
-#: messaging/template.py:104
+#: messaging/template.py:100
 msgid "Verify your email address"
 msgstr ""
 
-#: messaging/template.py:106
-msgid "Please verify your email address."
+#: messaging/template.py:102
+msgid "We are requiring to verify your email address."
 msgstr ""
 
-#: messaging/template.py:109
-msgid "<p>Please verify your email address by clicking the link below.</p>"
+#: messaging/template.py:105
+msgid "<p>We are requiring to verify your email address.</p>"
 msgstr ""
 
-#: messaging/template.py:114
+#: messaging/template.py:110
 msgid "Verify my email"
 msgstr ""
 
-#: messaging/template.py:117 messaging/template.py:127
+#: messaging/template.py:113 messaging/template.py:123
 msgid "Reset your password"
 msgstr ""
 
-#: messaging/template.py:119
+#: messaging/template.py:115
 msgid ""
 "You requested a password change, ignore this message if it was not requested "
 "by you."
 msgstr ""
 
-#: messaging/template.py:122
+#: messaging/template.py:118
 msgid ""
 "<p>You requested a password change, ignore this message if it was not "
 "requested by you.</p>"

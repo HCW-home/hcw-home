@@ -413,7 +413,7 @@ class UserNotificationsView(APIView):
         # Apply pagination
         paginator = self.pagination_class()
         paginated_notifications = paginator.paginate_queryset(notifications, request)
-        serializer = MessageSerializer(paginated_notifications, many=True)
+        serializer = MessageSerializer(paginated_notifications, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
 

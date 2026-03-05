@@ -23,7 +23,7 @@ from . import providers
 from .abstracts import ModelCeleryAbstract
 from .providers import BaseMessagingProvider
 from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
-
+from django.template.loader import render_to_string
 
 class CommunicationMethod(models.TextChoices):
     sms = "sms", ("SMS")
@@ -899,7 +899,12 @@ class Message(ModelCeleryAbstract):
                 translation.override(self.language),
                 timezone.override(self.sent_to.user_tz),
             ):
-                env = jinja2.Environment()
+                env = jinja2.Environment(extensions=['jinja2.ext.i18n'])
+                env.install_gettext_callables(
+                    translation.gettext,
+                    translation.ngettext,
+                    newstyle=True,
+                )
                 env.filters.update(register.filters)
 
                 template_str = str(getattr(self.template, field))
@@ -914,6 +919,7 @@ class Message(ModelCeleryAbstract):
                         "access_link": self.access_link,
                     }
                 )
+            
         except Exception as e:
             raise Exception(f"Unable to render: {e}")
 

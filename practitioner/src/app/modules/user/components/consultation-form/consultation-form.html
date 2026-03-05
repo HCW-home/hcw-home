@@ -307,6 +307,7 @@
       [editingAppointment]="editingAppointment()"
       [beneficiary]="consultation()?.beneficiary || null"
       [owner]="consultation()?.owned_by || null"
+      [autoSave]="!!consultationId"
       (closed)="closeAppointmentModal()"
       (appointmentCreated)="onAppointmentCreated($event)"
       (appointmentUpdated)="onAppointmentUpdated($event)"

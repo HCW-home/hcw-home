@@ -550,7 +550,7 @@ class TemplateValidationStatus(models.TextChoices):
     rejected = "rejected", _("Rejected")
     failed = "failed", _("Failed")
     outdated = "outdated", _("Outdated")
-    unused = "unsued", _("Unused")
+    unused = "unused", _("Unused")
 
 
 class TemplateValidation(ModelCeleryAbstract):

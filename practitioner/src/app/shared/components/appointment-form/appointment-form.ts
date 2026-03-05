@@ -81,6 +81,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
   @Input() consultationId?: number;
   @Input() editingAppointment: Appointment | null = null;
   @Input() showActions = true;
+  @Input() autoSave = true;
   @Input() beneficiary: User | null = null;
   @Input() owner: User | null = null;
   @Input() initialStartDate: Date | null = null;
@@ -568,9 +569,7 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
         temporary_participants,
       };
 
-      // Si pas de consultationId, on émet juste les données sans faire le POST
-      // Le parent créera l'appointment après avoir créé la consultation
-      if (!this.consultationId) {
+      if (!this.autoSave) {
         this.isSubmitting.set(false);
         this.appointmentDataReady.emit(createData);
       } else {

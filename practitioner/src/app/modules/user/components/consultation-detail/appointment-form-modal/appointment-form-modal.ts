@@ -22,6 +22,7 @@ export class AppointmentFormModal {
   @Input() isOpen = false;
   @Input() consultationId?: number;
   @Input() editingAppointment: Appointment | null = null;
+  @Input() autoSave = true;
   @Input() beneficiary: User | null = null;
   @Input() owner: User | null = null;
   @Input() initialStartDate: Date | null = null;

@@ -452,18 +452,47 @@ class Main(BaseMessagingProvider):
         response = requests.get(url, headers=headers)
         response_data = response.json() if response.content else {}
 
-        # Get the status from the response
-        # Twilio Content API returns status in different ways depending on the template state
-        status = response_data.get("status", "unknown").lower()
+        logger.info(f"Check validation response: {json.dumps(response_data, indent=2)}")
 
         from ..models import TemplateValidationStatus
 
-        # Map Twilio statuses to our understanding
-        if status in ["approved", "active"]:
+        # Get approval requests link from the response
+        approval_fetch_url = response_data.get("links", {}).get("approval_fetch")
+
+        status = ""
+        if approval_fetch_url:
+            # Fetch approval requests to get WhatsApp status
+            logger.info(f"Fetching approval requests from: {approval_fetch_url}")
+            approval_response = requests.get(approval_fetch_url, headers=headers)
+            approval_data = approval_response.json() if approval_response.content else {}
+            logger.info(f"Approval requests response: {json.dumps(approval_data, indent=2)}")
+
+            # Get WhatsApp approval status directly from the response
+            whatsapp_data = approval_data.get("whatsapp", {})
+            status = whatsapp_data.get("status", "").lower()
+            logger.info(f"WhatsApp approval status: {status}")
+        else:
+            logger.warning("No approval_fetch URL found in response")
+
+        if not status:
+            logger.warning(f"WhatsApp approval status not found")
+
+        # Map Twilio WhatsApp approval statuses to our understanding
+        # Possible statuses: approved, pending, rejected
+        if status == "approved":
             template_validation.status = TemplateValidationStatus.validated
-        elif status in ["pending", "in_review"]:
+            if not template_validation.validated_at:
+                from django.utils import timezone
+                template_validation.validated_at = timezone.now()
+        elif status == "pending":
             template_validation.status = TemplateValidationStatus.pending
-        elif status in ["rejected", "failed"]:
+        elif status == "rejected":
             template_validation.status = TemplateValidationStatus.rejected
         else:
-            template_validation.status = TemplateValidationStatus.unused
+            # If no WhatsApp approval status found, keep current status or set to created
+            logger.warning(f"Unknown or missing WhatsApp approval status: {status}")
+            if not template_validation.status or template_validation.status == TemplateValidationStatus.created:
+                template_validation.status = TemplateValidationStatus.created
+
+        template_validation.validation_response = response_data
+        template_validation.save()

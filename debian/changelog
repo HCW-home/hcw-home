@@ -1,3 +1,12 @@
+hcw (0.9.60) bookworm; urgency=medium
+
+  * Fix xx minute ago message
+  * Handle join action
+  * Fix notif buble on appointment
+  * Fix timezone user on present confirmation
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 16:30:25 +0100
+
 hcw (0.9.59) bookworm; urgency=medium
 
   * Fix again filtering

@@ -1,3 +1,10 @@
+hcw (0.9.61) bookworm; urgency=medium
+
+  * Don't delete temporary user if appointment two scheduled two hour ago
+  * Test with frontend updater
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Thu, 05 Mar 2026 17:49:35 +0100
+
 hcw (0.9.60) bookworm; urgency=medium
 
   * Fix xx minute ago message

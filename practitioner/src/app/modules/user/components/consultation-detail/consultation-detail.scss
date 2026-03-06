@@ -179,6 +179,19 @@
     font-size: 13px;
     color: var(--slate-500);
   }
+
+  .practitioner-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+
+    span {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--primary-500);
+    }
+  }
 }
 
 .video-call-section {

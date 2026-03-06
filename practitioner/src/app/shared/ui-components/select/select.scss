@@ -309,9 +309,32 @@
       flex: 1;
       min-width: 0;
 
+      .option-secondary-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+      }
+
       .select-secondary {
         display: block;
-        margin-top: 1px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+
+      .practitioner-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+
+        span {
+          font-size: 12px;
+          font-weight: 400;
+          color: var(--primary-500);
+        }
       }
     }
 

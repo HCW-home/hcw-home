@@ -288,6 +288,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       image: user.picture || undefined,
       initials,
       isCurrentUser,
+      isPractitioner: user.is_practitioner,
     };
   }
 

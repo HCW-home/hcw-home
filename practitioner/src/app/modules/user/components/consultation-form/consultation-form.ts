@@ -137,6 +137,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       image: beneficiary.picture || undefined,
       initials,
       isCurrentUser,
+      isPractitioner: beneficiary.is_practitioner,
     };
   });
 
@@ -216,6 +217,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
             image: user.picture || undefined,
             initials,
             isCurrentUser,
+            isPractitioner: user.is_practitioner,
           };
         });
         return { results, hasMore: response.next !== null };
@@ -241,6 +243,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
             image: user.picture || undefined,
             initials,
             isCurrentUser,
+            isPractitioner: user.is_practitioner,
           };
         });
         return { results, hasMore: response.next !== null };

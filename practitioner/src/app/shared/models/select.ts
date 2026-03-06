@@ -7,4 +7,5 @@ export interface SelectOption {
   secondaryLabel?: string;
   initials?: string;
   isCurrentUser?: boolean;
+  isPractitioner?: boolean;
 }

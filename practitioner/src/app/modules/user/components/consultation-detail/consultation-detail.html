@@ -133,9 +133,18 @@
                   <span class="info-value"
                     >{{ getCreatedByDisplayName() }}</span
                   >
-                  <span class="info-sub"
-                    >{{ consultation()!.created_by.email }}</span
-                  >
+                  <span class="info-sub">
+                    {{ consultation()!.created_by.email }}
+                    @if (consultation()!.created_by.is_practitioner) {
+                      <span class="practitioner-tag">
+                        <app-svg
+                          src="stethoscope"
+                          [svgStyle]="{'width.px': 12, 'height.px': 12, 'color': 'var(--primary-500)'}">
+                        </app-svg>
+                        <span>{{ 'patients.practitioner' | translate }}</span>
+                      </span>
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -168,9 +177,18 @@
                   <span class="info-value"
                     >{{ getOwnerDisplayName() }}</span
                   >
-                  <span class="info-sub"
-                    >{{ consultation()!.owned_by!.email }}</span
-                  >
+                  <span class="info-sub">
+                    {{ consultation()!.owned_by!.email }}
+                    @if (consultation()!.owned_by!.is_practitioner) {
+                      <span class="practitioner-tag">
+                        <app-svg
+                          src="stethoscope"
+                          [svgStyle]="{'width.px': 12, 'height.px': 12, 'color': 'var(--primary-500)'}">
+                        </app-svg>
+                        <span>{{ 'patients.practitioner' | translate }}</span>
+                      </span>
+                    }
+                  </span>
                 </div>
               </div>
               } @else {
@@ -206,9 +224,18 @@
                     >{{ getBeneficiaryDisplayName() }}</span
                   >
                   @if (consultation()?.beneficiary?.email) {
-                  <span class="info-sub"
-                    >{{ consultation()!.beneficiary!.email }}</span
-                  >
+                  <span class="info-sub">
+                    {{ consultation()!.beneficiary!.email }}
+                    @if (consultation()!.beneficiary!.is_practitioner) {
+                      <span class="practitioner-tag">
+                        <app-svg
+                          src="stethoscope"
+                          [svgStyle]="{'width.px': 12, 'height.px': 12, 'color': 'var(--primary-500)'}">
+                        </app-svg>
+                        <span>{{ 'patients.practitioner' | translate }}</span>
+                      </span>
+                    }
+                  </span>
                   }
                 </div>
               </div>

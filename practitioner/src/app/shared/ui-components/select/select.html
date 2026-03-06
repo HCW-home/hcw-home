@@ -148,12 +148,23 @@
                     {{ opt.label }}
                   </app-typography>
                   @if (opt.secondaryLabel) {
-                    <app-typography
-                      class="select-secondary"
-                      [variant]="TypographyTypeEnum['body-xs-regular']"
-                      color="var(--slate-500)">
-                      {{ opt.secondaryLabel }}
-                    </app-typography>
+                    <div class="option-secondary-row">
+                      <app-typography
+                        class="select-secondary"
+                        [variant]="TypographyTypeEnum['body-xs-regular']"
+                        color="var(--slate-500)">
+                        {{ opt.secondaryLabel }}
+                      </app-typography>
+                      @if (opt.isPractitioner) {
+                        <span class="practitioner-tag">
+                          <app-svg
+                            src="stethoscope"
+                            [svgStyle]="{'width.px': 12, 'height.px': 12, 'color': 'var(--primary-500)'}">
+                          </app-svg>
+                          <span>praticien</span>
+                        </span>
+                      }
+                    </div>
                   }
                 </div>
               }

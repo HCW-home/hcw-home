@@ -29,6 +29,7 @@ export interface User {
   communication_method?: string;
   timezone?: string;
   temporary?: boolean;
+  is_practitioner?: boolean;
 }
 
 export interface Queue {

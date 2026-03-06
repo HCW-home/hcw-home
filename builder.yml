@@ -1,11 +1,14 @@
 flows:
 - deb
 - weblate
+- publish-github
+- sonar
 options:
  distrib: "debian"
  codename: "trixie"
  disable_clean: "true"
  weblate_project: "hcwhome-v6/backend"
+ external_git_url: "git@github.com:HCW-home/hcw-home.git"
 modes:
 - ON_VERSION
 - ON_TAG

@@ -5,7 +5,7 @@ options:
  distrib: "debian"
  codename: "trixie"
  disable_clean: "true"
- weblate_project: "hcwhome-v6"
+ weblate_project: "hcwhome-v6/backend"
 modes:
 - ON_VERSION
 - ON_TAG

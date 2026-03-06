@@ -119,12 +119,12 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
                     )
         return value
 
-    def validate_temporary(self, value):
-        if self.instance and not self.instance.temporary and value:
-            raise serializers.ValidationError(
-                "A permanent patient cannot be made temporary."
-            )
-        return value
+    # def validate_temporary(self, value):
+    #     if self.instance and not self.instance.temporary and value:
+    #         raise serializers.ValidationError(
+    #             "A permanent patient cannot be made temporary."
+    #         )
+    #     return value
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

@@ -731,7 +731,7 @@ class UserViewSet(viewsets.ModelViewSet):
     Visibility controlled by USERS_VISIBILITY setting
     """
 
-    queryset = User.objects.exclude(temporary=True)
+    queryset = User.objects.all()
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated, IsPractitioner]
     pagination_class = UniversalPagination

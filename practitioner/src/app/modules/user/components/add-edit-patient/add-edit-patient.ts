@@ -7,7 +7,6 @@ import { Button } from '../../../../shared/ui-components/button/button';
 import { Input } from '../../../../shared/ui-components/input/input';
 import { Select } from '../../../../shared/ui-components/select/select';
 import { Switch } from '../../../../shared/ui-components/switch/switch';
-import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Textarea } from '../../../../shared/ui-components/textarea/textarea';
 import { TypographyTypeEnum } from '../../../../shared/constants/typography';
 import { ButtonSizeEnum, ButtonStyleEnum } from '../../../../shared/constants/button';
@@ -26,7 +25,7 @@ import { TranslationService } from '../../../../core/services/translation.servic
 
 @Component({
   selector: 'app-add-edit-patient',
-  imports: [CommonModule, ReactiveFormsModule, Typography, Button, Input, Select, Switch, Svg, Textarea, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, Typography, Button, Input, Select, Switch, Textarea, TranslatePipe],
   templateUrl: './add-edit-patient.html',
   styleUrl: './add-edit-patient.scss',
 })
@@ -152,14 +151,9 @@ export class AddEditPatient implements OnInit, OnDestroy {
       email: [p?.email || '', [Validators.email]],
       mobile_phone_number: [p?.mobile_phone_number || ''],
       timezone: [p?.timezone || 'UTC'],
-      preferred_language: [p?.preferred_language || null]
+      preferred_language: [p?.preferred_language || null],
+      temporary: [p?.temporary || false]
     });
-
-    if (this.isEditMode) {
-      if (p?.temporary) {
-        this.form.addControl('temporary', this.fb.control(true));
-      }
-    }
   }
 
   private reinitializeForm(p: IUser | null): void {
@@ -169,18 +163,9 @@ export class AddEditPatient implements OnInit, OnDestroy {
       email: p?.email || '',
       mobile_phone_number: p?.mobile_phone_number || '',
       timezone: p?.timezone || 'UTC',
-      preferred_language: p?.preferred_language || null
+      preferred_language: p?.preferred_language || null,
+      temporary: p?.temporary || false
     });
-
-    if (p) {
-      if (p.temporary && !this.form.get('temporary')) {
-        this.form.addControl('temporary', this.fb.control(true));
-      }
-    } else {
-      if (this.form.get('temporary')) {
-        this.form.removeControl('temporary');
-      }
-    }
 
     // Repopulate custom field values
     if (this.customFieldsForm && p?.custom_fields) {
@@ -220,12 +205,9 @@ export class AddEditPatient implements OnInit, OnDestroy {
         mobile_phone_number: formValue.mobile_phone_number,
         timezone: formValue.timezone,
         preferred_language: formValue.preferred_language,
-        custom_fields: this.buildCustomFieldsPayload()
+        custom_fields: this.buildCustomFieldsPayload(),
+        temporary: formValue.temporary
       };
-
-      if (this.form.get('temporary')) {
-        updateData.temporary = formValue.temporary;
-      }
 
       this.patientService.updatePatient(this.patient()!.pk, updateData).pipe(
         takeUntil(this.destroy$)
@@ -249,7 +231,8 @@ export class AddEditPatient implements OnInit, OnDestroy {
         timezone: formValue.timezone,
         preferred_language: formValue.preferred_language,
         language_ids: [],
-        custom_fields: this.buildCustomFieldsPayload()
+        custom_fields: this.buildCustomFieldsPayload(),
+        temporary: formValue.temporary
       };
 
       this.patientService.createPatient(createData).pipe(

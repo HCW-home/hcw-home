@@ -16,6 +16,7 @@ export interface IPatientCreateRequest {
   communication_method?: string;
   preferred_language?: number | null;
   language_ids?: number[];
+  temporary?: boolean;
   custom_fields?: { field: number; value: string | null }[];
 }
 

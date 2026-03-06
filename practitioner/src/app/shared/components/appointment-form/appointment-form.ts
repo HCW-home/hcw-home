@@ -348,6 +348,11 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
     phoneControl?.clearValidators();
     communicationMethodControl?.clearValidators();
 
+    // Reset touched state to prevent red flash
+    emailControl?.markAsUntouched();
+    phoneControl?.markAsUntouched();
+    communicationMethodControl?.markAsUntouched();
+
     // Apply validators based on contact type
     if (contactType === 'email') {
       emailControl?.setValidators([Validators.required, Validators.email]);
@@ -362,10 +367,10 @@ export class AppointmentForm implements OnInit, OnDestroy, OnChanges {
       }
     }
 
-    // Update validity
-    emailControl?.updateValueAndValidity();
-    phoneControl?.updateValueAndValidity();
-    communicationMethodControl?.updateValueAndValidity();
+    // Update validity without emitting events
+    emailControl?.updateValueAndValidity({ emitEvent: false });
+    phoneControl?.updateValueAndValidity({ emitEvent: false });
+    communicationMethodControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   resetForm(): void {

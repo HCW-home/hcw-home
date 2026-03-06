@@ -425,7 +425,7 @@
     "patientCreatedMessage": "Patient created successfully",
     "errorCreating": "Error Creating Patient",
     "temporary": "Temporary patient",
-    "temporaryNotice": "Once saved, this patient can no longer be set as temporary.",
+    "temporaryNotice": "The patient will be automatically deleted when all their consultations are deleted.",
     "customFields": "Additional Information"
   },
   "patients": {

@@ -141,6 +141,12 @@
         [label]="'addEditPatient.temporary' | translate"
         [formControl]="$any(form.get('temporary'))">
       </app-switch>
+      <app-typography
+        [variant]="TypographyTypeEnum['body-xs-regular']"
+        color="var(--slate-500)"
+        style="margin-top: 4px;">
+        {{ 'addEditPatient.temporaryNotice' | translate }}
+      </app-typography>
     </div>
   </form>
 

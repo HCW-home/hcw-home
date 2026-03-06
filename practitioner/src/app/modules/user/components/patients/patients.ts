@@ -71,13 +71,13 @@ export class Patients implements OnInit, OnDestroy {
   temporaryCount = signal(0);
   searchQuery = '';
   showAddModal = signal(false);
-  activeTab = signal<PatientTabType>('all');
+  activeTab = signal<PatientTabType>('registered');
 
   get tabItems(): TabItem[] {
     return [
-      { id: 'all', label: this.t.instant('patients.tabAll'), count: this.totalCount() },
       { id: 'registered', label: this.t.instant('patients.tabPermanent'), count: this.permanentCount() },
-      { id: 'temporary', label: this.t.instant('patients.tabTemporary'), count: this.temporaryCount() }
+      { id: 'temporary', label: this.t.instant('patients.tabTemporary'), count: this.temporaryCount() },
+      { id: 'all', label: this.t.instant('patients.tabAll'), count: this.totalCount() }
     ];
   }
 

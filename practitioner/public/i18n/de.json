@@ -432,7 +432,7 @@
         "patientCreatedMessage": "Patient erfolgreich erstellt",
         "errorCreating": "Fehler beim Erstellen des Patienten",
         "temporary": "Vorübergehender Patient",
-        "temporaryNotice": "Sobald dieser Patient gespeichert ist, kann er nicht mehr als temporär festgelegt werden.",
+        "temporaryNotice": "Der Patient wird automatisch gelöscht, wenn alle seine Konsultationen gelöscht werden.",
         "customFields": "Weitere Informationen"
     },
     "consultationDetail": {

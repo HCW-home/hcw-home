@@ -396,7 +396,7 @@
         "patientCreatedMessage": "Le patient a été créé avec succès",
         "errorCreating": "Erreur lors de la création",
         "temporary": "Patient temporaire",
-        "temporaryNotice": "Une fois enregistré, ce patient ne pourra plus être remis en temporaire.",
+        "temporaryNotice": "Le patient sera automatiquement supprimé lorsque tous ses suivis seront supprimés.",
         "customFields": "Informations complémentaires"
     },
     "dashboard": {

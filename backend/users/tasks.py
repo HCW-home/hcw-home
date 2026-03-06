@@ -29,8 +29,10 @@ def auto_delete_temporary_users():
         return
 
     two_hours_ago = timezone.now() - timedelta(hours=2)
+    one_hour_ago = timezone.now() - timedelta(hours=1)
     users = User.objects.filter(
-        temporary=True
+        temporary=True,
+        date_joined__lt=one_hour_ago
     ).exclude(
         appointments_participating__status="scheduled",
         appointments_participating__scheduled_at__gt=two_hours_ago,

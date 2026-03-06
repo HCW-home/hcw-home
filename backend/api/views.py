@@ -195,6 +195,10 @@ class AnonymousTokenAuthView(APIView):
 
                     if user.verification_attempts >= MAX_VERIFICATION_ATTEMPTS:
                         user.verification_code = None
+
+                        user.received_messages.filter(
+                            template_system_name='your_authentication_code').delete()
+
                         user.verification_attempts = 0
                         user.save(
                             update_fields=["verification_code", "verification_attempts"]
@@ -218,6 +222,10 @@ class AnonymousTokenAuthView(APIView):
 
                     # Successful verification: reset and start new grace period
                     user.verification_code = None
+
+                    user.received_messages.filter(
+                        template_system_name='your_authentication_code').delete()
+                    
                     user.verification_attempts = 0
                     user.verification_code_created_at = now
                     user.save(

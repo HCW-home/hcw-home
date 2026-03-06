@@ -154,6 +154,7 @@
         "week": "Semaine",
         "month": "Mois",
         "noAppointmentsFound": "Aucun rendez-vous trouvé",
+        "defaultTitle": "Rendez-vous",
         "viewMore": "Voir plus",
         "participantsCount": "Participants ({{count}})",
         "noParticipantsAdded": "Aucun participant ajouté",
@@ -171,7 +172,13 @@
         "participantDraft": "Brouillon",
         "participantUnknown": "Anonyme",
         "errorLoadingAppointments": "Erreur de chargement des rendez-vous",
-        "confirmPresence": "Confirmer la présence"
+        "confirmPresence": "Confirmer la présence",
+        "viewConsultation": "Voir le suivi",
+        "edit": "Modifier",
+        "cancel": "Annuler",
+        "confirmCancel": "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
+        "cancelSuccess": "Rendez-vous annulé avec succès",
+        "cancelError": "Erreur lors de l'annulation du rendez-vous"
     },
     "confirmPresenceModal": {
         "title": "Confirmer votre présence",

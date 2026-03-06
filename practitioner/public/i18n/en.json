@@ -839,6 +839,7 @@
     "week": "Week",
     "month": "Month",
     "noAppointmentsFound": "No appointments found",
+    "defaultTitle": "Appointment",
     "viewMore": "View More",
     "participantsCount": "Participants ({{count}})",
     "noParticipantsAdded": "No participants added",
@@ -856,7 +857,13 @@
     "participantDraft": "Draft",
     "participantUnknown": "Unknown",
     "errorLoadingAppointments": "Error Loading Appointments",
-    "confirmPresence": "Confirm Presence"
+    "confirmPresence": "Confirm Presence",
+    "viewConsultation": "View Consultation",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "confirmCancel": "Are you sure you want to cancel this appointment?",
+    "cancelSuccess": "Appointment cancelled successfully",
+    "cancelError": "Error cancelling appointment"
   },
   "confirmPresenceModal": {
     "title": "Confirm Your Presence",

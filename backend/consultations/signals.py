@@ -236,3 +236,54 @@ def participant_cancelling(sender, instance: Participant, **kwargs):
             content_type=ContentType.objects.get_for_model(instance),
             object_id=instance.pk,
         )
+
+
+@receiver(pre_save, sender=Consultation)
+def track_beneficiary_change(sender, instance: Consultation, **kwargs):
+    """
+    Track if beneficiary is being added or changed on a consultation.
+    Store the old beneficiary ID for comparison in post_save.
+    """
+    if instance.pk:
+        try:
+            old_consultation = Consultation.objects.get(pk=instance.pk)
+            instance._old_beneficiary_id = old_consultation.beneficiary_id
+        except Consultation.DoesNotExist:
+            instance._old_beneficiary_id = None
+    else:
+        instance._old_beneficiary_id = None
+
+
+@receiver(post_save, sender=Consultation)
+def notify_beneficiary_assigned(sender, instance: Consultation, created, **kwargs):
+    """
+    Send notification to beneficiary when they are assigned to a consultation.
+    Only send if the consultation is visible by the patient.
+    """
+    # Check if beneficiary was added or changed
+    old_beneficiary_id = getattr(instance, '_old_beneficiary_id', None)
+    new_beneficiary_id = instance.beneficiary_id
+
+    # Only notify if:
+    # 1. A beneficiary is set
+    # 2. The beneficiary was just added (created=True and beneficiary exists) OR
+    #    the beneficiary was changed (old_beneficiary_id != new_beneficiary_id)
+    # 3. The consultation is visible by the patient
+    should_notify = (
+        new_beneficiary_id and
+        instance.visible_by_patient and
+        (
+            (created and new_beneficiary_id) or
+            (not created and old_beneficiary_id != new_beneficiary_id)
+        )
+    )
+
+    if should_notify:
+        # Create notification for the beneficiary
+        NotificationMessage.objects.create(
+            template_system_name="consultation_assigned",
+            sent_to=instance.beneficiary,
+            sent_by=instance.created_by,
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.pk,
+        )

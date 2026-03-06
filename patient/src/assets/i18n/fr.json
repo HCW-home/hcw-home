@@ -254,6 +254,7 @@
         "messageDeleted": "Message supprimé",
         "loadingImage": "Chargement de l'image...",
         "typePlaceholder": "Tapez un message...",
+        "today": "Aujourd'hui",
         "yesterday": "Hier"
     },
     "preJoinLobby": {

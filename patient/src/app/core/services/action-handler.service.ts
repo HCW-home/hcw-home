@@ -10,6 +10,7 @@ const ACTION_ROUTES: Record<string, ActionConfig> = {
   'presence': { route: '/confirm-presence', requiresAuth: true, appendId: true },
   'join': { route: '/confirm-presence', requiresAuth: true, appendId: true },
   'message': { route: '/home', requiresAuth: true, appendId: false },
+  'consultation': { route: '/consultation', requiresAuth: true, appendId: true },
 };
 
 const DEFAULT_ACTION: ActionConfig = { route: '/home', requiresAuth: true, appendId: false };

@@ -122,6 +122,20 @@ DEFAULT_NOTIFICATION_MESSAGES = {
         "action": "reset",
         "action_label": _("Reset your password"),
     },
+    "consultation_assigned": {
+        "template_subject": _("A consultation has been assigned to you"),
+        "template_content": _(
+            'A consultation "{{ obj.title }}" has been assigned to you. You can now interact with it and view its details.'
+        ),
+        "template_content_html": _(
+            '<p>A consultation <strong>"{{ obj.title }}"</strong> has been assigned to you.</p>'
+            '<p>You can now interact with it and view its details.</p>'
+        ),
+        "action": "consultation",
+        "action_label": _("View consultation"),
+        "model": "consultations.Consultation",
+        "helper_text": "Notification sent to patient when a consultation is assigned to them",
+    },
 }
 
 

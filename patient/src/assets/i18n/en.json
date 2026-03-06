@@ -254,6 +254,7 @@
     "messageDeleted": "Message deleted",
     "loadingImage": "Loading image...",
     "typePlaceholder": "Type a message...",
+    "today": "Today",
     "yesterday": "Yesterday"
   },
   "preJoinLobby": {

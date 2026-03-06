@@ -964,7 +964,9 @@
     "loadingImage": "Loading image...",
     "typeAMessage": "Type a message...",
     "send": "Send",
-    "edited": "(edited)"
+    "edited": "(edited)",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "userSearchSelect": {
     "searchingUsers": "Searching users...",

@@ -1,8 +1,11 @@
 flows:
 - deb
+- weblate
 options:
  distrib: "debian"
  codename: "trixie"
  disable_clean: "true"
+ weblate_project: "hcwhome-v6"
 modes:
 - ON_VERSION
+- ON_TAG

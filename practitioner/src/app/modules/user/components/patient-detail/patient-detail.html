@@ -31,6 +31,7 @@
               >{{ 'patientDetail.practitioner' | translate }}</app-badge
             >
             }
+            @if (canEditPatient()) {
             <app-button
               leftIcon="edit"
               [style]="ButtonStyleEnum.text"
@@ -38,6 +39,7 @@
               buttonClass="edit-icon-btn"
               (buttonClick)="openEditModal()">
             </app-button>
+            }
           </div>
           <div class="patient-contact">
             <div class="contact-item">

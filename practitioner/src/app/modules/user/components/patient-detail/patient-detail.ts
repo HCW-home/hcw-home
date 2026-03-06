@@ -313,4 +313,12 @@ export class PatientDetail implements OnInit, OnDestroy {
         return status;
     }
   }
+
+  canEditPatient(): boolean {
+    const patient = this.patient();
+    if (!patient) return false;
+
+    // Don't allow editing if the patient is a practitioner
+    return !patient.is_practitioner;
+  }
 }

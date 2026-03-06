@@ -42,7 +42,11 @@
               [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
               [options]="[]"
               [asyncSearch]="beneficiarySearchFn"
+              [initialOption]="beneficiaryInitialOption()"
               [clearable]="true"
+              [creatable]="true"
+              [createOptionLabel]="'consultationForm.addPatient' | translate"
+              (createItem)="openAddPatientModal($event)"
               formControlName="beneficiary_id">
             </app-select>
             <span class="field-helper-text">
@@ -334,4 +338,16 @@
       (appointmentDataReady)="onAppointmentDataReady($event)">
     </app-appointment-form-modal>
   }
+
+  <app-modal
+    [isOpen]="isAddPatientModalOpen()"
+    size="large"
+    [showCloseButton]="false"
+    (closed)="closeAddPatientModal()">
+    <app-add-edit-patient
+      [initialName]="newPatientInitialName()"
+      (saved)="onPatientCreated($event)"
+      (cancelled)="closeAddPatientModal()">
+    </app-add-edit-patient>
+  </app-modal>
 </app-page>

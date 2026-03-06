@@ -62,7 +62,7 @@ export class Select implements ControlValueAccessor, OnChanges, OnInit, OnDestro
   openUp = input(false);
   asyncSearch = input<AsyncSearchFn | null>(null);
   initialOption = input<SelectOption | null>(null);
-  createItem = output<boolean>();
+  createItem = output<string>();
 
   value: string | number | null = null;
   display = '';
@@ -208,22 +208,26 @@ export class Select implements ControlValueAccessor, OnChanges, OnInit, OnDestro
   }
 
   get filteredOptions(): SelectOption[] {
+    let base: SelectOption[];
+
     if (this.asyncSearch()) {
-      return this.asyncOptions();
+      base = this.asyncOptions();
+    } else {
+      const search = this.searchTerm.toLowerCase();
+      base = this.options().filter(opt =>
+        opt.label.toLowerCase().includes(search)
+      );
     }
 
-    const search = this.searchTerm.toLowerCase();
-    const base = this.options().filter(opt =>
-      opt.label.toLowerCase().includes(search)
-    );
-    if (this.creatable() && !base.some(o => o.label.toLowerCase() === search)) {
+    // Add creatable option if enabled and search term is not empty
+    if (this.creatable() && this.searchTerm && !base.some(o => o.label.toLowerCase() === this.searchTerm.toLowerCase())) {
       const fake: SelectOption = {
         value: this.createOptionLabel(),
-        label: this.createOptionLabel(),
+        label: `${this.createOptionLabel()} ${this.searchTerm}`,
         disabled: false,
         isNew: true,
       };
-      return [fake, ...base];
+      return [...base, fake];
     }
 
     return base;
@@ -252,7 +256,7 @@ export class Select implements ControlValueAccessor, OnChanges, OnInit, OnDestro
         this.selectOption(opt);
       }
     } else {
-      this.createItem.emit(true);
+      this.createItem.emit(this.searchTerm);
     }
   }
 

@@ -41,8 +41,9 @@ export class AddEditPatient implements OnInit, OnDestroy {
   private t = inject(TranslationService);
 
   patient = input<IUser | null>(null);
+  initialName = input<string>('');
 
-  saved = output<void>();
+  saved = output<IUser>();
   cancelled = output<void>();
 
   constructor() {
@@ -52,6 +53,18 @@ export class AddEditPatient implements OnInit, OnDestroy {
         this.reinitializeForm(patient);
       }
     });
+
+    effect(() => {
+      const name = this.initialName();
+      if (this.form && name && !this.patient()) {
+        this.form.patchValue({ last_name: this.capitalizeFirstLetter(name) });
+      }
+    });
+  }
+
+  private capitalizeFirstLetter(text: string): string {
+    if (!text) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
   protected readonly TypographyTypeEnum = TypographyTypeEnum;
@@ -125,9 +138,17 @@ export class AddEditPatient implements OnInit, OnDestroy {
 
   private initForm(): void {
     const p = this.patient();
+    let firstName = p?.first_name || '';
+    let lastName = p?.last_name || '';
+
+    // If creating a new patient and initialName is provided, use it as last name
+    if (!p && this.initialName()) {
+      lastName = this.capitalizeFirstLetter(this.initialName());
+    }
+
     this.form = this.fb.group({
-      first_name: [p?.first_name || ''],
-      last_name: [p?.last_name || ''],
+      first_name: [firstName],
+      last_name: [lastName],
       email: [p?.email || '', [Validators.email]],
       mobile_phone_number: [p?.mobile_phone_number || ''],
       timezone: [p?.timezone || 'UTC'],
@@ -209,10 +230,10 @@ export class AddEditPatient implements OnInit, OnDestroy {
       this.patientService.updatePatient(this.patient()!.pk, updateData).pipe(
         takeUntil(this.destroy$)
       ).subscribe({
-        next: () => {
+        next: (updatedPatient) => {
           this.toasterService.show('success', this.t.instant('addEditPatient.patientUpdated'), this.t.instant('addEditPatient.patientUpdatedMessage'));
           this.loading = false;
-          this.saved.emit();
+          this.saved.emit(updatedPatient);
         },
         error: (error) => {
           this.toasterService.show('error', this.t.instant('addEditPatient.errorUpdating'), getErrorMessage(error));
@@ -234,10 +255,10 @@ export class AddEditPatient implements OnInit, OnDestroy {
       this.patientService.createPatient(createData).pipe(
         takeUntil(this.destroy$)
       ).subscribe({
-        next: () => {
+        next: (createdPatient) => {
           this.toasterService.show('success', this.t.instant('addEditPatient.patientCreated'), this.t.instant('addEditPatient.patientCreatedMessage'));
           this.loading = false;
-          this.saved.emit();
+          this.saved.emit(createdPatient);
         },
         error: (error) => {
           this.toasterService.show('error', this.t.instant('addEditPatient.errorCreating'), getErrorMessage(error));

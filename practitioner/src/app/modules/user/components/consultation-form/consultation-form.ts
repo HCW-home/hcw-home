@@ -40,6 +40,8 @@ import { IStep } from '../../../../shared/components/stepper/stepper-models';
 import { Checkbox } from '../../../../shared/ui-components/checkbox/checkbox';
 import { AppointmentFormModal } from '../consultation-detail/appointment-form-modal/appointment-form-modal';
 import { ParticipantItem } from '../../../../shared/components/participant-item/participant-item';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { AddEditPatient } from '../add-edit-patient/add-edit-patient';
 
 import { Typography } from '../../../../shared/ui-components/typography/typography';
 import { Select, AsyncSearchFn, AsyncSearchResult } from '../../../../shared/ui-components/select/select';
@@ -84,6 +86,8 @@ import { TranslationService } from '../../../../core/services/translation.servic
     TranslatePipe,
     AppointmentFormModal,
     ParticipantItem,
+    ModalComponent,
+    AddEditPatient,
   ],
 })
 export class ConsultationForm implements OnInit, OnDestroy {
@@ -117,11 +121,27 @@ export class ConsultationForm implements OnInit, OnDestroy {
   private practitionerCache = new Map<number, IUser>();
   private beneficiaryCache = new Map<number, IUser>();
 
+  beneficiaryInitialOption = computed<SelectOption | null>(() => {
+    const beneficiary = this.selectedBeneficiary();
+    if (!beneficiary) return null;
+    const name = `${beneficiary.first_name || ''} ${beneficiary.last_name || ''}`.trim() || beneficiary.email || beneficiary.username || 'User';
+    const initials = this.getUserInitials(beneficiary);
+    return {
+      value: beneficiary.pk,
+      label: name,
+      secondaryLabel: beneficiary.email,
+      image: beneficiary.picture || undefined,
+      initials,
+    };
+  });
+
   // Modal state
   isAppointmentModalOpen = signal(false);
   editingAppointment = signal<Appointment | null>(null);
   appointments = signal<Appointment[]>([]);
   pendingAppointmentRequests = signal<CreateAppointmentRequest[]>([]);
+  isAddPatientModalOpen = signal(false);
+  newPatientInitialName = signal<string>('');
 
   consultationForm!: FormGroup;
 
@@ -805,6 +825,26 @@ export class ConsultationForm implements OnInit, OnDestroy {
     } else {
       this.consultationForm.patchValue({ beneficiary_id: '' });
     }
+  }
+
+  openAddPatientModal(searchTerm: string): void {
+    this.newPatientInitialName.set(searchTerm);
+    this.isAddPatientModalOpen.set(true);
+  }
+
+  closeAddPatientModal(): void {
+    this.isAddPatientModalOpen.set(false);
+    this.newPatientInitialName.set('');
+  }
+
+  onPatientCreated(patient: IUser): void {
+    // Add to cache
+    this.beneficiaryCache.set(patient.pk, patient);
+    // Select the newly created patient
+    this.selectedBeneficiary.set(patient);
+    this.consultationForm.patchValue({ beneficiary_id: patient.pk });
+    // Close modal
+    this.closeAddPatientModal();
   }
 
 

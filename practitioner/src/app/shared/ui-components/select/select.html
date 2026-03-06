@@ -97,30 +97,47 @@
               (mouseenter)="hoverIndex = i"
               (mouseleave)="hoverIndex = null"
               (keydown.enter)="onOptionClick(opt); $event.stopPropagation()">
-              @if (opt.image || opt.initials) {
-                <div class="option-avatar">
-                  @if (opt.image) {
-                    <img [src]="opt.image" alt="" />
-                  } @else {
-                    <span>{{ opt.initials }}</span>
+              @if (opt.isNew) {
+                <div class="create-option-content">
+                  <app-svg
+                    src="plus"
+                    [svgStyle]="{ 'width.px': 18, 'height.px': 18, 'fill': 'var(--blue-600)' }">
+                  </app-svg>
+                  <div class="create-option-text">
+                    <app-typography
+                      class="create-option-label"
+                      [variant]="TypographyTypeEnum['body-medium']"
+                      color="var(--slate-800)">
+                      {{ opt.label }}
+                    </app-typography>
+                  </div>
+                </div>
+              } @else {
+                @if (opt.image || opt.initials) {
+                  <div class="option-avatar">
+                    @if (opt.image) {
+                      <img [src]="opt.image" alt="" />
+                    } @else {
+                      <span>{{ opt.initials }}</span>
+                    }
+                  </div>
+                }
+                <div class="option-content">
+                  <app-typography
+                    class="select-value"
+                    [variant]="TypographyTypeEnum['body-medium']">
+                    {{ opt.label }}
+                  </app-typography>
+                  @if (opt.secondaryLabel) {
+                    <app-typography
+                      class="select-secondary"
+                      [variant]="TypographyTypeEnum['body-xs-regular']"
+                      color="var(--slate-500)">
+                      {{ opt.secondaryLabel }}
+                    </app-typography>
                   }
                 </div>
               }
-              <div class="option-content">
-                <app-typography
-                  class="select-value"
-                  [variant]="TypographyTypeEnum['body-medium']">
-                  {{ opt.label }}
-                </app-typography>
-                @if (opt.secondaryLabel) {
-                  <app-typography
-                    class="select-secondary"
-                    [variant]="TypographyTypeEnum['body-xs-regular']"
-                    color="var(--slate-500)">
-                    {{ opt.secondaryLabel }}
-                  </app-typography>
-                }
-              </div>
             </li>
           }
           @if (asyncSearch() && filteredOptions.length === 0 && !asyncLoading()) {

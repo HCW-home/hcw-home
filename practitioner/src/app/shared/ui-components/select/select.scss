@@ -214,10 +214,30 @@
       }
 
       &.new-option {
-        font-style: italic;
+        padding: 12px 16px;
+        margin-top: 4px;
+        background: var(--blue-50);
+        border: 1px dashed var(--blue-300);
 
-        .select-value {
-          color: var(--primary-500);
+        &.hover:not(.disabled) {
+          background: var(--blue-100);
+          border-color: var(--blue-400);
+        }
+      }
+
+      .create-option-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+
+        .create-option-text {
+          display: flex;
+          flex-direction: column;
+
+          .create-option-label {
+            font-weight: 500;
+          }
         }
       }
 

@@ -399,6 +399,23 @@
         "temporaryNotice": "Le patient sera automatiquement supprimé lorsque tous ses suivis seront supprimés.",
         "customFields": "Informations complémentaires"
     },
+    "patients": {
+        "searchPlaceholder": "Rechercher des contacts...",
+        "addPatient": "Ajouter un contact",
+        "tabAll": "Tous",
+        "tabPermanent": "Permanents",
+        "tabTemporary": "Temporaires",
+        "noPatients": "Aucun contact trouvé",
+        "tryDifferentSearch": "Essayez un autre terme de recherche",
+        "addFirstPatient": "Ajoutez votre premier contact pour commencer",
+        "noContactInfo": "Aucune information de contact",
+        "online": "En ligne",
+        "offline": "Hors ligne",
+        "viewMore": "Voir plus",
+        "errorLoading": "Erreur lors du chargement des contacts",
+        "temporary": "temporaire",
+        "practitioner": "praticien"
+    },
     "dashboard": {
         "loading": "Chargement du tableau de bord...",
         "retry": "Réessayer",

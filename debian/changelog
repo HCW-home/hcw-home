@@ -1,3 +1,14 @@
+hcw (0.9.64) bookworm; urgency=medium
+
+  * Add again missing translation
+  * Cleanup notification when user use verification_code
+  * Add weblate auto notif
+  * Add backend in weblate url
+  * Translated using Weblate (German)
+  * Auto update github
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Fri, 06 Mar 2026 15:33:39 +0100
+
 hcw (0.9.63) bookworm; urgency=medium
 
   [ Olivier Bitsch ]

@@ -244,7 +244,8 @@
                     @for (participant of getPendingAppointmentParticipants(pendingRequest); track $index) {
                     <app-participant-item
                       [pendingParticipant]="participant"
-                      [isPending]="true">
+                      [isPending]="true"
+                      [currentUser]="currentUser()">
                     </app-participant-item>
                     }
                   </div>

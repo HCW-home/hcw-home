@@ -4,7 +4,8 @@
     [lastName]="getLastName()"
     [email]="getEmail()"
     [picture]="getAvatarImage()"
-    [isOnline]="isOnline() ? true : (participant?.user ? false : undefined)">
+    [isOnline]="isOnline() ? true : (participant?.user ? false : undefined)"
+    [isCurrentUser]="isCurrentUser()">
   </app-user-avatar>
   <div class="participant-details">
     <span class="participant-name">{{ getDisplayName() }}</span>

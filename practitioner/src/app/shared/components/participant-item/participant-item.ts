@@ -55,6 +55,7 @@ export class ParticipantItem {
   @Input() pendingParticipant: CreateParticipantRequest | null = null;
   @Input() showRemoveAction = false;
   @Input() isPending = false;
+  @Input() currentUser: any = null;
 
   @Output() remove = new EventEmitter<void>();
 
@@ -92,6 +93,11 @@ export class ParticipantItem {
 
   getDisplayName(): string {
     if (this.participant?.user) {
+      // If this is the current user, show "Me"
+      if (this.currentUser && this.participant.user.id === this.currentUser.pk) {
+        return this.t.instant('userSearchSelect.me');
+      }
+
       const fullName =
         `${this.participant.user.first_name || ''} ${this.participant.user.last_name || ''}`.trim();
       return (
@@ -102,6 +108,11 @@ export class ParticipantItem {
     }
 
     if (this.pendingParticipant) {
+      // If this pending participant is the current user, show "Me"
+      if (this.currentUser && this.pendingParticipant.user_id && this.pendingParticipant.user_id === this.currentUser.pk) {
+        return this.t.instant('userSearchSelect.me');
+      }
+
       const name =
         `${this.pendingParticipant.first_name || ''} ${this.pendingParticipant.last_name || ''}`.trim();
       return (
@@ -148,6 +159,16 @@ export class ParticipantItem {
       fr: 'French',
     };
     return languages[code] || code;
+  }
+
+  isCurrentUser(): boolean {
+    if (this.participant?.user) {
+      return !!(this.currentUser && this.participant.user.id === this.currentUser.pk);
+    }
+    if (this.pendingParticipant) {
+      return !!(this.currentUser && this.pendingParticipant.user_id && this.pendingParticipant.user_id === this.currentUser.pk);
+    }
+    return false;
   }
 
   onRemove(): void {

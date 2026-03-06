@@ -141,6 +141,7 @@
             <app-user-search-select
               [label]="'appointmentForm.selectContact' | translate"
               [placeholder]="'appointmentForm.selectContact' | translate"
+              [meUser]="currentUser()"
               (userSelected)="onParticipantUserSelected($event)">
             </app-user-search-select>
           </div>
@@ -295,7 +296,8 @@
         @if (!isEditMode) { @if (getBeneficiaryUser(); as beneficiary) {
         <app-participant-item
           [class.excluded]="appointmentForm.get('dont_invite_beneficiary')?.value"
-          [participant]="{id: 0, user: beneficiary, is_active: true}">
+          [participant]="{id: 0, user: {id: beneficiary.id, email: beneficiary.email, first_name: beneficiary.first_name, last_name: beneficiary.last_name, picture: beneficiary.picture, is_online: beneficiary.is_online}, is_active: true}"
+          [currentUser]="currentUser()">
           <span class="role-tag"
             >{{ 'appointmentForm.rolePatient' | translate }}</span
           >
@@ -308,7 +310,8 @@
         } @if (getOwnerUser(); as owner) {
         <app-participant-item
           [class.excluded]="appointmentForm.get('dont_invite_practitioner')?.value"
-          [participant]="{id: 0, user: owner, is_active: true}">
+          [participant]="{id: 0, user: {id: owner.id, email: owner.email, first_name: owner.first_name, last_name: owner.last_name, picture: owner.picture, is_online: owner.is_online}, is_active: true}"
+          [currentUser]="currentUser()">
           <span class="role-tag"
             >{{ 'appointmentForm.rolePractitioner' | translate }}</span
           >
@@ -321,7 +324,8 @@
         } @if (getCurrentUserForInvite(); as user) {
         <app-participant-item
           [class.excluded]="appointmentForm.get('dont_invite_me')?.value"
-          [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}">
+          [participant]="{id: 0, user: {id: user.pk, email: user.email, first_name: user.first_name, last_name: user.last_name}, is_active: true}"
+          [currentUser]="currentUser()">
           <span class="role-tag"
             >{{ 'appointmentForm.roleYou' | translate }}</span
           >
@@ -335,6 +339,7 @@
         <app-participant-item
           [participant]="participant"
           [showRemoveAction]="true"
+          [currentUser]="currentUser()"
           (remove)="removeParticipant(participant)">
         </app-participant-item>
         } @for (pending of pendingParticipants(); track $index) {
@@ -342,6 +347,7 @@
           [pendingParticipant]="pending"
           [isPending]="true"
           [showRemoveAction]="true"
+          [currentUser]="currentUser()"
           (remove)="removePendingParticipant($index)">
         </app-participant-item>
         }

@@ -14,6 +14,7 @@ export class UserAvatar {
   @Input() picture: string = '';
   @Input() isOnline: boolean | undefined = undefined;
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() isCurrentUser: boolean = false;
 
   get initials(): string {
     const first = this.firstName?.charAt(0) || '';

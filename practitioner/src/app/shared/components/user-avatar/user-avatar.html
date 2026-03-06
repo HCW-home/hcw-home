@@ -1,4 +1,4 @@
-<div class="user-avatar" [class.sm]="size === 'sm'" [class.md]="size === 'md'" [class.lg]="size === 'lg'">
+<div class="user-avatar" [class.sm]="size === 'sm'" [class.md]="size === 'md'" [class.lg]="size === 'lg'" [class.current-user]="isCurrentUser">
   @if (picture) {
     <img [src]="picture" class="avatar-image" alt="">
   } @else {

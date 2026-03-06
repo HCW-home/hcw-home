@@ -80,7 +80,7 @@ export class Select implements ControlValueAccessor, OnChanges, OnInit, OnDestro
   private destroy$ = new Subject<void>();
   private currentSearchSub: Subscription | null = null;
   // Store the selected option for display when in async mode
-  private selectedOption: SelectOption | null = null;
+  selectedOption: SelectOption | null = null;
 
   @HostBinding('class.open') open = false;
   @HostBinding('class.disabled') disabled = false;

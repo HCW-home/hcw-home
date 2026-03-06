@@ -268,7 +268,11 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   };
 
   private userToSelectOption(user: IUser): SelectOption {
-    const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+    const currentUser = this.currentUser();
+    const isCurrentUser = !!(currentUser && user.pk === currentUser.pk);
+    const name = isCurrentUser
+      ? this.t.instant('userSearchSelect.me')
+      : `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
     const firstName = user.first_name || '';
     const lastName = user.last_name || '';
     let initials: string;
@@ -283,6 +287,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       secondaryLabel: user.email,
       image: user.picture || undefined,
       initials,
+      isCurrentUser,
     };
   }
 
@@ -1264,6 +1269,11 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
     const beneficiary = this.consultation()?.beneficiary;
     if (!beneficiary) return this.t.instant('consultationDetail.noBeneficiary');
 
+    const currentUser = this.currentUser();
+    if (currentUser && beneficiary.id === currentUser.pk) {
+      return this.t.instant('userSearchSelect.me');
+    }
+
     const firstName = beneficiary.first_name?.trim() || '';
     const lastName = beneficiary.last_name?.trim() || '';
     const fullName = `${firstName} ${lastName}`.trim();
@@ -1273,6 +1283,52 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       beneficiary.email ||
       this.t.instant('consultationDetail.unknownPatient')
     );
+  }
+
+  getOwnerDisplayName(): string {
+    const owner = this.consultation()?.owned_by;
+    if (!owner) return '';
+
+    const currentUser = this.currentUser();
+    if (currentUser && owner.id === currentUser.pk) {
+      return this.t.instant('userSearchSelect.me');
+    }
+
+    const firstName = owner.first_name?.trim() || '';
+    const lastName = owner.last_name?.trim() || '';
+    return `${firstName} ${lastName}`.trim();
+  }
+
+  isBeneficiaryCurrentUser(): boolean {
+    const beneficiary = this.consultation()?.beneficiary;
+    const currentUser = this.currentUser();
+    return !!(beneficiary && currentUser && beneficiary.id === currentUser.pk);
+  }
+
+  isOwnerCurrentUser(): boolean {
+    const owner = this.consultation()?.owned_by;
+    const currentUser = this.currentUser();
+    return !!(owner && currentUser && owner.id === currentUser.pk);
+  }
+
+  getCreatedByDisplayName(): string {
+    const createdBy = this.consultation()?.created_by;
+    if (!createdBy) return '';
+
+    const currentUser = this.currentUser();
+    if (currentUser && createdBy.id === currentUser.pk) {
+      return this.t.instant('userSearchSelect.me');
+    }
+
+    const firstName = createdBy.first_name?.trim() || '';
+    const lastName = createdBy.last_name?.trim() || '';
+    return `${firstName} ${lastName}`.trim();
+  }
+
+  isCreatedByCurrentUser(): boolean {
+    const createdBy = this.consultation()?.created_by;
+    const currentUser = this.currentUser();
+    return !!(createdBy && currentUser && createdBy.id === currentUser.pk);
   }
 
   joinVideoCall(appointmentId: number): void {

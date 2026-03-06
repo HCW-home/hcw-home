@@ -6,4 +6,5 @@ export interface SelectOption {
   image?: string;
   secondaryLabel?: string;
   initials?: string;
+  isCurrentUser?: boolean;
 }

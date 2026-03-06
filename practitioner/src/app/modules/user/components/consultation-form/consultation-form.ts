@@ -124,7 +124,11 @@ export class ConsultationForm implements OnInit, OnDestroy {
   beneficiaryInitialOption = computed<SelectOption | null>(() => {
     const beneficiary = this.selectedBeneficiary();
     if (!beneficiary) return null;
-    const name = `${beneficiary.first_name || ''} ${beneficiary.last_name || ''}`.trim() || beneficiary.email || beneficiary.username || 'User';
+    const currentUser = this.currentUser();
+    const isCurrentUser = !!(currentUser && beneficiary.pk === currentUser.pk);
+    const name = isCurrentUser
+      ? this.t.instant('userSearchSelect.me')
+      : `${beneficiary.first_name || ''} ${beneficiary.last_name || ''}`.trim() || beneficiary.email || beneficiary.username || 'User';
     const initials = this.getUserInitials(beneficiary);
     return {
       value: beneficiary.pk,
@@ -132,6 +136,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
       secondaryLabel: beneficiary.email,
       image: beneficiary.picture || undefined,
       initials,
+      isCurrentUser,
     };
   });
 
@@ -196,9 +201,13 @@ export class ConsultationForm implements OnInit, OnDestroy {
   practitionerSearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
     return this.userService.searchUsers(query, page, 20, false, undefined, true).pipe(
       map(response => {
+        const currentUser = this.currentUser();
         const results: SelectOption[] = response.results.map(user => {
           this.practitionerCache.set(user.pk, user);
-          const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+          const isCurrentUser = !!(currentUser && user.pk === currentUser.pk);
+          const name = isCurrentUser
+            ? this.t.instant('userSearchSelect.me')
+            : `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
           const initials = this.getUserInitials(user);
           return {
             value: user.pk,
@@ -206,6 +215,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
             secondaryLabel: user.email,
             image: user.picture || undefined,
             initials,
+            isCurrentUser,
           };
         });
         return { results, hasMore: response.next !== null };
@@ -216,9 +226,13 @@ export class ConsultationForm implements OnInit, OnDestroy {
   beneficiarySearchFn: AsyncSearchFn = (query: string, page: number): Observable<AsyncSearchResult> => {
     return this.userService.searchUsers(query, page, 20, false).pipe(
       map(response => {
+        const currentUser = this.currentUser();
         const results: SelectOption[] = response.results.map(user => {
           this.beneficiaryCache.set(user.pk, user);
-          const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
+          const isCurrentUser = !!(currentUser && user.pk === currentUser.pk);
+          const name = isCurrentUser
+            ? this.t.instant('userSearchSelect.me')
+            : `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || user.username || 'User';
           const initials = this.getUserInitials(user);
           return {
             value: user.pk,
@@ -226,6 +240,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
             secondaryLabel: user.email,
             image: user.picture || undefined,
             initials,
+            isCurrentUser,
           };
         });
         return { results, hasMore: response.next !== null };
@@ -871,6 +886,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
     if (!appointmentRequest.dont_invite_beneficiary && this.getBeneficiaryUser()) {
       const beneficiary = this.getBeneficiaryUser()!;
       participants.push({
+        user_id: beneficiary.pk,
         first_name: beneficiary.first_name,
         last_name: beneficiary.last_name,
         email: beneficiary.email,
@@ -881,6 +897,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
     if (!appointmentRequest.dont_invite_practitioner && this.getOwnerUser()) {
       const owner = this.getOwnerUser()!;
       participants.push({
+        user_id: owner.pk,
         first_name: owner.first_name,
         last_name: owner.last_name,
         email: owner.email,
@@ -891,6 +908,7 @@ export class ConsultationForm implements OnInit, OnDestroy {
     if (!appointmentRequest.dont_invite_me && this.getCurrentUserForInvite()) {
       const currentUser = this.getCurrentUserForInvite()!;
       participants.push({
+        user_id: currentUser.pk,
         first_name: currentUser.first_name,
         last_name: currentUser.last_name,
         email: currentUser.email,

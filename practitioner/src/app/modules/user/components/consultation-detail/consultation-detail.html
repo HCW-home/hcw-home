@@ -126,12 +126,12 @@
                   [lastName]="consultation()!.created_by.last_name"
                   [email]="consultation()!.created_by.email"
                   [picture]="consultation()!.created_by.picture || ''"
-                  [isOnline]="consultation()!.created_by.is_online">
+                  [isOnline]="consultation()!.created_by.is_online"
+                  [isCurrentUser]="isCreatedByCurrentUser()">
                 </app-user-avatar>
                 <div class="info-user-details">
                   <span class="info-value"
-                    >{{ consultation()!.created_by.first_name }} {{
-                    consultation()!.created_by.last_name }}</span
+                    >{{ getCreatedByDisplayName() }}</span
                   >
                   <span class="info-sub"
                     >{{ consultation()!.created_by.email }}</span
@@ -161,12 +161,12 @@
                   [lastName]="consultation()!.owned_by!.last_name"
                   [email]="consultation()!.owned_by!.email"
                   [picture]="consultation()!.owned_by!.picture || ''"
-                  [isOnline]="consultation()!.owned_by!.is_online">
+                  [isOnline]="consultation()!.owned_by!.is_online"
+                  [isCurrentUser]="isOwnerCurrentUser()">
                 </app-user-avatar>
                 <div class="info-user-details">
                   <span class="info-value"
-                    >{{ consultation()!.owned_by!.first_name }} {{
-                    consultation()!.owned_by!.last_name }}</span
+                    >{{ getOwnerDisplayName() }}</span
                   >
                   <span class="info-sub"
                     >{{ consultation()!.owned_by!.email }}</span
@@ -198,7 +198,8 @@
                   [lastName]="consultation()?.beneficiary?.last_name || ''"
                   [email]="consultation()?.beneficiary?.email || ''"
                   [picture]="consultation()?.beneficiary?.picture || ''"
-                  [isOnline]="consultation()?.beneficiary?.is_online">
+                  [isOnline]="consultation()?.beneficiary?.is_online"
+                  [isCurrentUser]="isBeneficiaryCurrentUser()">
                 </app-user-avatar>
                 <div class="info-user-details">
                   <span class="info-value"
@@ -511,7 +512,8 @@
                   @for (participant of appointment.participants; track
                   participant.id) {
                   <app-participant-item
-                    [participant]="participant"></app-participant-item>
+                    [participant]="participant"
+                    [currentUser]="currentUser()"></app-participant-item>
                   }
                 </div>
                 } @else {

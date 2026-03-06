@@ -38,6 +38,20 @@
     }
 
     <div class="select-display">
+      @if (display && !multiSelect() && selectedOption && (selectedOption.image || selectedOption.initials)) {
+        <div class="selected-avatar" [class.current-user]="selectedOption.isCurrentUser">
+          @if (selectedOption.image) {
+            <img [src]="selectedOption.image" alt="" />
+          } @else if (selectedOption.isCurrentUser) {
+            <app-svg
+              src="user"
+              [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'white'}">
+            </app-svg>
+          } @else {
+            <span>{{ selectedOption.initials }}</span>
+          }
+        </div>
+      }
       <input
         [id]="'select-search' + name()"
         type="text"
@@ -114,9 +128,14 @@
                 </div>
               } @else {
                 @if (opt.image || opt.initials) {
-                  <div class="option-avatar">
+                  <div class="option-avatar" [class.current-user]="opt.isCurrentUser">
                     @if (opt.image) {
                       <img [src]="opt.image" alt="" />
+                    } @else if (opt.isCurrentUser) {
+                      <app-svg
+                        src="user"
+                        [svgStyle]="{'width.px': 14, 'height.px': 14, 'color': 'white'}">
+                      </app-svg>
                     } @else {
                       <span>{{ opt.initials }}</span>
                     }

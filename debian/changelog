@@ -1,3 +1,30 @@
+hcw (0.9.63) bookworm; urgency=medium
+
+  [ Olivier Bitsch ]
+  * Send back to home when hangup
+  * Fix translation
+  * Remove pen on edit practitioner contact
+  * Fix red error on contact method change
+  * Create patient on fly
+  * Add back temporary patient
+  * Improve role of temporary
+  * Add missing translations
+  * Hormonize select list
+  * Add practitioner tag
+  * Fix auto delete temporary user
+  * Fix auto delete temporary user
+  * Add missing translation
+
+  [ Weblate ]
+  * Update translation files
+  * Update translation files
+
+  [ Google Cloud Translation Basic ]
+  * Translated using Weblate (German)
+  * Translated using Weblate (German)
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Fri, 06 Mar 2026 12:12:57 +0100
+
 hcw (0.9.62) bookworm; urgency=medium
 
   * Fix toast

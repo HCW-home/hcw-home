@@ -97,8 +97,12 @@ export class App implements OnInit, OnDestroy {
       this.router.navigate([`/${RoutePaths.VERIFY_INVITE}`], {
         queryParams: { auth: authToken, action, id }
       });
-    } else if (action && this.authService.isLoggedIn()) {
-      if (action === 'join' && id) {
+    } else if (email) {
+      this.router.navigate([`/${RoutePaths.AUTH}`], {
+        queryParams: { email, action, id }
+      });
+    } else if (action && id) {
+      if (action === 'join') {
         this.consultationService.getParticipantById(id).subscribe({
           next: (participant) => {
             const consultation = participant.appointment.consultation;
@@ -116,10 +120,6 @@ export class App implements OnInit, OnDestroy {
         const route = this.actionHandler.getRouteForAction(action, id);
         this.router.navigateByUrl(route);
       }
-    } else if (!this.authService.isLoggedIn() && (action || email)) {
-      this.router.navigate([`/${RoutePaths.AUTH}`], {
-        queryParams: { email, action, id }
-      });
     }
   }
 

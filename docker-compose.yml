@@ -1,0 +1,111 @@
+services:
+
+  api:
+    build:
+      context: backend
+    image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
+      - ./config:/app/config
+    depends_on:
+      - redis
+      - db
+    networks:
+      - local
+
+  celery:
+    build:
+      context: backend
+    entrypoint: celery -A core.celery worker --loglevel=info
+    image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    networks:
+      - local
+
+  scheduler:
+    build:
+      context: backend
+    entrypoint: celery -A core beat --loglevel=info
+    image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    networks:
+      - local
+
+  public:
+    build:
+      context: frontend
+      target: public
+    image: docker.io/iabsis/hcw6-patient:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - local
+    ports:
+      - "8081:8080"
+
+  admin:
+    build:
+      context: frontend
+      target: admin
+    image: docker.io/iabsis/hcw6-practitioner:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - local
+    ports:
+      - "8080:8080"
+
+  db:
+    image: docker.io/postgres:15
+    volumes:
+      - ./data/postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=fiduvault
+      - POSTGRES_USER=fiduvault
+      - POSTGRES_PASSWORD=fiduvaultpassword
+    restart: always
+    ports:
+      - 127.0.0.1:5432:5432
+    networks:
+      - local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: docker.io/redis:7
+    restart: always
+    volumes:
+      - ./data/redis_data:/data
+    networks:
+      - local
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:

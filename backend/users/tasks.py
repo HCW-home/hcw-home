@@ -37,7 +37,7 @@ def auto_delete_temporary_users():
         appointments_participating__status="scheduled",
         appointments_participating__scheduled_at__gt=two_hours_ago,
     ).exclude(
-        Q(consultation_set__isnull=False) |
+        Q(consultation__isnull=False) |
         Q(consultation_created__isnull=False) |
         Q(consultation_owned__isnull=False)
     )

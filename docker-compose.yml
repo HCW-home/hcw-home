@@ -1,20 +1,53 @@
 services:
 
+  migrate:
+    build:
+      context: backend
+    image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
+    command: >
+      sh -c "
+        echo 'Running migrations...';
+        python manage.py migrate;
+        echo 'Resetting online status...';
+        python manage.py reset_online_status;
+        echo 'Migration completed successfully';
+      "
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_HOST=db
+      - DATABASE_USER=hcw
+      - DATABASE_PASSWORD=hcw
+    env_file:
+      - backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: "no"
+
   api:
     build:
       context: backend
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_HOST=db
+      - DATABASE_USER=hcw
+      - DATABASE_PASSWORD=hcw
     env_file:
-      - .env
+      - backend/.env
     volumes:
       - ./uploads:/app/uploads
       - ./config:/app/config
     depends_on:
-      - redis
-      - db
-    networks:
-      - local
+      # migrate:
+      #   condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   celery:
     build:
@@ -22,13 +55,20 @@ services:
     entrypoint: celery -A core.celery worker --loglevel=info
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_HOST=db
+      - DATABASE_USER=hcw
+      - DATABASE_PASSWORD=hcw
     env_file:
-      - .env
+      - backend/.env
     depends_on:
-      - redis
-      - db
-    networks:
-      - local
+      # migrate:
+      #   condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   scheduler:
     build:
@@ -36,41 +76,44 @@ services:
     entrypoint: celery -A core beat --loglevel=info
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_HOST=db
+      - DATABASE_USER=hcw
+      - DATABASE_PASSWORD=hcw
     env_file:
-      - .env
+      - backend/.env
     depends_on:
-      - redis
-      - db
-    networks:
-      - local
+      # migrate:
+      #   condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
-  public:
+  patient:
     build:
-      context: frontend
-      target: public
+      context: patient
+      target: patient
     image: docker.io/iabsis/hcw6-patient:${TAG:-latest}
     restart: always
-    env_file:
-      - .env
+    environment:
+      - BACKEND_URL=http://api:8000
     depends_on:
       - api
-    networks:
-      - local
     ports:
       - "8081:8080"
 
-  admin:
+  practitioner:
     build:
-      context: frontend
-      target: admin
+      context: practitioner
+      target: practitioner
     image: docker.io/iabsis/hcw6-practitioner:${TAG:-latest}
     restart: always
-    env_file:
-      - .env
+    environment:
+    - BACKEND_URL=http://api:8000
     depends_on:
       - api
-    networks:
-      - local
     ports:
       - "8080:8080"
 
@@ -79,14 +122,10 @@ services:
     volumes:
       - ./data/postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=fiduvault
-      - POSTGRES_USER=fiduvault
-      - POSTGRES_PASSWORD=fiduvaultpassword
+      - POSTGRES_DB=hcw
+      - POSTGRES_USER=hcw
+      - POSTGRES_PASSWORD=hcw
     restart: always
-    ports:
-      - 127.0.0.1:5432:5432
-    networks:
-      - local
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -98,8 +137,6 @@ services:
     restart: always
     volumes:
       - ./data/redis_data:/data
-    networks:
-      - local
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

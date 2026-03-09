@@ -33,7 +33,9 @@
     "appNeedsReload": "The application needs to be reloaded to continue",
     "reload": "Reload",
     "hideDetails": "Hide details",
-    "showDetails": "Show details"
+    "showDetails": "Show details",
+    "offlineMode": "Offline mode",
+    "offlineModeDescription": "Some features are limited. Cached data is available."
   },
   "openIdCallback": {
     "authenticating": "Authenticating...",

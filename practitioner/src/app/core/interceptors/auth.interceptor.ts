@@ -4,14 +4,16 @@ import {
   HttpHandlerFn,
   HttpErrorResponse,
   HttpContextToken,
+  HttpResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, switchMap, take, throwError, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../services/auth';
 import { TranslationService } from '../services/translation.service';
 import { ToasterService } from '../services/toaster.service';
+import { OfflineService } from '../services/offline.service';
 import { getErrorMessage } from '../utils/error-helper';
 
 export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
@@ -43,6 +45,7 @@ export const authInterceptor: HttpInterceptorFn = (
   const auth = inject(Auth);
   const translationService = inject(TranslationService);
   const toasterService = inject(ToasterService);
+  const offlineService = inject(OfflineService);
 
   if (!req.url.startsWith(environment.apiUrl)) {
     return next(req);
@@ -53,6 +56,12 @@ export const authInterceptor: HttpInterceptorFn = (
   const authReq = addAuthHeaders(req, token, lang);
 
   return next(authReq).pipe(
+    tap(event => {
+      // Track successful responses to detect when backend comes back online
+      if (event instanceof HttpResponse && event.ok) {
+        offlineService.setBackendOnline();
+      }
+    }),
     catchError((error: HttpErrorResponse) => {
       if (
         error.status === 401 &&
@@ -91,6 +100,8 @@ export const authInterceptor: HttpInterceptorFn = (
             refreshTokenSubject.next(null);
             auth.removeToken();
             router.navigate(['/auth/login']);
+            // Don't show network error toast for refresh token failures
+            // The websocket disconnect message is sufficient
             return throwError(() => refreshError);
           })
         );
@@ -100,11 +111,18 @@ export const authInterceptor: HttpInterceptorFn = (
         auth.removeToken();
         router.navigate(['/auth/login']);
       } else if (error.status === 0) {
-        toasterService.show(
-          'error',
-          translationService.instant('common.networkError'),
-          translationService.instant('common.networkErrorMessage')
-        );
+        // Network error detected - signal backend is offline
+        offlineService.setBackendOffline();
+
+        // Only show network error toast for non-refresh-token requests
+        // Refresh token network errors are silent to avoid double error messages
+        if (!req.url.includes('/auth/token/refresh/')) {
+          toasterService.show(
+            'error',
+            translationService.instant('common.networkError'),
+            translationService.instant('common.networkErrorMessage')
+          );
+        }
       } else if (error.status >= 400 && !req.context.get(SKIP_ERROR_TOAST)) {
         const message = getErrorMessage(error);
         toasterService.show(

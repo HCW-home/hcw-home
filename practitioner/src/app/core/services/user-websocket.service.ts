@@ -6,11 +6,14 @@ import {
   Subscription,
   distinctUntilChanged,
   firstValueFrom,
+  debounceTime,
+  filter,
 } from 'rxjs';
 import { WebSocketService } from './websocket.service';
 import { ToasterService } from './toaster.service';
 import { TranslationService } from './translation.service';
 import { Auth } from './auth';
+import { OfflineService } from './offline.service';
 import { environment } from '../../../environments/environment';
 import {
   WebSocketState,
@@ -34,9 +37,11 @@ export class UserWebSocketService implements OnDestroy {
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
   private consultationEventSubject = new Subject<ConsultationEvent>();
   private stateSubscription: Subscription | null = null;
+  private onlineSubscription: Subscription | null = null;
   private hadConnectionIssue = false;
   private wasConnected = false;
   private errorToastTimer: ReturnType<typeof setTimeout> | null = null;
+  private shouldBeConnected = false;
 
   public isOnline$: Observable<boolean> = this.isOnlineSubject.asObservable();
   public connectionCount$: Observable<number> =
@@ -54,13 +59,16 @@ export class UserWebSocketService implements OnDestroy {
     private wsService: WebSocketService,
     private authService: Auth,
     private toasterService: ToasterService,
-    private t: TranslationService
+    private t: TranslationService,
+    private offlineService: OfflineService
   ) {
     this.setupEventListeners();
     this.setupConnectionStatusToasts();
+    this.setupOnlineStatusListener();
   }
 
   connect(): void {
+    this.shouldBeConnected = true;
     const state = this.wsService.getState();
     if (
       state === WebSocketState.CONNECTED ||
@@ -100,6 +108,7 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   disconnect(): void {
+    this.shouldBeConnected = false;
     this.wasConnected = false;
     this.hadConnectionIssue = false;
     this.clearErrorToastTimer();
@@ -177,6 +186,27 @@ export class UserWebSocketService implements OnDestroy {
       const errorEvent = event as { message: string };
       console.error('WebSocket error:', errorEvent.message);
     });
+  }
+
+  private setupOnlineStatusListener(): void {
+    // Listen to backend online/offline events to retry connection when backend comes back
+    this.onlineSubscription = this.offlineService.backendOnline$
+      .pipe(
+        distinctUntilChanged(),
+        debounceTime(1000), // Wait 1s after backend comes back before reconnecting
+        filter(isOnline => isOnline && this.shouldBeConnected)
+      )
+      .subscribe(() => {
+        const state = this.wsService.getState();
+        // If websocket is in failed or disconnected state, try to reconnect
+        if (
+          state === WebSocketState.FAILED ||
+          (state === WebSocketState.DISCONNECTED && this.hadConnectionIssue)
+        ) {
+          console.log('[UserWS] Backend is back online, attempting to reconnect websocket...');
+          this.connect();
+        }
+      });
   }
 
   private setupConnectionStatusToasts(): void {
@@ -268,6 +298,7 @@ export class UserWebSocketService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.stateSubscription?.unsubscribe();
+    this.onlineSubscription?.unsubscribe();
     this.disconnect();
   }
 }

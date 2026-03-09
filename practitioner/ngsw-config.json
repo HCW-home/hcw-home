@@ -29,5 +29,39 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-cache",
+      "urls": [
+        "http://127.0.0.1:8000/api/**",
+        "*/api/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-performance",
+      "urls": [
+        "*/api/auth/user/",
+        "*/api/appointments/**",
+        "*/api/patients/**",
+        "*/api/practitioners/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 50,
+        "maxAge": "30m"
+      }
+    }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/api/**"
   ]
 }

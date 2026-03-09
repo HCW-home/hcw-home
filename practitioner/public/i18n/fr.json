@@ -33,7 +33,9 @@
         "appNeedsReload": "L'application doit être rechargée pour continuer",
         "reload": "Recharger",
         "hideDetails": "Masquer les détails",
-        "showDetails": "Afficher les détails"
+        "showDetails": "Afficher les détails",
+        "offlineMode": "Mode hors ligne",
+        "offlineModeDescription": "Certaines fonctionnalités sont limitées. Les données en cache sont disponibles."
     },
     "login": {
         "signIn": "Se connecter",

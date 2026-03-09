@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ToasterContainerComponent } from './core/components/toaster-container/toaster-container.component';
+import { OfflineIndicatorComponent } from './core/components/offline-indicator.component';
 import { Confirmation } from './shared/components/confirmation/confirmation';
 import { Auth } from './core/services/auth';
 import { TranslationService } from './core/services/translation.service';
@@ -16,7 +17,7 @@ import { RoutePaths } from './core/constants/routes';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToasterContainerComponent, Confirmation],
+  imports: [RouterOutlet, ToasterContainerComponent, OfflineIndicatorComponent, Confirmation],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

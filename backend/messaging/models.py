@@ -1,7 +1,8 @@
 import hashlib
 from importlib import import_module
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Tuple
 from zoneinfo import ZoneInfo
+from datetime import datetime
 
 import jinja2
 from constance import config
@@ -872,6 +873,95 @@ class Message(ModelCeleryAbstract):
     @property
     def render_subject(self):
         return self.render("template_subject")
+
+    @property
+    def ics_attachment(self) -> Optional[Tuple[str, str, str]]:
+        """
+        Generate ICS calendar file for Appointment objects.
+
+        Returns:
+            Optional tuple of (filename, content, mime_type) if content_object is an Appointment,
+            None otherwise.
+        """
+        # Check if content_object is an Appointment
+        if not self.content_object:
+            return None
+
+        from consultations.models import Appointment
+
+        if not isinstance(self.content_object, Appointment):
+            return None
+
+        appointment = self.content_object
+
+        # Generate unique UID for the event
+        uid = f"appointment-{appointment.pk}@{settings.SITE_DOMAIN if hasattr(settings, 'SITE_DOMAIN') else 'hcw.local'}"
+
+        # Format dates to iCalendar format (UTC)
+        def format_ics_datetime(dt: datetime) -> str:
+            """Convert datetime to iCalendar format in UTC"""
+            if dt.tzinfo is None:
+                dt = timezone.make_aware(dt)
+            utc_dt = dt.astimezone(ZoneInfo('UTC'))
+            return utc_dt.strftime('%Y%m%dT%H%M%SZ')
+
+        # Get appointment details
+        dtstart = format_ics_datetime(appointment.scheduled_at)
+
+        # Use end_expected_at if available, otherwise add 1 hour
+        if appointment.end_expected_at:
+            dtend = format_ics_datetime(appointment.end_expected_at)
+        else:
+            from datetime import timedelta
+            end_time = appointment.scheduled_at + timedelta(hours=1)
+            dtend = format_ics_datetime(end_time)
+
+        dtstamp = format_ics_datetime(timezone.now())
+
+        # Get title/summary
+        summary = appointment.title or "Consultation"
+
+        # Get description
+        description = ""
+        if appointment.consultation:
+            if appointment.consultation.title:
+                description += f"Consultation: {appointment.consultation.title}\\n"
+            if appointment.consultation.description:
+                description += appointment.consultation.description
+
+        # Get location (for in-person appointments)
+        location = ""
+        if appointment.type == "inPerson":
+            location = "LOCATION:In Person\\r\\n"
+
+        # Get organizer
+        organizer = ""
+        if appointment.created_by and appointment.created_by.email:
+            organizer_name = f"{appointment.created_by.first_name} {appointment.created_by.last_name}".strip()
+            organizer = f"ORGANIZER;CN={organizer_name}:mailto:{appointment.created_by.email}\\r\\n"
+
+        # Build ICS content
+        ics_content = f"""BEGIN:VCALENDAR\r
+VERSION:2.0\r
+PRODID:-//HCW//Appointment//EN\r
+CALSCALE:GREGORIAN\r
+METHOD:REQUEST\r
+BEGIN:VEVENT\r
+UID:{uid}\r
+DTSTAMP:{dtstamp}\r
+DTSTART:{dtstart}\r
+DTEND:{dtend}\r
+SUMMARY:{summary}\r
+DESCRIPTION:{description}\r
+{location}{organizer}STATUS:{appointment.status.upper()}\r
+SEQUENCE:0\r
+END:VEVENT\r
+END:VCALENDAR\r
+"""
+
+        # Return filename, content, and mime type
+        filename = f"appointment_{appointment.pk}.ics"
+        return (filename, ics_content, "text/calendar")
 
     _template = None
 

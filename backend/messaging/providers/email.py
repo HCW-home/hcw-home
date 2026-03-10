@@ -27,7 +27,14 @@ class Main(BaseMessagingProvider):
         )
 
         email.attach_alternative(message.render_full_html, "text/html")
-        email.send(fail_silently=False)
+
+        # Attach ICS file if available (for appointments)
+        ics_data = message.ics_attachment
+        if ics_data:
+            filename, content, mime_type = ics_data
+            email.attach(filename, content, mime_type)
+
+        email.send()
 
     def test_connection(self):
         if not hasattr(settings, "EMAIL_HOST") or not settings.EMAIL_HOST:

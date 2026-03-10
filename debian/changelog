@@ -1,3 +1,20 @@
+hcw (0.9.65) bookworm; urgency=medium
+
+  * Fix routing
+  * Add Dockerfile
+  * Use node 22
+  * Draft offline mode + fix reconnect websocket
+  * Update gitignore
+  * Update docker compose
+  * Fix missing translation
+  * Add ICS file with email
+  * Attempt to fix timezone for requests
+  * Improve request when issue is occuring
+  * Fix slot timezone
+  * Create particiant must not be is_confirmed=False
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Tue, 10 Mar 2026 10:47:56 +0100
+
 hcw (0.9.64) bookworm; urgency=medium
 
   * Add again missing translation

@@ -4,36 +4,38 @@
   <div class="profile-header">
     <ion-card class="profile-card">
       <ion-card-content>
-        <div class="avatar-section">
-          <input
-            #avatarFileInput
-            type="file"
-            accept="image/*"
-            class="file-input-hidden"
-            (change)="onAvatarFileSelected($event)"
-          />
-          <ion-avatar class="profile-avatar">
-            @if (isUploadingAvatar) {
-              <div class="avatar-placeholder">
-                <ion-spinner name="crescent"></ion-spinner>
-              </div>
-            } @else if (currentUser && currentUser.picture) {
-              <img [src]="currentUser.picture" [alt]="currentUser.first_name">
-            } @else {
-              <div class="avatar-placeholder">{{ getInitials() }}</div>
-            }
-          </ion-avatar>
-          <ion-button size="small" fill="clear" class="edit-photo-btn" (click)="openAvatarFilePicker()">
-            <ion-icon name="camera-outline"></ion-icon>
-          </ion-button>
-        </div>
-        <div class="user-info">
-          <ion-text class="user-name">
-            {{ currentUser?.first_name }} {{ currentUser?.last_name }}
-          </ion-text>
-          <ion-text class="user-email" color="medium">
-            {{ currentUser?.email }}
-          </ion-text>
+        <div class="profile-info-wrapper">
+          <div class="avatar-section">
+            <input
+              #avatarFileInput
+              type="file"
+              accept="image/*"
+              class="file-input-hidden"
+              (change)="onAvatarFileSelected($event)"
+            />
+            <ion-avatar class="profile-avatar">
+              @if (isUploadingAvatar) {
+                <div class="avatar-placeholder">
+                  <ion-spinner name="crescent"></ion-spinner>
+                </div>
+              } @else if (currentUser && currentUser.picture) {
+                <img [src]="currentUser.picture" [alt]="currentUser.first_name">
+              } @else {
+                <div class="avatar-placeholder">{{ getInitials() }}</div>
+              }
+            </ion-avatar>
+            <ion-button size="small" fill="clear" class="edit-photo-btn" (click)="openAvatarFilePicker()">
+              <ion-icon name="camera-outline"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="user-info">
+            <ion-text class="user-name">
+              {{ currentUser?.first_name }} {{ currentUser?.last_name }}
+            </ion-text>
+            <ion-text class="user-email" color="medium">
+              {{ currentUser?.email }}
+            </ion-text>
+          </div>
         </div>
       </ion-card-content>
     </ion-card>

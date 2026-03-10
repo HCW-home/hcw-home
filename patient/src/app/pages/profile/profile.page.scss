@@ -12,18 +12,22 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
       ion-card-content {
-        padding: 24px;
+        padding: 16px;
+      }
+
+      .profile-info-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 16px;
       }
 
       .avatar-section {
         position: relative;
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
+        flex-shrink: 0;
 
         .profile-avatar {
-          width: 100px;
-          height: 100px;
+          width: 80px;
+          height: 80px;
           border: 3px solid var(--ion-color-primary);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -35,7 +39,7 @@
             justify-content: center;
             background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-tint));
             color: white;
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 600;
             border-radius: 50%;
           }
@@ -43,38 +47,37 @@
 
         .edit-photo-btn {
           position: absolute;
-          bottom: 0;
-          right: calc(50% - 60px);
+          bottom: -4px;
+          right: -4px;
           --background: var(--ion-color-primary);
           --background-activated: var(--ion-color-primary-shade);
           --border-radius: 50%;
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           margin: 0;
 
           ion-icon {
             color: white;
-            font-size: 18px;
+            font-size: 16px;
           }
         }
       }
 
       .user-info {
-        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
 
         .user-name {
-          display: block;
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 600;
           color: var(--app-text-primary);
-          margin-bottom: 8px;
         }
 
         .user-email,
         .user-phone {
-          display: block;
           font-size: 14px;
-          margin-bottom: 4px;
         }
       }
     }

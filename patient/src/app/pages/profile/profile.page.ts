@@ -83,14 +83,14 @@ export class ProfilePage implements OnInit {
   editedUser: Partial<User> = {};
   isUploadingAvatar = false;
   isSaving = false;
+  fieldErrors: { [key: string]: string[] } = {};
 
   timezones: string[] = TIMEZONES;
   availableLanguages = this.t.availableLanguages;
+  communicationMethods: string[] = [];
 
   get profileMenuItems(): ProfileMenuItem[] {
     return [
-      { title: this.t.instant('profile.personalInformation'), icon: 'person-outline', action: 'edit' },
-      { title: this.t.instant('profile.notifications'), icon: 'notifications-outline', route: '/notifications' },
       { title: this.t.instant('profile.logout'), icon: 'log-out-outline', action: 'logout', color: 'danger' }
     ];
   }
@@ -104,6 +104,7 @@ export class ProfilePage implements OnInit {
 
   ngOnInit() {
     this.loadUserProfile();
+    this.loadConfig();
   }
 
   ionViewWillEnter() {
@@ -124,14 +125,25 @@ export class ProfilePage implements OnInit {
     });
   }
 
+  loadConfig() {
+    this.authService.getConfig().subscribe({
+      next: (config: any) => {
+        if (config.communication_methods) {
+          this.communicationMethods = config.communication_methods;
+        }
+      },
+      error: () => {
+        // Fallback to default methods if config fails
+        this.communicationMethods = ['email', 'sms', 'whatsapp'];
+      }
+    });
+  }
+
   handleMenuItemClick(item: ProfileMenuItem) {
     if (item.route) {
       this.navCtrl.navigateForward(item.route);
     } else if (item.action) {
       switch (item.action) {
-        case 'edit':
-          this.openEditProfile();
-          break;
         case 'logout':
           this.confirmLogout();
           break;
@@ -139,24 +151,9 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  openEditProfile() {
-    this.showEditModal = true;
-  }
-
-  closeEditModal() {
-    this.showEditModal = false;
-    if (this.currentUser) {
-      this.editedUser = {
-        mobile_phone_number: this.currentUser.mobile_phone_number,
-        communication_method: this.currentUser.communication_method,
-        preferred_language: this.currentUser.preferred_language,
-        timezone: this.currentUser.timezone
-      };
-    }
-  }
-
   saveProfile() {
     this.isSaving = true;
+    this.fieldErrors = {};
     const payload = {
       ...this.editedUser,
       mobile_phone_number: this.editedUser.mobile_phone_number || '',
@@ -165,17 +162,25 @@ export class ProfilePage implements OnInit {
       next: (updatedUser) => {
         this.currentUser = updatedUser;
         this.isSaving = false;
-        this.showEditModal = false;
         if (updatedUser.preferred_language) {
           this.t.setLanguage(updatedUser.preferred_language);
         }
         this.showToast(this.t.instant('profile.profileUpdated'), 'success');
       },
-      error: () => {
+      error: (error) => {
         this.isSaving = false;
-        this.showToast(this.t.instant('profile.profileUpdateFailed'), 'danger');
+        if (error.error && typeof error.error === 'object') {
+          this.fieldErrors = error.error;
+        } else {
+          this.showToast(this.t.instant('profile.profileUpdateFailed'), 'danger');
+        }
       }
     });
+  }
+
+  getFieldError(fieldName: string): string | null {
+    const errors = this.fieldErrors[fieldName];
+    return errors && errors.length > 0 ? errors[0] : null;
   }
 
   async confirmLogout() {

@@ -34,15 +34,86 @@
           <ion-text class="user-email" color="medium">
             {{ currentUser?.email }}
           </ion-text>
-          @if (currentUser && currentUser.phone) {
-            <ion-text class="user-phone" color="medium">
-              {{ currentUser.phone }}
-            </ion-text>
-          }
         </div>
       </ion-card-content>
     </ion-card>
   </div>
+
+  <ion-card class="edit-profile-card">
+    <ion-card-content>
+      <ion-list>
+        <ion-item [class.has-error]="getFieldError('mobile_phone_number')">
+          <ion-label position="stacked">{{ 'profile.phoneNumber' | translate }}</ion-label>
+          <ion-input
+            [(ngModel)]="editedUser.mobile_phone_number"
+            type="tel"
+            [placeholder]="'profile.phonePlaceholder' | translate">
+          </ion-input>
+        </ion-item>
+        @if (getFieldError('mobile_phone_number')) {
+          <ion-text color="danger" class="error-message">
+            <small>{{ getFieldError('mobile_phone_number') }}</small>
+          </ion-text>
+        }
+        <ion-item [class.has-error]="getFieldError('communication_method')">
+          <ion-label position="stacked">{{ 'profile.communicationMethod' | translate }}</ion-label>
+          <ion-select [(ngModel)]="editedUser.communication_method" [placeholder]="'profile.selectMethod' | translate">
+            @for (method of communicationMethods; track method) {
+              <ion-select-option [value]="method">
+                @switch (method) {
+                  @case ('email') { {{ 'profile.commEmail' | translate }} }
+                  @case ('sms') { {{ 'profile.commSms' | translate }} }
+                  @case ('whatsapp') { {{ 'profile.commWhatsApp' | translate }} }
+                  @case ('push') { {{ 'profile.commPush' | translate }} }
+                  @case ('manual') { {{ 'profile.commManual' | translate }} }
+                  @default { {{ method }} }
+                }
+              </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (getFieldError('communication_method')) {
+          <ion-text color="danger" class="error-message">
+            <small>{{ getFieldError('communication_method') }}</small>
+          </ion-text>
+        }
+        <ion-item [class.has-error]="getFieldError('preferred_language')">
+          <ion-label position="stacked">{{ 'profile.preferredLanguage' | translate }}</ion-label>
+          <ion-select [(ngModel)]="editedUser.preferred_language" [placeholder]="'profile.selectLanguage' | translate">
+            @for (lang of availableLanguages(); track lang.code) {
+              <ion-select-option [value]="lang.code">{{ lang.nativeName }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (getFieldError('preferred_language')) {
+          <ion-text color="danger" class="error-message">
+            <small>{{ getFieldError('preferred_language') }}</small>
+          </ion-text>
+        }
+        <ion-item [class.has-error]="getFieldError('timezone')">
+          <ion-label position="stacked">{{ 'profile.timezone' | translate }}</ion-label>
+          <ion-select [(ngModel)]="editedUser.timezone" [placeholder]="'profile.selectTimezone' | translate" interface="action-sheet">
+            @for (tz of timezones; track tz) {
+              <ion-select-option [value]="tz">{{ tz }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (getFieldError('timezone')) {
+          <ion-text color="danger" class="error-message">
+            <small>{{ getFieldError('timezone') }}</small>
+          </ion-text>
+        }
+      </ion-list>
+
+      <ion-button expand="block" (click)="saveProfile()" [disabled]="isSaving" color="primary" class="save-btn">
+        @if (isSaving) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          <ion-text>{{ 'common.save' | translate }}</ion-text>
+        }
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
 
   <ion-list class="menu-list">
     @for (item of profileMenuItems; track item.title) {
@@ -64,91 +135,6 @@
       </ion-item>
     }
   </ion-list>
-
-  <ion-modal [isOpen]="showEditModal" (didDismiss)="closeEditModal()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>{{ 'profile.editProfile' | translate }}</ion-title>
-          <ion-buttons slot="start">
-            <ion-button (click)="closeEditModal()">{{ 'common.cancel' | translate }}</ion-button>
-          </ion-buttons>
-          <ion-buttons slot="end">
-            <ion-button (click)="saveProfile()" [disabled]="isSaving" color="primary">
-              @if (isSaving) {
-                <ion-spinner name="crescent"></ion-spinner>
-              } @else {
-                <ion-text>{{ 'common.save' | translate }}</ion-text>
-              }
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-list>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.firstName' | translate }}</ion-label>
-            <ion-input
-              [value]="currentUser?.first_name"
-              type="text"
-              [readonly]="true"
-              class="readonly-input">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.lastName' | translate }}</ion-label>
-            <ion-input
-              [value]="currentUser?.last_name"
-              type="text"
-              [readonly]="true"
-              class="readonly-input">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.emailLabel' | translate }}</ion-label>
-            <ion-input
-              [value]="currentUser?.email"
-              type="email"
-              [readonly]="true"
-              class="readonly-input">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.phoneNumber' | translate }}</ion-label>
-            <ion-input
-              [(ngModel)]="editedUser.mobile_phone_number"
-              type="tel"
-              [placeholder]="'profile.phonePlaceholder' | translate">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.communicationMethod' | translate }}</ion-label>
-            <ion-select [(ngModel)]="editedUser.communication_method" [placeholder]="'profile.selectMethod' | translate">
-              <ion-select-option value="email">{{ 'profile.commEmail' | translate }}</ion-select-option>
-              <ion-select-option value="sms">{{ 'profile.commSms' | translate }}</ion-select-option>
-              <ion-select-option value="whatsapp">{{ 'profile.commWhatsApp' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.preferredLanguage' | translate }}</ion-label>
-            <ion-select [(ngModel)]="editedUser.preferred_language" [placeholder]="'profile.selectLanguage' | translate">
-              @for (lang of availableLanguages(); track lang.code) {
-                <ion-select-option [value]="lang.code">{{ lang.nativeName }}</ion-select-option>
-              }
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">{{ 'profile.timezone' | translate }}</ion-label>
-            <ion-select [(ngModel)]="editedUser.timezone" [placeholder]="'profile.selectTimezone' | translate">
-              @for (tz of timezones; track tz) {
-                <ion-select-option [value]="tz">{{ tz }}</ion-select-option>
-              }
-            </ion-select>
-          </ion-item>
-        </ion-list>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 </ion-content>
 
 <app-footer></app-footer>

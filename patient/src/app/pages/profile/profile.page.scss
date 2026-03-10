@@ -8,6 +8,7 @@
   .profile-header {
     .profile-card {
       margin: 16px;
+      margin-bottom: 0;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
       ion-card-content {
@@ -76,6 +77,66 @@
           margin-bottom: 4px;
         }
       }
+    }
+  }
+
+  .edit-profile-card {
+    margin: 16px;
+    margin-top: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    ion-card-content {
+      padding: 16px;
+    }
+
+    ion-list {
+      padding: 0;
+
+      ion-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        margin-bottom: 16px;
+
+        ion-label {
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        ion-input,
+        ion-select {
+          --background: var(--ion-color-light);
+          --padding-start: 12px;
+          --padding-end: 12px;
+          --padding-top: 8px;
+          --padding-bottom: 8px;
+          border-radius: 8px;
+          margin-top: 4px;
+        }
+
+        &.has-error {
+          ion-label {
+            color: var(--ion-color-danger);
+          }
+
+          ion-input,
+          ion-select {
+            --background: rgba(var(--ion-color-danger-rgb), 0.1);
+            border: 1px solid var(--ion-color-danger);
+          }
+        }
+      }
+
+      .error-message {
+        display: block;
+        padding: 4px 0 8px 0;
+        margin-bottom: 8px;
+      }
+    }
+
+    .save-btn {
+      margin-top: 16px;
+      --border-radius: 8px;
+      font-weight: 600;
     }
   }
 

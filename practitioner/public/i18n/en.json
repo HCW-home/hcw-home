@@ -881,7 +881,13 @@
     "declineSuccess": "Appointment Declined",
     "declineSuccessMessage": "You have declined the appointment",
     "declineError": "Decline Failed",
-    "declineErrorMessage": "Could not decline the appointment"
+    "declineErrorMessage": "Could not decline the appointment",
+    "statusConfirmed": "Confirmed",
+    "statusPending": "Pending",
+    "statusDeclined": "Declined",
+    "statusCancelled": "Cancelled",
+    "statusDraft": "Draft",
+    "unknownParticipant": "Unknown Participant"
   },
   "userProfile": {
     "loadingProfile": "Loading profile...",

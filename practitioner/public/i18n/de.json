@@ -957,7 +957,13 @@
         "declineSuccess": "Termin abgelehnt",
         "declineSuccessMessage": "Sie haben den Termin abgelehnt.",
         "declineError": "Ablehnung fehlgeschlagen",
-        "declineErrorMessage": "Ich konnte die Ernennung nicht ablehnen."
+        "declineErrorMessage": "Ich konnte die Ernennung nicht ablehnen.",
+        "statusConfirmed": "Bestätigt",
+        "statusPending": "Ausstehend",
+        "statusDeclined": "Abgelehnt",
+        "statusCancelled": "Storniert",
+        "statusDraft": "Entwurf",
+        "unknownParticipant": "Unbekannter Teilnehmer"
     },
     "userSearchSelect": {
         "searchingUsers": "Suche nach Benutzern...",

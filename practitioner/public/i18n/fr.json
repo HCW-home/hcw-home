@@ -196,7 +196,13 @@
         "declineSuccess": "Rendez-vous refusé",
         "declineSuccessMessage": "Vous avez refusé le rendez-vous",
         "declineError": "Échec du refus",
-        "declineErrorMessage": "Impossible de refuser le rendez-vous"
+        "declineErrorMessage": "Impossible de refuser le rendez-vous",
+        "statusConfirmed": "Confirmé",
+        "statusPending": "En attente",
+        "statusDeclined": "Refusé",
+        "statusCancelled": "Annulé",
+        "statusDraft": "Brouillon",
+        "unknownParticipant": "Participant inconnu"
     },
     "userProfile": {
         "loadingProfile": "Chargement du profil...",

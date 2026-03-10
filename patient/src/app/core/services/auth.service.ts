@@ -156,9 +156,12 @@ export class AuthService {
 
   refreshToken(): Observable<{ access: string }> {
     return from(this.storage.get('refresh_token')).pipe(
-      switchMap(refresh =>
-        this.http.post<{ access: string }>(`${this.apiUrl}/auth/token/refresh/`, { refresh })
-      ),
+      switchMap(refresh => {
+        if (!refresh) {
+          throw new Error('No refresh token available');
+        }
+        return this.http.post<{ access: string }>(`${this.apiUrl}/auth/token/refresh/`, { refresh });
+      }),
       switchMap(async (response) => {
         if (response.access) {
           await this.storage.set('access_token', response.access);

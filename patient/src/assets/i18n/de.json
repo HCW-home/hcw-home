@@ -21,7 +21,9 @@
         "later": "Spaeter",
         "appNeedsReload": "Die Anwendung muss neu geladen werden, um fortzufahren",
         "reload": "Neu laden",
-        "videoCall": "Videoanruf"
+        "videoCall": "Videoanruf",
+        "offline": "Serververbindung unterbrochen",
+        "reconnecting": "Serververbindung unterbrochen. Verbindungsversuch..."
     },
     "login": {
         "title": "Anmelden",

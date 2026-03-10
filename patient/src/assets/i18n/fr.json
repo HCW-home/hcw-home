@@ -21,7 +21,9 @@
         "update": "Mettre à jour",
         "later": "Plus tard",
         "appNeedsReload": "L'application doit être rechargée pour continuer",
-        "reload": "Recharger"
+        "reload": "Recharger",
+        "offline": "Connexion au serveur perdue",
+        "reconnecting": "Connexion au serveur perdue. Reconnexion en cours..."
     },
     "login": {
         "title": "Se connecter",

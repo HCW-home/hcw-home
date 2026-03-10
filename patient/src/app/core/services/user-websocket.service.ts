@@ -30,6 +30,7 @@ export class UserWebSocketService implements OnDestroy {
   public appointmentJoined$: Observable<AppointmentJoinedEvent> = this.appointmentJoinedSubject.asObservable();
   public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
   public consultationChanged$: Observable<ConsultationChangedEvent> = this.consultationChangedSubject.asObservable();
+  public connectionState$: Observable<WebSocketState> = this.wsService.state$;
 
   constructor(
     private wsService: WebSocketService,

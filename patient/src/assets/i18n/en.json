@@ -21,7 +21,9 @@
     "update": "Update",
     "later": "Later",
     "appNeedsReload": "The application needs to be reloaded to continue",
-    "reload": "Reload"
+    "reload": "Reload",
+    "offline": "Server connection lost",
+    "reconnecting": "Server connection lost. Reconnecting..."
   },
   "login": {
     "title": "Sign In",

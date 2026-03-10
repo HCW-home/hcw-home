@@ -1,0 +1,10 @@
+@if (isOffline) {
+  <div class="offline-indicator">
+    <div class="offline-content">
+      <ion-icon [name]="isReconnecting ? 'sync-outline' : 'cloud-offline-outline'" [class.spin]="isReconnecting"></ion-icon>
+      <span>
+        {{ (isReconnecting ? 'common.reconnecting' : 'common.offline') | translate }}
+      </span>
+    </div>
+  </div>
+}

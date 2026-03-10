@@ -85,7 +85,10 @@ class BaseAssignmentHandler(ABC):
 
         # Create participant for doctor
         Participant.objects.create(
-            appointment=appointment, user=doctor, is_invited=True
+            appointment=appointment,
+            user=doctor,
+            is_invited=True,
+            is_confirmed=True,
         )
 
 

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, from } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { Observable, throwError, from, BehaviorSubject } from 'rxjs';
+import { catchError, switchMap, filter, take } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { TranslationService } from '../services/translation.service';
 import { NavController } from '@ionic/angular';
 
 let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -33,7 +34,6 @@ export class AuthInterceptor implements HttpInterceptor {
               error instanceof HttpErrorResponse &&
               error.status === 401 &&
               error.error?.code === 'token_not_valid' &&
-              !isRefreshing &&
               !request.url.includes('/auth/token/refresh/')
             ) {
               return from(this.authService.getRefreshToken()).pipe(
@@ -43,15 +43,31 @@ export class AuthInterceptor implements HttpInterceptor {
                     return throwError(() => error);
                   }
 
+                  if (isRefreshing) {
+                    // Another refresh is already in progress, wait for it
+                    return refreshTokenSubject.pipe(
+                      filter((token): token is string => token !== null),
+                      take(1),
+                      switchMap(newToken => {
+                        const retryReq = this.addToken(request, newToken);
+                        return next.handle(retryReq);
+                      })
+                    );
+                  }
+
                   isRefreshing = true;
+                  refreshTokenSubject.next(null);
+
                   return this.authService.refreshToken().pipe(
                     switchMap(response => {
                       isRefreshing = false;
+                      refreshTokenSubject.next(response.access);
                       const retryReq = this.addToken(request, response.access);
                       return next.handle(retryReq);
                     }),
                     catchError(refreshError => {
                       isRefreshing = false;
+                      refreshTokenSubject.next(null);
                       this.forceLogout();
                       return throwError(() => refreshError);
                     })

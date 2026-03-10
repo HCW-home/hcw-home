@@ -57,7 +57,10 @@ export class UserWebSocketService implements OnDestroy {
           const response = await firstValueFrom(this.authService.refreshToken());
           return response.access ? `${environment.wsUrl}/user/?token=${response.access}` : null;
         } catch {
-          return null;
+          // If refresh fails (e.g., backend down), return URL with current token
+          // to allow reconnection attempts to continue
+          const currentToken = await this.authService.getToken();
+          return currentToken ? `${environment.wsUrl}/user/?token=${currentToken}` : null;
         }
       },
       reconnect: true,

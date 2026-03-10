@@ -1,12 +1,14 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 from django.test import TestCase
 from django.utils import timezone
 from messaging.models import Message
-from users.models import User
+from users.models import Organisation, User
 
-from .models import Appointment, AppointmentStatus, Consultation, Participant
+from .models import Appointment, AppointmentStatus, Consultation, Participant, Reason, Request
+from .serializers import RequestSerializer
 from .tasks import handle_invites
 
 # Create your tests here.
@@ -63,3 +65,112 @@ class AppointmentTest(TestCase):
 
         for message in Message.objects.all():
             self.assertTrue(message.template_is_valid)
+
+
+class RequestTimezoneTest(TestCase):
+    """Test timezone handling in Request creation"""
+
+    def setUp(self):
+        """Setup test data"""
+        self.organisation = Organisation.objects.create(name="Test Org")
+
+        # Create patient with Paris timezone (UTC+1/UTC+2 depending on DST)
+        self.patient = User.objects.create_user(
+            email="patient@example.com",
+            password="testpass123",
+            timezone="Europe/Paris",
+            main_organisation=self.organisation,
+        )
+
+        # Create practitioner
+        self.practitioner = User.objects.create_user(
+            email="practitioner@example.com",
+            password="testpass123",
+            timezone="UTC",
+            main_organisation=self.organisation,
+        )
+
+        # Create reason for consultation request
+        from users.models import Speciality
+        self.speciality = Speciality.objects.create(name="General Medicine")
+        self.reason = Reason.objects.create(
+            name="Follow-up",
+            speciality=self.speciality,
+            is_active=True,
+        )
+
+    def test_naive_datetime_converted_to_user_timezone(self):
+        """Test that naive datetime is correctly interpreted as user's timezone"""
+        # Create a mock request object
+        from rest_framework.test import APIRequestFactory
+        factory = APIRequestFactory()
+        request = factory.post("/api/requests/")
+        request.user = self.patient
+
+        # Create a naive datetime (2026-03-15 14:00:00 - no timezone)
+        # This should be interpreted as 14:00 in the patient's timezone (Europe/Paris)
+        naive_dt = datetime(2026, 3, 15, 14, 0, 0)
+
+        # Prepare data for serializer
+        data = {
+            "expected_at": naive_dt,
+            "reason_id": self.reason.id,
+            "comment": "Test request",
+        }
+
+        # Create serializer with context
+        serializer = RequestSerializer(data=data, context={"request": request})
+        self.assertTrue(serializer.is_valid())
+
+        # Validate expected_at
+        validated_at = serializer.validated_data["expected_at"]
+
+        # The datetime should now be timezone-aware in Europe/Paris timezone
+        self.assertIsNotNone(validated_at.tzinfo)
+
+        # Expected: 2026-03-15 14:00:00 Paris time
+        # In UTC: 2026-03-15 13:00:00 (Paris is UTC+1 in March)
+        paris_tz = ZoneInfo("Europe/Paris")
+        expected_aware = datetime(2026, 3, 15, 14, 0, 0, tzinfo=paris_tz)
+
+        # Compare the UTC times
+        utc_tz = ZoneInfo('UTC')
+        self.assertEqual(
+            validated_at.astimezone(utc_tz),
+            expected_aware.astimezone(utc_tz),
+        )
+
+    def test_utc_datetime_reinterpreted_as_user_timezone(self):
+        """Test that UTC datetime is reinterpreted as user's timezone"""
+        from rest_framework.test import APIRequestFactory
+        factory = APIRequestFactory()
+        request = factory.post("/api/requests/")
+        request.user = self.patient
+
+        # Create an aware datetime in UTC (14:00 UTC)
+        # This should be reinterpreted as 14:00 in user's timezone (Paris)
+        utc_tz = ZoneInfo('UTC')
+        utc_dt = datetime(2026, 3, 15, 14, 0, 0, tzinfo=utc_tz)
+
+        data = {
+            "expected_at": utc_dt,
+            "reason_id": self.reason.id,
+            "comment": "Test request",
+        }
+
+        serializer = RequestSerializer(data=data, context={"request": request})
+        self.assertTrue(serializer.is_valid())
+
+        validated_at = serializer.validated_data["expected_at"]
+
+        # The datetime should be reinterpreted as 14:00 in Paris timezone
+        paris_tz = ZoneInfo("Europe/Paris")
+        expected = datetime(2026, 3, 15, 14, 0, 0, tzinfo=paris_tz)
+
+        # Convert both to UTC for comparison
+        utc_tz = ZoneInfo('UTC')
+        self.assertEqual(
+            validated_at.astimezone(utc_tz),
+            expected.astimezone(utc_tz),
+        )
+

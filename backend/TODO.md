@@ -50,3 +50,19 @@ Gérer les mises à jour frontend
 ===============================
 
 Il faudrait avertir l'utilisateur lorsque le frontend est mis à jour.
+
+Ajouter fichier ICS
+===================
+
+Dans le model Message de messaging, j'aimerais une nouvelle propriété que si le modèle est consultation.Appointment, alors on puisse générer un fichier ICS qui sera attaché dans le cadre d'un email.
+
+Soucis avec timezone et requested time
+======================================
+
+Il semble y avoir un problème de timezone lorsque le patient fait une demande de consulation, ça reprend pas la bonne timzone.
+
+Camera busy error
+=================
+
+Il n'est pas possible de rejoindre l'appel si la caméra est occupée.
+

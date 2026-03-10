@@ -1,5 +1,5 @@
 from datetime import timedelta
-from zoneinfo import available_timezones
+from zoneinfo import available_timezones, ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -823,6 +823,58 @@ class RequestSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "consultation",
         ]
         read_only_fields = ["id", "created_by", "status"]
+
+    def validate_expected_at(self, value):
+        """
+        Validate and convert expected_at to the user's timezone.
+
+        When the frontend sends a datetime, it may be in the user's local timezone
+        but DRF automatically converts it to settings.TIME_ZONE (usually UTC).
+        We need to reinterpret this datetime as being in the user's timezone instead.
+        """
+        if not value:
+            return value
+
+        user = self.context["request"].user
+        user_timezone = user.timezone or settings.TIME_ZONE
+
+        # DRF automatically converts naive datetimes to timezone-aware using settings.TIME_ZONE
+        # If the datetime is in settings.TIME_ZONE, we need to reinterpret it
+        # as being in the user's local timezone instead
+
+        if timezone.is_naive(value):
+            # If still naive, localize to user's timezone
+            user_tz = ZoneInfo(user_timezone)
+            from datetime import datetime as dt
+            aware_dt = dt(
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond,
+                tzinfo=user_tz
+            )
+            return aware_dt
+
+        # If the datetime is already timezone-aware in UTC/settings timezone,
+        # reinterpret it as being in the user's timezone
+        # (i.e., "14:00 UTC" should be interpreted as "14:00 in user's timezone")
+        server_tz = ZoneInfo(settings.TIME_ZONE)
+        user_tz = ZoneInfo(user_timezone)
+
+        # Check if the datetime is in the server's timezone
+        if value.tzinfo == server_tz or str(value.tzinfo) == str(server_tz):
+            # Reinterpret: take the date/time values and create a new datetime
+            # in the user's timezone
+            from datetime import datetime as dt
+            reinterpreted = dt(
+                value.year, value.month, value.day,
+                value.hour, value.minute, value.second,
+                value.microsecond,
+                tzinfo=user_tz
+            )
+            return reinterpreted
+
+        # If already in a different timezone (not server's), return as is
+        return value
 
     def create(self, validated_data):
         reason_id = validated_data.pop("reason_id")

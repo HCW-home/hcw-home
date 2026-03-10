@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 import uuid
 
 import boto3
@@ -984,8 +985,11 @@ class ReasonSlotsView(APIView):
                                     break
                                 continue
 
-                        slot_start_aware = timezone.make_aware(current_datetime)
-                        slot_end_aware = timezone.make_aware(slot_end_datetime)
+                        # Use doctor's timezone for slot times
+                        doctor_timezone = practitioner.timezone or settings.TIME_ZONE
+                        doctor_tz = ZoneInfo(doctor_timezone)
+                        slot_start_aware = current_datetime.replace(tzinfo=doctor_tz)
+                        slot_end_aware = slot_end_datetime.replace(tzinfo=doctor_tz)
 
                         # Skip slots in the past
                         if slot_start_aware <= timezone.now():
@@ -1025,19 +1029,35 @@ class ReasonSlotsView(APIView):
 
                         current_time = slot_end_time
 
-        slots_data = [
-            {
-                "date": slot.date.isoformat(),
-                "start_time": slot.start_time.isoformat(),
-                "end_time": slot.end_time.isoformat(),
+        # Convert slots to patient's timezone
+        patient_timezone = request.user.timezone or settings.TIME_ZONE
+        patient_tz = ZoneInfo(patient_timezone)
+
+        slots_data = []
+        for slot in available_slots:
+            # Get the practitioner for this slot to know their timezone
+            practitioner = next(p for p in practitioners if p.id == slot.user_id)
+            doctor_timezone = practitioner.timezone or settings.TIME_ZONE
+            doctor_tz = ZoneInfo(doctor_timezone)
+
+            # Create datetime in doctor's timezone
+            slot_start_dt = datetime.combine(slot.date, slot.start_time).replace(tzinfo=doctor_tz)
+            slot_end_dt = datetime.combine(slot.date, slot.end_time).replace(tzinfo=doctor_tz)
+
+            # Convert to patient's timezone
+            slot_start_patient = slot_start_dt.astimezone(patient_tz)
+            slot_end_patient = slot_end_dt.astimezone(patient_tz)
+
+            slots_data.append({
+                "date": slot_start_patient.date().isoformat(),
+                "start_time": slot_start_patient.time().isoformat(),
+                "end_time": slot_end_patient.time().isoformat(),
                 "duration": slot.duration,
                 "user_id": slot.user_id,
                 "user_email": slot.user_email,
                 "user_first_name": slot.user_first_name,
                 "user_last_name": slot.user_last_name,
-            }
-            for slot in available_slots
-        ]
+            })
 
         return Response(slots_data, status=status.HTTP_200_OK)
 

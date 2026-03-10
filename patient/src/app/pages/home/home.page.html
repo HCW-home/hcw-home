@@ -98,6 +98,12 @@
                       <span class="request-info-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
                     }
                   </div>
+                  @if ((isStatusRefused(request) || isStatusCancelled(request)) && request.refused_reason) {
+                    <div class="card-info-row card-info-refused">
+                      <ion-icon name="close-circle-outline"></ion-icon>
+                      <span>{{ request.refused_reason }}</span>
+                    </div>
+                  }
                 </div>
 
                 @if (hasConsultation(request)) {
@@ -112,13 +118,6 @@
                   <div class="card-info-row card-info-waiting">
                     <ion-icon name="hourglass-outline"></ion-icon>
                     <span>{{ 'home.awaitingAssignment' | translate }}</span>
-                  </div>
-                }
-
-                @if (isStatusRefused(request) && request.refused_reason) {
-                  <div class="card-info-row card-info-refused">
-                    <ion-icon name="close-circle-outline"></ion-icon>
-                    <span>{{ request.refused_reason }}</span>
                   </div>
                 }
               </div>

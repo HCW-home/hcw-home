@@ -1,5 +1,7 @@
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from . import AssignmentException, BaseAssignmentHandler
@@ -63,12 +65,17 @@ class AssignmentHandler(BaseAssignmentHandler):
         if not doctors.exists():
             return None
 
-        # Find doctor with fewest appointments on the requested day
-        request_date = self.request.expected_at.date()
-
         available_doctors = []
         for doctor in doctors:
             if self._is_doctor_available(doctor):
+                # Convert requested datetime to doctor's timezone to get the correct date
+                doctor_timezone = doctor.timezone or settings.TIME_ZONE
+                doctor_tz = ZoneInfo(doctor_timezone)
+                requested_datetime_in_doctor_tz = self.request.expected_at.astimezone(
+                    doctor_tz
+                )
+                request_date = requested_datetime_in_doctor_tz.date()
+
                 # Count appointments on the requested day
                 appointment_count = Appointment.objects.filter(
                     consultation__owned_by=doctor,
@@ -97,9 +104,16 @@ class AssignmentHandler(BaseAssignmentHandler):
         """
         from ..models import Appointment, AppointmentStatus, BookingSlot
 
+        # Convert requested datetime to doctor's timezone for comparison
+        # BookingSlot times are in the doctor's local timezone
         requested_datetime = self.request.expected_at
-        requested_date = requested_datetime.date()
-        requested_time = requested_datetime.time()
+        doctor_timezone = doctor.timezone or settings.TIME_ZONE
+        doctor_tz = ZoneInfo(doctor_timezone)
+
+        # Convert to doctor's timezone for date/time extraction
+        requested_datetime_in_doctor_tz = requested_datetime.astimezone(doctor_tz)
+        requested_date = requested_datetime_in_doctor_tz.date()
+        requested_time = requested_datetime_in_doctor_tz.time()
 
         # Get doctor's booking slots
         booking_slots = BookingSlot.objects.filter(user=doctor)

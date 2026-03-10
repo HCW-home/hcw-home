@@ -27,7 +27,7 @@ import { ConsultationInfoComponent } from '../../shared/components/consultation-
 
 interface RequestStatus {
   label: string;
-  color: 'warning' | 'info' | 'primary' | 'success' | 'muted';
+  color: 'warning' | 'info' | 'primary' | 'success' | 'muted' | 'danger';
 }
 
 @Component({
@@ -225,8 +225,8 @@ export class HomePage implements OnInit, OnDestroy {
       'requested': { label: this.t.instant('home.statusPending'), color: 'warning' },
       'accepted': { label: this.t.instant('home.statusAccepted'), color: 'info' },
       'scheduled': { label: this.t.instant('home.statusScheduled'), color: 'primary' },
-      'cancelled': { label: this.t.instant('home.statusCancelled'), color: 'muted' },
-      'refused': { label: this.t.instant('home.statusRefused'), color: 'muted' }
+      'cancelled': { label: this.t.instant('home.statusCancelled'), color: 'danger' },
+      'refused': { label: this.t.instant('home.statusRefused'), color: 'danger' }
     };
     return statusMap[normalizedStatus] || statusMap['requested'];
   }
@@ -288,6 +288,10 @@ export class HomePage implements OnInit, OnDestroy {
 
   isStatusRefused(request: ConsultationRequest): boolean {
     return request.status?.toLowerCase() === 'refused';
+  }
+
+  isStatusCancelled(request: ConsultationRequest): boolean {
+    return request.status?.toLowerCase() === 'cancelled';
   }
 
   getConsultationDoctorName(consultation: Consultation): string {

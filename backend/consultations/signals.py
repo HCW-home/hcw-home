@@ -278,8 +278,6 @@ def notify_beneficiary_assigned(sender, instance: Consultation, created, **kwarg
         )
     )
 
-    print(f"DDDDDDDDDDDDDDDDDDDDDD {should_notify}")
-
     if should_notify:
         # Create notification for the beneficiary
         NotificationMessage.objects.create(

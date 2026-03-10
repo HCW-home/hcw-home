@@ -1273,7 +1273,9 @@ class UserDashboardView(APIView):
                 created_by=user,
             )
             .filter(
-                Q(status__in=[RequestStatus.requested, RequestStatus.refused])
+                Q(status__in=[RequestStatus.requested,
+                  RequestStatus.refused, RequestStatus.cancelled],
+                  created_at__gte=two_hours_ago)
                 | Q(
                     status=RequestStatus.accepted,
                     consultation__closed_at__isnull=True,

@@ -566,6 +566,11 @@
       background: var(--app-background);
       color: var(--app-text-muted);
     }
+
+    &.status-danger {
+      background: #fef2f2;
+      color: #dc2626;
+    }
   }
 
   .card-actions {

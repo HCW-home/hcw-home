@@ -19,6 +19,7 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
   connectionState: WebSocketState = WebSocketState.DISCONNECTED;
   WebSocketState = WebSocketState;
   private destroy$ = new Subject<void>();
+  private wasConnected = false;
 
   constructor(private userWebSocket: UserWebSocketService) {
     addIcons({ cloudOfflineOutline, syncOutline });
@@ -29,6 +30,9 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
         this.connectionState = state;
+        if (state === WebSocketState.CONNECTED) {
+          this.wasConnected = true;
+        }
       });
   }
 
@@ -38,7 +42,7 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
   }
 
   get isOffline(): boolean {
-    return this.connectionState !== WebSocketState.CONNECTED;
+    return this.wasConnected && this.connectionState !== WebSocketState.CONNECTED;
   }
 
   get isReconnecting(): boolean {

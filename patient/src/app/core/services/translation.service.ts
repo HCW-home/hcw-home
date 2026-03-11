@@ -75,6 +75,18 @@ export class TranslationService {
       }));
       this.availableLanguagesSignal.set(mapped);
       this.translate.addLangs(mapped.map(l => l.code));
+
+      // Re-initialize language selection with the new available languages
+      const savedLanguage = localStorage.getItem(STORAGE_KEY);
+      if (!savedLanguage) {
+        const browserLang = this.translate.getBrowserLang();
+        const langToUse = browserLang && mapped.some(l => l.code === browserLang)
+          ? browserLang
+          : this.currentLanguageSignal();
+        if (langToUse !== this.currentLanguageSignal()) {
+          this.setLanguage(langToUse);
+        }
+      }
     }
   }
 

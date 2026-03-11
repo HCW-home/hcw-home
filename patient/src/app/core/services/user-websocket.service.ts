@@ -24,6 +24,9 @@ export class UserWebSocketService implements OnDestroy {
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
   private appointmentChangedSubject = new Subject<AppointmentChangedEvent>();
   private consultationChangedSubject = new Subject<ConsultationChangedEvent>();
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectInterval = 5000; // 5 seconds between refresh attempts
+  private isRefreshing = false;
 
   public messages$: Observable<UserMessageEvent> = this.messagesSubject.asObservable();
   public notifications$: Observable<NotificationEvent> = this.notificationsSubject.asObservable();
@@ -37,6 +40,7 @@ export class UserWebSocketService implements OnDestroy {
     private authService: AuthService
   ) {
     this.setupEventListeners();
+    this.setupReconnectionHandler();
   }
 
   async connect(): Promise<void> {
@@ -53,28 +57,81 @@ export class UserWebSocketService implements OnDestroy {
     const wsUrl = `${environment.wsUrl}/user/?token=${token}`;
     this.wsService.connect({
       url: wsUrl,
-      urlProvider: async () => {
-        try {
-          const response = await firstValueFrom(this.authService.refreshToken());
-          return response.access ? `${environment.wsUrl}/user/?token=${response.access}` : null;
-        } catch {
-          // If refresh fails (e.g., backend down), return URL with current token
-          // to allow reconnection attempts to continue
-          const currentToken = await this.authService.getToken();
-          return currentToken ? `${environment.wsUrl}/user/?token=${currentToken}` : null;
-        }
-      },
-      reconnect: true,
-      reconnectAttempts: 10,
-      reconnectInterval: 3000,
+      reconnect: false, // We handle reconnection ourselves
       pingInterval: 30000,
     });
   }
 
   disconnect(): void {
+    this.clearReconnectTimer();
     this.wsService.disconnect();
     this.isOnlineSubject.next(false);
     this.connectionCountSubject.next(0);
+  }
+
+  private setupReconnectionHandler(): void {
+    this.wsService.state$.subscribe(state => {
+      if (state === WebSocketState.DISCONNECTED || state === WebSocketState.FAILED) {
+        this.attemptReconnect();
+      } else if (state === WebSocketState.CONNECTED) {
+        this.clearReconnectTimer();
+      }
+    });
+  }
+
+  private attemptReconnect(): void {
+    // Avoid multiple simultaneous refresh attempts
+    if (this.isRefreshing) {
+      return;
+    }
+
+    this.clearReconnectTimer();
+    this.tryRefresh();
+  }
+
+  private async tryRefresh(): Promise<void> {
+    this.isRefreshing = true;
+
+    // Check if we have a refresh token before attempting
+    const refreshToken = await this.authService.getRefreshToken();
+    if (!refreshToken) {
+      console.error('[UserWS] No refresh token available, stopping reconnection');
+      this.isRefreshing = false;
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(this.authService.refreshToken());
+      if (response.access) {
+        // Refresh succeeded, reconnect WebSocket
+        this.isRefreshing = false;
+        await this.connect();
+      }
+    } catch (error: unknown) {
+      const httpError = error as { status?: number };
+
+      // If token is expired/invalid (401/403), stop reconnection
+      // The auth interceptor will handle logout
+      if (httpError?.status === 401 || httpError?.status === 403) {
+        console.error('[UserWS] Refresh token expired, stopping reconnection');
+        this.isRefreshing = false;
+        return;
+      }
+
+      // For network errors, keep trying after interval
+      console.error('[UserWS] Token refresh failed, will retry:', error);
+      this.reconnectTimer = setTimeout(() => {
+        this.isRefreshing = false;
+        this.tryRefresh();
+      }, this.reconnectInterval);
+    }
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   getConnectionState(): Observable<WebSocketState> {
@@ -141,6 +198,7 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearReconnectTimer();
     this.disconnect();
   }
 }

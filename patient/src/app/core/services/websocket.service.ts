@@ -178,6 +178,11 @@ export class WebSocketService implements OnDestroy {
         const freshUrl = await this.config.urlProvider();
         if (freshUrl) {
           this.config = { ...this.config, url: freshUrl };
+          // Reset reconnect attempts when we get a fresh URL (successful token refresh)
+          // This allows infinite reconnection attempts as long as token refresh works
+          if (freshUrl !== this.config.url) {
+            this.reconnectAttempts = 0;
+          }
         } else {
           this.stateSubject.next(WebSocketState.FAILED);
           return;

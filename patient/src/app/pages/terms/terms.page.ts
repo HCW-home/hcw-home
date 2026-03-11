@@ -10,7 +10,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Subject, takeUntil, switchMap, take, EMPTY, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil, switchMap, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { TermsService } from '../../core/services/terms.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -97,10 +97,30 @@ export class TermsPage implements OnInit, OnDestroy {
     if (!this.term) return;
 
     this.accepting = true;
-    this.termsService
-      .acceptTerm(this.term.id)
+
+    const user = this.authService.currentUserValue;
+    const updates: Partial<{ timezone: string; preferred_language: string }> = {};
+
+    // Only set timezone if not already saved
+    if (!user?.timezone) {
+      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      updates.timezone = browserTimezone;
+    }
+
+    // Only set preferred_language if not already saved
+    if (!user?.preferred_language) {
+      updates.preferred_language = this.t.currentLanguage();
+    }
+
+    // Update profile before accepting terms (only if there are updates to make)
+    const updateObservable = Object.keys(updates).length > 0
+      ? this.authService.updateProfile(updates)
+      : this.authService.getCurrentUser();
+
+    updateObservable
       .pipe(
         takeUntil(this.destroy$),
+        switchMap(() => this.termsService.acceptTerm(this.term!.id)),
         switchMap(() => this.authService.getCurrentUser())
       )
       .subscribe({

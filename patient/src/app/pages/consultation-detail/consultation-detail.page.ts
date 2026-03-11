@@ -152,14 +152,27 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
+        const user = this.currentUser();
+
         const newMessage: Message = {
           id: event.data.id,
           username: event.data.username,
           message: event.data.message,
           timestamp: event.data.timestamp,
-          isCurrentUser: false,
+          isCurrentUser: user?.id === event.data.user_id,
         };
-        this.messages.update((msgs) => [...msgs, newMessage]);
+
+        // Check if message already exists to avoid duplicates
+        const exists = this.messages().some(m => m.id === event.data.id);
+        if (!exists) {
+          this.messages.update((msgs) => {
+            // Double-check to avoid race conditions
+            if (msgs.some(m => m.id === event.data.id)) {
+              return msgs;
+            }
+            return [...msgs, newMessage];
+          });
+        }
       });
 
     this.wsService.messageUpdated$
@@ -177,12 +190,23 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
           if (!exists) {
             const user = this.currentUser();
             const isSystem = !event.data.created_by;
+
+            console.log('[ConsultationDetail] New message from WebSocket');
+            console.log('[ConsultationDetail] Current user:', user);
+            console.log('[ConsultationDetail] Current user id:', user?.id);
+            console.log('[ConsultationDetail] Current user pk:', user?.pk);
+            console.log('[ConsultationDetail] Message created_by:', event.data.created_by);
+            console.log('[ConsultationDetail] Message created_by.id:', event.data.created_by?.id);
+
+            const isCurrentUser = isSystem ? false : (user?.pk === event.data.created_by?.id || user?.id === event.data.created_by?.id);
+            console.log('[ConsultationDetail] isCurrentUser:', isCurrentUser);
+
             const newMessage: Message = {
               id: event.data.id,
               username: isSystem ? '' : `${event.data.created_by.first_name} ${event.data.created_by.last_name}`,
               message: event.data.content,
               timestamp: event.data.created_at,
-              isCurrentUser: isSystem ? false : user?.id === event.data.created_by.id,
+              isCurrentUser,
               isSystem,
               attachment: event.data.attachment,
               isEdited: event.data.is_edited,
@@ -326,19 +350,6 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
   onSendMessage(data: SendMessageData): void {
     if (!this.consultationId) return;
 
-    const tempId = Date.now();
-    const newMessage: Message = {
-      id: tempId,
-      username: this.t.instant('consultationDetail.you'),
-      message: data.content || "",
-      timestamp: new Date().toISOString(),
-      isCurrentUser: true,
-      attachment: data.attachment
-        ? { file_name: data.attachment.name, mime_type: data.attachment.type }
-        : null,
-    };
-    this.messages.update((msgs) => [...msgs, newMessage]);
-
     this.consultationService
       .sendConsultationMessage(
         this.consultationId,
@@ -347,21 +358,10 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (savedMessage) => {
-          this.messages.update((msgs) =>
-            msgs.map((m) =>
-              m.id === tempId
-                ? {
-                    ...m,
-                    id: savedMessage.id,
-                    attachment: savedMessage.attachment,
-                  }
-                : m,
-            ),
-          );
+        next: () => {
+          // Message will be added via WebSocket
         },
         error: async (error) => {
-          this.messages.update((msgs) => msgs.filter((m) => m.id !== tempId));
           const toast = await this.toastController.create({
             message: error?.error?.detail || this.t.instant('consultationDetail.failedSend'),
             duration: 3000,

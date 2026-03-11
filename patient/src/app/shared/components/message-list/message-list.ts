@@ -114,13 +114,18 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
     if (changes['messages']) {
       this.loadImageAttachments();
       const currentLength = this.messages.length;
-      const wasLoadingMore = this.previousMessagesLength > 0 && currentLength > this.previousMessagesLength;
+      const previousLength = this.previousMessagesLength;
 
-      if (this.isInitialLoad || !wasLoadingMore) {
+      // Check if we're loading older messages (they appear at the beginning)
+      // vs new messages (they appear at the end)
+      const isLoadingOlder = this.isLoadingMore && previousLength > 0 && currentLength > previousLength;
+
+      // Always scroll to bottom for initial load or when new messages arrive
+      if (this.isInitialLoad || !isLoadingOlder) {
         this.shouldScrollToBottom = true;
       }
 
-      if (wasLoadingMore && this.messagesContainer?.nativeElement) {
+      if (isLoadingOlder && this.messagesContainer?.nativeElement) {
         this.previousScrollHeight = this.messagesContainer.nativeElement.scrollHeight;
       }
 

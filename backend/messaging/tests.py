@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 
 from users.models import User, Organisation
-from consultations.models import Consultation, Appointment
+from consultations.models import Consultation, Appointment, Participant
 from messaging.models import Message, CommunicationMethod
 
 
@@ -49,8 +49,45 @@ class MessageICSAttachmentTestCase(TestCase):
             type="online",
         )
 
+        self.participant = Participant.objects.create(
+            appointment=self.appointment,
+            user=self.patient,
+        )
+
+    def test_ics_attachment_for_participant(self):
+        """Test that ICS file is generated when content_object is a Participant"""
+        content_type = ContentType.objects.get_for_model(Participant)
+
+        message = Message.objects.create(
+            subject="Your appointment reminder",
+            content="You have an upcoming appointment",
+            communication_method=CommunicationMethod.email,
+            recipient_email=self.patient.email,
+            sent_to=self.patient,
+            sent_by=self.user,
+            content_type=content_type,
+            object_id=self.participant.pk,
+        )
+
+        ics_data = message.ics_attachment
+        self.assertIsNotNone(ics_data)
+
+        filename, content, mime_type = ics_data
+
+        self.assertEqual(filename, f"appointment_{self.appointment.pk}.ics")
+        self.assertEqual(mime_type, "text/calendar")
+
+        self.assertIn("BEGIN:VCALENDAR", content)
+        self.assertIn("BEGIN:VEVENT", content)
+        self.assertIn("END:VEVENT", content)
+        self.assertIn("END:VCALENDAR", content)
+        self.assertIn(f"UID:appointment-{self.appointment.pk}@", content)
+        self.assertIn("SUMMARY:Follow-up Appointment", content)
+        self.assertIn("DTSTART:", content)
+        self.assertIn("DTEND:", content)
+
     def test_ics_attachment_for_appointment(self):
-        """Test that ICS file is generated for appointment messages"""
+        """Test that ICS file is generated when content_object is an Appointment"""
         content_type = ContentType.objects.get_for_model(Appointment)
 
         message = Message.objects.create(
@@ -64,28 +101,11 @@ class MessageICSAttachmentTestCase(TestCase):
             object_id=self.appointment.pk,
         )
 
-        # Test that ics_attachment is generated
         ics_data = message.ics_attachment
         self.assertIsNotNone(ics_data)
 
-        # Unpack the tuple
         filename, content, mime_type = ics_data
-
-        # Check filename
         self.assertEqual(filename, f"appointment_{self.appointment.pk}.ics")
-
-        # Check mime type
-        self.assertEqual(mime_type, "text/calendar")
-
-        # Check ICS content contains required fields
-        self.assertIn("BEGIN:VCALENDAR", content)
-        self.assertIn("BEGIN:VEVENT", content)
-        self.assertIn("END:VEVENT", content)
-        self.assertIn("END:VCALENDAR", content)
-        self.assertIn(f"UID:appointment-{self.appointment.pk}@", content)
-        self.assertIn("SUMMARY:Follow-up Appointment", content)
-        self.assertIn("DTSTART:", content)
-        self.assertIn("DTEND:", content)
 
     def test_no_ics_attachment_for_non_appointment(self):
         """Test that ICS file is NOT generated for non-appointment messages"""
@@ -102,7 +122,6 @@ class MessageICSAttachmentTestCase(TestCase):
             object_id=self.consultation.pk,
         )
 
-        # Test that ics_attachment is None for non-appointment objects
         ics_data = message.ics_attachment
         self.assertIsNone(ics_data)
 
@@ -117,6 +136,5 @@ class MessageICSAttachmentTestCase(TestCase):
             sent_by=self.user,
         )
 
-        # Test that ics_attachment is None without content_object
         ics_data = message.ics_attachment
         self.assertIsNone(ics_data)

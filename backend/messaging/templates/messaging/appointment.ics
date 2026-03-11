@@ -1,0 +1,18 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//HCW//Appointment//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:{{ uid }}
+DTSTAMP:{{ dtstamp }}
+DTSTART:{{ dtstart }}
+DTEND:{{ dtend }}
+SUMMARY:{{ summary }}{% if description %}
+DESCRIPTION:{{ description }}{% endif %}{% if location %}
+LOCATION:{{ location }}{% endif %}{% if organizer_email %}
+ORGANIZER;CN={{ organizer_name }}:mailto:{{ organizer_email }}{% endif %}
+STATUS:{{ status }}
+SEQUENCE:0
+END:VEVENT
+END:VCALENDAR

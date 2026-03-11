@@ -24,7 +24,6 @@ from . import providers
 from .abstracts import ModelCeleryAbstract
 from .providers import BaseMessagingProvider
 from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
-from django.template.loader import render_to_string
 
 class CommunicationMethod(models.TextChoices):
     sms = "sms", ("SMS")
@@ -874,94 +873,81 @@ class Message(ModelCeleryAbstract):
     def render_subject(self):
         return self.render("template_subject")
 
+    def _get_appointment(self):
+        """Return the Appointment linked to this message, or None."""
+        if not self.content_object:
+            return None
+
+        from consultations.models import Appointment, Participant
+
+        if isinstance(self.content_object, Appointment):
+            return self.content_object
+        if isinstance(self.content_object, Participant):
+            return self.content_object.appointment
+        return None
+
     @property
     def ics_attachment(self) -> Optional[Tuple[str, str, str]]:
         """
         Generate ICS calendar file for Appointment objects.
 
         Returns:
-            Optional tuple of (filename, content, mime_type) if content_object is an Appointment,
+            Optional tuple of (filename, content, mime_type) for appointments,
             None otherwise.
         """
-        # Check if content_object is an Appointment
-        if not self.content_object:
+        from datetime import timedelta
+
+        appointment = self._get_appointment()
+        if not appointment:
             return None
 
-        from consultations.models import Appointment
-
-        if not isinstance(self.content_object, Appointment):
-            return None
-
-        appointment = self.content_object
-
-        # Generate unique UID for the event
-        uid = f"appointment-{appointment.pk}@{settings.SITE_DOMAIN if hasattr(settings, 'SITE_DOMAIN') else 'hcw.local'}"
-
-        # Format dates to iCalendar format (UTC)
-        def format_ics_datetime(dt: datetime) -> str:
-            """Convert datetime to iCalendar format in UTC"""
+        def fmt(dt: datetime) -> str:
             if dt.tzinfo is None:
                 dt = timezone.make_aware(dt)
-            utc_dt = dt.astimezone(ZoneInfo('UTC'))
-            return utc_dt.strftime('%Y%m%dT%H%M%SZ')
+            return dt.astimezone(ZoneInfo("UTC")).strftime("%Y%m%dT%H%M%SZ")
 
-        # Get appointment details
-        dtstart = format_ics_datetime(appointment.scheduled_at)
+        domain = getattr(settings, "SITE_DOMAIN", "hcw.local")
+        end_at = appointment.end_expected_at or (
+            appointment.scheduled_at + timedelta(hours=1)
+        )
 
-        # Use end_expected_at if available, otherwise add 1 hour
-        if appointment.end_expected_at:
-            dtend = format_ics_datetime(appointment.end_expected_at)
-        else:
-            from datetime import timedelta
-            end_time = appointment.scheduled_at + timedelta(hours=1)
-            dtend = format_ics_datetime(end_time)
-
-        dtstamp = format_ics_datetime(timezone.now())
-
-        # Get title/summary
-        summary = appointment.title or "Consultation"
-
-        # Get description
         description = ""
         if appointment.consultation:
             if appointment.consultation.title:
-                description += f"Consultation: {appointment.consultation.title}\\n"
+                description += f"Consultation: {appointment.consultation.title}"
             if appointment.consultation.description:
+                if description:
+                    description += "\\n"
                 description += appointment.consultation.description
 
-        # Get location (for in-person appointments)
-        location = ""
-        if appointment.type == "inPerson":
-            location = "LOCATION:In Person\\r\\n"
-
-        # Get organizer
-        organizer = ""
+        organizer_name = ""
+        organizer_email = ""
         if appointment.created_by and appointment.created_by.email:
-            organizer_name = f"{appointment.created_by.first_name} {appointment.created_by.last_name}".strip()
-            organizer = f"ORGANIZER;CN={organizer_name}:mailto:{appointment.created_by.email}\\r\\n"
+            organizer_name = (
+                f"{appointment.created_by.first_name} "
+                f"{appointment.created_by.last_name}"
+            ).strip()
+            organizer_email = appointment.created_by.email
 
-        # Build ICS content
-        ics_content = f"""BEGIN:VCALENDAR\r
-VERSION:2.0\r
-PRODID:-//HCW//Appointment//EN\r
-CALSCALE:GREGORIAN\r
-METHOD:REQUEST\r
-BEGIN:VEVENT\r
-UID:{uid}\r
-DTSTAMP:{dtstamp}\r
-DTSTART:{dtstart}\r
-DTEND:{dtend}\r
-SUMMARY:{summary}\r
-DESCRIPTION:{description}\r
-{location}{organizer}STATUS:{appointment.status.upper()}\r
-SEQUENCE:0\r
-END:VEVENT\r
-END:VCALENDAR\r
-"""
+        ics_content = render_to_string(
+            "messaging/appointment.ics",
+            {
+                "uid": f"appointment-{appointment.pk}@{domain}",
+                "dtstamp": fmt(timezone.now()),
+                "dtstart": fmt(appointment.scheduled_at),
+                "dtend": fmt(end_at),
+                "summary": appointment.title or "Consultation",
+                "description": description,
+                "location": "In Person" if appointment.type == "inPerson" else "",
+                "organizer_name": organizer_name,
+                "organizer_email": organizer_email,
+                "status": appointment.status.upper(),
+            },
+        )
+        # ICS requires CRLF line endings
+        ics_content = ics_content.replace("\r\n", "\n").replace("\n", "\r\n")
 
-        # Return filename, content, and mime type
-        filename = f"appointment_{appointment.pk}.ics"
-        return (filename, ics_content, "text/calendar")
+        return (f"appointment_{appointment.pk}.ics", ics_content, "text/calendar")
 
     _template = None
 

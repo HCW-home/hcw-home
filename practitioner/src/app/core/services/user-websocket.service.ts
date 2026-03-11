@@ -42,6 +42,9 @@ export class UserWebSocketService implements OnDestroy {
   private wasConnected = false;
   private errorToastTimer: ReturnType<typeof setTimeout> | null = null;
   private shouldBeConnected = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectInterval = 5000; // 5 seconds between refresh attempts
+  private isRefreshing = false;
 
   public isOnline$: Observable<boolean> = this.isOnlineSubject.asObservable();
   public connectionCount$: Observable<number> =
@@ -65,6 +68,7 @@ export class UserWebSocketService implements OnDestroy {
     this.setupEventListeners();
     this.setupConnectionStatusToasts();
     this.setupOnlineStatusListener();
+    this.setupReconnectionHandler();
   }
 
   connect(): void {
@@ -85,24 +89,7 @@ export class UserWebSocketService implements OnDestroy {
     const wsUrl = `${environment.wsUrl}/user/?token=${token}`;
     this.wsService.connect({
       url: wsUrl,
-      urlProvider: async () => {
-        try {
-          const response = await firstValueFrom(this.authService.refreshAccessToken());
-          this.authService.setToken(response.access);
-          if (response.refresh) {
-            this.authService.setRefreshToken(response.refresh);
-          }
-          return `${environment.wsUrl}/user/?token=${response.access}`;
-        } catch {
-          // If refresh fails (e.g., backend down), return URL with current token
-          // to allow reconnection attempts to continue
-          const currentToken = this.authService.getToken();
-          return currentToken ? `${environment.wsUrl}/user/?token=${currentToken}` : null;
-        }
-      },
-      reconnect: true,
-      reconnectAttempts: 5,
-      reconnectInterval: 3000,
+      reconnect: false, // We handle reconnection ourselves
       pingInterval: 30000,
     });
   }
@@ -111,10 +98,91 @@ export class UserWebSocketService implements OnDestroy {
     this.shouldBeConnected = false;
     this.wasConnected = false;
     this.hadConnectionIssue = false;
+    this.clearReconnectTimer();
     this.clearErrorToastTimer();
     this.wsService.disconnect();
     this.isOnlineSubject.next(false);
     this.connectionCountSubject.next(0);
+  }
+
+  private setupReconnectionHandler(): void {
+    this.wsService.state$.subscribe(state => {
+      if ((state === WebSocketState.DISCONNECTED || state === WebSocketState.FAILED) && this.shouldBeConnected) {
+        this.attemptReconnect();
+      } else if (state === WebSocketState.CONNECTED) {
+        this.clearReconnectTimer();
+      }
+    });
+  }
+
+  private attemptReconnect(): void {
+    // Avoid multiple simultaneous refresh attempts
+    if (this.isRefreshing) {
+      return;
+    }
+
+    this.clearReconnectTimer();
+    this.hadConnectionIssue = true;
+
+    // Show reconnecting toast immediately (only if we were previously connected)
+    if (this.wasConnected) {
+      this.clearErrorToastTimer();
+      this.toasterService.show(
+        'warning',
+        this.t.instant('websocket.reconnecting'),
+        this.t.instant('websocket.reconnectingMessage'),
+        { id: WS_CONNECTION_TOAST_ID, delay: -1, closable: false }
+      );
+    }
+
+    this.tryRefresh();
+  }
+
+  private async tryRefresh(): Promise<void> {
+    this.isRefreshing = true;
+
+    // Check if we have a refresh token before attempting
+    const refreshToken = this.authService.getRefreshToken();
+    if (!refreshToken) {
+      console.error('[UserWS] No refresh token available, stopping reconnection');
+      this.isRefreshing = false;
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(this.authService.refreshAccessToken());
+      this.authService.setToken(response.access);
+      if (response.refresh) {
+        this.authService.setRefreshToken(response.refresh);
+      }
+      // Refresh succeeded, reconnect WebSocket
+      this.isRefreshing = false;
+      this.connect();
+    } catch (error: unknown) {
+      const httpError = error as { status?: number };
+
+      // If token is expired/invalid (401/403), stop reconnection
+      // The auth interceptor will handle logout
+      if (httpError?.status === 401 || httpError?.status === 403) {
+        console.error('[UserWS] Refresh token expired, stopping reconnection');
+        this.isRefreshing = false;
+        return;
+      }
+
+      // For network errors, keep trying after interval
+      console.error('[UserWS] Token refresh failed, will retry:', error);
+      this.reconnectTimer = setTimeout(() => {
+        this.isRefreshing = false;
+        this.tryRefresh();
+      }, this.reconnectInterval);
+    }
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   getConnectionState(): Observable<WebSocketState> {
@@ -253,15 +321,15 @@ export class UserWebSocketService implements OnDestroy {
 
           case WebSocketState.CONNECTED:
             this.clearErrorToastTimer();
-            if (this.hadConnectionIssue) {
+            if (this.hadConnectionIssue && this.wasConnected) {
               this.toasterService.show(
                 'success',
                 this.t.instant('websocket.reconnected'),
                 this.t.instant('websocket.reconnectedMessage'),
                 { id: WS_CONNECTION_TOAST_ID, delay: 5000, closable: true }
               );
-              this.hadConnectionIssue = false;
             }
+            this.hadConnectionIssue = false;
             this.wasConnected = true;
             break;
         }
@@ -297,6 +365,7 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearReconnectTimer();
     this.stateSubscription?.unsubscribe();
     this.onlineSubscription?.unsubscribe();
     this.disconnect();

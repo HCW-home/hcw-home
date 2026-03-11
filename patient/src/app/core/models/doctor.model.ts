@@ -1,5 +1,6 @@
 export interface Doctor {
-  id: number;
+  id?: number;
+  pk?: number; // Django REST Framework uses pk instead of id
   first_name: string;
   last_name: string;
   email: string;

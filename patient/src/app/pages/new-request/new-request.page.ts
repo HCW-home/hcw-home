@@ -407,7 +407,13 @@ export class NewRequestPage implements OnInit, OnDestroy {
 
   isDoctorSelected(doctor: Doctor): boolean {
     const selected = this.selectedDoctor();
-    return selected !== null && selected.id === doctor.id;
+    if (!selected || !doctor) {
+      return false;
+    }
+    // API returns 'pk' instead of 'id'
+    const selectedId = (selected as any).pk ?? selected.id;
+    const doctorId = (doctor as any).pk ?? doctor.id;
+    return selectedId === doctorId;
   }
 
   getDoctorFullName(doctor: Doctor): string {

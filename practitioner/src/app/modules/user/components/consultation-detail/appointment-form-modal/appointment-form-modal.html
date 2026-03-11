@@ -2,6 +2,7 @@
   [isOpen]="isOpen"
   [title]="modalTitle"
   size="xlarge"
+  [closeOnBackdropClick]="false"
   (closed)="onClose()">
   <app-appointment-form
     [consultationId]="consultationId"

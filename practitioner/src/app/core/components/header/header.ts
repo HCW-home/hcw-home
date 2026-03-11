@@ -6,6 +6,7 @@ import {
   OnDestroy,
   viewChild,
   ElementRef,
+  HostListener,
 } from '@angular/core';
 import {
   Router,
@@ -87,6 +88,12 @@ export class Header implements OnInit, OnDestroy {
       this.dismissOnboardingHint();
     }
   };
+
+  @HostListener('document:click')
+  onClickOutside(): void {
+    this.showProfileMenu.set(false);
+    this.showNotifications.set(false);
+  }
 
   ngOnInit() {
     this.userService.currentUser$

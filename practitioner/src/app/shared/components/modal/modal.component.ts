@@ -15,6 +15,7 @@ export class ModalComponent {
   title = input<string>('');
   size = input<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   showCloseButton = input<boolean>(true);
+  closeOnBackdropClick = input<boolean>(true);
 
   closed = output<void>();
 
@@ -25,7 +26,7 @@ export class ModalComponent {
   }
 
   onBackdropClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
+    if (this.closeOnBackdropClick() && (event.target as HTMLElement).classList.contains('modal-backdrop')) {
       this.close();
     }
   }

@@ -24,7 +24,7 @@
 
   <div class="header-actions-mobile">
     <div class="notification-section">
-      <button class="notification-btn" (click)="toggleNotifications()">
+      <button class="notification-btn" (click)="toggleNotifications(); $event.stopPropagation()">
         <app-svg
           src="bell"
           [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
@@ -37,7 +37,7 @@
       </button>
 
       @if (showNotifications()) {
-      <div class="notification-dropdown">
+      <div class="notification-dropdown" (click)="$event.stopPropagation()">
         <div class="dropdown-header">
           <app-typography
             [variant]="TypographyTypeEnum['body-bold']"
@@ -130,7 +130,7 @@
       }
     </div>
 
-    <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu(); $event.stopPropagation()">
       <app-svg
         [src]="showMobileMenu() ? 'svg/x.svg' : 'svg/menu.svg'"
         [svgStyle]="{'width.px': 24, 'height.px': 24, 'color': 'var(--slate-600)'}"></app-svg>
@@ -151,7 +151,7 @@
     }
 
     <div class="notification-section">
-      <button class="notification-btn" (click)="toggleNotifications()">
+      <button class="notification-btn" (click)="toggleNotifications(); $event.stopPropagation()">
         <app-svg
           src="bell"
           [svgStyle]="{'width.px': 22, 'height.px': 22, 'color': 'var(--slate-600)'}"></app-svg>
@@ -164,7 +164,7 @@
       </button>
 
       @if (showNotifications()) {
-      <div class="notification-dropdown">
+      <div class="notification-dropdown" (click)="$event.stopPropagation()">
         <div class="dropdown-header">
           <app-typography
             [variant]="TypographyTypeEnum['body-bold']"
@@ -257,7 +257,7 @@
       }
     </div>
 
-    <div class="profile-section" (click)="toggleProfileMenu()">
+    <div class="profile-section" (click)="toggleProfileMenu(); $event.stopPropagation()">
       <div class="profile-info">
         <app-typography
           [variant]="TypographyTypeEnum['body-semibold']"
@@ -280,7 +280,7 @@
     </div>
 
     @if (showProfileMenu()) {
-    <div class="profile-dropdown">
+    <div class="profile-dropdown" (click)="$event.stopPropagation()">
       <div class="dropdown-header">
         <app-typography
           [variant]="TypographyTypeEnum['body-bold']"

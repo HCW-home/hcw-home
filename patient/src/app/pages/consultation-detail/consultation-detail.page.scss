@@ -201,18 +201,32 @@
   }
 
   .closed-card {
-    background: var(--app-background-secondary);
-    border-color: transparent;
+    background: rgba(var(--ion-color-warning-rgb), 0.1);
+    border: 2px solid var(--ion-color-warning);
+    border-left: 4px solid var(--ion-color-warning);
+    box-shadow: 0 2px 8px rgba(var(--ion-color-warning-rgb), 0.15);
+
+    .card-header {
+      margin-bottom: var(--app-spacing-sm);
+    }
 
     .card-icon {
-      color: var(--app-text-muted);
+      color: var(--ion-color-warning);
+      font-size: 24px;
+    }
+
+    .info-title {
+      color: var(--ion-color-warning-shade);
+      font-weight: 700;
+      font-size: 1.0625rem;
     }
 
     .closed-text {
-      font-size: 0.875rem;
-      color: var(--app-text-secondary);
+      font-size: 0.9375rem;
+      color: var(--app-text-primary);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
+      font-weight: 500;
     }
   }
 

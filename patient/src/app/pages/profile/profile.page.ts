@@ -3,9 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonSpinner } from '@ionic/angular/standalone';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonCard,
   IonCardContent,
@@ -17,7 +14,6 @@ import {
   IonText,
   IonButton,
   IonInput,
-  IonButtons,
   IonSelect,
   IonSelectOption,
   NavController,
@@ -49,9 +45,6 @@ interface ProfileMenuItem {
   imports: [
     CommonModule,
     FormsModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonCard,
     IonCardContent,
@@ -63,7 +56,6 @@ interface ProfileMenuItem {
     IonText,
     IonButton,
     IonInput,
-    IonButtons,
     IonSelect,
     IonSelectOption,
     IonSpinner,

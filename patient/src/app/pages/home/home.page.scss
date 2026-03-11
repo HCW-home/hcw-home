@@ -172,7 +172,7 @@
     padding: var(--app-spacing-lg);
     border-bottom: 1px solid var(--app-border-color);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 
     &:last-child {
       border-bottom: none;
@@ -184,6 +184,21 @@
 
     &:active {
       background: rgba(var(--ion-color-primary-rgb), 0.06);
+    }
+
+    &.highlighted {
+      background: rgba(var(--ion-color-primary-rgb), 0.08);
+      border-left: 4px solid var(--ion-color-primary);
+      animation: pulse 1.5s ease-in-out;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(var(--ion-color-primary-rgb), 0.4);
+    }
+    50% {
+      box-shadow: 0 0 20px 8px rgba(var(--ion-color-primary-rgb), 0);
     }
   }
 

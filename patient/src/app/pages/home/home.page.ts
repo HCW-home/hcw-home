@@ -62,6 +62,7 @@ export class HomePage implements OnInit, OnDestroy {
   appointments = signal<Appointment[]>([]);
   isLoading = signal(false);
   appointmentEarlyJoinMinutes = 5; // Default value
+  highlightedRequestId = signal<number | null>(null);
 
   totalRequests = computed(() => this.requests().length);
   totalConsultations = computed(() => this.consultations().length);
@@ -102,6 +103,17 @@ export class HomePage implements OnInit, OnDestroy {
       .subscribe(params => {
         const participantId = params['participantId'];
         const join = params['join'];
+        const highlightRequest = params['highlightRequest'];
+
+        if (highlightRequest) {
+          this.highlightedRequestId.set(Number(highlightRequest));
+          // Clear the highlight after 3 seconds
+          setTimeout(() => {
+            this.highlightedRequestId.set(null);
+          }, 3000);
+          // Clear query params to avoid re-triggering on refresh
+          this.navCtrl.navigateRoot('/home', { replaceUrl: true });
+        }
 
         if (participantId && join === 'true') {
           // Clear query params to avoid re-triggering
@@ -292,6 +304,13 @@ export class HomePage implements OnInit, OnDestroy {
 
   isStatusCancelled(request: ConsultationRequest): boolean {
     return request.status?.toLowerCase() === 'cancelled';
+  }
+
+  isRequestHighlighted(request: ConsultationRequest): boolean {
+    const highlightId = this.highlightedRequestId();
+    if (!highlightId) return false;
+    const requestId = (request as any).pk ?? (request as any).id;
+    return requestId === highlightId;
   }
 
   getConsultationDoctorName(consultation: Consultation): string {

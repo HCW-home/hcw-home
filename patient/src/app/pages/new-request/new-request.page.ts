@@ -345,9 +345,12 @@ export class NewRequestPage implements OnInit, OnDestroy {
     this.consultationService.createConsultationRequest(requestData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (createdRequest) => {
           this.showToast(this.t.instant('newRequest.submitSuccess'), 'success');
-          this.navCtrl.navigateBack('/home');
+          const requestId = (createdRequest as any).pk ?? (createdRequest as any).id;
+          this.navCtrl.navigateBack('/home', {
+            queryParams: { highlightRequest: requestId }
+          });
         },
         error: () => {
           this.showToast(this.t.instant('newRequest.submitFailed'), 'danger');

@@ -70,7 +70,7 @@
       } @else {
         <div class="timeline-list">
           @for (request of requests(); track request.id) {
-            <div class="timeline-item">
+            <div class="timeline-item" [class.highlighted]="isRequestHighlighted(request)">
               <div class="timeline-item-content">
                 <div class="request-info-block">
                   <div class="request-info-label">

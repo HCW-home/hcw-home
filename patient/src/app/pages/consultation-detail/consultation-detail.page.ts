@@ -12,6 +12,7 @@ import {
 import { Subject, takeUntil } from "rxjs";
 import { ConsultationService } from "../../core/services/consultation.service";
 import { ConsultationWebSocketService } from "../../core/services/consultation-websocket.service";
+import { UserWebSocketService } from "../../core/services/user-websocket.service";
 import { AuthService } from "../../core/services/auth.service";
 import {
   Consultation,
@@ -74,6 +75,7 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private consultationService: ConsultationService,
     private wsService: ConsultationWebSocketService,
+    private userWsService: UserWebSocketService,
     private authService: AuthService,
     private toastController: ToastController,
     private alertController: AlertController,
@@ -127,6 +129,25 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     this.wsService.state$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
       this.isConnected.set(state === WebSocketState.CONNECTED);
     });
+
+    // Listen for consultation updates
+    this.userWsService.consultationChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.consultation_id === this.consultationId && event.state === 'updated') {
+          // Fetch and update consultation data
+          this.consultationService.getConsultationById(this.consultationId!)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (consultation) => {
+                console.log('[ConsultationDetail] Updated consultation:', consultation);
+                console.log('[ConsultationDetail] closed_at:', consultation.closed_at);
+                console.log('[ConsultationDetail] isConsultationClosed:', !!consultation.closed_at);
+                this.consultation.set(consultation);
+              }
+            });
+        }
+      });
 
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
@@ -487,7 +508,7 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
   }
 
   isConsultationClosed(): boolean {
-    return this.consultation()?.status?.toLowerCase() === "closed";
+    return !!this.consultation()?.closed_at;
   }
 
   async joinAppointment(appointment: Appointment): Promise<void> {

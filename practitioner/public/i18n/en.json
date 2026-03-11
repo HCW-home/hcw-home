@@ -474,7 +474,12 @@
     "failedStartRecording": "Failed to start recording",
     "recordingStopped": "Recording Stopped",
     "recordingStoppedMessage": "Recording will be available in chat shortly",
-    "failedStopRecording": "Failed to stop recording"
+    "failedStopRecording": "Failed to stop recording",
+    "mic": "Mic",
+    "camera": "Camera",
+    "screen": "Screen",
+    "record": "Record",
+    "reduce": "Reduce"
   },
   "preJoinLobby": {
     "settingUpDevices": "Setting up your devices...",

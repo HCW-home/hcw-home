@@ -18,11 +18,12 @@ import { takeUntil } from 'rxjs/operators';
 import { LocalVideoTrack, LocalTrack } from 'livekit-client';
 
 import { LiveKitService, ParticipantInfo, ConnectionStatus } from '../../../../core/services/livekit.service';
+import { MediaDeviceService } from '../../../../core/services/media-device.service';
 import { ConsultationService } from '../../../../core/services/consultation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { IncomingCallService } from '../../../../core/services/incoming-call.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
-import { IPreJoinSettings } from '../../../../core/models/media-device';
+import { IPreJoinSettings, IMediaDevices } from '../../../../core/models/media-device';
 import { Button } from '../../../../shared/ui-components/button/button';
 import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { Typography } from '../../../../shared/ui-components/typography/typography';
@@ -82,6 +83,12 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
   showChat = signal(false);
   phase = signal<'lobby' | 'connecting' | 'in-call'>('lobby');
 
+  devices: IMediaDevices = { cameras: [], microphones: [], speakers: [] };
+  showMicMenu = false;
+  showCameraMenu = false;
+  activeMicId = '';
+  activeCameraId = '';
+
   protected readonly TypographyTypeEnum = TypographyTypeEnum;
   protected readonly ButtonStyleEnum = ButtonStyleEnum;
 
@@ -94,6 +101,7 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
 
   constructor(
     private livekitService: LiveKitService,
+    private mediaDeviceService: MediaDeviceService,
     private consultationService: ConsultationService,
     private toasterService: ToasterService,
     private incomingCallService: IncomingCallService,
@@ -251,6 +259,9 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
       }
 
       this.phase.set('in-call');
+      this.activeCameraId = settings.cameraDeviceId || '';
+      this.activeMicId = settings.microphoneDeviceId || '';
+      await this.loadDevices();
       this.cdr.markForCheck();
       setTimeout(() => {
         this.attachLocalVideo();
@@ -391,6 +402,47 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
       await this.livekitService.toggleMicrophone();
     } catch (error) {
       this.toasterService.show('error', this.t.instant('videoConsultation.microphoneError'), this.t.instant('videoConsultation.failedToggleMicrophone'));
+    }
+  }
+
+  async loadDevices(): Promise<void> {
+    this.devices = await this.mediaDeviceService.enumerateDevices();
+  }
+
+  toggleMicMenu(): void {
+    this.showMicMenu = !this.showMicMenu;
+    this.showCameraMenu = false;
+  }
+
+  toggleCameraMenu(): void {
+    this.showCameraMenu = !this.showCameraMenu;
+    this.showMicMenu = false;
+  }
+
+  closeDeviceMenus(): void {
+    this.showMicMenu = false;
+    this.showCameraMenu = false;
+  }
+
+  async switchMicrophone(deviceId: string): Promise<void> {
+    try {
+      await this.livekitService.switchMicrophone(deviceId);
+      this.activeMicId = deviceId;
+      this.showMicMenu = false;
+      this.cdr.markForCheck();
+    } catch (error) {
+      this.toasterService.show('error', this.t.instant('videoConsultation.microphoneError'), this.t.instant('videoConsultation.failedToggleMicrophone'));
+    }
+  }
+
+  async switchCamera(deviceId: string): Promise<void> {
+    try {
+      await this.livekitService.switchCamera(deviceId);
+      this.activeCameraId = deviceId;
+      this.showCameraMenu = false;
+      this.cdr.markForCheck();
+    } catch (error) {
+      this.toasterService.show('error', this.t.instant('videoConsultation.cameraError'), this.t.instant('videoConsultation.failedToggleCamera'));
     }
   }
 

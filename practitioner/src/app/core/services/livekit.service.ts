@@ -295,6 +295,16 @@ export class LiveKitService implements OnDestroy {
     }
   }
 
+  async switchCamera(deviceId: string): Promise<void> {
+    if (!this.room) return;
+    await this.room.switchActiveDevice('videoinput', deviceId);
+  }
+
+  async switchMicrophone(deviceId: string): Promise<void> {
+    if (!this.room) return;
+    await this.room.switchActiveDevice('audioinput', deviceId);
+  }
+
   async switchSpeaker(deviceId: string): Promise<void> {
     if (!this.room) return;
     await this.room.switchActiveDevice('audiooutput', deviceId);

@@ -99,75 +99,129 @@
         }
       </div>
 
-      <div class="controls-bar">
+      <div class="controls-bar" (click)="closeDeviceMenus()">
         <div class="controls-center">
-          <button
-            class="control-button"
-            [class.active]="isMicrophoneEnabled"
-            [class.inactive]="!isMicrophoneEnabled"
-            (click)="toggleMicrophone()">
-            @if (isMicrophoneEnabled) {
-              <app-svg src="microphone" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
-            } @else {
-              <app-svg src="microphone-off" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+          <!-- Microphone button group -->
+          <div class="button-group" [class.inactive]="!isMicrophoneEnabled">
+            <button
+              class="control-button"
+              [class.active]="isMicrophoneEnabled"
+              [class.inactive]="!isMicrophoneEnabled"
+              (click)="toggleMicrophone(); $event.stopPropagation()">
+              @if (isMicrophoneEnabled) {
+                <app-svg src="microphone" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              } @else {
+                <app-svg src="microphone-off" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              }
+              <span class="control-label">{{ 'videoConsultation.mic' | translate }}</span>
+            </button>
+            <button
+              class="control-button menu-trigger"
+              [class.active]="isMicrophoneEnabled"
+              [class.inactive]="!isMicrophoneEnabled"
+              (click)="toggleMicMenu(); $event.stopPropagation()">
+              <app-svg src="chevron-down" [svgStyle]="{'width.px': 14, 'height.px': 14}"></app-svg>
+            </button>
+            @if (showMicMenu) {
+              <div class="device-menu" (click)="$event.stopPropagation()">
+                <ul>
+                  @for (mic of devices.microphones; track mic.deviceId) {
+                    <li [class.active]="mic.deviceId === activeMicId">
+                      <button (click)="switchMicrophone(mic.deviceId)">{{ mic.label || 'Microphone ' + ($index + 1) }}</button>
+                    </li>
+                  }
+                </ul>
+              </div>
             }
-          </button>
+          </div>
 
-          <button
-            class="control-button"
-            [class.active]="isCameraEnabled"
-            [class.inactive]="!isCameraEnabled"
-            (click)="toggleCamera()">
-            @if (isCameraEnabled) {
-              <app-svg src="camera" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
-            } @else {
-              <app-svg src="camera-off" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+          <!-- Camera button group -->
+          <div class="button-group" [class.inactive]="!isCameraEnabled">
+            <button
+              class="control-button"
+              [class.active]="isCameraEnabled"
+              [class.inactive]="!isCameraEnabled"
+              (click)="toggleCamera(); $event.stopPropagation()">
+              @if (isCameraEnabled) {
+                <app-svg src="camera" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              } @else {
+                <app-svg src="camera-off" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              }
+              <span class="control-label">{{ 'videoConsultation.camera' | translate }}</span>
+            </button>
+            <button
+              class="control-button menu-trigger"
+              [class.active]="isCameraEnabled"
+              [class.inactive]="!isCameraEnabled"
+              (click)="toggleCameraMenu(); $event.stopPropagation()">
+              <app-svg src="chevron-down" [svgStyle]="{'width.px': 14, 'height.px': 14}"></app-svg>
+            </button>
+            @if (showCameraMenu) {
+              <div class="device-menu" (click)="$event.stopPropagation()">
+                <ul>
+                  @for (cam of devices.cameras; track cam.deviceId) {
+                    <li [class.active]="cam.deviceId === activeCameraId">
+                      <button (click)="switchCamera(cam.deviceId)">{{ cam.label || 'Camera ' + ($index + 1) }}</button>
+                    </li>
+                  }
+                </ul>
+              </div>
             }
-          </button>
+          </div>
 
+          <!-- Screen share -->
           <button
             class="control-button"
             [class.active]="isScreenShareEnabled"
             (click)="toggleScreenShare()">
             @if (isScreenShareEnabled) {
-              <app-svg src="screen-share-off" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="screen-share-off" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             } @else {
-              <app-svg src="screen-share" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="screen-share" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             }
+            <span class="control-label">{{ 'videoConsultation.screen' | translate }}</span>
           </button>
 
+          <!-- Record -->
           <button
             class="control-button record-button"
             [class.active]="isRecording"
             (click)="toggleRecording()">
             @if (isRecording) {
-              <app-svg src="record-stop" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="record-stop" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             } @else {
-              <app-svg src="record" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="record" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             }
+            <span class="control-label">{{ 'videoConsultation.record' | translate }}</span>
           </button>
 
           @if (!isMinimized) {
+            <!-- Chat -->
             <button
               class="control-button"
               [class.active]="showChat()"
               (click)="toggleChatPanel()">
-              <app-svg src="message-square" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="message-square" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+              <span class="control-label">{{ 'videoConsultation.chat' | translate }}</span>
             </button>
           }
 
+          <!-- Minimize / Maximize -->
           <button
             class="control-button"
             (click)="onToggleSize()">
             @if (isMinimized) {
-              <app-svg src="maximize" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="maximize" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             } @else {
-              <app-svg src="minimize" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+              <app-svg src="minimize" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
             }
+            <span class="control-label">{{ 'videoConsultation.reduce' | translate }}</span>
           </button>
 
+          <!-- Leave -->
           <button class="control-button leave-button" (click)="leaveCall()">
-            <app-svg src="phone-off" [svgStyle]="{'width.px': 24, 'height.px': 24}"></app-svg>
+            <app-svg src="phone-off" [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+            <span class="control-label">{{ 'videoConsultation.leave' | translate }}</span>
           </button>
         </div>
       </div>

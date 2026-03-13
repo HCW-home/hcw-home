@@ -73,10 +73,11 @@ ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 
 # Application definition
 
-INSTALLED_APPS = [
+SHARED_APPS = (
+    'django_tenants',
+    'tenants',
     "daphne",
     "unfold",
-    "modeltranslation",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
     "unfold.contrib.inlines",
@@ -85,7 +86,6 @@ INSTALLED_APPS = [
     "unfold.contrib.simple_history",
     "unfold.contrib.location_field",
     "unfold.contrib.constance",
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -94,32 +94,44 @@ INSTALLED_APPS = [
     "import_export",
     "django_celery_beat",
     "corsheaders",
-    # "mfa",
+    "django_filters",
+    "dj_rest_auth.registration",
+    "rest_framework",
+    "dj_rest_auth",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "django_celery_results",
+    "location_field",
+)
+
+TENANT_APPS = (
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
-    "django_filters",
-    "dj_rest_auth.registration",
-    "rest_framework",
     "rest_framework.authtoken",
-    "dj_rest_auth",
-    # 'dj_rest_auth_mfa',
-    "rest_framework_simplejwt",
-    "drf_spectacular",
-    "django_celery_results",
     "fcm_django",
-    "location_field",
+    "modeltranslation",
+    "django.contrib.admin",
+    "constance",
     "consultations",
     "users",
     "messaging",
     "mediaserver",
     "api",
     "translations",
-    "constance",
-]
+)
+
+INSTALLED_APPS = list(SHARED_APPS) + \
+    [app for app in TENANT_APPS if app not in SHARED_APPS]
+
+
+TENANT_MODEL = "tenants.Tenant"
+TENANT_DOMAIN_MODEL = "tenants.Domain"
 
 MIDDLEWARE = [
+    "core.healthcheck.HealthCheckMiddleware",
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -148,7 +160,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request",
             ],
         },
     },
@@ -163,7 +174,7 @@ MEDIA_URL = "/upload/"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django_tenants.postgresql_backend",
         "NAME": os.getenv("DATABASE_NAME"),
         "USER": os.getenv("DATABASE_USER"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
@@ -171,6 +182,10 @@ DATABASES = {
         "PORT": os.getenv("DATABASE_PORT"),
     }
 }
+
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
@@ -761,10 +776,6 @@ CORS_ALLOW_HEADERS = [
 # CSRF Configuration
 csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
-
-# PRACTITIONER_URL = os.getenv("PRACTITIONER_URL", "http://localhost:4200")
-# PATIENT_URL = os.getenv("PATIENT_URL", "http://localhost:4201")
-
 
 # RECOVERY_ITERATION = 720000
 # MFA_MANDATORY = False

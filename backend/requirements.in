@@ -38,3 +38,5 @@ django-storages
 boto3
 pywebpush
 reportlab
+django-tenants
+tenant-schemas-celery

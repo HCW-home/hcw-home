@@ -4,7 +4,7 @@ from datetime import timedelta
 import boto3
 from asgiref.sync import async_to_sync
 from botocore.exceptions import ClientError
-from celery import shared_task
+from core.celery import app
 from channels.layers import get_channel_layer
 from constance import config
 from django.conf import settings
@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from messaging.models import Message
+from django_tenants.utils import get_tenant_model, tenant_context
 
 from .assignments import AssignmentManager
 from .models import (
@@ -27,7 +28,7 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@app.task
 def handle_request(request_id):
     """
     Handle a consultation request by processing it based on the reason's assignment method.
@@ -44,7 +45,7 @@ def handle_request(request_id):
         assignment.handler.process()
 
 
-@shared_task
+@app.task
 def handle_invites(appointment_id):
     appointment = Appointment.objects.get(pk=appointment_id)
     participants = Participant.objects.filter(is_invited=True, appointment=appointment)
@@ -87,28 +88,29 @@ def handle_invites(appointment_id):
         participant.save(update_fields=["is_notified"])
 
 
-@shared_task
+@app.task
 def handle_reminders():
     now = timezone.now().replace(second=0, microsecond=0)
+    TenantModel = get_tenant_model()
+    for tenant in TenantModel.objects.exclude(schema_name='public'):
+        with tenant_context(tenant):
+            for reminder in ["appointment_first_reminder", "appointment_last_reminder"]:
+                reminder_datetime = now + timedelta(minutes=int(getattr(config, reminder)))
+                for appointment in Appointment.objects.filter(
+                    scheduled_at=reminder_datetime, status=AppointmentStatus.scheduled
+                ):
+                    for participant in Participant.objects.filter(
+                        appointment=appointment, is_active=True
+                    ):
+                        Message.objects.create(
+                            sent_to=participant.user,
+                            template_system_name=reminder,
+                            content_type=ContentType.objects.get_for_model(participant),
+                            object_id=participant.pk,
+                        )
 
-    # Handle first reminder
-    for reminder in ["appointment_first_reminder", "appointment_last_reminder"]:
-        reminder_datetime = now + timedelta(minutes=int(getattr(config, reminder)))
-        for appointment in Appointment.objects.filter(
-            scheduled_at=reminder_datetime, status=AppointmentStatus.scheduled
-        ):
-            for participant in Participant.objects.filter(
-                appointment=appointment, is_active=True
-            ):
-                message = Message.objects.create(
-                    sent_to=participant.user,
-                    template_system_name=reminder,
-                    content_type=ContentType.objects.get_for_model(participant),
-                    object_id=participant.pk,
-                )
 
-
-@shared_task(
+@app.task(
     bind=True,
     max_retries=settings.RECORDING_CHECK_MAX_RETRIES,
     default_retry_delay=settings.RECORDING_CHECK_RETRY_DELAY,
@@ -186,14 +188,17 @@ def check_recording_ready(self, recording_id):
     )
 
 
-@shared_task
+@app.task
 def auto_delete_closed_consultations():
-    hours = int(config.consultation_auto_delete_hours)
-    if hours == 0:
-        logger.info("Auto-delete of closed consultations is disabled (0 hours)")
-        return
+    TenantModel = get_tenant_model()
+    for tenant in TenantModel.objects.exclude(schema_name='public'):
+        with tenant_context(tenant):
+            hours = int(config.consultation_auto_delete_hours)
+            if hours == 0:
+                logger.info("Auto-delete of closed consultations is disabled (0 hours)")
+                return
 
-    cutoff = timezone.now() - timedelta(hours=hours)
-    qs = Consultation.objects.filter(closed_at__isnull=False, closed_at__lte=cutoff)
-    count, _ = qs.delete()
-    logger.info(f"Auto-deleted {count} closed consultation(s) older than {hours}h")
+            cutoff = timezone.now() - timedelta(hours=hours)
+            qs = Consultation.objects.filter(closed_at__isnull=False, closed_at__lte=cutoff)
+            count, _ = qs.delete()
+            logger.info(f"Auto-deleted {count} closed consultation(s) older than {hours}h")

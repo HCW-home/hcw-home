@@ -2,8 +2,8 @@ import io
 import logging
 import traceback
 from datetime import timedelta
+from core.celery import app
 
-from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -23,7 +23,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True)
+@app.task(bind=True)
 def send_message(self, message_id):
     """
     Celery task to send message by trying providers in priority order
@@ -104,7 +104,7 @@ def send_message(self, message_id):
 #         return self.log_capture.getvalue()
 
 
-@shared_task
+@app.task
 def cleanup_old_message_logs(days=30):
     """
     Periodic task to clean up old message logs to prevent database bloat
@@ -124,7 +124,7 @@ def cleanup_old_message_logs(days=30):
     return {"cleaned_count": updated_count}
 
 
-@shared_task(bind=True)
+@app.task
 def template_messaging_provider_task(self, template_validation_id, action):
     """
     Celery task to submit or check a template validation with the messaging provider.

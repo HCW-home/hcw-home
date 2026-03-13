@@ -45,6 +45,7 @@ django-location-field==2.7.3
 django-modeltranslation==0.19.19
 django-rest-swagger==2.2.0
 django-storages==1.14.6
+django-tenants==3.10.0
 django-timezone-field==7.2.1
 django-tinymce==5.0.0
 django-unfold==0.81.0
@@ -128,6 +129,7 @@ six==1.17.0
 sqlparse==0.5.5
 swapper==1.4.0
 tablib==3.9.0
+tenant-schemas-celery==4.0.3
 Twisted==25.5.0
 txaio==25.12.2
 types-protobuf==6.32.1.20260221

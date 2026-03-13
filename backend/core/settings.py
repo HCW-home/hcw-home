@@ -308,29 +308,17 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-SOCIALACCOUNT_PROVIDERS = {
-    "openid_connect": {
-        "APPS": [
-            {
-                "provider_id": "openid",
-                "name": os.getenv("OPENID_NAME"),
-                "client_id": os.getenv("OPENID_CLIENT_ID"),
-                "secret": os.getenv("OPENID_SECRET"),
-                "settings": {
-                    "server_url": os.getenv("OPENID_CONFIGURATION_URL"),
-                },
-            }
-        ],
-        "EMAIL_AUTHENTICATION": True,
-        "VERIFIED_EMAIL": True,
-    }
-}
-
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "EMAIL_AUTHENTICATION": True,
+        "VERIFIED_EMAIL": True,
+    }
+}
 
 REDIS_HOST = os.getenv("REDIS_HOST") or "127.0.0.1"
 REDIS_PORT = os.getenv("REDIS_PORT") or "6379"
@@ -745,6 +733,14 @@ CONSTANCE_CONFIG = {
         1,
         "Hours before a temporary participant access token expires",
     ),
+    "disable_password_login": (
+        False,
+        "Disable password login for practitioners (SSO only)",
+    ),
+    "enable_registration": (
+        False,
+        "Enable self-registration for new users",
+    ),
 }
 
 
@@ -754,6 +750,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Scheduling": ("appointment_first_reminder", "appointment_last_reminder", "appointment_early_join_minutes"),
     "Data Retention": ("consultation_auto_delete_hours", "temporary_user_auto_delete"),
     "Security": ("temporary_participant_token_expiry_hours",),
+    "Authentication": ("disable_password_login", "enable_registration"),
 }
 
 # CORS Configuration

@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING, Any, Tuple
 
 from django.conf import settings
@@ -9,6 +10,8 @@ from . import BaseMessagingProvider
 if TYPE_CHECKING:
     from ..models import Message
 
+logger = logging.getLogger(__name__)
+
 
 class Main(BaseMessagingProvider):
     display_name = _("Email over Django SMTP")
@@ -17,24 +20,45 @@ class Main(BaseMessagingProvider):
 
     def send(self, message: "Message"):
         from_email = self.messaging_provider.from_email or settings.DEFAULT_FROM_EMAIL
+        logger.info(
+            "Preparing email message_id=%s to=%s from=%s",
+            message.pk, message.email, from_email,
+        )
+
         subject = message.render_subject or "Message from HCW"
+        logger.debug("Subject: %s", subject)
+
+        body = message.render_content
+        logger.debug("Plain text body length: %d", len(body) if body else 0)
+
+        html_body = message.render_full_html
+        logger.debug("HTML body length: %d", len(html_body) if html_body else 0)
 
         email = EmailMultiAlternatives(
             subject=subject,
-            body=message.render_content,
+            body=body,
             from_email=from_email,
             to=[message.email],
         )
 
-        email.attach_alternative(message.render_full_html, "text/html")
+        email.attach_alternative(html_body, "text/html")
 
         # Attach ICS file if available (for appointments)
         ics_data = message.ics_attachment
         if ics_data:
             filename, content, mime_type = ics_data
             email.attach(filename, content, mime_type)
+            logger.debug("Attached ICS file: %s", filename)
 
-        email.send()
+        logger.info(
+            "Sending email message_id=%s via EMAIL_HOST=%s EMAIL_PORT=%s EMAIL_USE_SSL=%s",
+            message.pk,
+            getattr(settings, "EMAIL_HOST", None),
+            getattr(settings, "EMAIL_PORT", None),
+            getattr(settings, "EMAIL_USE_SSL", None),
+        )
+        result = email.send()
+        logger.info("Email send result for message_id=%s: %s", message.pk, result)
 
     def test_connection(self):
         if not hasattr(settings, "EMAIL_HOST") or not settings.EMAIL_HOST:

@@ -64,6 +64,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from constance import config as constance_config
+from allauth.socialaccount.models import SocialApp
 
 from .filters import UserFilter
 from .models import HealthMetric, Language, Organisation, Speciality, Term, User, WebPushSubscription
@@ -992,10 +994,8 @@ class AppConfigView(APIView):
         description="Get application configuration for the frontend.",
     )
     def get(self, request):
-        # OpenID Connect configuration
-        openid_config = settings.SOCIALACCOUNT_PROVIDERS.get("openid_connect", {})
-        apps = openid_config.get("APPS", [])
 
+        # OpenID Connect configuration - read from tenant's DB
         openid = {
             "enabled": False,
             "client_id": None,
@@ -1003,29 +1003,24 @@ class AppConfigView(APIView):
             "provider_name": None,
         }
 
-        if apps:
-            app = apps[0]
-            client_id = app.get("client_id")
-            provider_name = app.get("name")
-            server_url = app.get("settings", {}).get("server_url")
-
+        social_app = SocialApp.objects.filter(provider="openid_connect").first()
+        if social_app:
+            server_url = social_app.settings.get("server_url", "")
             authorization_url = None
             if server_url:
                 base_url = server_url.replace("/.well-known/openid-configuration", "")
                 authorization_url = f"{base_url}/protocol/openid-connect/auth"
 
             openid = {
-                "enabled": bool(client_id),
-                "client_id": client_id,
+                "enabled": bool(social_app.client_id),
+                "client_id": social_app.client_id,
                 "authorization_url": authorization_url,
-                "provider_name": provider_name,
+                "provider_name": social_app.name,
             }
 
         # Main organization
         main_org = Organisation.objects.filter(is_main=True).first()
         main_organization = OrganisationSerializer(main_org, context={"request": request}).data if main_org else None
-
-        from constance import config as constance_config
 
         def _image_url(image_field):
             if not image_field:
@@ -1047,8 +1042,8 @@ class AppConfigView(APIView):
         return Response(
             {
                 **openid,
-                "registration_enabled": settings.ENABLE_REGISTRATION,
-                "disable_password_login": settings.DISABLE_PASSWORD_LOGIN,
+                "registration_enabled": constance_config.enable_registration,
+                "disable_password_login": constance_config.disable_password_login,
                 "main_organization": main_organization,
                 "branding": constance_config.site_name,
                 "primary_color_patient": main_org.primary_color_patient if main_org else None,
@@ -1063,10 +1058,11 @@ class AppConfigView(APIView):
 
 
 class LoginView(DjRestAuthLoginView):
-    """Login endpoint controlled by DISABLE_PASSWORD_LOGIN setting for practitioners."""
+    """Login endpoint controlled by disable_password_login constance setting for practitioners."""
 
     def post(self, request, *args, **kwargs):
-        if settings.DISABLE_PASSWORD_LOGIN:
+
+        if constance_config.disable_password_login:
             # Check if the user trying to log in is a practitioner
             email = request.data.get("email")
             if email:
@@ -1086,7 +1082,7 @@ class PasswordChangeView(DjRestAuthPasswordChangeView):
     """Password change endpoint controlled by DISABLE_PASSWORD_LOGIN setting for practitioners."""
 
     def post(self, request, *args, **kwargs):
-        if settings.DISABLE_PASSWORD_LOGIN and request.user.is_authenticated and request.user.is_practitioner:
+        if constance_config.disable_password_login and request.user.is_authenticated and request.user.is_practitioner:
             return Response(
                 {"detail": "Password management is disabled for practitioners. Please use SSO."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1098,7 +1094,7 @@ class PasswordResetView(DjRestAuthPasswordResetView):
     """Password reset endpoint controlled by DISABLE_PASSWORD_LOGIN setting for practitioners."""
 
     def post(self, request, *args, **kwargs):
-        if settings.DISABLE_PASSWORD_LOGIN:
+        if constance_config.disable_password_login:
             # Check if the user requesting reset is a practitioner
             email = request.data.get("email")
             if email:
@@ -1128,7 +1124,7 @@ class RegisterView(DjRestAuthRegisterView):
     """Registration endpoint controlled by ENABLE_REGISTRATION setting."""
 
     def create(self, request, *args, **kwargs):
-        if not settings.ENABLE_REGISTRATION:
+        if not constance_config.enable_registration:
             return Response(
                 {"detail": "Registration is currently disabled."},
                 status=status.HTTP_403_FORBIDDEN,

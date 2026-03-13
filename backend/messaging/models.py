@@ -1,8 +1,11 @@
+from datetime import timedelta
 import hashlib
+import logging
 from importlib import import_module
 from typing import Dict, Optional, Sequence, Tuple
 from zoneinfo import ZoneInfo
 from datetime import datetime
+
 
 import jinja2
 from constance import config
@@ -24,6 +27,8 @@ from . import providers
 from .abstracts import ModelCeleryAbstract
 from .providers import BaseMessagingProvider
 from .template import DEFAULT_NOTIFICATION_MESSAGES, NOTIFICATION_CHOICES
+
+logger = logging.getLogger(__name__)
 
 class CommunicationMethod(models.TextChoices):
     sms = "sms", ("SMS")
@@ -808,10 +813,15 @@ class Message(ModelCeleryAbstract):
         if not self.template or not self.template.action:
             return
         """Generate access link if template has an action defined"""
+        is_patient = self.sent_to.is_patient
         base_url = (
             config.patient_base_url
-            if self.sent_to.is_patient
+            if is_patient
             else config.practitioner_base_url
+        )
+        logger.debug(
+            "access_link: message_id=%s is_patient=%s base_url=%s",
+            self.pk, is_patient, base_url,
         )
 
         if self.sent_to.one_time_auth_token:
@@ -830,7 +840,8 @@ class Message(ModelCeleryAbstract):
     def render_content(self):
         try:
             return self.render("template_content")
-        except:
+        except Exception as e:
+            logger.exception("render_content failed for message_id=%s: %s", self.pk, e)
             return ""
 
     @property
@@ -840,14 +851,16 @@ class Message(ModelCeleryAbstract):
             if self.action_label:
                 return f"{message_text}\n{self.action_label} {self.access_link}"
             return message_text
-        except:
+        except Exception as e:
+            logger.exception("render_content_sms failed for message_id=%s: %s", self.pk, e)
             return ""
 
     @property
     def render_content_html(self):
         try:
             return self.render("template_content_html")
-        except:
+        except Exception as e:
+            logger.exception("render_content_html failed for message_id=%s: %s", self.pk, e)
             return ""
 
     @property
@@ -867,6 +880,7 @@ class Message(ModelCeleryAbstract):
                 },
             )
         except Exception as e:
+            logger.exception("render_full_html failed for message_id=%s: %s", self.pk, e)
             return f"Unable to render full HTML: {e}"
 
     @property
@@ -895,7 +909,6 @@ class Message(ModelCeleryAbstract):
             Optional tuple of (filename, content, mime_type) for appointments,
             None otherwise.
         """
-        from datetime import timedelta
 
         appointment = self._get_appointment()
         if not appointment:
@@ -970,6 +983,10 @@ class Message(ModelCeleryAbstract):
 
         try:
             obj = self.content_object
+            logger.debug(
+                "render: message_id=%s field=%s template=%s language=%s",
+                self.pk, field, self.template_system_name, self.language,
+            )
 
             with (
                 translation.override(self.language),
@@ -985,9 +1002,13 @@ class Message(ModelCeleryAbstract):
                 env.filters.update(register.filters)
 
                 template_str = str(getattr(self.template, field))
+                logger.debug(
+                    "render: template_str for field=%s length=%d",
+                    field, len(template_str) if template_str else 0,
+                )
 
                 text_template = env.from_string(template_str)
-                return text_template.render(
+                result = text_template.render(
                     {
                         "obj": obj,
                         "config": config,
@@ -996,8 +1017,11 @@ class Message(ModelCeleryAbstract):
                         "access_link": self.access_link,
                     }
                 )
-            
+                logger.debug("render: field=%s result length=%d", field, len(result) if result else 0)
+                return result
+
         except Exception as e:
+            logger.exception("render failed: message_id=%s field=%s error=%s", self.pk, field, e)
             raise Exception(f"Unable to render: {e}")
 
     def clean(self):

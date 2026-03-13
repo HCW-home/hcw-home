@@ -716,9 +716,9 @@ UNFOLD = {
 # Default Configuration Values
 CONSTANCE_CONFIG = {
     "site_name": ("HCW@Home", "The name of the application displayed to users"),
-    "patient_base_url": ("https://localhost:8000", "Base URL of patient frontend"),
+    "patient_base_url": ("http://localhost:8001", "Base URL of patient frontend"),
     "practitioner_base_url": (
-        "https://localhost:8000",
+        "http://localhost:4200",
         "Base URL of practitioner frontend",
     ),
     "appointment_first_reminder": (

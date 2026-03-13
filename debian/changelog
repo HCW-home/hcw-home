@@ -1,3 +1,13 @@
+hcw (0.9.69) bookworm; urgency=medium
+
+  * Handle multi-tenant instance
+  * Ensure having tenant in JWT
+  * Fix admin
+  * Fix constance default URL for dev
+  * Support for openid
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Fri, 13 Mar 2026 21:54:24 +0100
+
 hcw (0.9.68) bookworm; urgency=medium
 
   * Update modal outside and menu outside click

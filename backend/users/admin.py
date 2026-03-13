@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 
-from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.models import SocialApp, SocialToken, SocialAccount
 from constance.admin import Config, ConstanceAdmin
 from django.contrib import admin, messages
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
@@ -47,6 +47,16 @@ admin.site.unregister(Group)
 @admin.register(Group)
 class GroupAdmin(BaseGroupAdmin, ModelAdmin):
     pass
+
+admin.site.unregister(SocialApp)
+admin.site.register(SocialApp, ModelAdmin)
+
+admin.site.unregister(SocialToken)
+admin.site.register(SocialToken, ModelAdmin)
+
+admin.site.unregister(SocialAccount)
+admin.site.register(SocialAccount, ModelAdmin)
+
 
 
 @admin.register(Term)

@@ -17,6 +17,8 @@ from firebase_admin.messaging import Notification as FireBaseNotification
 from location_field.models.plain import PlainLocationField
 from messaging.models import CommunicationMethod
 
+from core.storage import TenantUploadTo
+
 from .abstracts import ModelOwnerAbstract
 from .managers import UserManager
 
@@ -49,9 +51,9 @@ class Term(models.Model):
 
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
-    logo_color = models.ImageField(upload_to="organisations/", blank=True, null=True)
-    logo_white = models.ImageField(upload_to="organisations/", blank=True, null=True)
-    favicon = models.ImageField(upload_to="organisations/", blank=True, null=True)
+    logo_color = models.ImageField(upload_to=TenantUploadTo("organisations"), blank=True, null=True)
+    logo_white = models.ImageField(upload_to=TenantUploadTo("organisations"), blank=True, null=True)
+    favicon = models.ImageField(upload_to=TenantUploadTo("organisations"), blank=True, null=True)
     primary_color_patient = models.CharField(max_length=7, default="#0891b2")
     primary_color_practitioner = models.CharField(max_length=7, default="#0891b2")
     default_term = models.ForeignKey(
@@ -161,7 +163,7 @@ class User(AbstractUser):
     app_preferences = models.JSONField(null=True, blank=True)
     encrypted = models.BooleanField(default=False)
 
-    picture = models.ImageField(upload_to="users/", blank=True, null=True)
+    picture = models.ImageField(upload_to=TenantUploadTo("users"), blank=True, null=True)
 
     job_title = models.CharField(
         max_length=200,

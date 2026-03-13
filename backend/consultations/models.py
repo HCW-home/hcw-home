@@ -14,6 +14,8 @@ from django_clamd.validators import validate_file_infection
 from messaging.models import CommunicationMethod
 from users.models import User
 
+from core.storage import TenantUploadTo
+
 from . import assignments
 from .managers import ConsultationManager
 
@@ -254,7 +256,7 @@ class Message(models.Model):
     content = models.TextField(_("content"), null=True, blank=True)
     attachment = models.FileField(
         _("attachment"),
-        upload_to="messages_attachment",
+        upload_to=TenantUploadTo("messages_attachment"),
         null=True,
         blank=True,
         validators=[validate_file_infection],

@@ -258,7 +258,7 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core.authentication.TenantJWTAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
@@ -275,6 +275,7 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE": "_auth",
     "JWT_AUTH_REFRESH_COOKIE": "_refresh",
     "JWT_AUTH_HTTPONLY": False,
+    "JWT_TOKEN_CLAIMS_SERIALIZER": "core.authentication.TenantTokenObtainPairSerializer",
     "USER_DETAILS_SERIALIZER": "users.serializers.UserDetailsSerializer",
     "REGISTER_SERIALIZER": "users.serializers.RegisterSerializer",
     "LOGIN_SERIALIZER": "users.serializers.LoginSerializer",

@@ -1,3 +1,9 @@
+hcw (0.9.70) bookworm; urgency=medium
+
+  * Change upload path
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Fri, 13 Mar 2026 22:23:45 +0100
+
 hcw (0.9.69) bookworm; urgency=medium
 
   * Handle multi-tenant instance

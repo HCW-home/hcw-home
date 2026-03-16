@@ -405,3 +405,8 @@
   <button class="hint-close" (click)="dismissOnboardingHint()">&times;</button>
 </div>
 }
+
+<app-create-consultation-modal
+  [isOpen]="showCreateConsultationModal()"
+  (closed)="closeCreateConsultationModal()">
+</app-create-consultation-modal>

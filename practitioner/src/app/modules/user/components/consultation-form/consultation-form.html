@@ -340,6 +340,7 @@
     </app-appointment-form-modal>
   }
 
+  @if (isAddPatientModalOpen()) {
   <app-modal
     [isOpen]="isAddPatientModalOpen()"
     size="large"
@@ -351,4 +352,5 @@
       (cancelled)="closeAddPatientModal()">
     </app-add-edit-patient>
   </app-modal>
+  }
 </app-page>

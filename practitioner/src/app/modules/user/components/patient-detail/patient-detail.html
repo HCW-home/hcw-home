@@ -376,6 +376,7 @@
     }
   </div>
 
+  @if (showEditModal()) {
   <app-modal
     [isOpen]="showEditModal()"
     size="large"
@@ -387,4 +388,5 @@
       (cancelled)="closeEditModal()">
     </app-add-edit-patient>
   </app-modal>
+  }
 </app-page>

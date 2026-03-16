@@ -412,6 +412,8 @@
         "patientCreated": "Patient créé",
         "patientCreatedMessage": "Le patient a été créé avec succès",
         "errorCreating": "Erreur lors de la création",
+        "communicationMethod": "Moyen de communication préféré",
+        "selectCommunicationMethod": "Sélectionner le moyen de communication",
         "temporary": "Patient temporaire",
         "temporaryNotice": "Le patient sera automatiquement supprimé lorsque tous ses suivis seront supprimés.",
         "customFields": "Informations complémentaires"
@@ -588,6 +590,13 @@
         "createAppointment": "Créer le rendez-vous",
         "noAppointments": "Aucun rendez-vous planifié",
         "someAppointmentsNotCreated": "Certains rendez-vous n'ont pas pu être créés"
+    },
+    "createConsultationModal": {
+        "title": "Nouveau suivi",
+        "selectOrCreateBeneficiary": "Sélectionner ou créer le bénéficiaire",
+        "scheduleConsultation": "Planifier la consultation",
+        "advancedOptions": "Permission et accès",
+        "disablePatientChat": "Ne pas permettre au patient d'interagir avec le chat"
     },
     "onboarding": {
         "title": "Bienvenue !",

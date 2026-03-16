@@ -38,6 +38,7 @@ import {
 } from '../../../shared/constants/button';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService } from '../../services/translation.service';
+import { CreateConsultationModal } from '../../../modules/user/components/create-consultation-modal/create-consultation-modal';
 
 @Component({
   selector: 'app-header',
@@ -49,6 +50,7 @@ import { TranslationService } from '../../services/translation.service';
     RouterLink,
     RouterLinkActive,
     TranslatePipe,
+    CreateConsultationModal,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -71,6 +73,7 @@ export class Header implements OnInit, OnDestroy {
   showMobileMenu = signal(false);
   showNewConsultationButton = signal(false);
   showOnboardingHint = signal(false);
+  showCreateConsultationModal = signal(false);
   hintTop = signal(0);
   hintLeft = signal(0);
   newConsultationBtn = viewChild<ElementRef>('newConsultationBtn');
@@ -265,7 +268,11 @@ export class Header implements OnInit, OnDestroy {
 
   navigateToNewConsultation() {
     this.closeMobileMenu();
-    this.router.navigate([RoutePaths.USER, 'consultations', 'new']);
+    this.showCreateConsultationModal.set(true);
+  }
+
+  closeCreateConsultationModal() {
+    this.showCreateConsultationModal.set(false);
   }
 
   goBack() {

@@ -17,6 +17,7 @@ import { Auth } from '../../../../core/services/auth';
 import { IOpenIDConfig } from '../../../../core/models/admin-auth';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { IUser, ILanguage } from '../../models/user';
+import { CommunicationMethodEnum, CommunicationMethodOptions } from '../../constants/user';
 import { CustomField } from '../../../../core/models/consultation';
 import { SelectOption } from '../../../../shared/models/select';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
@@ -56,7 +57,8 @@ export class AddEditPatient implements OnInit, OnDestroy {
     effect(() => {
       const name = this.initialName();
       if (this.form && name && !this.patient()) {
-        this.form.patchValue({ last_name: this.capitalizeFirstLetter(name) });
+        const parsed = this.parseInitialInput(name);
+        this.form.patchValue(parsed);
       }
     });
   }
@@ -64,6 +66,43 @@ export class AddEditPatient implements OnInit, OnDestroy {
   private capitalizeFirstLetter(text: string): string {
     if (!text) return text;
     return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  private parseInitialInput(input: string): Record<string, string> {
+    const trimmed = input.trim();
+
+    // Format: "Prénom Nom <email>" (e.g. "Anaïs FK.AUDIT <Anais.fkaudit@example.com>")
+    const namedEmailMatch = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
+    if (namedEmailMatch) {
+      const namePart = namedEmailMatch[1].trim();
+      const email = namedEmailMatch[2].trim();
+      const words = namePart.split(/\s+/);
+      const firstName = this.capitalizeFirstLetter(words[0]);
+      const lastName = words.slice(1).map(w => this.capitalizeFirstLetter(w)).join(' ');
+      return { first_name: firstName, last_name: lastName, email };
+    }
+
+    // Phone number format (starts with + or contains mostly digits)
+    if (/^\+?\d[\d\s\-().]+$/.test(trimmed)) {
+      return { mobile_phone_number: trimmed.replace(/\s+/g, ' ') };
+    }
+
+    // Email format
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return { email: trimmed };
+    }
+
+    const words = trimmed.split(/\s+/);
+
+    // Two or more words: first word = first_name, rest = last_name
+    if (words.length >= 2) {
+      const firstName = this.capitalizeFirstLetter(words[0]);
+      const lastName = words.slice(1).map(w => this.capitalizeFirstLetter(w)).join(' ');
+      return { first_name: firstName, last_name: lastName };
+    }
+
+    // Single word: last_name
+    return { last_name: this.capitalizeFirstLetter(trimmed) };
   }
 
   protected readonly TypographyTypeEnum = TypographyTypeEnum;
@@ -74,7 +113,17 @@ export class AddEditPatient implements OnInit, OnDestroy {
   customFieldsForm!: FormGroup;
   loading = false;
   languageOptions: SelectOption[] = [];
+  communicationMethodOptions: SelectOption[] = [];
+  private availableCommunicationMethods: string[] = [];
   customFields = signal<CustomField[]>([]);
+
+  private readonly communicationMethodLabels: Record<string, string> = {
+    [CommunicationMethodEnum.SMS]: 'SMS',
+    [CommunicationMethodEnum.EMAIL]: 'Email',
+    [CommunicationMethodEnum.WHATSAPP]: 'WhatsApp',
+    [CommunicationMethodEnum.PUSH]: 'Push Notification',
+    [CommunicationMethodEnum.MANUAL]: 'Manual',
+  };
 
   get isEditMode(): boolean {
     return !!this.patient();
@@ -82,11 +131,12 @@ export class AddEditPatient implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initForm();
-    this.loadLanguages();
+    this.loadConfig();
     this.loadCustomFields();
+    this.setupCommunicationMethodAutoSelect();
   }
 
-  private loadLanguages(): void {
+  private loadConfig(): void {
     this.authService.getOpenIDConfig().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -95,8 +145,101 @@ export class AddEditPatient implements OnInit, OnDestroy {
           value: lang.code,
           label: lang.name
         }));
+
+        this.availableCommunicationMethods = config.communication_methods || [];
+        if (!this.availableCommunicationMethods.includes(CommunicationMethodEnum.MANUAL)) {
+          this.availableCommunicationMethods.push(CommunicationMethodEnum.MANUAL);
+        }
+        this.updateCommunicationMethodOptions();
+
+        if (!this.isEditMode) {
+          this.autoSelectCommunicationMethod();
+        }
       }
     });
+  }
+
+  private setupCommunicationMethodAutoSelect(): void {
+    this.form.get('email')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateCommunicationMethodOptions();
+        if (!this.isEditMode) {
+          this.autoSelectCommunicationMethod();
+        }
+      });
+
+    this.form.get('mobile_phone_number')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateCommunicationMethodOptions();
+        if (!this.isEditMode) {
+          this.autoSelectCommunicationMethod();
+        }
+      });
+  }
+
+  private updateCommunicationMethodOptions(): void {
+    const email = this.form.get('email')?.value?.trim();
+    const phone = this.form.get('mobile_phone_number')?.value?.trim();
+    const hasEmail = !!email;
+    const hasPhone = !!phone;
+
+    this.communicationMethodOptions = this.availableCommunicationMethods.map(method => {
+      let disabled = false;
+      if (method === CommunicationMethodEnum.EMAIL && !hasEmail) {
+        disabled = true;
+      }
+      if ((method === CommunicationMethodEnum.SMS || method === CommunicationMethodEnum.WHATSAPP) && !hasPhone) {
+        disabled = true;
+      }
+      return {
+        value: method,
+        label: this.communicationMethodLabels[method] || method,
+        disabled,
+      };
+    });
+
+    // If current selection is now disabled, clear it
+    const currentMethod = this.form.get('communication_method')?.value;
+    if (currentMethod) {
+      const currentOption = this.communicationMethodOptions.find(o => o.value === currentMethod);
+      if (currentOption?.disabled) {
+        this.form.patchValue({ communication_method: '' }, { emitEvent: false });
+      }
+    }
+  }
+
+  private autoSelectCommunicationMethod(): void {
+    if (!this.availableCommunicationMethods.length) return;
+
+    const email = this.form.get('email')?.value?.trim();
+    const phone = this.form.get('mobile_phone_number')?.value?.trim();
+    const hasEmail = !!email;
+    const hasPhone = !!phone;
+
+    const phoneMethodsAvailable = this.availableCommunicationMethods.filter(
+      m => m === CommunicationMethodEnum.SMS || m === CommunicationMethodEnum.WHATSAPP
+    );
+
+    if (hasPhone && phoneMethodsAvailable.length > 1) {
+      return;
+    }
+
+    if (hasPhone && phoneMethodsAvailable.length === 1) {
+      this.form.patchValue({ communication_method: phoneMethodsAvailable[0] }, { emitEvent: false });
+      return;
+    }
+
+    if (hasEmail && this.availableCommunicationMethods.includes(CommunicationMethodEnum.EMAIL)) {
+      this.form.patchValue({ communication_method: CommunicationMethodEnum.EMAIL }, { emitEvent: false });
+      return;
+    }
+
+    if (!hasEmail && !hasPhone && this.availableCommunicationMethods.includes(CommunicationMethodEnum.MANUAL)) {
+      this.form.patchValue({ communication_method: CommunicationMethodEnum.MANUAL }, { emitEvent: false });
+      return;
+    }
   }
 
   private loadCustomFields(): void {
@@ -139,17 +282,24 @@ export class AddEditPatient implements OnInit, OnDestroy {
     const p = this.patient();
     let firstName = p?.first_name || '';
     let lastName = p?.last_name || '';
+    let email = p?.email || '';
+    let phone = p?.mobile_phone_number || '';
 
-    // If creating a new patient and initialName is provided, use it as last name
+    // If creating a new patient and initialName is provided, parse it
     if (!p && this.initialName()) {
-      lastName = this.capitalizeFirstLetter(this.initialName());
+      const parsed = this.parseInitialInput(this.initialName());
+      firstName = parsed['first_name'] || firstName;
+      lastName = parsed['last_name'] || lastName;
+      email = parsed['email'] || email;
+      phone = parsed['mobile_phone_number'] || phone;
     }
 
     this.form = this.fb.group({
       first_name: [firstName],
       last_name: [lastName],
-      email: [p?.email || '', [Validators.email]],
-      mobile_phone_number: [p?.mobile_phone_number || ''],
+      email: [email, [Validators.email]],
+      mobile_phone_number: [phone],
+      communication_method: [p?.communication_method || '', [Validators.required]],
       timezone: [p?.timezone || 'UTC'],
       preferred_language: [p?.preferred_language || null],
       temporary: [p?.temporary || false]
@@ -162,6 +312,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
       last_name: p?.last_name || '',
       email: p?.email || '',
       mobile_phone_number: p?.mobile_phone_number || '',
+      communication_method: p?.communication_method || '',
       timezone: p?.timezone || 'UTC',
       preferred_language: p?.preferred_language || null,
       temporary: p?.temporary || false
@@ -203,6 +354,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
         first_name: formValue.first_name,
         last_name: formValue.last_name,
         mobile_phone_number: formValue.mobile_phone_number,
+        communication_method: formValue.communication_method,
         timezone: formValue.timezone,
         preferred_language: formValue.preferred_language,
         custom_fields: this.buildCustomFieldsPayload(),
@@ -228,6 +380,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
         last_name: formValue.last_name,
         email: formValue.email,
         mobile_phone_number: formValue.mobile_phone_number,
+        communication_method: formValue.communication_method,
         timezone: formValue.timezone,
         preferred_language: formValue.preferred_language,
         language_ids: [],

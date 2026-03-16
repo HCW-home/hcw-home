@@ -1,0 +1,135 @@
+<app-modal
+  [isOpen]="isOpen()"
+  [title]="'createConsultationModal.title' | translate"
+  size="xlarge"
+  (closed)="onClose()">
+
+  <div class="create-consultation-form">
+    <form [formGroup]="consultationForm">
+      <div class="form-group">
+        <app-input
+          [label]="'consultationForm.reason' | translate"
+          [required]="true"
+          [placeholder]="'consultationForm.reasonPlaceholder' | translate"
+          formControlName="title"
+          [invalid]="isFieldInvalid('title')"
+          [invalidMessage]="getFieldError('title')">
+        </app-input>
+      </div>
+
+      <div class="form-group">
+        <app-select
+          [label]="'createConsultationModal.selectOrCreateBeneficiary' | translate"
+          [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+          [options]="[]"
+          [asyncSearch]="beneficiarySearchFn"
+          [initialOption]="beneficiaryInitialOption()"
+          [clearable]="true"
+          [creatable]="true"
+          [createOptionLabel]="'consultationForm.addPatient' | translate"
+          (createItem)="openAddPatientModal($event)"
+          formControlName="beneficiary_id">
+        </app-select>
+        <span class="field-helper-text">
+          {{ 'consultationForm.beneficiaryHelperText' | translate }}
+        </span>
+      </div>
+
+      <div class="form-group toggle-group">
+        <app-checkbox
+          [label]="'createConsultationModal.scheduleConsultation' | translate"
+          [ngModel]="showSchedule()"
+          [ngModelOptions]="{standalone: true}"
+          (ngModelChange)="showSchedule.set($event)">
+        </app-checkbox>
+      </div>
+
+      @if (showSchedule()) {
+      <div class="schedule-section">
+        <app-appointment-form
+          #appointmentFormRef
+          [showActions]="false"
+          [autoSave]="false"
+          [beneficiary]="beneficiaryAsUser()"
+          [owner]="ownerAsUser()"
+          (appointmentDataReady)="onAppointmentDataReady($event)">
+        </app-appointment-form>
+      </div>
+      }
+
+      <div class="form-group toggle-group">
+        <app-checkbox
+          [label]="'createConsultationModal.advancedOptions' | translate"
+          [ngModel]="showAdvanced()"
+          [ngModelOptions]="{standalone: true}"
+          (ngModelChange)="showAdvanced.set($event)">
+        </app-checkbox>
+      </div>
+
+      @if (showAdvanced()) {
+      <div class="advanced-section">
+        <div class="form-group">
+          <app-select
+            [label]="'consultationForm.selectPractitioner' | translate"
+            [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+            [options]="[]"
+            [asyncSearch]="practitionerSearchFn"
+            [clearable]="true"
+            formControlName="owned_by_id">
+          </app-select>
+        </div>
+
+        <div class="form-group">
+          <app-select
+            [label]="'consultationForm.selectGroup' | translate"
+            [options]="queueOptions()"
+            [placeholder]="'consultationForm.selectGroupPlaceholder' | translate"
+            [clearable]="true"
+            formControlName="group_id">
+          </app-select>
+        </div>
+
+        <div class="form-group">
+          <app-checkbox
+            [label]="'createConsultationModal.disablePatientChat' | translate"
+            [ngModel]="!consultationForm.get('visible_by_patient')?.value"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="consultationForm.patchValue({visible_by_patient: !$event})">
+          </app-checkbox>
+        </div>
+      </div>
+      }
+    </form>
+  </div>
+
+  <div modal-footer class="modal-actions">
+    <app-button
+      [text]="'common.cancel' | translate"
+      [style]="ButtonStyleEnum.stroke"
+      [size]="ButtonSizeEnum.medium"
+      (buttonClick)="onClose()">
+    </app-button>
+    <app-button
+      [text]="'consultationForm.createConsultation' | translate"
+      [style]="ButtonStyleEnum.primary"
+      [size]="ButtonSizeEnum.medium"
+      [disabled]="isSaving()"
+      [loading]="isSaving()"
+      (buttonClick)="onSubmit()">
+    </app-button>
+  </div>
+</app-modal>
+
+@if (isAddPatientModalOpen()) {
+<app-modal
+  [isOpen]="isAddPatientModalOpen()"
+  size="large"
+  [showCloseButton]="false"
+  (closed)="closeAddPatientModal()">
+  <app-add-edit-patient
+    [initialName]="newPatientInitialName()"
+    (saved)="onPatientCreated($event)"
+    (cancelled)="closeAddPatientModal()">
+  </app-add-edit-patient>
+</app-modal>
+}

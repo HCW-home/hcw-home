@@ -62,16 +62,27 @@
       </div>
       <div class="form-group">
         <app-select
-          [label]="'addEditPatient.preferredLanguage' | translate"
-          [placeholder]="'addEditPatient.selectLanguage' | translate"
-          [options]="languageOptions"
-          [formControl]="$any(form.get('preferred_language'))"
-          [clearable]="true"
-          [openUp]="true"
-          [invalid]="isFieldInvalid('preferred_language')"
-          [invalidMessage]="getFieldError('preferred_language')">
+          [label]="'addEditPatient.communicationMethod' | translate"
+          [placeholder]="'addEditPatient.selectCommunicationMethod' | translate"
+          [options]="communicationMethodOptions"
+          [required]="true"
+          [formControl]="$any(form.get('communication_method'))"
+          [invalid]="isFieldInvalid('communication_method')"
+          [invalidMessage]="getFieldError('communication_method')">
         </app-select>
       </div>
+    </div>
+
+    <div class="form-group">
+      <app-select
+        [label]="'addEditPatient.preferredLanguage' | translate"
+        [placeholder]="'addEditPatient.selectLanguage' | translate"
+        [options]="languageOptions"
+        [formControl]="$any(form.get('preferred_language'))"
+        [clearable]="true"
+        [invalid]="isFieldInvalid('preferred_language')"
+        [invalidMessage]="getFieldError('preferred_language')">
+      </app-select>
     </div>
 
     @if (customFields().length > 0 && customFieldsForm) {

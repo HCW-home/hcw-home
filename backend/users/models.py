@@ -160,11 +160,6 @@ class User(AbstractUser):
 
     email = models.EmailField(_("email address"), blank=True, null=True, unique=True)
 
-    def save(self, *args, **kwargs):
-        if not self.email:
-            self.email = None
-        super().save(*args, **kwargs)
-
     app_preferences = models.JSONField(null=True, blank=True)
     encrypted = models.BooleanField(default=False)
 
@@ -206,7 +201,7 @@ class User(AbstractUser):
     communication_method = models.CharField(
         choices=CommunicationMethod.choices, default=CommunicationMethod.email
     )
-    mobile_phone_number = models.CharField(null=True, blank=True)
+    mobile_phone_number = models.CharField(null=True, blank=True, unique=True)
     timezone = models.CharField(
         max_length=63,
         choices=[(tz, tz) for tz in sorted(available_timezones())],
@@ -290,6 +285,11 @@ class User(AbstractUser):
         if self.temporary and not self.one_time_auth_token:
             self.one_time_auth_token = str(uuid.uuid4())
             self.verification_code_created_at = timezone.now()
+        if not self.email:
+            self.email = None
+        if not self.mobile_phone_number:
+            self.mobile_phone_number = None
+        
         super().save(*args, **kwargs)
 
     class Meta:

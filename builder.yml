@@ -3,6 +3,7 @@ flows:
 - weblate
 - publish-github
 - sonar
+- podman-compose
 options:
  distrib: "debian"
  codename: "trixie"

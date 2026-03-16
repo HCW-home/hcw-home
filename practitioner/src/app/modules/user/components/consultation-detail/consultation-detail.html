@@ -343,6 +343,27 @@
         </div>
         }
 
+        @if (inConsultationCall()) {
+        <div class="video-call-section" [class.minimized]="isVideoMinimized()">
+          <div class="video-container">
+            <app-video-consultation
+              [consultationId]="consultationId"
+              [livekitConfig]="consultationCallConfig()"
+              [isMinimized]="isVideoMinimized()"
+              [messages]="messages()"
+              [isLoadingMore]="isLoadingMore()"
+              [hasMore]="hasMore()"
+              (leave)="onConsultationCallEnded()"
+              (toggleSize)="toggleVideoSize()"
+              (sendMessage)="onSendMessage($event)"
+              (editMessage)="onEditMessage($event)"
+              (deleteMessage)="onDeleteMessage($event)"
+              (loadMore)="onLoadMore()">
+            </app-video-consultation>
+          </div>
+        </div>
+        }
+
         <div class="appointments-section">
           <div class="section-header">
             <div class="section-title-row">
@@ -634,12 +655,23 @@
         <app-message-list
           [messages]="messages()"
           [isConnected]="true"
+          [hasHeaderAction]="!!consultation()?.beneficiary && !consultation()?.closed_at && !inConsultationCall()"
           [isLoadingMore]="isLoadingMore()"
           [hasMore]="hasMore()"
           (sendMessage)="onSendMessage($event)"
           (editMessage)="onEditMessage($event)"
           (deleteMessage)="onDeleteMessage($event)"
           (loadMore)="onLoadMore()">
+          <app-button
+            messageListHeaderAction
+            [text]="'consultationDetail.callBeneficiary' | translate"
+            leftIcon="phone"
+            [style]="ButtonStyleEnum.primary"
+            [size]="ButtonSizeEnum.small"
+            [loading]="isCallingBeneficiary()"
+            [disabled]="isCallingBeneficiary()"
+            (buttonClick)="callBeneficiary()">
+          </app-button>
         </app-message-list>
       </div>
     </div>

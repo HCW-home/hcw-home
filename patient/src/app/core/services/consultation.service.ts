@@ -105,7 +105,14 @@ export class ConsultationService {
     room: string;
   }> {
     return this.api.get<{ url: string; token: string; room: string }>(
-      `/consultations/${consultationId}/join/`
+      `/user/consultations/${consultationId}/join/`
+    );
+  }
+
+  respondToCall(consultationId: number, accepted: boolean): Observable<{ detail: string }> {
+    return this.api.post<{ detail: string }>(
+      `/user/consultations/${consultationId}/call_response/`,
+      { accepted }
     );
   }
 

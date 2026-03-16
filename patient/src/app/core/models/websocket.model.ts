@@ -137,6 +137,13 @@ export interface AppointmentJoinedEvent {
   };
 }
 
+export interface CallRequestEvent {
+  event: 'call_request';
+  consultation_id: number;
+  caller_id: number;
+  caller_name: string;
+}
+
 export interface AppointmentChangedEvent {
   type: 'appointment';
   consultation_id: number;

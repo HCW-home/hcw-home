@@ -777,7 +777,12 @@
         "statusCancelled": "Annulé",
         "languageEnglish": "Anglais",
         "languageGerman": "Allemand",
-        "languageFrench": "Français"
+        "languageFrench": "Français",
+        "callBeneficiary": "Appeler le patient",
+        "callFailed": "Impossible de lancer l'appel. Veuillez réessayer.",
+        "callDeclined": "Appel refusé",
+        "callDeclinedMessage": "{{name}} a refusé l'appel.",
+        "error": "Erreur"
     },
     "appointmentFormModal": {
         "editAppointment": "Modifier le rendez-vous",

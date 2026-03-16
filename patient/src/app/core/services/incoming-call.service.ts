@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { NavController } from '@ionic/angular/standalone';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 export interface IncomingCallData {
   callerName: string;
   callerPicture?: string;
-  appointmentId: number;
+  appointmentId?: number;
   consultationId: number;
+  type: 'appointment' | 'consultation';
 }
 
 @Injectable({
@@ -14,40 +15,48 @@ export interface IncomingCallData {
 })
 export class IncomingCallService {
   private incomingCallSubject = new BehaviorSubject<IncomingCallData | null>(null);
+  private callDismissedSubject = new Subject<{ consultationId: number }>();
+  private callAcceptedSubject = new Subject<{ consultationId: number }>();
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private audioElement: HTMLAudioElement | null = null;
   private activeCallAppointmentId: number | null = null;
+  private activeCallConsultationId: number | null = null;
 
   public incomingCall$: Observable<IncomingCallData | null> = this.incomingCallSubject.asObservable();
+  public callDismissed$: Observable<{ consultationId: number }> = this.callDismissedSubject.asObservable();
+  public callAccepted$: Observable<{ consultationId: number }> = this.callAcceptedSubject.asObservable();
 
   constructor(
     private navCtrl: NavController
   ) {}
 
   showIncomingCall(data: IncomingCallData): void {
-    console.log('[IncomingCall] showIncomingCall called:', data);
-    console.log('[IncomingCall] activeCallAppointmentId:', this.activeCallAppointmentId);
-
     if (this.incomingCallSubject.value) {
-      console.log('[IncomingCall] Already showing a call, skipping');
       return;
     }
 
-    if (this.activeCallAppointmentId === data.appointmentId) {
-      console.log('[IncomingCall] Already in call for this appointment, skipping');
+    if (data.type === 'appointment' && data.appointmentId && this.activeCallAppointmentId === data.appointmentId) {
       return;
     }
 
-    console.log('[IncomingCall] Showing incoming call screen');
+    if (data.type === 'consultation' && this.activeCallConsultationId === data.consultationId) {
+      return;
+    }
+
     this.incomingCallSubject.next(data);
     this.playRingtone();
     this.startTimeout();
   }
 
   dismissIncomingCall(): void {
+    const callData = this.incomingCallSubject.value;
     this.stopRingtone();
     this.clearTimeout();
     this.incomingCallSubject.next(null);
+
+    if (callData) {
+      this.callDismissedSubject.next({ consultationId: callData.consultationId });
+    }
   }
 
   acceptCall(): void {
@@ -60,17 +69,32 @@ export class IncomingCallService {
     this.clearTimeout();
     this.incomingCallSubject.next(null);
 
-    this.navCtrl.navigateForward(['/consultation', callData.consultationId, 'video'], {
-      queryParams: { appointmentId: callData.appointmentId, autoJoin: true }
-    });
+    if (callData.type === 'consultation') {
+      this.callAcceptedSubject.next({ consultationId: callData.consultationId });
+    }
+
+    if (callData.type === 'consultation') {
+      this.navCtrl.navigateForward(['/consultation', callData.consultationId, 'video'], {
+        queryParams: { type: 'consultation', autoJoin: true }
+      });
+    } else {
+      this.navCtrl.navigateForward(['/consultation', callData.consultationId, 'video'], {
+        queryParams: { appointmentId: callData.appointmentId, autoJoin: true }
+      });
+    }
   }
 
   setActiveCall(appointmentId: number): void {
     this.activeCallAppointmentId = appointmentId;
   }
 
+  setActiveConsultationCall(consultationId: number): void {
+    this.activeCallConsultationId = consultationId;
+  }
+
   clearActiveCall(): void {
     this.activeCallAppointmentId = null;
+    this.activeCallConsultationId = null;
   }
 
   private playRingtone(): void {

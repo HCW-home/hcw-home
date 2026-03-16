@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from core.authentication import TenantRefreshToken
 from users.models import User
 
 MAX_VERIFICATION_ATTEMPTS = getattr(django_settings, "MAX_VERIFICATION_ATTEMPTS", 3)
@@ -236,13 +236,14 @@ class AnonymousTokenAuthView(APIView):
                         ]
                     )
 
-            refresh = RefreshToken.for_user(user)
+            refresh = TenantRefreshToken.for_user(user)
 
             return Response(
                 {
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                     "user_id": user.id,
+                    "tenant_id": refresh['tenant_id'],
                 },
                 status=status.HTTP_200_OK,
             )

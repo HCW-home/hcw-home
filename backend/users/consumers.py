@@ -330,6 +330,27 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
             }
         )
 
+    async def call_request(self, event):
+        await self.send_json(
+            {
+                "event": "call_request",
+                "consultation_id": event["consultation_id"],
+                "caller_id": event["caller_id"],
+                "caller_name": event["caller_name"],
+            }
+        )
+
+    async def call_response(self, event):
+        await self.send_json(
+            {
+                "event": "call_response",
+                "consultation_id": event["consultation_id"],
+                "accepted": event["accepted"],
+                "responder_id": event["responder_id"],
+                "responder_name": event["responder_name"],
+            }
+        )
+
     # Utility methods
     async def _send_error(self, message):
         await self.send_json({"type": "error", "message": message})

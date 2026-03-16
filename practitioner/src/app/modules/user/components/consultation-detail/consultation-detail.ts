@@ -29,6 +29,7 @@ import { ConsultationService } from '../../../../core/services/consultation.serv
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { ConsultationWebSocketService } from '../../../../core/services/consultation-websocket.service';
+import { UserWebSocketService } from '../../../../core/services/user-websocket.service';
 import { UserService } from '../../../../core/services/user.service';
 import { IncomingCallService } from '../../../../core/services/incoming-call.service';
 import { Auth } from '../../../../core/services/auth';
@@ -157,6 +158,10 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   inCall = signal(false);
   activeAppointmentId = signal<number | null>(null);
   isVideoMinimized = signal(false);
+
+  inConsultationCall = signal(false);
+  isCallingBeneficiary = signal(false);
+  consultationCallConfig = signal<{ url: string; token: string; room: string } | undefined>(undefined);
 
   tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
   appointmentEarlyJoinMinutes = 5; // Default value
@@ -307,6 +312,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   private confirmationService = inject(ConfirmationService);
   private toasterService = inject(ToasterService);
   private wsService = inject(ConsultationWebSocketService);
+  private userWsService = inject(UserWebSocketService);
   private userService = inject(UserService);
   private incomingCallService = inject(IncomingCallService);
   private authService = inject(Auth);
@@ -642,6 +648,22 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
         });
         if (appointmentsUpdated) {
           this.appointments.set(updatedAppointments);
+        }
+      });
+
+    // Listen for call_response events from the beneficiary
+    this.userWsService.callResponse$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        if (event.consultation_id !== this.consultationId) return;
+
+        if (!event.accepted) {
+          this.toasterService.show(
+            'warning',
+            this.t.instant('consultationDetail.callDeclined'),
+            this.t.instant('consultationDetail.callDeclinedMessage', { name: event.responder_name })
+          );
+          this.onConsultationCallEnded();
         }
       });
   }
@@ -1371,6 +1393,31 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       queryParams: {},
       replaceUrl: true,
     });
+  }
+
+  callBeneficiary(): void {
+    if (this.isCallingBeneficiary() || this.inConsultationCall()) {
+      return;
+    }
+
+    this.isCallingBeneficiary.set(true);
+    this.consultationService.callBeneficiary(this.consultationId).subscribe({
+      next: (config) => {
+        this.consultationCallConfig.set(config);
+        this.inConsultationCall.set(true);
+        this.isCallingBeneficiary.set(false);
+      },
+      error: () => {
+        this.isCallingBeneficiary.set(false);
+        this.toasterService.show('error', this.t.instant('consultationDetail.error'), this.t.instant('consultationDetail.callFailed'));
+      },
+    });
+  }
+
+  onConsultationCallEnded(): void {
+    this.inConsultationCall.set(false);
+    this.consultationCallConfig.set(undefined);
+    this.isVideoMinimized.set(false);
   }
 
   toggleVideoSize(): void {

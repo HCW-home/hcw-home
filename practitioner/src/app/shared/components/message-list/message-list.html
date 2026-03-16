@@ -3,12 +3,15 @@
     <app-typography [variant]="TypographyTypeEnum['h6-semibold']"
       >{{ 'messageList.messages' | translate }}</app-typography
     >
+    <ng-content select="[messageListHeaderAction]"></ng-content>
+    @if (!hasHeaderAction) {
     <span
       class="connection-status"
       [class.connected]="isConnected"
       [class.disconnected]="!isConnected">
       {{ isConnected ? ('messageList.connected' | translate) : ('messageList.disconnected' | translate) }}
     </span>
+    }
   </div>
 
   <div class="message-list-body" #messagesContainer (scroll)="onScroll()">

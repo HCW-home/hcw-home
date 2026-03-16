@@ -63,7 +63,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.userWsService.appointmentJoined$
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
-        // Don't show incoming call if already on video consultation page
         if (this.router.url.includes("/video")) {
           return;
         }
@@ -72,7 +71,40 @@ export class AppComponent implements OnInit, OnDestroy {
           callerName: event.data.user_name,
           appointmentId: event.appointment_id,
           consultationId: event.consultation_id,
+          type: 'appointment',
         });
+      });
+
+    this.userWsService.callRequest$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (this.router.url.includes("/video")) {
+          return;
+        }
+
+        this.incomingCallService.showIncomingCall({
+          callerName: event.caller_name,
+          consultationId: event.consultation_id,
+          type: 'consultation',
+        });
+      });
+
+    // When patient dismisses a consultation call, notify the doctor
+    this.incomingCallService.callDismissed$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({ consultationId }) => {
+        this.consultationService
+          .respondToCall(consultationId, false)
+          .subscribe();
+      });
+
+    // When patient accepts a consultation call, notify the doctor
+    this.incomingCallService.callAccepted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({ consultationId }) => {
+        this.consultationService
+          .respondToCall(consultationId, true)
+          .subscribe();
       });
   }
 

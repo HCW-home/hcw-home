@@ -214,6 +214,73 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+    @extend_schema(
+        methods=["POST"],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string"},
+                    "token": {"type": "string"},
+                    "room": {"type": "string"},
+                },
+            },
+            400: {
+                "type": "object",
+                "properties": {"error": {"type": "string"}},
+            },
+        },
+        description="Initiate a call to the consultation beneficiary. Returns LiveKit connection info and sends a WebSocket call_request event to the beneficiary.",
+    )
+    @action(detail=True, methods=["post"])
+    def call(self, request, pk=None):
+        """Initiate a call to the consultation beneficiary."""
+        consultation = self.get_object()
+
+        if consultation.closed_at:
+            return Response(
+                {"error": _("Cannot call in a closed consultation.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not consultation.beneficiary:
+            return Response(
+                {"error": _("No beneficiary configured for this consultation.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            server = Server.get_server()
+            consultation_call_info = server.instance.consultation_user_info(
+                consultation, request.user
+            )
+        except Exception:
+            return Response(
+                {"detail": _("No media server available.")},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Send call_request WebSocket event to the beneficiary
+        channel_layer = get_channel_layer()
+        caller_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.email
+        async_to_sync(channel_layer.group_send)(
+            f"user_{consultation.beneficiary.pk}",
+            {
+                "type": "call_request",
+                "consultation_id": consultation.pk,
+                "caller_id": request.user.pk,
+                "caller_name": caller_name,
+            },
+        )
+
+        return Response(
+            {
+                "url": server.url,
+                "token": consultation_call_info,
+                "room": f"consultation_{consultation.pk}",
+            }
+        )
+
     @extend_schema(methods=["GET"], responses=ConsultationMessageSerializer(many=True))
     @extend_schema(
         methods=["POST"],

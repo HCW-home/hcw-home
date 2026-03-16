@@ -23,7 +23,9 @@ export class AuthInterceptor implements HttpInterceptor {
       setHeaders: { 'Accept-Language': lang }
     });
 
-    return from(this.authService.getToken()).pipe(
+    const skipAuth = request.url.includes('/auth/token/') || request.url.includes('/auth/login/') || request.url.includes('/auth/send-verification-code/');
+
+    return from(skipAuth ? Promise.resolve(null) : this.authService.getToken()).pipe(
       switchMap(token => {
         if (token) {
           request = this.addToken(request, token);

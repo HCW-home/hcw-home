@@ -722,7 +722,12 @@
     "statusCancelled": "Cancelled",
     "languageEnglish": "English",
     "languageGerman": "German",
-    "languageFrench": "French"
+    "languageFrench": "French",
+    "callBeneficiary": "Call Patient",
+    "callFailed": "Failed to initiate the call. Please try again.",
+    "callDeclined": "Call Declined",
+    "callDeclinedMessage": "{{name}} declined the call.",
+    "error": "Error"
   },
   "appointmentFormModal": {
     "editAppointment": "Edit Appointment",

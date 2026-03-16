@@ -55,6 +55,8 @@ import { TranslationService } from '../../../../core/services/translation.servic
 })
 export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() appointmentId?: number;
+  @Input() consultationId?: number;
+  @Input() livekitConfig?: { url: string; token: string; room: string };
   @Input() isMinimized = false;
   @Input() messages: Message[] = [];
   @Input() isLoadingMore = false;
@@ -195,13 +197,7 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
     this.cdr.markForCheck();
 
     try {
-      if (!this.appointmentId) {
-        throw new Error(this.t.instant('videoConsultation.appointmentRequired'));
-      }
-
-      const config = await this.consultationService
-        .joinAppointment(this.appointmentId)
-        .toPromise();
+      const config = await this.getCallConfig();
 
       if (!config) {
         throw new Error(this.t.instant('videoConsultation.failedLivekitConfig'));
@@ -219,6 +215,19 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
     }
   }
 
+  private async getCallConfig(): Promise<{ url: string; token: string; room: string } | undefined> {
+    if (this.livekitConfig) {
+      return this.livekitConfig;
+    }
+    if (this.appointmentId) {
+      return this.consultationService.joinAppointment(this.appointmentId).toPromise();
+    }
+    if (this.consultationId) {
+      return this.consultationService.joinConsultation(this.consultationId).toPromise();
+    }
+    throw new Error(this.t.instant('videoConsultation.appointmentRequired'));
+  }
+
   onLobbyClose(): void {
     this.leave.emit();
   }
@@ -230,13 +239,7 @@ export class VideoConsultationComponent implements OnInit, OnDestroy, AfterViewI
     this.cdr.markForCheck();
 
     try {
-      if (!this.appointmentId) {
-        throw new Error(this.t.instant('videoConsultation.appointmentRequired'));
-      }
-
-      const config = await this.consultationService
-        .joinAppointment(this.appointmentId)
-        .toPromise();
+      const config = await this.getCallConfig();
 
       if (!config) {
         throw new Error(this.t.instant('videoConsultation.failedLivekitConfig'));

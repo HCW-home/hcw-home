@@ -142,6 +142,14 @@ export interface AppointmentJoinedEvent {
   };
 }
 
+export interface CallResponseEvent {
+  event: 'call_response';
+  consultation_id: number;
+  accepted: boolean;
+  responder_id: number;
+  responder_name: string;
+}
+
 export type UserIncomingEvent =
   | StatusChangedEvent
   | StatusResponseEvent
@@ -153,7 +161,8 @@ export type UserIncomingEvent =
   | GroupLeftEvent
   | ErrorEvent
   | AppointmentJoinedEvent
-  | ConsultationEvent;
+  | ConsultationEvent
+  | CallResponseEvent;
 
 export interface ConsultationParticipant {
   id: number;

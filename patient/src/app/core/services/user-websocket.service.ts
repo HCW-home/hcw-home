@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, firstValueFrom, filter } from 'rxjs';
 import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
@@ -11,6 +11,7 @@ import {
   AppointmentJoinedEvent,
   AppointmentChangedEvent,
   ConsultationChangedEvent,
+  CallRequestEvent,
 } from '../models/websocket.model';
 
 @Injectable({
@@ -24,6 +25,7 @@ export class UserWebSocketService implements OnDestroy {
   private appointmentJoinedSubject = new Subject<AppointmentJoinedEvent>();
   private appointmentChangedSubject = new Subject<AppointmentChangedEvent>();
   private consultationChangedSubject = new Subject<ConsultationChangedEvent>();
+  private callRequestSubject = new Subject<CallRequestEvent>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectInterval = 5000; // 5 seconds between refresh attempts
   private isRefreshing = false;
@@ -33,6 +35,7 @@ export class UserWebSocketService implements OnDestroy {
   public appointmentJoined$: Observable<AppointmentJoinedEvent> = this.appointmentJoinedSubject.asObservable();
   public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
   public consultationChanged$: Observable<ConsultationChangedEvent> = this.consultationChangedSubject.asObservable();
+  public callRequest$: Observable<CallRequestEvent> = this.callRequestSubject.asObservable();
   public connectionState$: Observable<WebSocketState> = this.wsService.state$;
 
   constructor(
@@ -190,6 +193,14 @@ export class UserWebSocketService implements OnDestroy {
       const event = raw as ConsultationChangedEvent;
       console.log('[UserWS] Consultation event received:', event);
       this.consultationChangedSubject.next(event);
+    });
+
+    this.wsService.messages$.pipe(
+      filter((msg) =>
+        (msg as unknown as { event?: string }).event === 'call_request'
+      )
+    ).subscribe((msg) => {
+      this.callRequestSubject.next(msg as unknown as CallRequestEvent);
     });
 
     this.wsService.on('error').subscribe((event) => {

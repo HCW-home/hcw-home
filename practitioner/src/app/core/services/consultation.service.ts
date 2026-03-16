@@ -320,6 +320,27 @@ export class ConsultationService {
     );
   }
 
+  joinConsultation(consultationId: number): Observable<{
+    url: string;
+    token: string;
+    room: string;
+  }> {
+    return this.http.get<{ url: string; token: string; room: string }>(
+      `${this.apiUrl}/consultations/${consultationId}/join/`
+    );
+  }
+
+  callBeneficiary(consultationId: number): Observable<{
+    url: string;
+    token: string;
+    room: string;
+  }> {
+    return this.http.post<{ url: string; token: string; room: string }>(
+      `${this.apiUrl}/consultations/${consultationId}/call/`,
+      {}
+    );
+  }
+
   leaveAppointment(appointmentId: number): Observable<{detail: string}> {
     return this.http.post<{detail: string}>(
       `${this.apiUrl}/appointments/${appointmentId}/leave/`,

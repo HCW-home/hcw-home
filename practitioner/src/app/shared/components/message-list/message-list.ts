@@ -80,6 +80,7 @@ export class MessageList
 {
   @Input() messages: Message[] = [];
   @Input() isConnected = false;
+  @Input() hasHeaderAction = false;
   @Input() currentUserId: number | null = null;
   @Input() isLoadingMore = false;
   @Input() hasMore = true;

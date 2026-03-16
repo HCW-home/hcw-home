@@ -257,6 +257,67 @@ class UserConsultationsViewSet(viewsets.ReadOnlyModelViewSet):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=["get"])
+    def join(self, request, pk=None):
+        """Join a consultation call as beneficiary."""
+        consultation = self.get_object()
+
+        if consultation.closed_at:
+            return Response(
+                {"error": _("Cannot join call in a closed consultation.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            server = Server.get_server()
+            consultation_call_info = server.instance.consultation_user_info(
+                consultation, request.user
+            )
+
+            return Response(
+                {
+                    "url": server.url,
+                    "token": consultation_call_info,
+                    "room": f"consultation_{consultation.pk}",
+                }
+            )
+        except Exception:
+            return Response(
+                {"detail": _("No media server available.")},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    @action(detail=True, methods=["post"], url_path="call_response")
+    def call_response(self, request, pk=None):
+        """Respond to an incoming call (accept or reject)."""
+        consultation = self.get_object()
+        accepted = request.data.get("accepted", False)
+
+        # Notify the consultation owner/creator via WebSocket
+        channel_layer = get_channel_layer()
+        responder_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.email
+
+        # Notify all practitioners associated with the consultation
+        users_to_notify = set()
+        if consultation.owned_by:
+            users_to_notify.add(consultation.owned_by.pk)
+        if consultation.created_by:
+            users_to_notify.add(consultation.created_by.pk)
+
+        for user_pk in users_to_notify:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user_pk}",
+                {
+                    "type": "call_response",
+                    "consultation_id": consultation.pk,
+                    "accepted": accepted,
+                    "responder_id": request.user.pk,
+                    "responder_name": responder_name,
+                },
+            )
+
+        return Response({"detail": "ok"})
+
 
 class MessageAttachmentView(APIView):
     authentication_classes = [JWTAuthentication]

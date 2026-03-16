@@ -160,6 +160,11 @@ class User(AbstractUser):
 
     email = models.EmailField(_("email address"), blank=True, null=True, unique=True)
 
+    def save(self, *args, **kwargs):
+        if not self.email:
+            self.email = None
+        super().save(*args, **kwargs)
+
     app_preferences = models.JSONField(null=True, blank=True)
     encrypted = models.BooleanField(default=False)
 

@@ -370,6 +370,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
           this.saved.emit(updatedPatient);
         },
         error: (error) => {
+          this.setServerErrors(error);
           this.toasterService.show('error', this.t.instant('addEditPatient.errorUpdating'), getErrorMessage(error));
           this.loading = false;
         }
@@ -397,6 +398,7 @@ export class AddEditPatient implements OnInit, OnDestroy {
           this.saved.emit(createdPatient);
         },
         error: (error) => {
+          this.setServerErrors(error);
           this.toasterService.show('error', this.t.instant('addEditPatient.errorCreating'), getErrorMessage(error));
           this.loading = false;
         }
@@ -415,6 +417,9 @@ export class AddEditPatient implements OnInit, OnDestroy {
 
   getFieldError(fieldName: string): string {
     const field = this.form.get(fieldName);
+    if (field?.errors?.['serverError']) {
+      return field.errors['serverError'];
+    }
     if (field?.errors?.['required']) {
       return this.t.instant('addEditPatient.fieldRequired');
     }
@@ -422,5 +427,18 @@ export class AddEditPatient implements OnInit, OnDestroy {
       return this.t.instant('addEditPatient.invalidEmail');
     }
     return '';
+  }
+
+  private setServerErrors(error: { error?: Record<string, string | string[]> }): void {
+    if (error.error && typeof error.error === 'object') {
+      for (const [field, messages] of Object.entries(error.error)) {
+        const control = this.form.get(field);
+        if (control) {
+          const msg = Array.isArray(messages) ? messages[0] : messages;
+          control.setErrors({ serverError: msg });
+          control.markAsTouched();
+        }
+      }
+    }
   }
 }

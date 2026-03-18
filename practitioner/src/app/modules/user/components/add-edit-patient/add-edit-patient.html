@@ -57,7 +57,9 @@
           [label]="'addEditPatient.phoneNumber' | translate"
           leftIcon="phone"
           [placeholder]="'addEditPatient.phonePlaceholder' | translate"
-          [formControl]="$any(form.get('mobile_phone_number'))">
+          [formControl]="$any(form.get('mobile_phone_number'))"
+          [invalid]="isFieldInvalid('mobile_phone_number')"
+          [invalidMessage]="getFieldError('mobile_phone_number')">
         </app-input>
       </div>
       <div class="form-group">

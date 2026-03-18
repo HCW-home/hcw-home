@@ -109,6 +109,15 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "is_practitioner",
         ]
 
+    def validate_mobile_phone_number(self, value):
+        if self.instance and value:
+            if self.instance.mobile_phone_number != value:
+                if UserModel.objects.filter(mobile_phone_number=value).exclude(pk=self.instance.pk).exists():
+                    raise serializers.ValidationError(
+                        "A user with this phone number already exists."
+                    )
+        return value
+
     def validate_email(self, value):
         if self.instance and value:
             # Check if email is being changed and if new email already exists

@@ -7,7 +7,6 @@ For more information on this file, see
 https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """
 
-from .channelsmiddleware import CorsMiddleware, JWTAuthMiddleware, TenantMiddleware
 import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
@@ -16,7 +15,7 @@ import django
 
 django.setup()
 
-
+from .channelsmiddleware import CorsMiddleware, JWTAuthMiddleware, TenantMiddleware
 from channels.routing import ProtocolTypeRouter, URLRouter
 from consultations.routing import websocket_urlpatterns as consultation_patterns
 from django.core.asgi import get_asgi_application

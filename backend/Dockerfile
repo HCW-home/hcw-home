@@ -11,7 +11,7 @@ RUN pip install --upgrade pip
 COPY requirements.txt  /app/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
-RUN python manage.py collectstatic
+# RUN python manage.py collectstatic
 
 FROM python:3.13 as api
 

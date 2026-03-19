@@ -10,6 +10,7 @@ server {
     root /usr/share/nginx/html;
     index index.html;
     server_name _;
+    client_max_body_size 0;
 
     # Static assets (JS, CSS, images, fonts) with caching
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {

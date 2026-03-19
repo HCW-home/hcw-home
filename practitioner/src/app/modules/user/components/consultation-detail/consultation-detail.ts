@@ -1452,6 +1452,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
 
   onAppointmentCreated(appointment: Appointment): void {
     const currentAppointments = this.appointments();
+    if (currentAppointments.some(a => a.id === appointment.id)) {
+      return;
+    }
     this.appointments.set([...currentAppointments, appointment]);
     this.markAppointmentAsLocallyModified(appointment.id);
   }

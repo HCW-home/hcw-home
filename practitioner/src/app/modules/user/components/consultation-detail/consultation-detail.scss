@@ -824,11 +824,61 @@
       .card-actions {
         width: 100%;
         flex-wrap: wrap;
+
+        app-button {
+          flex: 1 1 auto;
+          min-width: 0;
+
+          ::ng-deep button {
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
       }
     }
 
     .info-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  .appointments-section {
+    padding: 20px;
+
+    .section-header-actions {
+      width: 100%;
+
+      .view-toggle,
+      .status-filter,
+      .time-filter {
+        width: 100%;
+
+        .view-toggle-btn,
+        .filter-btn {
+          flex: 1;
+          text-align: center;
+          padding: 8px 6px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .appointment-actions {
+    flex-wrap: wrap;
+
+    app-button {
+      flex: 1 1 auto;
+      min-width: 0;
+
+      ::ng-deep button {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 }

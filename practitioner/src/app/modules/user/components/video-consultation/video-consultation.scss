@@ -162,6 +162,21 @@
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
   }
+
+  @media (orientation: portrait) {
+    grid-template-columns: 1fr;
+
+    &[data-count="2"],
+    &[data-count="3"],
+    &[data-count="4"] {
+      grid-template-columns: 1fr;
+    }
+
+    &[data-count="5"],
+    &[data-count="6"] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 }
 
 .video-tile {

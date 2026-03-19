@@ -741,6 +741,10 @@ CONSTANCE_CONFIG = {
         False,
         "Enable self-registration for new users",
     ),
+    "max_upload_size_mb": (
+        10,
+        "Maximum file upload size in MB (0 to disable limit)",
+    ),
 }
 
 
@@ -750,6 +754,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Scheduling": ("appointment_first_reminder", "appointment_last_reminder", "appointment_early_join_minutes"),
     "Data Retention": ("consultation_auto_delete_hours", "temporary_user_auto_delete"),
     "Security": ("temporary_participant_token_expiry_hours",),
+    "Uploads": ("max_upload_size_mb",),
     "Authentication": ("disable_password_login", "enable_registration"),
 }
 

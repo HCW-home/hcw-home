@@ -701,6 +701,19 @@ class ConsultationMessageCreateSerializer(ConsultationMessageSerializer):
             "deleted_at",
         ]
 
+    def validate_attachment(self, value):
+        if value is None:
+            return value
+        from constance import config
+
+        max_size_mb = config.max_upload_size_mb
+        if max_size_mb and value.size > max_size_mb * 1024 * 1024:
+            raise serializers.ValidationError(
+                _("File size exceeds the maximum allowed size of %(max_size)d MB.")
+                % {"max_size": max_size_mb}
+            )
+        return value
+
 
 class ConsultationCreateSerializer(serializers.ModelSerializer):
     class Meta:

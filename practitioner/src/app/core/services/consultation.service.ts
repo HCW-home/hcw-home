@@ -232,7 +232,8 @@ export class ConsultationService {
 
     return this.http.post<ConsultationMessage>(
       `${this.apiUrl}/consultations/${consultationId}/messages/`,
-      formData
+      formData,
+      { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
     );
   }
 

@@ -29,6 +29,7 @@ services:
   api:
     build:
       context: backend
+      target: api
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always
     environment:
@@ -48,6 +49,21 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+
+  admin:
+    build:
+      context: backend
+      target: admin
+    image: docker.io/iabsis/hcw6-admin:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - local
+    ports:
+      - "8082:8080"
 
   celery:
     build:

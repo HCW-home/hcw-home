@@ -51,11 +51,6 @@ Gérer les mises à jour frontend
 
 Il faudrait avertir l'utilisateur lorsque le frontend est mis à jour.
 
-Ajouter fichier ICS
-===================
-
-Dans le model Message de messaging, j'aimerais une nouvelle propriété que si le modèle est consultation.Appointment, alors on puisse générer un fichier ICS qui sera attaché dans le cadre d'un email.
-
 Soucis avec timezone et requested time
 ======================================
 

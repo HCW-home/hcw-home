@@ -851,6 +851,9 @@ if S3_BUCKET_NAME and S3_ENDPOINT_URL and S3_ACCESS_KEY and S3_SECRET_KEY:
                 "access_key": S3_ACCESS_KEY,
                 "secret_key": S3_SECRET_KEY,
                 "verify": False if S3_VERIFY == "false" else True,
+                "transfer_config": {
+                    "multipart_threshold": 5 * 1024 * 1024 * 1024,
+                },
             },
         },
         "staticfiles": {

@@ -101,6 +101,7 @@
 
           <div class="slots-container">
             @for (date of weekDates(); track date.getTime()) {
+              @if (!isPastDate(date)) {
               <div class="day-column" [class.today]="isToday(date)">
                 <div class="day-header">
                   <span class="day-name">{{ formatDayName(date) }}</span>
@@ -124,11 +125,12 @@
                   }
                 </div>
               </div>
+              }
             }
           </div>
 
           @if (selectedSlot()) {
-            <div class="step-actions">
+            <div class="step-actions sticky-bottom">
               <button class="primary-action" (click)="proceedToDoctor()">
                 {{ 'newRequest.continueWithSlot' | translate }}
               </button>

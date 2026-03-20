@@ -956,13 +956,13 @@ class ReasonSlotsView(APIView):
         if not practitioners:
             return Response([], status=status.HTTP_200_OK)
 
-        dates = [from_date + timedelta(days=i) for i in range(7)]
+        dates = [from_date + timedelta(days=i) for i in range(15)]
 
         booking_slots = BookingSlot.objects.filter(
             user__in=practitioners
         ).select_related("user")
 
-        end_date = from_date + timedelta(days=7)
+        end_date = from_date + timedelta(days=15)
         existing_appointments = Appointment.objects.filter(
             scheduled_at__date__gte=from_date,
             scheduled_at__date__lt=end_date,

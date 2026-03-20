@@ -102,7 +102,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
   weekDates = computed(() => {
     const start = this.currentWeekStart();
     const dates: Date[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 15; i++) {
       const date = new Date(start);
       date.setDate(start.getDate() + i);
       dates.push(date);
@@ -113,7 +113,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
   canGoPreviousWeek = computed(() => {
     const current = this.currentWeekStart();
     const prev = new Date(current);
-    prev.setDate(current.getDate() - 7);
+    prev.setDate(current.getDate() - 15);
     const today = this.getStartOfWeek(new Date());
     return prev >= today;
   });
@@ -210,7 +210,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
   nextWeek(): void {
     const current = this.currentWeekStart();
     const next = new Date(current);
-    next.setDate(current.getDate() + 7);
+    next.setDate(current.getDate() + 15);
     this.currentWeekStart.set(next);
     const reason = this.selectedReason();
     if (reason) {
@@ -221,7 +221,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
   previousWeek(): void {
     const current = this.currentWeekStart();
     const prev = new Date(current);
-    prev.setDate(current.getDate() - 7);
+    prev.setDate(current.getDate() - 15);
     const today = this.getStartOfWeek(new Date());
     if (prev >= today) {
       this.currentWeekStart.set(prev);
@@ -373,11 +373,11 @@ export class NewRequestPage implements OnInit, OnDestroy {
   }
 
   formatDisplayDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(this.t.currentLanguage(), { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
   formatDayName(date: Date): string {
-    return date.toLocaleDateString('en-US', { weekday: 'short' });
+    return date.toLocaleDateString(this.t.currentLanguage(), { weekday: 'short' });
   }
 
   formatDayNumber(date: Date): string {
@@ -389,6 +389,14 @@ export class NewRequestPage implements OnInit, OnDestroy {
     return date.getDate() === today.getDate() &&
            date.getMonth() === today.getMonth() &&
            date.getFullYear() === today.getFullYear();
+  }
+
+  isPastDate(date: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d < today;
   }
 
   formatSlotTime(slot: Slot): string {
@@ -427,7 +435,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
     const slot = this.selectedSlot();
     if (slot) {
       const date = new Date(`${slot.date}T${slot.start_time}`);
-      return date.toLocaleString('en-US', {
+      return date.toLocaleString(this.t.currentLanguage(), {
         weekday: 'short',
         month: 'short',
         day: 'numeric',

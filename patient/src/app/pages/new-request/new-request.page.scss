@@ -423,6 +423,15 @@ ion-header {
   flex-direction: column;
   gap: var(--app-spacing-md);
 
+  &.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    margin-top: var(--app-spacing-md);
+    padding: var(--app-spacing-md) 0;
+    background: var(--app-card-background);
+    z-index: 10;
+  }
+
   .primary-action {
     width: 100%;
     padding: var(--app-spacing-md) var(--app-spacing-lg);

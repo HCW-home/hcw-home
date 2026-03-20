@@ -3,6 +3,7 @@ import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse
 import { Observable, throwError, from, BehaviorSubject } from 'rxjs';
 import { catchError, switchMap, filter, take } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { UserWebSocketService } from '../services/user-websocket.service';
 import { TranslationService } from '../services/translation.service';
 import { NavController } from '@ionic/angular';
 
@@ -13,6 +14,7 @@ const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 export class AuthInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
+    private userWsService: UserWebSocketService,
     private translationService: TranslationService,
     private navCtrl: NavController
   ) {}
@@ -102,6 +104,7 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private forceLogout(): void {
+    this.userWsService.disconnect();
     this.authService.logout().then(() => {
       this.navCtrl.navigateRoot('/login');
     });

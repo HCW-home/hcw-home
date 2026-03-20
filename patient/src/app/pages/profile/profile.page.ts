@@ -22,6 +22,7 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { UserWebSocketService } from '../../core/services/user-websocket.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { User } from '../../core/models/user.model';
 import { TIMEZONES } from '../../core/constants/timezone';
@@ -193,7 +194,10 @@ export class ProfilePage implements OnInit {
     await alert.present();
   }
 
+  private userWsService = inject(UserWebSocketService);
+
   async logout() {
+    this.userWsService.disconnect();
     await this.authService.logout();
     this.navCtrl.navigateRoot('/login');
   }

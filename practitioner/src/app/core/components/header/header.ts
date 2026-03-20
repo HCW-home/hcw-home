@@ -25,6 +25,7 @@ import { NgClass } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../services/notification.service';
 import { UserWebSocketService } from '../../services/user-websocket.service';
+import { Auth } from '../../services/auth';
 import { BrowserNotificationService } from '../../services/browser-notification.service';
 import { ActionHandlerService } from '../../services/action-handler.service';
 import { ConsultationService } from '../../services/consultation.service';
@@ -61,6 +62,7 @@ export class Header implements OnInit, OnDestroy {
   private userService = inject(UserService);
   protected notificationService = inject(NotificationService);
   private userWsService = inject(UserWebSocketService);
+  private authService = inject(Auth);
   private browserNotificationService = inject(BrowserNotificationService);
   private actionHandler = inject(ActionHandlerService);
   private consultationService = inject(ConsultationService);
@@ -328,11 +330,12 @@ export class Header implements OnInit, OnDestroy {
     this.router.navigate([RoutePaths.USER, RoutePaths.PROFILE]);
   }
 
-  onLogout() {
+  async onLogout() {
     this.closeProfileMenu();
     this.closeMobileMenu();
     this.userWsService.disconnect();
     const savedLanguage = localStorage.getItem('app_language');
+    await this.authService.logout();
     localStorage.clear();
     if (savedLanguage) {
       localStorage.setItem('app_language', savedLanguage);

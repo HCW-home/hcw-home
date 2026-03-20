@@ -54,6 +54,20 @@ export class Auth {
     this.isAuthenticatedSubject.next(false);
   }
 
+  async logout(): Promise<void> {
+    const refresh = this.getRefreshToken();
+    if (refresh) {
+      try {
+        await firstValueFrom(
+          this.http.post(`${environment.apiUrl}/auth/logout/`, { refresh })
+        );
+      } catch {
+        // Ignore errors, we're logging out anyway
+      }
+    }
+    this.removeToken();
+  }
+
   refreshAccessToken(): Observable<{ access: string; refresh?: string }> {
     const refresh = this.getRefreshToken();
     return this.http.post<{ access: string; refresh?: string }>(

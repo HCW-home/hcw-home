@@ -140,8 +140,19 @@ export class AuthService {
   }
 
   async logout() {
-    await this.storage.remove('access_token');
-    await this.storage.remove('refresh_token');
+    // Call backend to blacklist the refresh token
+    const refreshToken = await this.storage.get('refresh_token');
+    if (refreshToken) {
+      try {
+        await firstValueFrom(
+          this.http.post(`${this.apiUrl}/auth/logout/`, { refresh: refreshToken })
+        );
+      } catch {
+        // Ignore errors, we're logging out anyway
+      }
+    }
+
+    await this.storage.clear();
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
   }

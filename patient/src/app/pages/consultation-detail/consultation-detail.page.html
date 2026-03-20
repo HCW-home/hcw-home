@@ -55,41 +55,79 @@
       </div>
     </div>
 
-    @if (consultation()?.next_appointment; as appointment) {
-    <div class="info-card appointments-card">
-      <div class="card-header">
-        <ion-icon name="calendar-outline" class="card-icon"></ion-icon>
-        <h3 class="info-title">{{ 'consultationDetail.nextAppointment' | translate }}</h3>
-      </div>
-      <div class="appointment-item">
-        <div class="appointment-meta">
-          <div class="meta-item">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span
-              >{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span
-            >
-          </div>
-          <div class="meta-item">
-            <ion-icon name="time-outline"></ion-icon>
-            <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
-          </div>
-          <div class="meta-item type-item">
-            <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
-            <span>{{ getAppointmentTypeLabel(appointment) }}</span>
-          </div>
+    <div class="appointments-section">
+      @if (consultation()?.next_appointment; as appointment) {
+      <div class="next-appointment-card">
+        <div class="card-header">
+          <ion-icon name="calendar-outline" class="card-icon"></ion-icon>
+          <h3 class="info-title">{{ 'consultationDetail.nextAppointment' | translate }}</h3>
         </div>
-        @if (appointment.type === 'online') {
-        <button
-          class="action-button primary-btn"
-          (click)="joinAppointment(appointment)"
-        >
-          <ion-icon name="videocam-outline"></ion-icon>
-          {{ 'consultationDetail.joinVideoCall' | translate }}
-        </button>
+        <div class="appointment-item">
+          <div class="appointment-meta">
+            <div class="meta-item">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+            </div>
+            <div class="meta-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+            </div>
+            <div class="meta-item type-item">
+              <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
+              <span>{{ getAppointmentTypeLabel(appointment) }}</span>
+            </div>
+          </div>
+          @if (appointment.type === 'online') {
+          <button
+            class="action-button primary-btn"
+            (click)="joinAppointment(appointment)"
+          >
+            <ion-icon name="videocam-outline"></ion-icon>
+            {{ 'consultationDetail.joinVideoCall' | translate }}
+          </button>
+          }
+        </div>
+      </div>
+      }
+
+      @if (getOtherAppointments().length > 0) {
+      <div class="other-appointments-card">
+        <div class="card-header">
+          <ion-icon name="list-outline" class="card-icon"></ion-icon>
+          <h3 class="info-title">{{ 'consultationDetail.otherAppointments' | translate }}</h3>
+        </div>
+        @for (appt of getOtherAppointments(); track appt.id) {
+        <div class="appointment-item other-appointment-item">
+          <div class="appointment-meta">
+            <div class="meta-item">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+            </div>
+            <div class="meta-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ appt.scheduled_at | localDate:'HH:mm' }}</span>
+            </div>
+            <div class="meta-item type-item">
+              <ion-icon [name]="getAppointmentTypeIcon(appt)"></ion-icon>
+              <span>{{ getAppointmentTypeLabel(appt) }}</span>
+            </div>
+          </div>
+          @if (appt.type === 'online') {
+          <button
+            class="action-button primary-btn"
+            (click)="joinAppointment(appt)"
+          >
+            <ion-icon name="videocam-outline"></ion-icon>
+            {{ 'consultationDetail.joinVideoCall' | translate }}
+          </button>
+          }
+        </div>
         }
       </div>
+      }
     </div>
-    } @if (isConsultationClosed()) {
+
+    @if (isConsultationClosed()) {
     <div class="info-card closed-card">
       <div class="card-header">
         <ion-icon name="checkmark-circle-outline" class="card-icon"></ion-icon>

@@ -344,6 +344,7 @@
     "closed": "Closed",
     "handledBy": "Consultation handled by",
     "nextAppointment": "Next Appointment",
+    "otherAppointments": "Other Appointments",
     "joinVideoCall": "Join Video Call",
     "consultationClosed": "Consultation Closed",
     "closedText": "This consultation has been completed. You can view the message history below.",

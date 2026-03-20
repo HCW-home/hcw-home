@@ -787,7 +787,7 @@ CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if 
 # MFA_ADAPTER_CLASS = "dj_rest_auth_mfa.adapters.DjangoMFA2Adapter"
 # MFA_GRACE_WINDOW_DAYS = 7
 
-ENABLE_REGISTRATION = os.getenv("ENABLE_REGISTRATION", "False") == "True"
+# ENABLE_REGISTRATION = os.getenv("ENABLE_REGISTRATION", "False") == "True"
 DISABLE_PASSWORD_LOGIN = os.getenv("DISABLE_PASSWORD_LOGIN", "False") == "True"
 USERS_VISIBILITY = os.getenv("USERS_VISIBILITY", "")  # Options: "", "alone", "organization"
 

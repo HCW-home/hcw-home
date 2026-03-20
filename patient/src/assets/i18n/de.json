@@ -340,6 +340,7 @@
         "closed": "Geschlossen",
         "handledBy": "Konsultation betreut von",
         "nextAppointment": "Naechster Termin",
+        "otherAppointments": "Weitere Termine",
         "joinVideoCall": "Videoanruf beitreten",
         "consultationClosed": "Konsultation beendet",
         "closedText": "Diese Konsultation wurde abgeschlossen. Sie koennen den Nachrichtenverlauf unten einsehen.",

@@ -135,17 +135,16 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
         if (event.consultation_id === this.consultationId && event.state === 'updated') {
-          // Fetch and update consultation data
-          this.consultationService.getConsultationById(this.consultationId!)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: (consultation) => {
-                console.log('[ConsultationDetail] Updated consultation:', consultation);
-                console.log('[ConsultationDetail] closed_at:', consultation.closed_at);
-                console.log('[ConsultationDetail] isConsultationClosed:', !!consultation.closed_at);
-                this.consultation.set(consultation);
-              }
-            });
+          this.refreshConsultation();
+        }
+      });
+
+    // Listen for appointment updates
+    this.userWsService.appointmentChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.consultation_id === this.consultationId) {
+          this.refreshConsultation();
         }
       });
 
@@ -449,6 +448,24 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
           await toast.present();
         },
       });
+  }
+
+  private refreshConsultation(): void {
+    if (!this.consultationId) return;
+    this.consultationService.getConsultationById(this.consultationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (consultation) => {
+          this.consultation.set(consultation);
+        }
+      });
+  }
+
+  getOtherAppointments(): Appointment[] {
+    const cons = this.consultation();
+    if (!cons?.appointments) return [];
+    const nextId = cons.next_appointment?.id;
+    return cons.appointments.filter(a => a.id !== nextId);
   }
 
   goBack(): void {

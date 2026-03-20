@@ -61,16 +61,13 @@ Camera busy error
 
 Il n'est pas possible de rejoindre l'appel si la caméra est occupée.
 
+
 Controle pendant l'appel pas clair
 ==================================
 
 Il faudrait ajouter des petits labels à droite des boutons.
 
-Problème de highlight
-=====================
-
-Dans cette page http://localhost:8001/new-request, quand on sélectionner un médecin, ils sont tous highlight.
 
 
 
-
+Ajoute une icone personnalisé pour la spécialité (paramétrable dans l'admin), visible par le patient dans http://localhost:8001/new-request

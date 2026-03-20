@@ -9,6 +9,7 @@ import { Router } from "@angular/router";
 import { Subject, takeUntil } from "rxjs";
 import { AuthService } from "./core/services/auth.service";
 import { UserWebSocketService } from "./core/services/user-websocket.service";
+import { NotificationService } from "./core/services/notification.service";
 import { IncomingCallService } from "./core/services/incoming-call.service";
 import { ActionHandlerService } from "./core/services/action-handler.service";
 import { ConsultationService } from "./core/services/consultation.service";
@@ -30,6 +31,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private pushNotificationService = inject(PushNotificationService);
   private appUpdateService = inject(AppUpdateService);
+
+  private notificationService = inject(NotificationService);
 
   constructor(
     private authService: AuthService,
@@ -87,6 +90,13 @@ export class AppComponent implements OnInit, OnDestroy {
           consultationId: event.consultation_id,
           type: 'consultation',
         });
+      });
+
+    // Increment unread notification count on new WS notification
+    this.userWsService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.notificationService.incrementUnreadCount();
       });
 
     // When patient dismisses a consultation call, notify the doctor

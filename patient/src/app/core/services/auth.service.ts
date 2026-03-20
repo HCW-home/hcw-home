@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom, from, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, from, switchMap, tap, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, LoginRequest, LoginResponse, RegisterRequest, MagicLinkRequest, MagicLinkVerify, TokenAuthRequest, TokenAuthResponse } from '../models/user.model';
 import { StorageService } from './storage.service';
@@ -58,8 +58,15 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/auth/registration/`, data);
   }
 
+  private configCache$: Observable<any> | null = null;
+
   getConfig(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/config/`);
+    if (!this.configCache$) {
+      this.configCache$ = this.http.get(`${this.apiUrl}/config/`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.configCache$;
   }
 
   verifyEmail(token: string): Observable<any> {

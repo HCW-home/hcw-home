@@ -9,8 +9,30 @@ import { INotification, INotificationResponse, NotificationFilters, Notification
 })
 export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
+  public unreadCount$ = this.unreadCountSubject.asObservable();
+  private initialLoadDone = false;
 
   constructor(private api: ApiService) {}
+
+  loadInitialUnreadCount(): void {
+    if (this.initialLoadDone) return;
+    this.initialLoadDone = true;
+    this.api.get<INotificationResponse>('/user/notifications/', { limit: 10 }).subscribe({
+      next: (response) => {
+        const unread = response.results.filter(n => n.status !== NotificationStatus.READ).length;
+        this.unreadCountSubject.next(unread);
+      }
+    });
+  }
+
+  incrementUnreadCount(): void {
+    this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
+  }
+
+  resetOnLogout(): void {
+    this.unreadCountSubject.next(0);
+    this.initialLoadDone = false;
+  }
 
   getNotifications(filters?: NotificationFilters): Observable<INotificationResponse> {
     return this.api.get<INotificationResponse>('/user/notifications/', filters).pipe(

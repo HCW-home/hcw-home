@@ -66,17 +66,11 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         },
       });
 
-    this.notificationService
-      .getNotifications({ limit: 10 })
+    this.notificationService.unreadCount$
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          const unread = response.results.filter(
-            (n) => n.status !== "read",
-          ).length;
-          this.unreadNotificationCount.set(unread);
-        },
-      });
+      .subscribe((count) => this.unreadNotificationCount.set(count));
+
+    this.notificationService.loadInitialUnreadCount();
   }
 
   ngOnDestroy(): void {

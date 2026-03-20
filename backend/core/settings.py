@@ -20,6 +20,8 @@ from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 from firebase_admin import initialize_app
 from unfold.contrib.constance.settings import UNFOLD_CONSTANCE_ADDITIONAL_FIELDS
+from boto3.s3.transfer import TransferConfig
+from botocore.config import Config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -840,8 +842,10 @@ S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", None)
 S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", None)
 S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", None)
 S3_VERIFY = os.getenv("S3_VERIFY", None)
+S3_ADDRESSING_STYLE = os.getenv("S3_ADDRESSING_STYLE", "auto")
 
 if S3_BUCKET_NAME and S3_ENDPOINT_URL and S3_ACCESS_KEY and S3_SECRET_KEY:
+
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3.S3Storage",
@@ -851,9 +855,14 @@ if S3_BUCKET_NAME and S3_ENDPOINT_URL and S3_ACCESS_KEY and S3_SECRET_KEY:
                 "access_key": S3_ACCESS_KEY,
                 "secret_key": S3_SECRET_KEY,
                 "verify": False if S3_VERIFY == "false" else True,
-                "transfer_config": {
-                    "multipart_threshold": 5 * 1024 * 1024 * 1024,
-                },
+                "client_config": Config(
+                    retries={"max_attempts": 3, "mode": "standard"},
+                    request_checksum_calculation="when_required",
+                    response_checksum_validation="when_required"
+                ),
+                "transfer_config": TransferConfig(
+                    multipart_threshold=5 * 1024 * 1024 * 1024,
+                ),
             },
         },
         "staticfiles": {

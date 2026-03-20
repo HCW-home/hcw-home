@@ -121,9 +121,6 @@
                         </div>
                       </div>
                     }
-                    @if (isDoctorSelected(doctor)) {
-                      <ion-icon name="checkmark-circle" class="selected-icon"></ion-icon>
-                    }
                   </div>
                 </ion-card-content>
               </div>
@@ -193,16 +190,13 @@
             }
           </div>
 
-          <div class="step-actions sticky-bottom">
-            @if (selectedSlot()) {
+          @if (selectedSlot()) {
+            <div class="step-actions sticky-bottom">
               <button class="primary-action" (click)="proceedToReview()">
                 {{ 'newRequest.continueWithSlot' | translate }}
               </button>
-            }
-            <button class="secondary-action" (click)="skipSlotSelection()">
-              {{ 'newRequest.skipSlot' | translate }}
-            </button>
-          </div>
+            </div>
+          }
         </div>
       }
 

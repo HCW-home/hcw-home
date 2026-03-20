@@ -25,7 +25,7 @@
           <span class="next-appointment-label">
             {{ 'home.nextAppointment' | translate }} —
             <ion-icon [name]="nextAppointment()!.type === 'online' ? 'videocam-outline' : 'location-outline'"></ion-icon>
-            {{ nextAppointment()!.type === 'online' ? ('common.video' | translate) : ('common.inPerson' | translate) }}
+            {{ nextAppointment()!.type === 'online' ? ('common.videoCall' | translate) : ('common.inPerson' | translate) }}
           </span>
           <span class="next-appointment-date">
             {{ nextAppointment()!.scheduled_at | localDate:'fullDate' }} — {{ nextAppointment()!.scheduled_at | localDate:'shortTime' }}
@@ -128,7 +128,7 @@
                   @for (appt of request.consultation!.appointments!; track appt.id) {
                     <app-appointment-info
                       [appointment]="appt"
-                      [label]="'home.scheduledAppointment' | translate"
+                      [label]="''"
                       [speciality]="getSpecialityName(request)">
                     </app-appointment-info>
                   }
@@ -186,7 +186,7 @@
                   @for (appt of consultation.appointments!; track appt.id) {
                     <app-appointment-info
                       [appointment]="appt"
-                      [label]="'home.scheduledAppointment' | translate">
+                      [label]="''">
                     </app-appointment-info>
                   }
                 } @else {

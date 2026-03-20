@@ -91,7 +91,7 @@
                 <app-typography
                   [variant]="TypographyTypeEnum['body-s-regular']"
                   color="var(--slate-600)">
-                  {{ appointment.scheduled_at | localDate : 'MMM d, y, HH:mm' }}
+                  {{ appointment.scheduled_at | localDate : 'medium' }}
                 </app-typography>
               </div>
               <div class="info-row">

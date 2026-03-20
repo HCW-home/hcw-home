@@ -102,7 +102,7 @@
       <app-svg
         src="clock"
         [svgStyle]="{'width.px': 16, 'height.px': 16}"></app-svg>
-      <span>{{ 'participantItem.linkExpires' | translate }} {{ expiresAt() | localDate:'MMM d, y, HH:mm' }}</span>
+      <span>{{ 'participantItem.linkExpires' | translate }} {{ expiresAt() | localDate:'medium' }}</span>
     </div>
     }
     }

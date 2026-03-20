@@ -39,8 +39,7 @@
           [svgStyle]="{ 'width.px': 18, 'height.px': 18, color: 'var(--slate-500)' }">
         </app-svg>
         <span class="info-text">
-          {{ participant()!.appointment.scheduled_at | localDate : 'EEEE, MMM d,
-          y' }}
+          {{ participant()!.appointment.scheduled_at | localDate : 'fullDate' }}
         </span>
       </div>
       <div class="info-row">

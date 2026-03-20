@@ -28,7 +28,7 @@
             {{ nextAppointment()!.type === 'online' ? ('common.video' | translate) : ('common.inPerson' | translate) }}
           </span>
           <span class="next-appointment-date">
-            {{ nextAppointment()!.scheduled_at | localDate:'EEEE, MMM d' }} at {{ nextAppointment()!.scheduled_at | localDate:'HH:mm' }}
+            {{ nextAppointment()!.scheduled_at | localDate:'fullDate' }} — {{ nextAppointment()!.scheduled_at | localDate:'shortTime' }}
           </span>
           @if (getNextAppointmentDoctorName()) {
             <span class="next-appointment-doctor">{{ getNextAppointmentDoctorName() }}</span>
@@ -96,7 +96,7 @@
                       {{ getStatusConfig(request.status).label }}
                     </span>
                     @if (request.created_at) {
-                      <span class="request-info-date">{{ request.created_at | date:'MMM d, yyyy' }}</span>
+                      <span class="request-info-date">{{ request.created_at | localDate:'mediumDate' }}</span>
                     }
                   </div>
                   @if ((isStatusRefused(request) || isStatusCancelled(request)) && request.refused_reason) {

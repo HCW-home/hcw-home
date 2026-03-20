@@ -264,7 +264,7 @@
           src="calendar"
           [svgStyle]="{'width.px': 14, 'height.px': 14}"></app-svg>
         <span
-          >{{ hoveredAppointment()!.scheduled_at | localDate : 'EEEE, MMM d, y'
+          >{{ hoveredAppointment()!.scheduled_at | localDate : 'fullDate'
           }}</span
         >
       </div>

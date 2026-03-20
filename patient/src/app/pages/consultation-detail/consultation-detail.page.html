@@ -31,7 +31,7 @@
         <div class="date-item">
           <ion-icon name="calendar-outline"></ion-icon>
           <span
-            >{{ 'consultationDetail.created' | translate }} {{ consultation()?.created_at | date:'MMM d, yyyy - HH:mm'
+            >{{ 'consultationDetail.created' | translate }} {{ consultation()?.created_at | localDate:'mediumDate' }} — {{ consultation()?.created_at | localDate:'shortTime'
             }}</span
           >
         </div>
@@ -39,15 +39,15 @@
         <div class="date-item">
           <ion-icon name="time-outline"></ion-icon>
           <span
-            >{{ 'consultationDetail.activeSince' | translate }} {{ consultation()?.started_at | date:'MMM d, yyyy -
-            HH:mm' }}</span
+            >{{ 'consultationDetail.activeSince' | translate }} {{ consultation()?.started_at | localDate:'mediumDate' }} — {{ consultation()?.started_at | localDate:'shortTime'
+            }}</span
           >
         </div>
         } @if (consultation()?.closed_at) {
         <div class="date-item">
           <ion-icon name="checkmark-circle-outline"></ion-icon>
           <span
-            >{{ 'consultationDetail.closed' | translate }} {{ consultation()?.closed_at | date:'MMM d, yyyy - HH:mm'
+            >{{ 'consultationDetail.closed' | translate }} {{ consultation()?.closed_at | localDate:'mediumDate' }} — {{ consultation()?.closed_at | localDate:'shortTime'
             }}</span
           >
         </div>
@@ -99,7 +99,7 @@
               <div class="appointment-meta">
                 <div class="meta-item">
                   <ion-icon name="calendar-outline"></ion-icon>
-                  <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+                  <span>{{ appointment.scheduled_at | localDate:'fullDate' }}</span>
                 </div>
                 <div class="meta-item">
                   <ion-icon name="time-outline"></ion-icon>
@@ -140,7 +140,7 @@
               <div class="appointment-meta">
                 <div class="meta-item">
                   <ion-icon name="calendar-outline"></ion-icon>
-                  <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+                  <span>{{ appt.scheduled_at | localDate:'fullDate' }}</span>
                 </div>
                 <div class="meta-item">
                   <ion-icon name="time-outline"></ion-icon>

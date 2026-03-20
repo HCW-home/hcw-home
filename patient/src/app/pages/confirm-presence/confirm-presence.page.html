@@ -43,7 +43,7 @@
                 </div>
                 <div class="appointment-datetime">
                   <ion-icon name="calendar-outline"></ion-icon>
-                  <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+                  <span>{{ appointment.scheduled_at | localDate:'fullDate' }} — {{ appointment.scheduled_at | localDate:'shortTime' }}</span>
                 </div>
               </div>
 

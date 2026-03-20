@@ -71,7 +71,7 @@
                       }
                       <span class="appointment-time-row">
                         <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                          {{ nextAppointment()!.scheduled_at | localDate : 'MMM d, HH:mm' }}
+                          {{ nextAppointment()!.scheduled_at | localDate : 'mediumDate' }}
                         </app-typography>
                         <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--primary-600)">
                           {{ getRelativeTime(nextAppointment()!.scheduled_at!) }}
@@ -120,7 +120,7 @@
                     }
                     <span class="appointment-time-row">
                       <app-typography [variant]="TypographyTypeEnum['body-s-regular']" color="var(--slate-500)">
-                        {{ appointment.scheduled_at | localDate : 'MMM d, HH:mm' }}
+                        {{ appointment.scheduled_at | localDate : 'mediumDate' }}
                       </app-typography>
                       <app-typography [variant]="TypographyTypeEnum['body-xs-medium']" color="var(--slate-400)">
                         {{ getRelativeTime(appointment.scheduled_at) }}

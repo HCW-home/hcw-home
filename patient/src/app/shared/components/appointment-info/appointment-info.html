@@ -18,7 +18,7 @@
       </span>
     </div>
     <div class="appointment-info-value">
-      <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} — {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+      <span>{{ appointment.scheduled_at | localDate:'mediumDate' }} — {{ appointment.scheduled_at | localDate:'shortTime' }}</span>
     </div>
     @for (participant of otherParticipants; track participant.id) {
       <div class="appointment-info-participant">

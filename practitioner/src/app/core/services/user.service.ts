@@ -27,6 +27,11 @@ export class UserService {
     return this.currentUserSubject.getValue();
   }
 
+  clearCurrentUser(): void {
+    this.currentUserSubject.next(null);
+    this.currentUserRequest$ = null;
+  }
+
   getCurrentUser(forceRefresh = false): Observable<IUser> {
     // If we already have a user and not forcing refresh, return it
     if (!forceRefresh && this.currentUserValue) {

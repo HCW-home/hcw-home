@@ -72,5 +72,5 @@ Problème de highlight
 Dans cette page http://localhost:8001/new-request, quand on sélectionner un médecin, ils sont tous highlight.
 
 
-Ajoute une icone pour la spécialité
+
 

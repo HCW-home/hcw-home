@@ -334,6 +334,7 @@ export class Header implements OnInit, OnDestroy {
     this.closeProfileMenu();
     this.closeMobileMenu();
     this.userWsService.disconnect();
+    this.userService.clearCurrentUser();
     const savedLanguage = localStorage.getItem('app_language');
     await this.authService.logout();
     localStorage.clear();

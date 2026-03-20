@@ -70,3 +70,8 @@ Problème de highlight
 =====================
 
 Dans cette page http://localhost:8001/new-request, quand on sélectionner un médecin, ils sont tous highlight.
+
+Misc
+====
+
+Est-ce qu'au logout, tu nettoyes bien les sessions cookies + les 

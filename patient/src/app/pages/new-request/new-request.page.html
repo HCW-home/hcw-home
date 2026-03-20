@@ -86,6 +86,70 @@
 
       @case (3) {
         <div class="step-content">
+          <h2 class="step-title">{{ 'newRequest.selectDoctor' | translate }}</h2>
+          <p class="step-description">{{ 'newRequest.selectDoctorDesc' | translate }}</p>
+          <div class="doctors-list">
+            @for (doctor of doctors(); track doctor.id) {
+              <div
+                class="doctor-card"
+                [class.selected]="isDoctorSelected(doctor)"
+                (click)="selectDoctor(doctor)">
+                <ion-card-content>
+                  <div class="doctor-info">
+                    <div class="doctor-avatar">
+                      @if (doctor.picture) {
+                        <img [src]="doctor.picture" [alt]="getDoctorFullName(doctor)">
+                      } @else {
+                        {{ getDoctorFullName(doctor).charAt(0) }}
+                      }
+                    </div>
+                    <div class="doctor-details">
+                      <span class="doctor-name">{{ getDoctorFullName(doctor) }}</span>
+                      @if (doctor.specialities && doctor.specialities.length > 0) {
+                        <span class="doctor-specialty">{{ doctor.specialities[0].name }}</span>
+                      }
+                    </div>
+                    @if (getDoctorNextSlot(doctor); as nextSlot) {
+                      <div class="doctor-next-slot-badge">
+                        <div class="next-slot-date-box">
+                          <span class="day">{{ nextSlot.date | localDate:'dd' }}</span>
+                          <span class="month">{{ nextSlot.date | localDate:'MMM' }}</span>
+                        </div>
+                        <div class="next-slot-info">
+                          <span class="next-slot-label">{{ 'newRequest.nextSlot' | translate }}</span>
+                          <span class="next-slot-datetime">{{ nextSlot.date | localDate:'fullDate' }} — {{ nextSlot.start_time.substring(0, 5) }}</span>
+                        </div>
+                      </div>
+                    }
+                    @if (isDoctorSelected(doctor)) {
+                      <ion-icon name="checkmark-circle" class="selected-icon"></ion-icon>
+                    }
+                  </div>
+                </ion-card-content>
+              </div>
+            }
+          </div>
+          @if (doctors().length === 0) {
+            <div class="empty-state">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <span>{{ 'newRequest.noDoctors' | translate }}</span>
+            </div>
+          }
+          <div class="step-actions">
+            @if (selectedDoctor()) {
+              <button class="primary-action" (click)="proceedToSlots()">
+                {{ 'newRequest.continueWithDoctor' | translate }}
+              </button>
+            }
+            <button class="secondary-action" (click)="skipDoctorSelection()">
+              {{ 'newRequest.skipDoctor' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @case (4) {
+        <div class="step-content">
           <h2 class="step-title">{{ 'newRequest.chooseTimeSlot' | translate }}</h2>
           <p class="step-description">{{ 'newRequest.selectTimeSlotDesc' | translate }}</p>
 
@@ -93,7 +157,7 @@
             <ion-button fill="clear" (click)="previousWeek()" [disabled]="!canGoPreviousWeek()">
               <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
             </ion-button>
-            <span class="week-label">{{ formatDisplayDate(weekDates()[0]) }} - {{ formatDisplayDate(weekDates()[6]) }}</span>
+            <span class="week-label">{{ formatDisplayDate(weekDates()[0]) }} - {{ formatDisplayDate(weekDates()[weekDates().length - 1]) }}</span>
             <ion-button fill="clear" (click)="nextWeek()">
               <ion-icon name="chevron-forward-outline" slot="icon-only"></ion-icon>
             </ion-button>
@@ -129,63 +193,14 @@
             }
           </div>
 
-          @if (selectedSlot()) {
-            <div class="step-actions sticky-bottom">
-              <button class="primary-action" (click)="proceedToDoctor()">
+          <div class="step-actions sticky-bottom">
+            @if (selectedSlot()) {
+              <button class="primary-action" (click)="proceedToReview()">
                 {{ 'newRequest.continueWithSlot' | translate }}
               </button>
-            </div>
-          }
-        </div>
-      }
-
-      @case (4) {
-        <div class="step-content">
-          <h2 class="step-title">{{ 'newRequest.selectDoctor' | translate }}</h2>
-          <p class="step-description">{{ 'newRequest.selectDoctorDesc' | translate }}</p>
-          <div class="doctors-list">
-            @for (doctor of doctors(); track doctor.id) {
-              <div
-                class="doctor-card"
-                [class.selected]="isDoctorSelected(doctor)"
-                (click)="selectDoctor(doctor)">
-                <ion-card-content>
-                  <div class="doctor-info">
-                    <div class="doctor-avatar">
-                      @if (doctor.picture) {
-                        <img [src]="doctor.picture" [alt]="getDoctorFullName(doctor)">
-                      } @else {
-                        {{ getDoctorFullName(doctor).charAt(0) }}
-                      }
-                    </div>
-                    <div class="doctor-details">
-                      <span class="doctor-name">{{ getDoctorFullName(doctor) }}</span>
-                      @if (doctor.specialities && doctor.specialities.length > 0) {
-                        <span class="doctor-specialty">{{ doctor.specialities[0].name }}</span>
-                      }
-                    </div>
-                    @if (isDoctorSelected(doctor)) {
-                      <ion-icon name="checkmark-circle" class="selected-icon"></ion-icon>
-                    }
-                  </div>
-                </ion-card-content>
-              </div>
             }
-          </div>
-          @if (doctors().length === 0) {
-            <div class="empty-state">
-              <ion-icon name="information-circle-outline"></ion-icon>
-              <span>{{ 'newRequest.noDoctors' | translate }}</span>
-            </div>
-          }
-          <div class="step-actions">
-            @if (selectedDoctor()) {
-              <button class="primary-action" (click)="proceedToReview()">
-                {{ 'newRequest.continueWithDoctor' | translate }}
-              </button>
-            }
-            <button class="secondary-action" (click)="skipDoctorSelection()">
-              {{ 'newRequest.skipDoctor' | translate }}
+            <button class="secondary-action" (click)="skipSlotSelection()">
+              {{ 'newRequest.skipSlot' | translate }}
             </button>
           </div>
         </div>

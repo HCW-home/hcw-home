@@ -187,6 +187,7 @@
     "noSlots": "No slots",
     "continueWithSlot": "Continue with selected slot",
     "skipSlot": "Skip - Let system assign time",
+    "nextSlot": "Next slot",
     "selectDoctorDesc": "Select a preferred doctor (optional)",
     "noDoctors": "No doctors available for this specialty",
     "continueWithDoctor": "Continue with selected doctor",

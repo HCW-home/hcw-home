@@ -24,6 +24,8 @@ import { DoctorService } from '../../core/services/doctor.service';
 import { ConsultationService, ConsultationRequestData } from '../../core/services/consultation.service';
 import { Speciality, Doctor } from '../../core/models/doctor.model';
 import { Reason, Slot, CustomField } from '../../core/models/consultation.model';
+import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-new-request',
@@ -44,7 +46,8 @@ import { Reason, Slot, CustomField } from '../../core/models/consultation.model'
     IonSpinner,
     IonTextarea,
     IonProgressBar,
-    TranslatePipe
+    TranslatePipe,
+    LocalDatePipe
   ]
 })
 export class NewRequestPage implements OnInit, OnDestroy {
@@ -68,6 +71,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
 
   doctors = signal<Doctor[]>([]);
   selectedDoctor = signal<Doctor | null>(null);
+  doctorNextSlots = signal<Record<number, Slot | null>>({});
 
   customFields = signal<CustomField[]>([]);
   customFieldValues: Record<number, string> = {};
@@ -78,8 +82,8 @@ export class NewRequestPage implements OnInit, OnDestroy {
     switch (this.currentStep()) {
       case 1: return this.t.instant('newRequest.selectSpecialty');
       case 2: return this.t.instant('newRequest.selectReason');
-      case 3: return this.t.instant('newRequest.chooseTimeSlot');
-      case 4: return this.t.instant('newRequest.selectDoctor');
+      case 3: return this.t.instant('newRequest.selectDoctor');
+      case 4: return this.t.instant('newRequest.chooseTimeSlot');
       case 5: return this.t.instant('newRequest.reviewAndSubmit');
       default: return this.t.instant('newRequest.newRequest');
     }
@@ -176,7 +180,7 @@ export class NewRequestPage implements OnInit, OnDestroy {
   selectReason(reason: Reason): void {
     this.selectedReason.set(reason);
     if (reason.assignment_method === 'appointment') {
-      this.loadAvailableSlots(reason.id);
+      this.loadDoctorsWithNextSlot();
       this.currentStep.set(3);
     } else {
       this.selectedSlot.set(null);
@@ -189,7 +193,12 @@ export class NewRequestPage implements OnInit, OnDestroy {
   loadAvailableSlots(reasonId: number): void {
     this.isLoading.set(true);
     const fromDate = this.formatDate(this.currentWeekStart());
-    this.doctorService.getAvailableSlots(reasonId, { from_date: fromDate })
+    const params: { from_date: string; user_id?: number } = { from_date: fromDate };
+    const doctor = this.selectedDoctor();
+    if (doctor) {
+      params.user_id = (doctor as any).pk ?? doctor.id;
+    }
+    this.doctorService.getAvailableSlots(reasonId, params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (slots) => {
@@ -232,41 +241,57 @@ export class NewRequestPage implements OnInit, OnDestroy {
     }
   }
 
-  proceedToDoctor(): void {
+  private loadDoctorsWithNextSlot(): void {
     const speciality = this.selectedSpeciality();
-    if (speciality) {
-      this.loadDoctors(speciality.id);
-      this.currentStep.set(4);
-    }
-  }
+    const reason = this.selectedReason();
+    if (!speciality || !reason) return;
 
-  skipSlotSelection(): void {
-    this.selectedSlot.set(null);
-    const speciality = this.selectedSpeciality();
-    if (speciality) {
-      this.loadDoctors(speciality.id);
-      this.currentStep.set(4);
-    }
-  }
-
-  loadDoctors(specialityId: number): void {
     this.isLoading.set(true);
-    this.doctorService.getDoctorsBySpeciality(specialityId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (doctors) => {
-          this.doctors.set(doctors);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.showToast(this.t.instant('newRequest.failedDoctors'), 'danger');
-          this.isLoading.set(false);
+    const fromDate = this.formatDate(new Date());
+
+    forkJoin({
+      doctors: this.doctorService.getDoctorsBySpeciality(speciality.id),
+      slots: this.doctorService.getAvailableSlots(reason.id, { from_date: fromDate }),
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ({ doctors, slots }) => {
+        this.doctors.set(doctors);
+
+        // Find the first available slot per doctor
+        const nextSlots: Record<number, Slot | null> = {};
+        for (const doctor of doctors) {
+          const doctorId = (doctor as any).pk ?? doctor.id;
+          const doctorSlot = slots.find(s => s.user_id === doctorId) || null;
+          nextSlots[doctorId] = doctorSlot;
         }
-      });
+        this.doctorNextSlots.set(nextSlots);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.showToast(this.t.instant('newRequest.failedDoctors'), 'danger');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   selectDoctor(doctor: Doctor): void {
     this.selectedDoctor.set(doctor);
+  }
+
+  proceedToSlots(): void {
+    const reason = this.selectedReason();
+    if (reason) {
+      this.loadAvailableSlots(reason.id);
+      this.currentStep.set(4);
+    }
+  }
+
+  skipDoctorSelection(): void {
+    this.selectedDoctor.set(null);
+    const reason = this.selectedReason();
+    if (reason) {
+      this.loadAvailableSlots(reason.id);
+      this.currentStep.set(4);
+    }
   }
 
   proceedToReview(): void {
@@ -274,10 +299,20 @@ export class NewRequestPage implements OnInit, OnDestroy {
     this.currentStep.set(5);
   }
 
-  skipDoctorSelection(): void {
-    this.selectedDoctor.set(null);
+  skipSlotSelection(): void {
+    this.selectedSlot.set(null);
     this.loadCustomFields();
     this.currentStep.set(5);
+  }
+
+  getDoctorNextSlot(doctor: Doctor): Slot | null {
+    const doctorId = (doctor as any).pk ?? doctor.id;
+    return this.doctorNextSlots()[doctorId] || null;
+  }
+
+  formatSlotDate(slot: Slot): string {
+    const date = new Date(`${slot.date}T${slot.start_time}`);
+    return date.toLocaleDateString(this.t.currentLanguage(), { weekday: 'short', day: 'numeric', month: 'short' });
   }
 
   loadCustomFields(): void {
@@ -295,6 +330,8 @@ export class NewRequestPage implements OnInit, OnDestroy {
       const reason = this.selectedReason();
       if (step === 5 && reason && reason.assignment_method !== 'appointment') {
         this.currentStep.set(2);
+      } else if (step === 5) {
+        this.currentStep.set(4);
       } else {
         this.currentStep.set(step - 1);
       }
@@ -369,7 +406,10 @@ export class NewRequestPage implements OnInit, OnDestroy {
   }
 
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   formatDisplayDate(date: Date): string {

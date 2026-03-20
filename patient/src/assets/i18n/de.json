@@ -187,6 +187,7 @@
         "noSlots": "Keine Zeitfenster",
         "continueWithSlot": "Mit ausgewaehltem Zeitfenster fortfahren",
         "skipSlot": "Ueberspringen - System zuweisen lassen",
+        "nextSlot": "Naechster Termin",
         "selectDoctorDesc": "Waehlen Sie einen bevorzugten Arzt (optional)",
         "noDoctors": "Keine Aerzte fuer dieses Fachgebiet verfuegbar",
         "continueWithDoctor": "Mit ausgewaehltem Arzt fortfahren",

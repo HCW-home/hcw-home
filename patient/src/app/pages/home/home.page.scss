@@ -34,10 +34,10 @@
     gap: var(--app-spacing-md);
     padding: var(--app-spacing-xl) var(--app-spacing-lg);
     margin-bottom: var(--app-spacing-xl);
-    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+    background: var(--ion-color-primary-bg, rgba(8, 145, 178, 0.08));
     border-radius: var(--app-card-radius);
-    color: white;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 4px 14px -3px rgba(8, 145, 178, 0.4);
+    border: 1px solid var(--ion-color-primary-tint, rgba(8, 145, 178, 0.2));
+    color: var(--app-text-primary);
 
     .next-appointment-date-badge {
       display: flex;
@@ -46,7 +46,7 @@
       justify-content: center;
       width: 56px;
       height: 56px;
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--ion-color-primary);
       border-radius: 12px;
       flex-shrink: 0;
 
@@ -76,7 +76,7 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        opacity: 0.85;
+        color: var(--ion-color-primary);
         display: flex;
         align-items: center;
         gap: 3px;
@@ -90,11 +90,12 @@
         font-size: 1.3rem;
         font-weight: 700;
         line-height: 1.3;
+        color: var(--app-text-primary);
       }
 
       .next-appointment-doctor {
         font-size: 1rem;
-        opacity: 0.85;
+        color: var(--app-text-secondary);
         margin-top: 2px;
       }
     }
@@ -104,8 +105,8 @@
       align-items: center;
       gap: 6px;
       padding: 12px 22px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: var(--ion-color-primary);
+      border: none;
       border-radius: 10px;
       color: white;
       font-size: 1.0625rem;
@@ -114,14 +115,14 @@
       white-space: nowrap;
       flex-shrink: 0;
       font-family: inherit;
-      transition: background 0.15s;
+      transition: opacity 0.15s;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.3);
+        opacity: 0.9;
       }
 
       &:active {
-        background: rgba(255, 255, 255, 0.4);
+        opacity: 0.8;
       }
 
       ion-icon {
@@ -134,10 +135,11 @@
       align-items: center;
       gap: 6px;
       padding: 10px 16px;
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--ion-color-primary-bg);
       border-radius: 8px;
       font-size: 0.9375rem;
       font-weight: 500;
+      color: var(--ion-color-primary);
       white-space: nowrap;
       flex-shrink: 0;
       opacity: 0.9;

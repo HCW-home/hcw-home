@@ -29,6 +29,12 @@ export class UserWebSocketService implements OnDestroy {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectInterval = 5000; // 5 seconds between refresh attempts
   private isRefreshing = false;
+  private isSilentReconnecting = false;
+  private wasConnected = false;
+  private intentionalDisconnect = false;
+
+  // Filtered connection state that hides transient disconnections during silent reconnect
+  private effectiveStateSubject = new BehaviorSubject<WebSocketState>(WebSocketState.DISCONNECTED);
 
   public messages$: Observable<UserMessageEvent> = this.messagesSubject.asObservable();
   public notifications$: Observable<NotificationEvent> = this.notificationsSubject.asObservable();
@@ -36,7 +42,7 @@ export class UserWebSocketService implements OnDestroy {
   public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
   public consultationChanged$: Observable<ConsultationChangedEvent> = this.consultationChangedSubject.asObservable();
   public callRequest$: Observable<CallRequestEvent> = this.callRequestSubject.asObservable();
-  public connectionState$: Observable<WebSocketState> = this.wsService.state$;
+  public connectionState$: Observable<WebSocketState> = this.effectiveStateSubject.asObservable();
 
   constructor(
     private wsService: WebSocketService,
@@ -66,24 +72,47 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   disconnect(): void {
+    this.intentionalDisconnect = true;
     this.clearReconnectTimer();
     this.wsService.disconnect();
     this.isOnlineSubject.next(false);
     this.connectionCountSubject.next(0);
+    this.wasConnected = false;
+    this.isSilentReconnecting = false;
+    this.effectiveStateSubject.next(WebSocketState.DISCONNECTED);
   }
 
   private setupReconnectionHandler(): void {
     this.wsService.state$.subscribe(state => {
-      if (state === WebSocketState.DISCONNECTED || state === WebSocketState.FAILED) {
-        this.attemptReconnect();
-      } else if (state === WebSocketState.CONNECTED) {
+      if (state === WebSocketState.CONNECTED) {
+        this.wasConnected = true;
+        this.isSilentReconnecting = false;
         this.clearReconnectTimer();
+        this.effectiveStateSubject.next(WebSocketState.CONNECTED);
+      } else if (state === WebSocketState.CONNECTING) {
+        if (!this.isSilentReconnecting) {
+          this.effectiveStateSubject.next(WebSocketState.CONNECTING);
+        }
+      } else if (state === WebSocketState.DISCONNECTED || state === WebSocketState.FAILED) {
+        if (this.intentionalDisconnect) {
+          this.intentionalDisconnect = false;
+          return;
+        }
+
+        if (this.wasConnected) {
+          // Was previously connected: try silent reconnect first
+          this.isSilentReconnecting = true;
+          this.attemptReconnect();
+        } else {
+          // Never connected: show state immediately
+          this.effectiveStateSubject.next(state);
+          this.attemptReconnect();
+        }
       }
     });
   }
 
   private attemptReconnect(): void {
-    // Avoid multiple simultaneous refresh attempts
     if (this.isRefreshing) {
       return;
     }
@@ -95,39 +124,49 @@ export class UserWebSocketService implements OnDestroy {
   private async tryRefresh(): Promise<void> {
     this.isRefreshing = true;
 
-    // Check if we have a refresh token before attempting
     const refreshToken = await this.authService.getRefreshToken();
     if (!refreshToken) {
       console.error('[UserWS] No refresh token available, stopping reconnection');
       this.isRefreshing = false;
+      this.onReconnectFailed();
       return;
     }
 
     try {
       const response = await firstValueFrom(this.authService.refreshToken());
       if (response.access) {
-        // Refresh succeeded, reconnect WebSocket
+        // Refresh succeeded, reconnect WebSocket silently
         this.isRefreshing = false;
         await this.connect();
       }
     } catch (error: unknown) {
       const httpError = error as { status?: number };
 
-      // If token is expired/invalid (401/403), stop reconnection
-      // The auth interceptor will handle logout
       if (httpError?.status === 401 || httpError?.status === 403) {
         console.error('[UserWS] Refresh token expired, stopping reconnection');
         this.isRefreshing = false;
+        this.onReconnectFailed();
         return;
       }
 
-      // For network errors, keep trying after interval
+      // First refresh failed: show reconnecting state now
+      if (this.isSilentReconnecting) {
+        this.isSilentReconnecting = false;
+        this.effectiveStateSubject.next(WebSocketState.RECONNECTING);
+      }
+
       console.error('[UserWS] Token refresh failed, will retry:', error);
       this.reconnectTimer = setTimeout(() => {
         this.isRefreshing = false;
         this.tryRefresh();
       }, this.reconnectInterval);
     }
+  }
+
+  private onReconnectFailed(): void {
+    this.isSilentReconnecting = false;
+    this.wasConnected = false;
+    this.effectiveStateSubject.next(WebSocketState.DISCONNECTED);
   }
 
   private clearReconnectTimer(): void {
@@ -138,7 +177,7 @@ export class UserWebSocketService implements OnDestroy {
   }
 
   getConnectionState(): Observable<WebSocketState> {
-    return this.wsService.state$;
+    return this.effectiveStateSubject.asObservable();
   }
 
   isConnected(): boolean {

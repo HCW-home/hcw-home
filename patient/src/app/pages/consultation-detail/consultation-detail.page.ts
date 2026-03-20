@@ -534,7 +534,7 @@ export class ConsultationDetailPage implements OnInit, OnDestroy {
     const earliestJoin = new Date(scheduledAt.getTime() - this.appointmentEarlyJoinMinutes * 60 * 1000);
 
     if (now < earliestJoin) {
-      const time = scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const time = scheduledAt.toLocaleString([], { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       const alert = await this.alertController.create({
         header: this.t.instant('home.tooEarlyTitle'),
         message: this.t.instant('home.tooEarlyMessage', { time, minutes: this.appointmentEarlyJoinMinutes.toString() }),

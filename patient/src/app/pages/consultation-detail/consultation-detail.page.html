@@ -55,78 +55,6 @@
       </div>
     </div>
 
-    <div class="appointments-section">
-      @if (consultation()?.next_appointment; as appointment) {
-      <div class="next-appointment-card">
-        <div class="card-header">
-          <ion-icon name="calendar-outline" class="card-icon"></ion-icon>
-          <h3 class="info-title">{{ 'consultationDetail.nextAppointment' | translate }}</h3>
-        </div>
-        <div class="appointment-item">
-          <div class="appointment-meta">
-            <div class="meta-item">
-              <ion-icon name="calendar-outline"></ion-icon>
-              <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
-            </div>
-            <div class="meta-item">
-              <ion-icon name="time-outline"></ion-icon>
-              <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
-            </div>
-            <div class="meta-item type-item">
-              <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
-              <span>{{ getAppointmentTypeLabel(appointment) }}</span>
-            </div>
-          </div>
-          @if (appointment.type === 'online') {
-          <button
-            class="action-button primary-btn"
-            (click)="joinAppointment(appointment)"
-          >
-            <ion-icon name="videocam-outline"></ion-icon>
-            {{ 'consultationDetail.joinVideoCall' | translate }}
-          </button>
-          }
-        </div>
-      </div>
-      }
-
-      @if (getOtherAppointments().length > 0) {
-      <div class="other-appointments-card">
-        <div class="card-header">
-          <ion-icon name="list-outline" class="card-icon"></ion-icon>
-          <h3 class="info-title">{{ 'consultationDetail.otherAppointments' | translate }}</h3>
-        </div>
-        @for (appt of getOtherAppointments(); track appt.id) {
-        <div class="appointment-item other-appointment-item">
-          <div class="appointment-meta">
-            <div class="meta-item">
-              <ion-icon name="calendar-outline"></ion-icon>
-              <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
-            </div>
-            <div class="meta-item">
-              <ion-icon name="time-outline"></ion-icon>
-              <span>{{ appt.scheduled_at | localDate:'HH:mm' }}</span>
-            </div>
-            <div class="meta-item type-item">
-              <ion-icon [name]="getAppointmentTypeIcon(appt)"></ion-icon>
-              <span>{{ getAppointmentTypeLabel(appt) }}</span>
-            </div>
-          </div>
-          @if (appt.type === 'online') {
-          <button
-            class="action-button primary-btn"
-            (click)="joinAppointment(appt)"
-          >
-            <ion-icon name="videocam-outline"></ion-icon>
-            {{ 'consultationDetail.joinVideoCall' | translate }}
-          </button>
-          }
-        </div>
-        }
-      </div>
-      }
-    </div>
-
     @if (isConsultationClosed()) {
     <div class="info-card closed-card">
       <div class="card-header">
@@ -139,19 +67,93 @@
     </div>
     }
 
-    <div class="chat-section" [class.read-only]="isConsultationClosed()">
-      <app-message-list
-        [messages]="messages()"
-        [headerTitle]="isConsultationClosed() ? ('consultationDetail.messageHistory' | translate) : ('consultationDetail.messages' | translate)"
-        [isConnected]="isConsultationClosed() ? false : isConnected()"
-        [isLoadingMore]="isLoadingMore()"
-        [hasMore]="hasMore()"
-        (sendMessage)="onSendMessage($event)"
-        (editMessage)="onEditMessage($event)"
-        (deleteMessage)="onDeleteMessage($event)"
-        (loadMore)="onLoadMore()"
-      >
-      </app-message-list>
+    <div class="chat-and-appointments">
+      <div class="chat-section" [class.read-only]="isConsultationClosed()">
+        <app-message-list
+          [messages]="messages()"
+          [headerTitle]="isConsultationClosed() ? ('consultationDetail.messageHistory' | translate) : ('consultationDetail.messages' | translate)"
+          [isConnected]="isConsultationClosed() ? false : isConnected()"
+          [isLoadingMore]="isLoadingMore()"
+          [hasMore]="hasMore()"
+          (sendMessage)="onSendMessage($event)"
+          (editMessage)="onEditMessage($event)"
+          (deleteMessage)="onDeleteMessage($event)"
+          (loadMore)="onLoadMore()"
+        >
+        </app-message-list>
+      </div>
+
+      <div class="appointments-section">
+        @if (consultation()?.next_appointment; as appointment) {
+        <div class="next-appointment-card">
+          <div class="card-header">
+            <ion-icon name="calendar-outline" class="card-icon"></ion-icon>
+            <h3 class="info-title">{{ 'consultationDetail.nextAppointment' | translate }}</h3>
+          </div>
+          <div class="appointment-item">
+            <div class="appointment-meta">
+              <div class="meta-item">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+              </div>
+              <div class="meta-item">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+              </div>
+              <div class="meta-item type-item">
+                <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
+                <span>{{ getAppointmentTypeLabel(appointment) }}</span>
+              </div>
+            </div>
+            @if (appointment.type === 'online') {
+            <button
+              class="action-button primary-btn"
+              (click)="joinAppointment(appointment)"
+            >
+              <ion-icon name="videocam-outline"></ion-icon>
+              {{ 'consultationDetail.joinVideoCall' | translate }}
+            </button>
+            }
+          </div>
+        </div>
+        }
+
+        @if (getOtherAppointments().length > 0) {
+        <div class="other-appointments-card">
+          <div class="card-header">
+            <ion-icon name="list-outline" class="card-icon"></ion-icon>
+            <h3 class="info-title">{{ 'consultationDetail.otherAppointments' | translate }}</h3>
+          </div>
+          @for (appt of getOtherAppointments(); track appt.id) {
+          <div class="appointment-item other-appointment-item">
+            <div class="appointment-meta">
+              <div class="meta-item">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+              </div>
+              <div class="meta-item">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{ appt.scheduled_at | localDate:'HH:mm' }}</span>
+              </div>
+              <div class="meta-item type-item">
+                <ion-icon [name]="getAppointmentTypeIcon(appt)"></ion-icon>
+                <span>{{ getAppointmentTypeLabel(appt) }}</span>
+              </div>
+            </div>
+            @if (appt.type === 'online') {
+            <button
+              class="action-button primary-btn"
+              (click)="joinAppointment(appt)"
+            >
+              <ion-icon name="videocam-outline"></ion-icon>
+              {{ 'consultationDetail.joinVideoCall' | translate }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
     </div>
   </div>
   } @else {

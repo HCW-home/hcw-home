@@ -42,7 +42,6 @@ export class UserWebSocketService implements OnDestroy {
   private onlineSubscription: Subscription | null = null;
   private hadConnectionIssue = false;
   private wasConnected = false;
-  private errorToastTimer: ReturnType<typeof setTimeout> | null = null;
   private shouldBeConnected = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectInterval = 5000; // 5 seconds between refresh attempts
@@ -103,11 +102,13 @@ export class UserWebSocketService implements OnDestroy {
     this.wasConnected = false;
     this.hadConnectionIssue = false;
     this.clearReconnectTimer();
-    this.clearErrorToastTimer();
+
     this.wsService.disconnect();
     this.isOnlineSubject.next(false);
     this.connectionCountSubject.next(0);
   }
+
+  private isSilentReconnecting = false;
 
   private setupReconnectionHandler(): void {
     this.wsService.state$.subscribe(state => {
@@ -115,28 +116,21 @@ export class UserWebSocketService implements OnDestroy {
         this.attemptReconnect();
       } else if (state === WebSocketState.CONNECTED) {
         this.clearReconnectTimer();
+        this.isSilentReconnecting = false;
       }
     });
   }
 
   private attemptReconnect(): void {
-    // Avoid multiple simultaneous refresh attempts
     if (this.isRefreshing) {
       return;
     }
 
     this.clearReconnectTimer();
-    this.hadConnectionIssue = true;
 
-    // Show reconnecting toast immediately (only if we were previously connected)
-    if (this.wasConnected) {
-      this.clearErrorToastTimer();
-      this.toasterService.show(
-        'warning',
-        this.t.instant('websocket.reconnecting'),
-        this.t.instant('websocket.reconnectingMessage'),
-        { id: WS_CONNECTION_TOAST_ID, delay: -1, closable: false }
-      );
+    // First attempt after disconnect: try silent reconnect
+    if (this.wasConnected && !this.isSilentReconnecting) {
+      this.isSilentReconnecting = true;
     }
 
     this.tryRefresh();
@@ -145,11 +139,11 @@ export class UserWebSocketService implements OnDestroy {
   private async tryRefresh(): Promise<void> {
     this.isRefreshing = true;
 
-    // Check if we have a refresh token before attempting
     const refreshToken = this.authService.getRefreshToken();
     if (!refreshToken) {
       console.error('[UserWS] No refresh token available, stopping reconnection');
       this.isRefreshing = false;
+      this.isSilentReconnecting = false;
       return;
     }
 
@@ -159,27 +153,42 @@ export class UserWebSocketService implements OnDestroy {
       if (response.refresh) {
         this.authService.setRefreshToken(response.refresh);
       }
-      // Refresh succeeded, reconnect WebSocket
+      // Refresh succeeded, reconnect WebSocket silently
       this.isRefreshing = false;
       this.connect();
     } catch (error: unknown) {
       const httpError = error as { status?: number };
 
-      // If token is expired/invalid (401/403), stop reconnection
-      // The auth interceptor will handle logout
       if (httpError?.status === 401 || httpError?.status === 403) {
         console.error('[UserWS] Refresh token expired, stopping reconnection');
         this.isRefreshing = false;
+        this.isSilentReconnecting = false;
         return;
       }
 
-      // For network errors, keep trying after interval
+      // First refresh failed: show "reconnecting" toast now
+      if (this.isSilentReconnecting) {
+        this.isSilentReconnecting = false;
+        this.hadConnectionIssue = true;
+        this.showReconnectingToast();
+      }
+
       console.error('[UserWS] Token refresh failed, will retry:', error);
       this.reconnectTimer = setTimeout(() => {
         this.isRefreshing = false;
         this.tryRefresh();
       }, this.reconnectInterval);
     }
+  }
+
+  private showReconnectingToast(): void {
+
+    this.toasterService.show(
+      'warning',
+      this.t.instant('websocket.reconnecting'),
+      this.t.instant('websocket.reconnectingMessage'),
+      { id: WS_CONNECTION_TOAST_ID, delay: -1, closable: true }
+    );
   }
 
   private clearReconnectTimer(): void {
@@ -290,46 +299,17 @@ export class UserWebSocketService implements OnDestroy {
     this.stateSubscription = this.wsService.state$
       .pipe(distinctUntilChanged())
       .subscribe(state => {
+        if (this.isSilentReconnecting) {
+          return;
+        }
+
         switch (state) {
           case WebSocketState.RECONNECTING:
-            // Cancel any pending error toast — "reconnecting" takes priority
-            this.clearErrorToastTimer();
             this.hadConnectionIssue = true;
-            this.toasterService.show(
-              'warning',
-              this.t.instant('websocket.reconnecting'),
-              this.t.instant('websocket.reconnectingMessage'),
-              { id: WS_CONNECTION_TOAST_ID, delay: -1, closable: false }
-            );
-            break;
-
-          case WebSocketState.FAILED:
-            // FAILED can be transient during reconnection attempts.
-            // Defer the toast with a longer delay (5s) so RECONNECTING can cancel it.
-            // If we stay in FAILED for 5s, it means all retry attempts are exhausted.
-            this.scheduleErrorToast(
-              this.t.instant('websocket.failed'),
-              this.t.instant('websocket.failedMessage')
-            );
-            break;
-
-          case WebSocketState.DISCONNECTED:
-            // Only show error if we were previously connected and are not already handling reconnection
-            if (this.wasConnected && !this.hadConnectionIssue) {
-              this.scheduleErrorToast(
-                this.t.instant('websocket.disconnected'),
-                this.t.instant('websocket.disconnectedMessage')
-              );
-            }
-            break;
-
-          case WebSocketState.CONNECTING:
-            // A reconnect attempt is starting — cancel any pending error toast
-            this.clearErrorToastTimer();
+            this.showReconnectingToast();
             break;
 
           case WebSocketState.CONNECTED:
-            this.clearErrorToastTimer();
             if (this.hadConnectionIssue && this.wasConnected) {
               this.toasterService.show(
                 'success',
@@ -343,34 +323,6 @@ export class UserWebSocketService implements OnDestroy {
             break;
         }
       });
-  }
-
-  private scheduleErrorToast(title: string, body: string): void {
-    this.clearErrorToastTimer();
-    this.hadConnectionIssue = true;
-    this.errorToastTimer = setTimeout(() => {
-      this.errorToastTimer = null;
-      this.toasterService.show('error', title, body, {
-        id: WS_CONNECTION_TOAST_ID,
-        delay: -1,
-        closable: true,
-        actions: [
-          {
-            label: this.t.instant('common.refresh'),
-            callback: () => {
-              window.location.reload();
-            },
-          },
-        ],
-      });
-    }, 5000);
-  }
-
-  private clearErrorToastTimer(): void {
-    if (this.errorToastTimer) {
-      clearTimeout(this.errorToastTimer);
-      this.errorToastTimer = null;
-    }
   }
 
   ngOnDestroy(): void {

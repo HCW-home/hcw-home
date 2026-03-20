@@ -91,29 +91,35 @@
             <h3 class="info-title">{{ 'consultationDetail.nextAppointment' | translate }}</h3>
           </div>
           <div class="appointment-item">
-            <div class="appointment-meta">
-              <div class="meta-item">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
-              </div>
-              <div class="meta-item">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
-              </div>
-              <div class="meta-item type-item">
-                <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
-                <span>{{ getAppointmentTypeLabel(appointment) }}</span>
-              </div>
+            <div class="appointment-date-badge">
+              <span class="day">{{ appointment.scheduled_at | localDate:'dd' }}</span>
+              <span class="month">{{ appointment.scheduled_at | localDate:'MMM' }}</span>
             </div>
-            @if (appointment.type === 'online') {
-            <button
-              class="action-button primary-btn"
-              (click)="joinAppointment(appointment)"
-            >
-              <ion-icon name="videocam-outline"></ion-icon>
-              {{ 'consultationDetail.joinVideoCall' | translate }}
-            </button>
-            }
+            <div class="appointment-item-content">
+              <div class="appointment-meta">
+                <div class="meta-item">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  <span>{{ appointment.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+                </div>
+                <div class="meta-item">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span>{{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+                </div>
+                <div class="meta-item type-item">
+                  <ion-icon [name]="getAppointmentTypeIcon(appointment)"></ion-icon>
+                  <span>{{ getAppointmentTypeLabel(appointment) }}</span>
+                </div>
+              </div>
+              @if (appointment.type === 'online') {
+              <button
+                class="action-button primary-btn"
+                (click)="joinAppointment(appointment)"
+              >
+                <ion-icon name="videocam-outline"></ion-icon>
+                {{ 'consultationDetail.joinVideoCall' | translate }}
+              </button>
+              }
+            </div>
           </div>
         </div>
         }
@@ -126,29 +132,35 @@
           </div>
           @for (appt of getOtherAppointments(); track appt.id) {
           <div class="appointment-item other-appointment-item">
-            <div class="appointment-meta">
-              <div class="meta-item">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
-              </div>
-              <div class="meta-item">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>{{ appt.scheduled_at | localDate:'HH:mm' }}</span>
-              </div>
-              <div class="meta-item type-item">
-                <ion-icon [name]="getAppointmentTypeIcon(appt)"></ion-icon>
-                <span>{{ getAppointmentTypeLabel(appt) }}</span>
-              </div>
+            <div class="appointment-date-badge small">
+              <span class="day">{{ appt.scheduled_at | localDate:'dd' }}</span>
+              <span class="month">{{ appt.scheduled_at | localDate:'MMM' }}</span>
             </div>
-            @if (appt.type === 'online') {
-            <button
-              class="action-button primary-btn"
-              (click)="joinAppointment(appt)"
-            >
-              <ion-icon name="videocam-outline"></ion-icon>
-              {{ 'consultationDetail.joinVideoCall' | translate }}
-            </button>
+            <div class="appointment-item-content">
+              <div class="appointment-meta">
+                <div class="meta-item">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  <span>{{ appt.scheduled_at | localDate:'EEEE, MMM d, yyyy' }}</span>
+                </div>
+                <div class="meta-item">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span>{{ appt.scheduled_at | localDate:'HH:mm' }}</span>
+                </div>
+                <div class="meta-item type-item">
+                  <ion-icon [name]="getAppointmentTypeIcon(appt)"></ion-icon>
+                  <span>{{ getAppointmentTypeLabel(appt) }}</span>
+                </div>
+              </div>
+              @if (appt.type === 'online') {
+              <button
+                class="action-button primary-btn"
+                (click)="joinAppointment(appt)"
+              >
+                <ion-icon name="videocam-outline"></ion-icon>
+                {{ 'consultationDetail.joinVideoCall' | translate }}
+              </button>
             }
+            </div>
           </div>
           }
         </div>

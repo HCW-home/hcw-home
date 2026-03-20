@@ -1,13 +1,48 @@
 .appointment-info {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
-  gap: 5px;
+  gap: 12px;
   font-size: 0.9375rem;
   color: var(--app-text-secondary);
   padding: 10px 12px;
   background: var(--app-background);
   border-radius: 8px;
+}
+
+.appointment-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  background: var(--ion-color-primary-bg);
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  .day {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    line-height: 1;
+  }
+
+  .month {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    text-transform: uppercase;
+  }
+}
+
+.appointment-info-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
 }
 
 .appointment-info-label {

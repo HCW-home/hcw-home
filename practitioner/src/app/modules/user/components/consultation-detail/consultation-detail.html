@@ -509,26 +509,26 @@
               [attr.data-appointment-id]="appointment.id"
               [class.highlighted]="highlightedAppointmentId() === appointment.id">
               <div class="appointment-header">
+                <div class="appointment-date-box">
+                  <span class="day">{{ appointment.scheduled_at | localDate:'dd' }}</span>
+                  <span class="month">{{ appointment.scheduled_at | localDate:'MMM' }}</span>
+                </div>
                 <div class="appointment-info">
-                  @if (appointment.title) {
-                    <span class="appointment-title">{{ appointment.title }}</span>
-                  }
-                  <div class="date-time">
-                    <app-svg
-                      src="calendar"
-                      [svgStyle]="{'width.px': 18, 'height.px': 18}"></app-svg>
+                  <div class="appointment-info-top">
+                    @if (appointment.title) {
+                      <span class="appointment-title">{{ appointment.title }}</span>
+                    }
                     <span
-                      >{{ appointment.scheduled_at | localDate : 'MMM d, y,
-                      HH:mm' }}</span
-                    >
+                      class="appointment-type"
+                      [class.online]="appointment.type === AppointmentType.ONLINE">
+                      {{ appointment.type === AppointmentType.ONLINE ?
+                      ('consultationDetail.typeOnline' | translate) :
+                      ('consultationDetail.typeInPerson' | translate) }}
+                    </span>
                   </div>
-                  <span
-                    class="appointment-type"
-                    [class.online]="appointment.type === AppointmentType.ONLINE">
-                    {{ appointment.type === AppointmentType.ONLINE ?
-                    ('consultationDetail.typeOnline' | translate) :
-                    ('consultationDetail.typeInPerson' | translate) }}
-                  </span>
+                  <div class="date-time">
+                    <span>{{ appointment.scheduled_at | localDate : 'EEEE, MMM d, y — HH:mm' }}</span>
+                  </div>
                 </div>
                 <app-badge [type]="getAppointmentBadgeType(appointment.status)">
                   {{ 'consultationDetail.status' + (appointment.status ===

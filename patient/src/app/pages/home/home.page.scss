@@ -39,18 +39,29 @@
     color: white;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 4px 14px -3px rgba(8, 145, 178, 0.4);
 
-    .next-appointment-icon {
-      width: 52px;
-      height: 52px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+    .next-appointment-date-badge {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
       flex-shrink: 0;
 
-      ion-icon {
-        font-size: 26px;
+      .day {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+      }
+
+      .month {
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.85);
+        text-transform: uppercase;
       }
     }
 

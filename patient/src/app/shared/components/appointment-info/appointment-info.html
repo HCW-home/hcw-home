@@ -1,29 +1,35 @@
 <div class="appointment-info">
-  @if (label) {
-    <div class="appointment-info-label">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <span>{{ label }}</span>
-    </div>
-  }
-  <div class="appointment-info-title">
-    <span>{{ title }}</span>
-    <span class="type-tag">
-      <ion-icon [name]="typeIcon"></ion-icon>
-      {{ typeLabel }}
-    </span>
+  <div class="appointment-date-badge">
+    <span class="day">{{ appointment.scheduled_at | localDate:'dd' }}</span>
+    <span class="month">{{ appointment.scheduled_at | localDate:'MMM' }}</span>
   </div>
-  <div class="appointment-info-value">
-    <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} at {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
-  </div>
-  @for (participant of otherParticipants; track participant.id) {
-    <div class="appointment-info-participant">
-      <div class="participant-avatar">{{ getParticipantName(participant).charAt(0) }}</div>
-      <span>{{ getParticipantName(participant) }}</span>
-      @if (speciality) {
-        <span class="participant-speciality">{{ speciality }}</span>
-      } @else if (getParticipantSpecialities(participant)) {
-        <span class="participant-speciality">{{ getParticipantSpecialities(participant) }}</span>
-      }
+  <div class="appointment-info-details">
+    @if (label) {
+      <div class="appointment-info-label">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>{{ label }}</span>
+      </div>
+    }
+    <div class="appointment-info-title">
+      <span>{{ title }}</span>
+      <span class="type-tag">
+        <ion-icon [name]="typeIcon"></ion-icon>
+        {{ typeLabel }}
+      </span>
     </div>
-  }
+    <div class="appointment-info-value">
+      <span>{{ appointment.scheduled_at | localDate:'EEE, MMM d' }} — {{ appointment.scheduled_at | localDate:'HH:mm' }}</span>
+    </div>
+    @for (participant of otherParticipants; track participant.id) {
+      <div class="appointment-info-participant">
+        <div class="participant-avatar">{{ getParticipantName(participant).charAt(0) }}</div>
+        <span>{{ getParticipantName(participant) }}</span>
+        @if (speciality) {
+          <span class="participant-speciality">{{ speciality }}</span>
+        } @else if (getParticipantSpecialities(participant)) {
+          <span class="participant-speciality">{{ getParticipantSpecialities(participant) }}</span>
+        }
+      </div>
+    }
+  </div>
 </div>

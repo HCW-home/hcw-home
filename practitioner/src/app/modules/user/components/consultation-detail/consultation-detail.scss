@@ -661,9 +661,35 @@
     }
   }
 
+  .appointment-date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: var(--primary-50);
+    border-radius: 12px;
+    flex-shrink: 0;
+
+    .day {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-700);
+      line-height: 1;
+    }
+
+    .month {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary-600);
+      text-transform: uppercase;
+    }
+  }
+
   .appointment-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 12px;
     flex-wrap: wrap;
@@ -671,8 +697,15 @@
 
     .appointment-info {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+
+      .appointment-info-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
       .appointment-title {
         font-size: 15px;
@@ -683,10 +716,10 @@
       .date-time {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--slate-800);
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--slate-600);
       }
 
       .appointment-type {

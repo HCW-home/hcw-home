@@ -17,8 +17,9 @@
 
     @if (nextAppointment()) {
       <div class="next-appointment-banner">
-        <div class="next-appointment-icon">
-          <ion-icon [name]="nextAppointment()!.type === 'online' ? 'videocam' : 'location-outline'"></ion-icon>
+        <div class="next-appointment-date-badge">
+          <span class="day">{{ nextAppointment()!.scheduled_at | localDate:'dd' }}</span>
+          <span class="month">{{ nextAppointment()!.scheduled_at | localDate:'MMM' }}</span>
         </div>
         <div class="next-appointment-info">
           <span class="next-appointment-label">

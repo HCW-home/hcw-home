@@ -378,6 +378,17 @@ export class HomePage implements OnInit, OnDestroy {
     return this.getAppointmentDoctorName(appt);
   }
 
+  getNextAppointmentDoctorSpeciality(): string {
+    const appt = this.nextAppointment();
+    if (!appt?.participants) return '';
+    const currentUserId = this.currentUser()?.id;
+    const doctor = appt.participants.find(p => p.user && p.user.id !== currentUserId);
+    if (doctor?.user?.specialities?.length) {
+      return doctor.user.specialities.map(s => s.name).join(', ');
+    }
+    return '';
+  }
+
   joinNextAppointment(): void {
     const appt = this.nextAppointment();
     if (appt) {

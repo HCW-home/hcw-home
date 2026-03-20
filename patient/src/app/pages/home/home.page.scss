@@ -97,6 +97,11 @@
         font-size: 1rem;
         color: var(--app-text-secondary);
         margin-top: 2px;
+
+        .next-appointment-speciality {
+          font-size: 0.8125rem;
+          color: var(--app-text-muted);
+        }
       }
     }
 

@@ -31,7 +31,7 @@
             {{ nextAppointment()!.scheduled_at | localDate:'fullDate' }} — {{ nextAppointment()!.scheduled_at | localDate:'shortTime' }}
           </span>
           @if (getNextAppointmentDoctorName()) {
-            <span class="next-appointment-doctor">{{ getNextAppointmentDoctorName() }}</span>
+            <span class="next-appointment-doctor">{{ getNextAppointmentDoctorName() }}@if (getNextAppointmentDoctorSpeciality()) { <span class="next-appointment-speciality">· {{ getNextAppointmentDoctorSpeciality() }}</span>}</span>
           }
         </div>
         @if (nextAppointment()!.type === 'online') {

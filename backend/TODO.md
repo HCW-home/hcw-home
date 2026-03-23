@@ -67,7 +67,12 @@ Controle pendant l'appel pas clair
 
 Il faudrait ajouter des petits labels à droite des boutons.
 
+Appeler le patient doit être grisé si pas online
+================================================
 
+Le patient ne doit pas pouvoir être appelé directement si pas online.
 
+Ajouter icone spécialisé
+========================
 
 Ajoute une icone personnalisé pour la spécialité (paramétrable dans l'admin), visible par le patient dans http://localhost:8001/new-request

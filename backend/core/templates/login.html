@@ -1,0 +1,89 @@
+{% extends 'unfold/layouts/skeleton.html' %}
+
+{% load i18n static unfold %}
+
+{% block title %}{{ site_title }} - {% trans "Sign in" %}{% endblock %}
+
+{% block bodyclass %}{{ block.super }}bg-base-50 login dark:bg-base-900{% endblock %}
+
+{% block base %}
+    <div id="page" class="bg-white flex min-h-screen dark:bg-base-900">
+        <div class="flex grow items-center justify-center mx-auto px-4 relative">
+            <div class="w-full sm:w-96">
+                {% include "unfold/helpers/unauthenticated_header.html" %}
+
+                <h1 class="font-bold mb-8 text-center text-xl text-font-important-light dark:text-font-important-dark">
+                    {% trans "Sign in to administration" %}
+                </h1>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 mb-4 p-3 rounded-default text-red-700 text-sm dark:text-red-400">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if login_error %}
+                    <div class="bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 mb-4 p-3 rounded-default text-red-700 text-sm dark:text-red-400">
+                        {{ login_error }}
+                    </div>
+                {% endif %}
+
+                {% if not disable_password_login %}
+                    <form method="post" class="mb-6">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="id_email" class="block font-medium mb-1 text-font-important-light dark:text-font-important-dark text-sm">
+                                {% trans "Email" %}
+                            </label>
+                            <input type="email" name="email" id="id_email" required
+                                   class="bg-white border border-base-200 dark:bg-base-800 dark:border-base-700 dark:text-font-important-dark px-3 py-2 rounded-default text-sm w-full focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600">
+                        </div>
+                        <div class="mb-4">
+                            <label for="id_password" class="block font-medium mb-1 text-font-important-light dark:text-font-important-dark text-sm">
+                                {% trans "Password" %}
+                            </label>
+                            <input type="password" name="password" id="id_password" required
+                                   class="bg-white border border-base-200 dark:bg-base-800 dark:border-base-700 dark:text-font-important-dark px-3 py-2 rounded-default text-sm w-full focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600">
+                        </div>
+                        <button type="submit"
+                                class="bg-primary-600 font-medium hover:bg-primary-700 px-4 py-3 rounded-default text-sm text-white transition-colors duration-200 w-full">
+                            {% trans "Sign in" %}
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if social_apps %}
+                    {% if not disable_password_login %}
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="border-t border-base-200 dark:border-base-700 flex-1"></div>
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark text-xs">{% trans "or" %}</span>
+                            <div class="border-t border-base-200 dark:border-base-700 flex-1"></div>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex flex-col gap-3">
+                        {% for app in social_apps %}
+                            <a href="{% url 'openid_connect_login' provider_id=app.provider_id %}?process=login&next={{ next }}"
+                               class="border border-base-200 dark:border-base-700 flex font-medium gap-3 hover:bg-base-100 dark:hover:bg-base-800 items-center justify-center px-4 py-3 rounded-default text-font-important-light dark:text-font-important-dark text-sm transition-colors duration-200">
+                                <span class="material-symbols-outlined text-primary-600 dark:text-primary-400" style="font-size: 20px;">key</span>
+                                {% blocktrans with name=app.name %}Sign in with {{ name }}{% endblocktrans %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% elif disable_password_login %}
+                    <div class="bg-base-100 dark:bg-base-800 p-6 rounded-default text-center">
+                        <span class="material-symbols-outlined mb-2 text-base-400 dark:text-base-500" style="font-size: 48px;">passkey</span>
+                        <p class="text-font-subtle-light dark:text-font-subtle-dark text-sm">
+                            {% trans "No identity provider configured." %}
+                        </p>
+                        <p class="mt-1 text-font-subtle-light dark:text-font-subtle-dark text-xs">
+                            {% trans "Please configure a Social Application in the admin panel." %}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -33,8 +33,8 @@ class ConsultationFilter(django_filters.FilterSet):
             ).distinct()
         elif value is False:
             # Consultations without any future scheduled appointment
-            return queryset.exclude(
-                appointments__scheduled_at__gte=cutoff,
+            return queryset.filter(
+                appointments__scheduled_at__lt=cutoff,
                 appointments__status=AppointmentStatus.scheduled,
             ).distinct()
         return queryset

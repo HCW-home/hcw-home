@@ -117,6 +117,7 @@ class ConsultationSpecialitySerializer(serializers.ModelSerializer):
 
 class ConsultationUserSerializer(serializers.ModelSerializer):
     specialities = ConsultationSpecialitySerializer(many=True, read_only=True)
+    is_online = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User

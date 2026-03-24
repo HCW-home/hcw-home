@@ -19,7 +19,6 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.connection_id = None
         self.user_id = None
         self._heartbeat_task = None
         self._pong_received = asyncio.Event()
@@ -34,52 +33,44 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
             return
 
         self.user_id = user.id
-        self.connection_id = async_user_online_service.generate_connection_id()
 
         try:
-            connection_count = await async_user_online_service.add_user_connection(
-                self.user_id, self.connection_id
-            )
+            count = await async_user_online_service.add_connection(self.user_id)
             logger.info(
-                f"User {self.user_id} connected (ID: {self.connection_id}, Total: {connection_count})"
+                f"User {self.user_id} connected (connections: {count})"
             )
             await self.accept()
             self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-            await self._on_status_changed(True, connection_count)
+            # Only broadcast online if this is the first connection
+            if count == 1:
+                await self._on_status_changed(True)
         except Exception as e:
             logger.error(f"Error tracking user {self.user_id} connection: {e}")
             await self.close(code=4000)
 
     async def disconnect(self, close_code):
-        """Handle WebSocket disconnection and update user online status."""
+        """Handle WebSocket disconnection."""
         logger.info(
             f"UserOnlineStatusMixin.disconnect called for user {self.user_id} "
-            f"(connection {self.connection_id}, close_code={close_code})"
+            f"(close_code={close_code})"
         )
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
             self._heartbeat_task = None
 
-        if self.user_id and self.connection_id:
+        if self.user_id:
             try:
-                remaining = await async_user_online_service.remove_user_connection(
-                    self.user_id, self.connection_id
+                remaining = await async_user_online_service.remove_connection(
+                    self.user_id
                 )
                 logger.info(
-                    f"User {self.user_id} disconnected (ID: {self.connection_id}, Remaining: {remaining})"
+                    f"User {self.user_id} disconnected (remaining: {remaining})"
                 )
+                # Only broadcast offline if no connections remain
                 if remaining == 0:
-                    await self._on_status_changed(False, remaining)
-                else:
-                    logger.info(
-                        f"User {self.user_id} still has {remaining} connections, not broadcasting offline"
-                    )
+                    await self._on_status_changed(False)
             except Exception as e:
-                logger.error(f"Error removing user {self.user_id} connection: {e}")
-        else:
-            logger.warning(
-                f"disconnect called but user_id={self.user_id}, connection_id={self.connection_id}"
-            )
+                logger.error(f"Error during disconnect for user {self.user_id}: {e}")
 
         await super().disconnect(close_code)
 
@@ -97,20 +88,21 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                     await asyncio.wait_for(
                         self._pong_received.wait(), timeout=HEARTBEAT_TIMEOUT
                     )
+                    # Pong received: refresh cache TTL
+                    await async_user_online_service.refresh_online(self.user_id)
                 except asyncio.TimeoutError:
                     logger.warning(
-                        f"User {self.user_id} heartbeat timeout (connection {self.connection_id})"
+                        f"User {self.user_id} heartbeat timeout"
                     )
                     await self.close(code=4002)
                     break
         except asyncio.CancelledError:
             pass
 
-    async def _on_status_changed(self, is_online, connection_count):
+    async def _on_status_changed(self, is_online):
         """Notify all connected clients about online status changes."""
         logger.info(
-            f"Broadcasting status change: user {self.user_id} is_online={is_online} "
-            f"(connections={connection_count})"
+            f"Broadcasting status change: user {self.user_id} is_online={is_online}"
         )
         try:
             await self.channel_layer.group_send(
@@ -123,7 +115,6 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                     },
                 },
             )
-            logger.info(f"Broadcast sent successfully for user {self.user_id}")
         except Exception as e:
             logger.error(f"Failed to broadcast status for user {self.user_id}: {e}")
 
@@ -133,14 +124,12 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         """Connect: join groups first, then register online status and broadcast."""
-        # Authenticate user before joining groups
         user = self.scope.get("user")
         if not user or not user.is_authenticated:
             await self.close(code=4001)
             return
 
         # Join groups BEFORE super().connect() so we receive our own status broadcast
-        # and don't miss any messages sent between accept() and group_add
         await self.channel_layer.group_add(f"user_{user.id}", self.channel_name)
         await self.channel_layer.group_add("broadcast", self.channel_name)
 
@@ -148,14 +137,10 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """Disconnect: remove own channel from broadcast first, then broadcast offline."""
-        # Leave broadcast group BEFORE broadcasting so we don't send to our own
-        # dying channel (which can silently swallow the group_send on Redis layer)
         await self.channel_layer.group_discard("broadcast", self.channel_name)
 
-        # Broadcast offline status and clean up connection tracking
         await super().disconnect(close_code)
 
-        # Leave user-specific group last
         if self.user_id:
             await self.channel_layer.group_discard(
                 f"user_{self.user_id}", self.channel_name
@@ -186,12 +171,11 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
 
     # Message handlers
     async def _handle_ping(self, content, _data):
+        # Client-initiated ping: refresh cache and respond
+        await async_user_online_service.refresh_online(self.user_id)
         await self.send_json({"type": "pong", "timestamp": content.get("timestamp")})
 
     async def _handle_get_status(self, _content, _data):
-        connection_count = await async_user_online_service.get_user_connection_count(
-            self.user_id
-        )
         is_online = await async_user_online_service.is_user_online(self.user_id)
 
         await self.send_json(
@@ -200,8 +184,6 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
                 "data": {
                     "user_id": self.user_id,
                     "is_online": is_online,
-                    "connection_count": connection_count,
-                    "connection_id": self.connection_id,
                 },
             }
         )

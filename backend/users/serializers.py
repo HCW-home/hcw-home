@@ -68,6 +68,7 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     languages = LanguageSerializer(many=True, read_only=True)
     specialities = SpecialitySerializer(many=True, read_only=True)
 
+    is_online = serializers.BooleanField(read_only=True)
     mobile_phone_number = serializers.CharField(allow_null=True, allow_blank=True, required=False)
 
     languages_ids = serializers.PrimaryKeyRelatedField(
@@ -105,7 +106,6 @@ class UserDetailsSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "specialities",
         ]
         read_only_fields = [
-            "is_online",
             "is_practitioner",
         ]
 

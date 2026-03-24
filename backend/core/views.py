@@ -66,7 +66,7 @@ def dashboard_callback(request, context):
     # User metrics
     total_users = User.objects.count()
     active_users = User.objects.filter(last_login__gte=last_month).count()
-    online_users = User.objects.filter(is_online=True).count()
+    online_users = sum(1 for u in User.objects.only("pk") if u.is_online)
     new_users_this_week = User.objects.filter(date_joined__gte=last_week).count()
     
     # Consultation metrics

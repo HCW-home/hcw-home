@@ -74,7 +74,6 @@ class UserFactory(DjangoModelFactory):
     is_staff = False
     is_superuser = False
     encrypted = False
-    is_online = False
     app_preferences = factory.LazyFunction(lambda: {"notifications": True, "theme": "light"})
     preferred_language = 'en'
     communication_method = 'email'

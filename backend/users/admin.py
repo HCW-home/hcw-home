@@ -85,7 +85,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin, ImportExportModelAdmin):
         "first_name",
         "last_name",
         "is_active",
-        "is_online",
         "is_practitioner",
         "temporary",
         "timezone",
@@ -97,7 +96,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin, ImportExportModelAdmin):
     list_filter = BaseUserAdmin.list_filter + (
         "languages",
         "specialities",
-        "is_online",
         "groups",
     )
     filter_horizontal = BaseUserAdmin.filter_horizontal + ("languages", "specialities")

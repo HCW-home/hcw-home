@@ -182,8 +182,6 @@ class User(AbstractUser):
         blank=True,
     )
 
-    is_online = models.BooleanField(default=False)
-
     last_notification = models.DateTimeField(default=timezone.now)
 
     specialities = models.ManyToManyField(Speciality, blank=True)
@@ -248,6 +246,11 @@ class User(AbstractUser):
     )
 
     notification_messages = GenericRelation("messaging.Message")
+
+    @property
+    def is_online(self):
+        from .services import user_online_service
+        return user_online_service.is_user_online(self.pk)
 
     @property
     def is_patient(self):

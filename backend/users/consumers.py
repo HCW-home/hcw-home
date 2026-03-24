@@ -35,15 +35,11 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
         self.user_id = user.id
 
         try:
-            count = await async_user_online_service.add_connection(self.user_id)
-            logger.info(
-                f"User {self.user_id} connected (connections: {count})"
-            )
+            await async_user_online_service.set_user_online(self.user_id)
+            logger.info(f"User {self.user_id} connected")
             await self.accept()
             self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-            # Only broadcast online if this is the first connection
-            if count == 1:
-                await self._on_status_changed(True)
+            await self._on_status_changed(True)
         except Exception as e:
             logger.error(f"Error tracking user {self.user_id} connection: {e}")
             await self.close(code=4000)
@@ -59,18 +55,26 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
             self._heartbeat_task = None
 
         if self.user_id:
+            # Delete cache
+            await async_user_online_service.set_user_offline(self.user_id)
+
+            # Ask other consumers to restore cache if they are alive
             try:
-                remaining = await async_user_online_service.remove_connection(
-                    self.user_id
+                await self.channel_layer.group_send(
+                    f"user_{self.user_id}",
+                    {
+                        "type": "alive_check",
+                        "sender_channel": self.channel_name,
+                    },
                 )
-                logger.info(
-                    f"User {self.user_id} disconnected (remaining: {remaining})"
-                )
-                # Only broadcast offline if no connections remain
-                if remaining == 0:
-                    await self._on_status_changed(False)
             except Exception as e:
-                logger.error(f"Error during disconnect for user {self.user_id}: {e}")
+                logger.error(f"Error sending alive_check for user {self.user_id}: {e}")
+
+            # After 1s, check if another consumer restored the cache.
+            # If not, broadcast offline.
+            asyncio.ensure_future(
+                self._delayed_offline_check(self.user_id, self.channel_layer)
+            )
 
         await super().disconnect(close_code)
 
@@ -98,6 +102,25 @@ class UserOnlineStatusMixin(AsyncJsonWebsocketConsumer):
                     break
         except asyncio.CancelledError:
             pass
+
+    @staticmethod
+    async def _delayed_offline_check(user_id, channel_layer):
+        """Wait, then broadcast offline only if no other consumer restored the cache."""
+        await asyncio.sleep(1)
+        is_online = await async_user_online_service.is_user_online(user_id)
+        if not is_online:
+            logger.info(f"User {user_id} confirmed offline after delay")
+            try:
+                await channel_layer.group_send(
+                    "broadcast",
+                    {
+                        "type": "user",
+                        "user_id": user_id,
+                        "data": {"is_online": False},
+                    },
+                )
+            except Exception as e:
+                logger.error(f"Failed to broadcast offline for user {user_id}: {e}")
 
     async def _on_status_changed(self, is_online):
         """Notify all connected clients about online status changes."""
@@ -255,6 +278,13 @@ class WebsocketConsumer(UserOnlineStatusMixin, AsyncJsonWebsocketConsumer):
         await self.send_json({"type": "broadcast_sent", "data": {"message": message}})
 
     # Channel layer event handlers
+    async def alive_check(self, event):
+        """Another consumer disconnected. If I'm still alive, restore the cache."""
+        if event.get("sender_channel") == self.channel_name:
+            return
+        # I'm alive: restore cache (the delayed check will see it and skip broadcast)
+        await async_user_online_service.set_user_online(self.user_id)
+
     async def consultation(self, event):
         await self.send_json(
             {

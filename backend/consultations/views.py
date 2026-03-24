@@ -10,7 +10,9 @@ from core.mixins import CreatedByMixin
 from django.conf import settings
 from constance import config
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db import models
+from django.db.models import Count, F, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -38,6 +40,7 @@ from .models import (
     BookingSlot,
     Consultation,
     CustomField,
+    ConsultationReadStatus,
     Message,
     Participant,
     Queue,
@@ -77,6 +80,32 @@ class Slot:
     user_last_name: str
 
 
+EPOCH = datetime(1970, 1, 1, tzinfo=ZoneInfo("UTC"))
+
+
+def annotate_unread_count(queryset, user):
+    """Annotate a Consultation queryset with _unread_count for the given user."""
+    read_status_sq = ConsultationReadStatus.objects.filter(
+        consultation=models.OuterRef("pk"),
+        user=user,
+    ).values("last_read_at")[:1]
+
+    return queryset.annotate(
+        _last_read_at=Coalesce(
+            Subquery(read_status_sq),
+            Value(EPOCH),
+            output_field=models.DateTimeField(),
+        ),
+        _unread_count=Count(
+            "messages",
+            filter=Q(messages__created_at__gt=F("_last_read_at"))
+            & ~Q(messages__created_by=user)
+            & Q(messages__deleted_at__isnull=True),
+            distinct=True,
+        ),
+    )
+
+
 class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
     """Consultation endpoint"""
 
@@ -107,7 +136,18 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Consultation.objects.accessible_by(user)
+        return annotate_unread_count(Consultation.objects.accessible_by(user), user)
+
+    @action(detail=True, methods=["post"])
+    def mark_read(self, request, pk=None):
+        """Mark all messages in a consultation as read for the current user."""
+        consultation = self.get_object()
+        ConsultationReadStatus.objects.update_or_create(
+            consultation=consultation,
+            user=request.user,
+            defaults={"last_read_at": timezone.now()},
+        )
+        return Response({"status": "ok"})
 
     @extend_schema(responses=ConsultationSerializer)
     @action(detail=True, methods=["post"])

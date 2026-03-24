@@ -284,6 +284,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     )
     next_appointment = serializers.SerializerMethodField()
     appointments = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultation
@@ -304,6 +305,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "visible_by_patient",
             "next_appointment",
             "appointments",
+            "unread_count",
         ]
         read_only_fields = [
             "id",
@@ -313,6 +315,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "closed_at",
             "next_appointment",
             "appointments",
+            "unread_count",
         ]
 
     def get_next_appointment(self, obj):
@@ -337,6 +340,23 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             .order_by("scheduled_at")
         )
         return AppointmentSerializer(appts, many=True, context=self.context).data
+
+    def get_unread_count(self, obj):
+        if hasattr(obj, "_unread_count"):
+            return obj._unread_count
+        # Fallback for non-annotated querysets (e.g. nested in RequestSerializer)
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return 0
+        from .models import ConsultationReadStatus
+
+        read_status = ConsultationReadStatus.objects.filter(
+            consultation=obj, user=request.user
+        ).first()
+        qs = obj.messages.exclude(created_by=request.user).filter(deleted_at__isnull=True)
+        if read_status:
+            qs = qs.filter(created_at__gt=read_status.last_read_at)
+        return qs.count()
 
 
 class AppointmentSerializer(serializers.ModelSerializer):

@@ -195,8 +195,11 @@ class UserConsultationsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Get consultations for the authenticated user."""
+        from consultations.views import annotate_unread_count
+
         user = self.request.user
-        return Consultation.objects.filter(beneficiary=user, visible_by_patient=True)
+        qs = Consultation.objects.filter(beneficiary=user, visible_by_patient=True)
+        return annotate_unread_count(qs, user)
 
     @extend_schema(
         responses={
@@ -212,6 +215,19 @@ class UserConsultationsViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         """Get a specific consultation by ID."""
         return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"])
+    def mark_read(self, request, pk=None):
+        """Mark all messages in a consultation as read for the current user."""
+        from consultations.models import ConsultationReadStatus
+
+        consultation = self.get_object()
+        ConsultationReadStatus.objects.update_or_create(
+            consultation=consultation,
+            user=request.user,
+            defaults={"last_read_at": timezone.now()},
+        )
+        return Response({"status": "ok"})
 
     @extend_schema(
         request=ConsultationMessageCreateSerializer,
@@ -1346,10 +1362,13 @@ class UserDashboardView(APIView):
             .order_by("-id")
         )
 
-        consultations = (
+        from consultations.views import annotate_unread_count
+
+        consultations = annotate_unread_count(
             Consultation.objects.exclude(request__in=user_requests)
             .filter(beneficiary=user, closed_at__isnull=True, visible_by_patient=True)
-            .order_by("-created_at")
+            .order_by("-created_at"),
+            user,
         )
 
         # Next upcoming appointment (with 2 hour grace period)

@@ -44,18 +44,6 @@ je veux que tu simplifie le status user online :
 - en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
 - coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
 
-
-
-Gérer les mises à jour frontend
-===============================
-
-Il faudrait avertir l'utilisateur lorsque le frontend est mis à jour.
-
-Soucis avec timezone et requested time
-======================================
-
-Il semble y avoir un problème de timezone lorsque le patient fait une demande de consulation, ça reprend pas la bonne timzone.
-
 Camera busy error
 =================
 

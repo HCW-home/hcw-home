@@ -276,6 +276,27 @@ class Message(models.Model):
         verbose_name_plural = _("messages")
 
 
+class ConsultationReadStatus(models.Model):
+    consultation = models.ForeignKey(
+        Consultation,
+        on_delete=models.CASCADE,
+        related_name="read_statuses",
+        verbose_name=_("consultation"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="consultation_read_statuses",
+        verbose_name=_("user"),
+    )
+    last_read_at = models.DateTimeField(_("last read at"))
+
+    class Meta:
+        verbose_name = _("consultation read status")
+        verbose_name_plural = _("consultation read statuses")
+        unique_together = ("consultation", "user")
+
+
 class Reason(models.Model):
     speciality = models.ForeignKey(
         "users.Speciality",

@@ -124,6 +124,13 @@
         </div>
         }
 
+        @if (!consultation()?.next_appointment && getOtherAppointments().length === 0) {
+        <div class="no-appointment-placeholder">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>{{ 'home.noAppointment' | translate }}</span>
+        </div>
+        }
+
         @if (getOtherAppointments().length > 0) {
         <div class="other-appointments-card">
           <div class="card-header">

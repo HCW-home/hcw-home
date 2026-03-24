@@ -390,9 +390,10 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   getAppointmentDoctorName(appointment: Appointment): string {
-    const currentUserId = this.currentUser()?.id;
+    const user = this.currentUser();
+    const currentUserIds = [user?.id, user?.pk].filter(Boolean);
     if (appointment.participants) {
-      const doctor = appointment.participants.find(p => p.user && p.user.id !== currentUserId);
+      const doctor = appointment.participants.find(p => p.user && !currentUserIds.includes(p.user.id));
       if (doctor?.user) {
         return `${doctor.user.first_name} ${doctor.user.last_name}`;
       }
@@ -418,8 +419,9 @@ export class HomePage implements OnInit, OnDestroy {
   getNextAppointmentDoctorSpeciality(): string {
     const appt = this.nextAppointment();
     if (!appt?.participants) return '';
-    const currentUserId = this.currentUser()?.id;
-    const doctor = appt.participants.find(p => p.user && p.user.id !== currentUserId);
+    const user = this.currentUser();
+    const currentUserIds = [user?.id, user?.pk].filter(Boolean);
+    const doctor = appt.participants.find(p => p.user && !currentUserIds.includes(p.user.id));
     if (doctor?.user?.specialities?.length) {
       return doctor.user.specialities.map(s => s.name).join(', ');
     }

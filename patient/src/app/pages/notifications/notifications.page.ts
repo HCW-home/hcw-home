@@ -274,8 +274,8 @@ export class NotificationsPage implements OnInit, OnDestroy {
     }
 
     if (action && id) {
-      const route = this.actionHandler.getRouteForAction(action, id);
-      this.navCtrl.navigateForward(route);
+      const actionRoute = this.actionHandler.getRouteWithParams(action, id);
+      this.navCtrl.navigateForward(actionRoute.path, { queryParams: actionRoute.queryParams });
       return;
     }
 

@@ -195,8 +195,8 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
           },
         });
     } else {
-      const route = this.actionHandler.getRouteForAction(this.action, this.actionId);
-      this.navCtrl.navigateRoot(route);
+      const actionRoute = this.actionHandler.getRouteWithParams(this.action, this.actionId);
+      this.navCtrl.navigateRoot(actionRoute.path, { queryParams: actionRoute.queryParams });
     }
   }
 

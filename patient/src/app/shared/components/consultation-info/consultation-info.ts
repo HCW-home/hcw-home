@@ -19,7 +19,10 @@ import { Consultation } from '../../../core/models/consultation.model';
 export class ConsultationInfoComponent {
   @Input({ required: true }) consultation!: Consultation;
   @Input() label?: string;
+  @Input() hideAction = false;
+  @Input() closeLabel = '';
   @Output() access = new EventEmitter<Consultation>();
+  @Output() close = new EventEmitter<void>();
 
   get title(): string {
     return this.consultation.title || '';

@@ -1,21 +1,33 @@
 <div class="consultation-info">
-  @if (label) {
-    <div class="consultation-info-label">
-      <ion-icon name="chatbubbles-outline"></ion-icon>
-      <span>{{ label }}</span>
+  <div class="consultation-info-header">
+    <div class="consultation-info-details">
+      @if (label) {
+        <div class="consultation-info-label">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <span>{{ label }}</span>
+        </div>
+      }
+      @if (title) {
+        <span class="consultation-info-title">{{ getFormattedId() }} - {{ title }}</span>
+      }
     </div>
-  }
-  @if (title) {
-    <span class="consultation-info-title">{{ getFormattedId() }} - {{ title }}</span>
-  }
+    @if (hideAction && closeLabel) {
+      <button class="consultation-info-btn consultation-info-btn-close" (click)="close.emit(); $event.stopPropagation()">
+        <ion-icon name="close-outline"></ion-icon>
+        <span>{{ closeLabel }}</span>
+      </button>
+    } @else if (!hideAction) {
+      <button class="consultation-info-btn" (click)="onAccess($event)">
+        <ion-icon name="chatbubbles-outline"></ion-icon>
+        <span>{{ 'home.accessConsultation' | translate }}</span>
+      </button>
+    }
+  </div>
   @if (doctorName) {
     <div class="consultation-info-doctor">
       <div class="doctor-avatar">{{ doctorName.charAt(0) }}</div>
       <span>{{ doctorName }}</span>
     </div>
   }
-  <button class="consultation-info-btn" (click)="onAccess($event)">
-    <ion-icon name="chatbubbles-outline"></ion-icon>
-    <span>{{ 'home.accessConsultation' | translate }}</span>
-  </button>
+  <ng-content></ng-content>
 </div>

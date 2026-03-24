@@ -66,11 +66,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/new-request/new-request.page').then(m => m.NewRequestPage),
     canActivate: [AuthGuard, TermsGuard],
   },
-{
-    path: 'consultation/:id',
-    loadComponent: () => import('./pages/consultation-detail/consultation-detail.page').then(m => m.ConsultationDetailPage),
-    canActivate: [AuthGuard, TermsGuard],
-  },
   {
     path: 'consultation/:id/video',
     loadComponent: () => import('./pages/video-consultation/video-consultation.page').then(m => m.VideoConsultationPage),

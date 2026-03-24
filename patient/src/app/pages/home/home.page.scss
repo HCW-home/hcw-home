@@ -181,6 +181,13 @@
     border-radius: var(--app-card-radius);
     border: 1px solid var(--app-border-color);
     overflow: hidden;
+
+    &.has-expanded-chat .timeline-item:not(.expanded) {
+      opacity: 0.4;
+      pointer-events: none;
+      filter: grayscale(0.3);
+      transition: opacity 0.3s, filter 0.3s;
+    }
   }
 
   .timeline-item {
@@ -208,6 +215,11 @@
       background: rgba(var(--ion-color-primary-rgb), 0.08);
       border-left: 4px solid var(--ion-color-primary);
       animation: pulse 1.5s ease-in-out;
+    }
+
+    &.expanded {
+      background: rgba(var(--ion-color-primary-rgb), 0.03);
+      border-left: 3px solid var(--ion-color-primary);
     }
   }
 
@@ -328,6 +340,34 @@
     }
   }
 
+  .inline-chat {
+    margin-top: var(--app-spacing-sm);
+    animation: chatExpand 0.3s ease-out;
+    overflow: hidden;
+    width: 100%;
+    align-self: stretch;
+
+    app-message-list {
+      display: block;
+      height: 400px;
+    }
+  }
+
+  @keyframes chatExpand {
+    from {
+      opacity: 0;
+      max-height: 0;
+      transform: scaleY(0.8);
+      transform-origin: top;
+    }
+    to {
+      opacity: 1;
+      max-height: 600px;
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+  }
+
   @media (max-width: 768px) {
     .timeline-item {
       flex-direction: column;
@@ -339,6 +379,95 @@
 
     .timeline-item-appointments {
       width: 100%;
+    }
+
+    // When chat is open on mobile, hide everything else
+    &.home-content--chat-open {
+      .main-content {
+        padding: var(--app-spacing-sm);
+        padding-bottom: 0;
+        height: calc(100vh - 120px);
+        display: flex;
+        flex-direction: column;
+
+        > * {
+          display: none;
+        }
+
+        > .section-with-expanded {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+          margin-bottom: 0;
+        }
+      }
+
+      .section-header {
+        display: none;
+      }
+
+      .timeline-list {
+        border: none;
+        border-radius: 0;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .timeline-item:not(.expanded) {
+        display: none;
+      }
+
+      .timeline-item.expanded {
+        border-bottom: none;
+        padding: 0;
+      }
+    }
+
+    .timeline-item.expanded {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+
+      > .timeline-item-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      > .timeline-item-appointments {
+        flex-shrink: 0;
+      }
+
+      app-consultation-info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+
+        .consultation-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+        }
+      }
+
+      .inline-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+
+        app-message-list {
+          flex: 1;
+          height: 0;
+          min-height: 0;
+        }
+      }
     }
   }
 

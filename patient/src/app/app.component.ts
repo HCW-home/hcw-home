@@ -165,8 +165,8 @@ export class AppComponent implements OnInit, OnDestroy {
             },
           });
       } else {
-        const route = this.actionHandler.getRouteForAction(action, actionId);
-        this.navCtrl.navigateRoot([route]);
+        const actionRoute = this.actionHandler.getRouteWithParams(action, actionId);
+        this.navCtrl.navigateRoot([actionRoute.path], { queryParams: actionRoute.queryParams });
       }
     }
   }

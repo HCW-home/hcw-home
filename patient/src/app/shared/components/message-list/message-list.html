@@ -1,13 +1,15 @@
 <div class="message-list-container">
-  <div class="message-list-header">
-    @if (headerTitle) {
-      <span class="header-title">{{ headerTitle }}</span>
-    }
-    <span class="connection-status" [class.connected]="isConnected" [class.disconnected]="!isConnected">
-      <ion-icon [name]="isConnected ? 'wifi-outline' : 'cloud-offline-outline'"></ion-icon>
-      {{ isConnected ? ('messageList.connected' | translate) : ('messageList.disconnected' | translate) }}
-    </span>
-  </div>
+  @if (showHeader) {
+    <div class="message-list-header">
+      @if (headerTitle) {
+        <span class="header-title">{{ headerTitle }}</span>
+      }
+      <span class="connection-status" [class.connected]="isConnected" [class.disconnected]="!isConnected">
+        <ion-icon [name]="isConnected ? 'wifi-outline' : 'cloud-offline-outline'"></ion-icon>
+        {{ isConnected ? ('messageList.connected' | translate) : ('messageList.disconnected' | translate) }}
+      </span>
+    </div>
+  }
 
   <div class="message-list-body" #messagesContainer (scroll)="onScroll()">
     @if (isLoadingMore) {

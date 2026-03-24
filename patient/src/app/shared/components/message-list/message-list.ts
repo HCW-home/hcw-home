@@ -79,6 +79,7 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
   @Input() isConnected = false;
   @Input() isLoadingMore = false;
   @Input() hasMore = true;
+  @Input() showHeader = true;
   @Output() sendMessage = new EventEmitter<SendMessageData>();
   @Output() editMessage = new EventEmitter<EditMessageData>();
   @Output() deleteMessage = new EventEmitter<DeleteMessageData>();

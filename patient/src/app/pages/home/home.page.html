@@ -1,6 +1,6 @@
 <app-header></app-header>
 
-<ion-content class="home-content">
+<ion-content class="home-content" [class.home-content--chat-open]="expandedConsultationId()">
   <ion-refresher slot="fixed" (ionRefresh)="refreshData($any($event))">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -49,7 +49,7 @@
     }
 
     @if (hasReasons() && (requests().length > 0 || isLoading() || (consultations().length === 0 && appointments().length === 0))) {
-    <section class="section requests-section">
+    <section class="section requests-section" [class.section-with-expanded]="expandedConsultationId()">
       <div class="section-header">
         <div class="section-title-group">
           <h2 class="section-title">{{ 'home.myRequests' | translate }}</h2>
@@ -69,9 +69,9 @@
           <p class="empty-text">{{ 'home.noPendingRequests' | translate }}</p>
         </div>
       } @else {
-        <div class="timeline-list">
+        <div class="timeline-list" [class.has-expanded-chat]="expandedConsultationId()">
           @for (request of requests(); track request.id) {
-            <div class="timeline-item" [class.highlighted]="isRequestHighlighted(request)">
+            <div class="timeline-item" [class.highlighted]="isRequestHighlighted(request)" [class.expanded]="hasConsultation(request) && isConsultationExpanded(request.consultation!.id)">
               <div class="timeline-item-content">
                 <div class="request-info-block">
                   <div class="request-info-label">
@@ -111,7 +111,25 @@
                   <app-consultation-info
                     [consultation]="request.consultation!"
                     [label]="'home.followUp' | translate"
-                    (access)="viewConsultationFromRequest(request)">
+                    [hideAction]="isConsultationExpanded(request.consultation!.id)"
+                    [closeLabel]="isConsultationExpanded(request.consultation!.id) ? ('common.close' | translate) : ''"
+                    (access)="viewConsultationFromRequest(request)"
+                    (close)="closeChat()">
+                    @if (isConsultationExpanded(request.consultation!.id)) {
+                      <div class="inline-chat">
+                        <app-message-list
+                          [messages]="chatMessages()"
+                          [showHeader]="false"
+                          [isConnected]="isChatConnected()"
+                          [isLoadingMore]="isChatLoadingMore()"
+                          [hasMore]="chatHasMore()"
+                          (sendMessage)="onChatSendMessage($event)"
+                          (editMessage)="onChatEditMessage($event)"
+                          (deleteMessage)="onChatDeleteMessage($event)"
+                          (loadMore)="onChatLoadMore()"
+                        ></app-message-list>
+                      </div>
+                    }
                   </app-consultation-info>
                 }
 
@@ -162,7 +180,7 @@
     }
 
     @if (consultations().length > 0) {
-      <section class="section consultations-section">
+      <section class="section consultations-section" [class.section-with-expanded]="expandedConsultationId()">
         <div class="section-header">
           <div class="section-title-group">
             <h2 class="section-title">{{ 'home.myConsultations' | translate }}</h2>
@@ -170,14 +188,32 @@
           </div>
         </div>
 
-        <div class="timeline-list">
+        <div class="timeline-list" [class.has-expanded-chat]="expandedConsultationId()">
           @for (consultation of consultations(); track consultation.id) {
-            <div class="timeline-item">
+            <div class="timeline-item" [class.expanded]="isConsultationExpanded(consultation.id)">
               <div class="timeline-item-content">
                 <app-consultation-info
                   [consultation]="consultation"
                   [label]="'home.followUp' | translate"
-                  (access)="viewConsultationDetails(consultation)">
+                  [hideAction]="isConsultationExpanded(consultation.id)"
+                  [closeLabel]="isConsultationExpanded(consultation.id) ? ('common.close' | translate) : ''"
+                  (access)="viewConsultationDetails(consultation)"
+                  (close)="closeChat()">
+                  @if (isConsultationExpanded(consultation.id)) {
+                    <div class="inline-chat">
+                      <app-message-list
+                        [messages]="chatMessages()"
+                        [showHeader]="false"
+                        [isConnected]="isChatConnected()"
+                        [isLoadingMore]="isChatLoadingMore()"
+                        [hasMore]="chatHasMore()"
+                        (sendMessage)="onChatSendMessage($event)"
+                        (editMessage)="onChatEditMessage($event)"
+                        (deleteMessage)="onChatDeleteMessage($event)"
+                        (loadMore)="onChatLoadMore()"
+                      ></app-message-list>
+                    </div>
+                  }
                 </app-consultation-info>
               </div>
 
@@ -211,7 +247,7 @@
           </div>
         </div>
 
-        <div class="timeline-list">
+        <div class="timeline-list" [class.has-expanded-chat]="expandedConsultationId()">
           @for (appointment of appointments(); track appointment.id) {
             <div class="timeline-item">
               <div class="timeline-item-content">

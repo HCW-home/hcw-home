@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -15,7 +15,9 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ConsultationService } from '../../core/services/consultation.service';
+import { ConsultationWebSocketService } from '../../core/services/consultation-websocket.service';
 import { UserWebSocketService } from '../../core/services/user-websocket.service';
+import { WebSocketState } from '../../core/models/websocket.model';
 import { User } from '../../core/models/user.model';
 import { AppHeaderComponent } from '../../shared/app-header/app-header.component';
 import { AppFooterComponent } from '../../shared/app-footer/app-footer.component';
@@ -24,6 +26,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
 import { AppointmentInfoComponent } from '../../shared/components/appointment-info/appointment-info';
 import { ConsultationInfoComponent } from '../../shared/components/consultation-info/consultation-info';
+import { MessageListComponent, Message, SendMessageData, EditMessageData, DeleteMessageData } from '../../shared/components/message-list/message-list';
 
 interface RequestStatus {
   label: string;
@@ -48,6 +51,7 @@ interface RequestStatus {
     TranslatePipe,
     AppointmentInfoComponent,
     ConsultationInfoComponent,
+    MessageListComponent,
   ]
 })
 export class HomePage implements OnInit, OnDestroy {
@@ -69,6 +73,15 @@ export class HomePage implements OnInit, OnDestroy {
   totalAppointments = computed(() => this.appointments().length);
   hasNoItems = computed(() => this.totalRequests() === 0 && this.totalConsultations() === 0 && this.totalAppointments() === 0);
 
+  // Chat inline state
+  expandedConsultationId = signal<number | null>(null);
+  chatMessages = signal<Message[]>([]);
+  isChatConnected = signal(false);
+  isChatLoadingMore = signal(false);
+  chatHasMore = signal(true);
+  private chatCurrentPage = 1;
+  private pendingOpenChatId: number | null = null;
+
   constructor(
     private navCtrl: NavController,
     private route: ActivatedRoute,
@@ -76,7 +89,8 @@ export class HomePage implements OnInit, OnDestroy {
     private consultationService: ConsultationService,
     private toastController: ToastController,
     private alertController: AlertController,
-    private userWsService: UserWebSocketService
+    private userWsService: UserWebSocketService,
+    private chatWsService: ConsultationWebSocketService
   ) {}
 
   private async showError(message: string): Promise<void> {
@@ -89,12 +103,22 @@ export class HomePage implements OnInit, OnDestroy {
     await toast.present();
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.expandedConsultationId()) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.timeline-item.expanded')) {
+      this.closeChat();
+    }
+  }
+
   ngOnInit(): void {
     this.loadUserData();
     this.loadDashboard();
     this.listenToWebSocketChanges();
     this.loadConfig();
     this.handleQueryParams();
+    this.setupChatWebSocket();
   }
 
   handleQueryParams(): void {
@@ -104,6 +128,12 @@ export class HomePage implements OnInit, OnDestroy {
         const participantId = params['participantId'];
         const join = params['join'];
         const highlightRequest = params['highlightRequest'];
+        const openChat = params['openChat'];
+
+        if (openChat) {
+          this.navCtrl.navigateRoot('/home', { replaceUrl: true });
+          this.pendingOpenChatId = Number(openChat);
+        }
 
         if (highlightRequest) {
           this.highlightedRequestId.set(Number(highlightRequest));
@@ -154,6 +184,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.chatWsService.disconnect();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -186,6 +217,12 @@ export class HomePage implements OnInit, OnDestroy {
           this.consultations.set(response.consultations);
           this.appointments.set(response.appointments);
           this.isLoading.set(false);
+
+          if (this.pendingOpenChatId) {
+            const chatId = this.pendingOpenChatId;
+            this.pendingOpenChatId = null;
+            setTimeout(() => this.openChat(chatId), 100);
+          }
         },
         error: (error) => {
           this.showError(error?.error?.detail || this.t.instant('home.failedToLoad'));
@@ -328,7 +365,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   viewConsultationDetails(consultation: Consultation): void {
-    this.navCtrl.navigateForward(`/consultation/${consultation.id}`);
+    this.openChat(consultation.id);
   }
 
   getConsultationStatusConfig(status: string): { label: string; color: 'warning' | 'info' | 'primary' | 'success' | 'muted' } {
@@ -398,7 +435,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   viewConsultationFromRequest(request: ConsultationRequest): void {
     if (request.consultation?.id) {
-      this.navCtrl.navigateForward(`/consultation/${request.consultation.id}`);
+      this.openChat(request.consultation.id);
     }
   }
 
@@ -425,5 +462,203 @@ export class HomePage implements OnInit, OnDestroy {
     this.navCtrl.navigateForward(`/consultation/${appointment.consultation_id || 0}/video`, {
       queryParams: { appointmentId: appointment.id }
     });
+  }
+
+  // --- Inline chat ---
+
+  private setupChatWebSocket(): void {
+    this.chatWsService.state$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        this.isChatConnected.set(state === WebSocketState.CONNECTED);
+      });
+
+    this.chatWsService.messageUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        if (!this.expandedConsultationId() || event.consultation_id !== this.expandedConsultationId()) return;
+
+        if (event.state === 'created') {
+          const exists = this.chatMessages().some(m => m.id === event.data.id);
+          if (!exists) {
+            const user = this.currentUser();
+            const isSystem = !event.data.created_by;
+            const isCurrentUser = isSystem ? false : (user?.pk === event.data.created_by?.id || user?.id === event.data.created_by?.id);
+            const newMessage: Message = {
+              id: event.data.id,
+              username: isSystem ? '' : `${event.data.created_by.first_name} ${event.data.created_by.last_name}`,
+              message: event.data.content,
+              timestamp: event.data.created_at,
+              isCurrentUser,
+              isSystem,
+              attachment: event.data.attachment,
+              isEdited: event.data.is_edited,
+              updatedAt: event.data.updated_at,
+            };
+            this.chatMessages.update(msgs => [...msgs, newMessage]);
+          }
+        } else if (event.state === 'updated' || event.state === 'deleted') {
+          this.loadChatMessages();
+        }
+      });
+  }
+
+  openChat(consultationId: number): void {
+    if (this.expandedConsultationId() === consultationId) {
+      this.closeChat();
+      return;
+    }
+    this.expandedConsultationId.set(consultationId);
+    this.chatMessages.set([]);
+    this.chatCurrentPage = 1;
+    this.chatHasMore.set(true);
+    this.chatWsService.connect(consultationId);
+    this.loadChatMessages();
+
+    // Scroll so the chat input is visible and focus it
+    setTimeout(() => {
+      const chatEl = document.querySelector('.timeline-item.expanded .inline-chat');
+      if (chatEl) {
+        chatEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        const input = chatEl.querySelector<HTMLInputElement>('.message-input');
+        if (input) {
+          input.focus();
+        }
+      }
+    }, 350);
+  }
+
+  closeChat(): void {
+    this.chatWsService.disconnect();
+    this.expandedConsultationId.set(null);
+    this.chatMessages.set([]);
+  }
+
+  isConsultationExpanded(consultationId: number): boolean {
+    return this.expandedConsultationId() === consultationId;
+  }
+
+  private loadChatMessages(): void {
+    const id = this.expandedConsultationId();
+    if (!id) return;
+
+    this.chatCurrentPage = 1;
+    this.consultationService.getConsultationMessagesPaginated(id, 1)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: response => {
+          this.chatHasMore.set(!!response.next);
+          const currentUserId = this.currentUser()?.pk;
+          const msgs: Message[] = response.results.map(msg => {
+            const isSystem = !msg.created_by;
+            const isCurrentUser = isSystem ? false : msg.created_by.id === currentUserId;
+            return {
+              id: msg.id,
+              username: isSystem ? '' : isCurrentUser
+                ? this.t.instant('consultationDetail.you')
+                : `${msg.created_by.first_name} ${msg.created_by.last_name}`.trim(),
+              message: msg.content || '',
+              timestamp: msg.created_at,
+              isCurrentUser,
+              isSystem,
+              attachment: msg.attachment,
+              isEdited: msg.is_edited,
+              updatedAt: msg.updated_at,
+              deletedAt: msg.deleted_at,
+            };
+          }).reverse();
+          this.chatMessages.set(msgs);
+        }
+      });
+  }
+
+  onChatLoadMore(): void {
+    const id = this.expandedConsultationId();
+    if (!id || this.isChatLoadingMore() || !this.chatHasMore()) return;
+
+    this.isChatLoadingMore.set(true);
+    this.chatCurrentPage++;
+
+    this.consultationService.getConsultationMessagesPaginated(id, this.chatCurrentPage)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: response => {
+          this.chatHasMore.set(!!response.next);
+          const currentUserId = this.currentUser()?.pk;
+          const olderMsgs: Message[] = response.results.map(msg => {
+            const isSystem = !msg.created_by;
+            const isCurrentUser = isSystem ? false : msg.created_by.id === currentUserId;
+            return {
+              id: msg.id,
+              username: isSystem ? '' : isCurrentUser
+                ? this.t.instant('consultationDetail.you')
+                : `${msg.created_by.first_name} ${msg.created_by.last_name}`.trim(),
+              message: msg.content || '',
+              timestamp: msg.created_at,
+              isCurrentUser,
+              isSystem,
+              attachment: msg.attachment,
+              isEdited: msg.is_edited,
+              updatedAt: msg.updated_at,
+              deletedAt: msg.deleted_at,
+            };
+          }).reverse();
+          this.chatMessages.update(msgs => [...olderMsgs, ...msgs]);
+          this.isChatLoadingMore.set(false);
+        },
+        error: () => {
+          this.chatCurrentPage--;
+          this.isChatLoadingMore.set(false);
+        }
+      });
+  }
+
+  onChatSendMessage(data: SendMessageData): void {
+    const id = this.expandedConsultationId();
+    if (!id) return;
+
+    this.consultationService.sendConsultationMessage(id, data.content || '', data.attachment)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        error: async (error) => {
+          const toast = await this.toastController.create({
+            message: error?.error?.detail || this.t.instant('consultationDetail.failedSend'),
+            duration: 3000,
+            position: 'bottom',
+            color: 'danger'
+          });
+          await toast.present();
+        }
+      });
+  }
+
+  onChatEditMessage(data: EditMessageData): void {
+    this.consultationService.updateConsultationMessage(data.messageId, data.content)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: updatedMessage => {
+          this.chatMessages.update(msgs =>
+            msgs.map(m => m.id === data.messageId
+              ? { ...m, message: updatedMessage.content || '', isEdited: updatedMessage.is_edited, updatedAt: updatedMessage.updated_at }
+              : m
+            )
+          );
+        }
+      });
+  }
+
+  onChatDeleteMessage(data: DeleteMessageData): void {
+    this.consultationService.deleteConsultationMessage(data.messageId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: deletedMessage => {
+          this.chatMessages.update(msgs =>
+            msgs.map(m => m.id === data.messageId
+              ? { ...m, message: '', attachment: null, deletedAt: deletedMessage.deleted_at }
+              : m
+            )
+          );
+        }
+      });
   }
 }

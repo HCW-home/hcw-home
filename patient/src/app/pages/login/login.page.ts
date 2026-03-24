@@ -277,8 +277,8 @@ export class LoginPage implements OnInit {
         },
       });
     } else if (action) {
-      const route = this.actionHandler.getRouteForAction(action, id);
-      this.navCtrl.navigateRoot(route);
+      const actionRoute = this.actionHandler.getRouteWithParams(action, id);
+      this.navCtrl.navigateRoot(actionRoute.path, { queryParams: actionRoute.queryParams });
     } else {
       this.navCtrl.navigateRoot("/home");
     }

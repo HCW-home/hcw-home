@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 .consultation-info {
   display: flex;
   flex-direction: column;
@@ -6,6 +11,23 @@
   padding: 10px 12px;
   background: var(--app-background);
   border-radius: 8px;
+  height: 100%;
+}
+
+.consultation-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.consultation-info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .consultation-info-label {
@@ -57,17 +79,18 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border: 1px solid var(--app-border-color);
   border-radius: 8px;
   background: var(--app-card-background);
   color: var(--app-text-primary);
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s;
-  margin-top: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   ion-icon {
     font-size: 17px;
@@ -76,5 +99,19 @@
 
   &:active {
     background: var(--app-background);
+  }
+
+  &.consultation-info-btn-close {
+    border-color: var(--ion-color-primary);
+    background: var(--app-card-background);
+    color: var(--ion-color-primary);
+
+    &:hover {
+      background: var(--ion-color-primary-bg);
+    }
+
+    &:active {
+      background: rgba(var(--ion-color-primary-rgb), 0.12);
+    }
   }
 }

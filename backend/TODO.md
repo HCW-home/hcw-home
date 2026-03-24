@@ -44,12 +44,6 @@ je veux que tu simplifie le status user online :
 - en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
 - coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
 
-Camera busy error
-=================
-
-Il n'est pas possible de rejoindre l'appel si la caméra est occupée.
-
-
 Controle pendant l'appel pas clair
 ==================================
 

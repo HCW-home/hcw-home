@@ -663,6 +663,7 @@
           (editMessage)="onEditMessage($event)"
           (deleteMessage)="onDeleteMessage($event)"
           (loadMore)="onLoadMore()">
+          @if (consultation()?.beneficiary) {
           <app-button
             messageListHeaderAction
             [text]="'consultationDetail.callBeneficiary' | translate"
@@ -670,9 +671,10 @@
             [style]="ButtonStyleEnum.primary"
             [size]="ButtonSizeEnum.small"
             [loading]="isCallingBeneficiary()"
-            [disabled]="isCallingBeneficiary()"
+            [disabled]="isCallingBeneficiary() || !consultation()?.beneficiary?.is_online"
             (buttonClick)="callBeneficiary()">
           </app-button>
+          }
         </app-message-list>
       </div>
     </div>

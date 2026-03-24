@@ -671,7 +671,7 @@
             [style]="ButtonStyleEnum.primary"
             [size]="ButtonSizeEnum.small"
             [loading]="isCallingBeneficiary()"
-            [disabled]="isCallingBeneficiary() || !consultation()?.beneficiary?.is_online"
+            [disabled]="isCallingBeneficiary() || !consultation()?.beneficiary?.is_online || hasUpcomingAppointment()"
             (buttonClick)="callBeneficiary()">
           </app-button>
           }

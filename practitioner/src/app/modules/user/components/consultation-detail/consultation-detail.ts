@@ -167,6 +167,16 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
   appointmentEarlyJoinMinutes = 5; // Default value
 
+  hasUpcomingAppointment = computed(() => {
+    const now = Date.now();
+    const earlyMs = this.appointmentEarlyJoinMinutes * 60 * 1000;
+    return this.appointments().some(a => {
+      if (a.status !== AppointmentStatus.SCHEDULED) return false;
+      const start = new Date(a.scheduled_at).getTime();
+      return (start - now) <= earlyMs;
+    });
+  });
+
   isExportingPdf = signal(false);
 
   showCreateAppointmentModal = signal(false);

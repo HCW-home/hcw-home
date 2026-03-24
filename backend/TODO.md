@@ -34,16 +34,6 @@ Feedback Gilles
 
 - Tableau on comprend pas cliquable
 
-Update websocket
-================
-
-je veux que tu simplifie le status user online : 
-- ne stocke plus dans la base de données, remplace par une propriété du modèle. La propriété récupère la valeur du cache, ou false si inexistant.
-- stocke la variable dans le cache django, le cache ne doit pas durer plus que 1 minutes.
-- le hearthbeat du websocket envoi des ping / pong, à la réception j'un ping du frontend, mettre à jour le cache pour deux nouvelles minutes.
-- en cas de déconnection, le backend envoi un live alive, si pas de réponse après une seconde, supprimer du cache.
-- coté client (practitioner et patient), en cas de réception d'un alive, répondre au alive.
-
 Controle pendant l'appel pas clair
 ==================================
 

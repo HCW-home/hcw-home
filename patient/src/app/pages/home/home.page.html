@@ -48,7 +48,7 @@
       </div>
     }
 
-    @if (hasReasons()) {
+    @if (hasReasons() && (requests().length > 0 || isLoading() || (consultations().length === 0 && appointments().length === 0))) {
     <section class="section requests-section">
       <div class="section-header">
         <div class="section-title-group">

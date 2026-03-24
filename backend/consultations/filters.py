@@ -1,5 +1,6 @@
 import django_filters
 from .models import Consultation, Appointment
+from django.db.models import Exists, OuterRef
 from django.utils import timezone
 from datetime import timedelta
 
@@ -25,18 +26,17 @@ class ConsultationFilter(django_filters.FilterSet):
     def filter_scheduled(self, queryset, name, value):
         from .models import AppointmentStatus
         cutoff = timezone.now() - timedelta(hours=2)
+        has_future = Exists(
+            Appointment.objects.filter(
+                consultation=OuterRef('pk'),
+                scheduled_at__gte=cutoff,
+                status=AppointmentStatus.scheduled,
+            )
+        )
         if value is True:
-            # Consultations with at least one future scheduled appointment
-            return queryset.filter(
-                appointments__scheduled_at__gte=cutoff,
-                appointments__status=AppointmentStatus.scheduled,
-            ).distinct()
+            return queryset.filter(has_future)
         elif value is False:
-            # Consultations without any future scheduled appointment
-            return queryset.filter(
-                appointments__scheduled_at__lt=cutoff,
-                appointments__status=AppointmentStatus.scheduled,
-            ).distinct()
+            return queryset.filter(~has_future)
         return queryset
 
 

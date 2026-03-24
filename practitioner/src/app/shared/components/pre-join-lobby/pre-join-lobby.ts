@@ -111,13 +111,28 @@ export class PreJoinLobby implements OnInit, OnDestroy {
   private async initializeDevices(): Promise<void> {
     this.isLoading.set(true);
     try {
-      await this.mediaDeviceService.startVideoPreview();
-      await this.mediaDeviceService.startAudioMonitor();
+      // Try video preview separately - camera may not be available
+      try {
+        await this.mediaDeviceService.startVideoPreview();
+        this.attachVideoPreview();
+      } catch {
+        this.cameraEnabled.set(false);
+      }
+
+      // Try audio monitor separately
+      try {
+        await this.mediaDeviceService.startAudioMonitor();
+      } catch {
+        this.microphoneEnabled.set(false);
+      }
+
       const devices = await this.mediaDeviceService.enumerateDevices();
       this.updateDeviceOptions(devices);
 
       if (devices.cameras.length > 0) {
         this.selectedCameraId = devices.cameras[0].deviceId;
+      } else {
+        this.cameraEnabled.set(false);
       }
       if (devices.microphones.length > 0) {
         this.selectedMicrophoneId = devices.microphones[0].deviceId;
@@ -125,8 +140,6 @@ export class PreJoinLobby implements OnInit, OnDestroy {
       if (devices.speakers.length > 0) {
         this.selectedSpeakerId = devices.speakers[0].deviceId;
       }
-
-      this.attachVideoPreview();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError') {
         this.permissionDenied.set(true);

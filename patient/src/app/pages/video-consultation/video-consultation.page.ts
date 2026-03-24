@@ -341,8 +341,18 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
       }
 
       await this.livekitService.connect(config);
-      await this.livekitService.enableCamera(true);
-      await this.livekitService.enableMicrophone(true);
+
+      // Enable camera/microphone separately - don't fail the whole join if camera is unavailable
+      try {
+        await this.livekitService.enableCamera(true);
+      } catch {
+        // Camera not available, continue without it
+      }
+      try {
+        await this.livekitService.enableMicrophone(true);
+      } catch {
+        // Microphone not available, continue without it
+      }
 
       this.phase.set('in-call');
       if (this.appointmentId) {
@@ -401,8 +411,18 @@ export class VideoConsultationPage implements OnInit, OnDestroy {
       }
 
       await this.livekitService.connect(config, undefined, deviceIds);
-      await this.livekitService.enableCamera(settings.cameraEnabled);
-      await this.livekitService.enableMicrophone(settings.microphoneEnabled);
+
+      // Enable camera/microphone separately - don't fail the whole join if camera is unavailable
+      try {
+        await this.livekitService.enableCamera(settings.cameraEnabled);
+      } catch {
+        // Camera not available, continue without it
+      }
+      try {
+        await this.livekitService.enableMicrophone(settings.microphoneEnabled);
+      } catch {
+        // Microphone not available, continue without it
+      }
 
       if (settings.speakerDeviceId) {
         await this.livekitService.switchSpeaker(settings.speakerDeviceId);

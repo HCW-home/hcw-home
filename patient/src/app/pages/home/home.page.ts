@@ -84,6 +84,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Unread counts per consultation
   private unreadCounts = signal<Map<number, number>>(new Map());
+  chatUnreadSeparator = signal<string | null>(null);
 
   constructor(
     private navCtrl: NavController,
@@ -522,11 +523,28 @@ export class HomePage implements OnInit, OnDestroy {
       });
   }
 
+  private findLastReadAt(consultationId: number): string | null {
+    for (const req of this.requests()) {
+      if (req.consultation?.id === consultationId) {
+        return req.consultation.last_read_at || null;
+      }
+    }
+    for (const c of this.consultations()) {
+      if (c.id === consultationId) {
+        return c.last_read_at || null;
+      }
+    }
+    return null;
+  }
+
   openChat(consultationId: number): void {
     if (this.expandedConsultationId() === consultationId) {
       this.closeChat();
       return;
     }
+    const lastReadAt = this.findLastReadAt(consultationId);
+    console.log('[openChat] consultationId:', consultationId, 'lastReadAt:', lastReadAt);
+    this.chatUnreadSeparator.set(lastReadAt);
     this.expandedConsultationId.set(consultationId);
     this.chatMessages.set([]);
     this.chatCurrentPage = 1;
@@ -555,6 +573,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.chatWsService.disconnect();
     this.expandedConsultationId.set(null);
     this.chatMessages.set([]);
+    this.chatUnreadSeparator.set(null);
   }
 
   isConsultationExpanded(consultationId: number): boolean {

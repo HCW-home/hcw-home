@@ -114,6 +114,32 @@
   text-align: center;
 }
 
+.unread-separator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 8px;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--primary-600, #0891b2);
+    opacity: 0.4;
+  }
+}
+
+.unread-separator-text {
+  color: var(--primary-600, #0891b2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .system-message {
   display: flex;
   justify-content: center;

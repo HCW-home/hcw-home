@@ -658,6 +658,7 @@
           [hasHeaderAction]="!!consultation()?.beneficiary && !consultation()?.closed_at && !inConsultationCall()"
           [isLoadingMore]="isLoadingMore()"
           [hasMore]="hasMore()"
+          [unreadSeparatorTimestamp]="unreadSeparatorTimestamp()"
           (sendMessage)="onSendMessage($event)"
           (editMessage)="onEditMessage($event)"
           (deleteMessage)="onDeleteMessage($event)"

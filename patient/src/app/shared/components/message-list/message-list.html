@@ -30,6 +30,11 @@
             <span class="date-separator-text">{{ formatDateSeparator(message.timestamp) }}</span>
           </div>
         }
+        @if (shouldShowUnreadSeparator(i)) {
+          <div class="unread-separator">
+            <span class="unread-separator-text">{{ 'messageList.unreadMessages' | translate }}</span>
+          </div>
+        }
         @if (message.isSystem) {
           <div class="system-message">
             @if (message.message) {

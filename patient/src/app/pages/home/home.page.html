@@ -121,6 +121,7 @@
                         <app-message-list
                           [messages]="chatMessages()"
                           [showHeader]="false"
+                          [unreadSeparatorTimestamp]="chatUnreadSeparator()"
                           [isConnected]="isChatConnected()"
                           [isLoadingMore]="isChatLoadingMore()"
                           [hasMore]="chatHasMore()"
@@ -206,6 +207,7 @@
                       <app-message-list
                         [messages]="chatMessages()"
                         [showHeader]="false"
+                        [unreadSeparatorTimestamp]="chatUnreadSeparator()"
                         [isConnected]="isChatConnected()"
                         [isLoadingMore]="isChatLoadingMore()"
                         [hasMore]="chatHasMore()"

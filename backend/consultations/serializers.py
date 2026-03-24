@@ -285,6 +285,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
     next_appointment = serializers.SerializerMethodField()
     appointments = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    last_read_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultation
@@ -306,6 +307,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "next_appointment",
             "appointments",
             "unread_count",
+            "last_read_at",
         ]
         read_only_fields = [
             "id",
@@ -316,6 +318,7 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
             "next_appointment",
             "appointments",
             "unread_count",
+            "last_read_at",
         ]
 
     def get_next_appointment(self, obj):
@@ -357,6 +360,26 @@ class ConsultationSerializer(CustomFieldsMixin, serializers.ModelSerializer):
         if read_status:
             qs = qs.filter(created_at__gt=read_status.last_read_at)
         return qs.count()
+
+    def get_last_read_at(self, obj):
+        if hasattr(obj, "_last_read_at"):
+            val = obj._last_read_at
+            # EPOCH means never read
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            if val and val > datetime(1970, 1, 2, tzinfo=ZoneInfo("UTC")):
+                return val.isoformat()
+            return None
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+        from .models import ConsultationReadStatus
+        read_status = ConsultationReadStatus.objects.filter(
+            consultation=obj, user=request.user
+        ).first()
+        if read_status:
+            return read_status.last_read_at.isoformat()
+        return None
 
 
 class AppointmentSerializer(serializers.ModelSerializer):

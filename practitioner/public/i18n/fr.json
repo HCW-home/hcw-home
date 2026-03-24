@@ -291,7 +291,8 @@
         "send": "Envoyer",
         "edited": "(modifié)",
         "today": "Aujourd'hui",
-        "yesterday": "Hier"
+        "yesterday": "Hier",
+        "unreadMessages": "Messages non lus"
     },
     "userSearchSelect": {
         "searchingUsers": "Recherche d'utilisateurs...",

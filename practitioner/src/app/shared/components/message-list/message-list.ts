@@ -84,6 +84,7 @@ export class MessageList
   @Input() currentUserId: number | null = null;
   @Input() isLoadingMore = false;
   @Input() hasMore = true;
+  @Input() unreadSeparatorTimestamp: string | null = null;
   @Output() sendMessage = new EventEmitter<SendMessageData>();
   @Output() editMessage = new EventEmitter<EditMessageData>();
   @Output() deleteMessage = new EventEmitter<DeleteMessageData>();
@@ -256,6 +257,19 @@ export class MessageList
   formatTime(timestamp: string): string {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  shouldShowUnreadSeparator(index: number): boolean {
+    if (!this.unreadSeparatorTimestamp) return false;
+    const message = this.messages[index];
+    if (message.isCurrentUser || message.isSystem) return false;
+    const separatorTime = new Date(this.unreadSeparatorTimestamp).getTime();
+    const msgTime = new Date(message.timestamp).getTime();
+    if (msgTime <= separatorTime) return false;
+    if (index === 0) return true;
+    const prevMsg = this.messages[index - 1];
+    const prevTime = new Date(prevMsg.timestamp).getTime();
+    return prevTime <= separatorTime || prevMsg.isCurrentUser;
   }
 
   shouldShowDateSeparator(index: number): boolean {

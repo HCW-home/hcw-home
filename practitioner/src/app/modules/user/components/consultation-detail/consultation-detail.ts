@@ -149,6 +149,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   private appointmentPageSize = 20;
 
   messages = signal<Message[]>([]);
+  unreadSeparatorTimestamp = signal<string | null>(null);
   isWebSocketConnected = signal(false);
   currentUser = signal<IUser | null>(null);
   isLoadingMore = signal(false);
@@ -817,6 +818,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: consultation => {
+          if (!this.unreadSeparatorTimestamp()) {
+            this.unreadSeparatorTimestamp.set(consultation.last_read_at || null);
+          }
           this.consultation.set(consultation);
           this.isLoadingConsultation.set(false);
         },

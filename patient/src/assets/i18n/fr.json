@@ -264,7 +264,8 @@
         "loadingImage": "Chargement de l'image...",
         "typePlaceholder": "Tapez un message...",
         "today": "Aujourd'hui",
-        "yesterday": "Hier"
+        "yesterday": "Hier",
+        "unreadMessages": "Messages non lus"
     },
     "preJoinLobby": {
         "settingUp": "Configuration de vos appareils...",

@@ -264,7 +264,8 @@
     "loadingImage": "Loading image...",
     "typePlaceholder": "Type a message...",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "unreadMessages": "Unread messages"
   },
   "preJoinLobby": {
     "settingUp": "Setting up your devices...",

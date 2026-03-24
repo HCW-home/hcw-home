@@ -995,7 +995,8 @@
     "send": "Send",
     "edited": "(edited)",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "unreadMessages": "Unread messages"
   },
   "userSearchSelect": {
     "searchingUsers": "Searching users...",

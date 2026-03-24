@@ -80,6 +80,7 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
   @Input() isLoadingMore = false;
   @Input() hasMore = true;
   @Input() showHeader = true;
+  @Input() unreadSeparatorTimestamp: string | null = null;
   @Output() sendMessage = new EventEmitter<SendMessageData>();
   @Output() editMessage = new EventEmitter<EditMessageData>();
   @Output() deleteMessage = new EventEmitter<DeleteMessageData>();
@@ -228,6 +229,28 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
   formatTime(timestamp: string): string {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  shouldShowUnreadSeparator(index: number): boolean {
+    if (!this.unreadSeparatorTimestamp) {
+      if (index === 0) console.log('[unreadSep] no timestamp');
+      return false;
+    }
+    const message = this.messages[index];
+    if (message.isCurrentUser || message.isSystem) return false;
+    const separatorTime = new Date(this.unreadSeparatorTimestamp).getTime();
+    const msgTime = new Date(message.timestamp).getTime();
+    if (index === 0 || index === this.messages.length - 1) {
+      console.log(`[unreadSep] msg[${index}] ts=${message.timestamp} msgTime=${msgTime} separatorTime=${separatorTime} diff=${msgTime - separatorTime} isCurrentUser=${message.isCurrentUser}`);
+    }
+    if (msgTime <= separatorTime) return false;
+    // Show only before the first unread message
+    if (index === 0) return true;
+    const prevMsg = this.messages[index - 1];
+    const prevTime = new Date(prevMsg.timestamp).getTime();
+    const result = prevTime <= separatorTime || prevMsg.isCurrentUser;
+    if (result) console.log(`[unreadSep] SHOW separator before msg[${index}]`);
+    return result;
   }
 
   shouldShowDateSeparator(index: number): boolean {

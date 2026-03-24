@@ -263,7 +263,8 @@
         "messageDeleted": "Nachricht geloescht",
         "loadingImage": "Bild wird geladen...",
         "typePlaceholder": "Nachricht eingeben...",
-        "yesterday": "Gestern"
+        "yesterday": "Gestern",
+        "unreadMessages": "Ungelesene Nachrichten"
     },
     "preJoinLobby": {
         "settingUp": "Ihre Geraete werden eingerichtet...",

@@ -37,6 +37,7 @@ export interface Consultation {
   appointments?: Appointment[];
   messages?: ConsultationMessage[];
   unread_count?: number;
+  last_read_at?: string;
 }
 
 export interface Queue {

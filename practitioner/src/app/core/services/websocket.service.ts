@@ -149,6 +149,7 @@ export class WebSocketService {
           return;
         }
 
+
         const message = raw as UserIncomingEvent;
         console.log('[WS] Received message:', message);
         this.messageSubject.next(message);

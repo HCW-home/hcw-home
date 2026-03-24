@@ -9,8 +9,6 @@ services:
       sh -c "
         echo 'Running migrations...';
         python manage.py migrate;
-        echo 'Resetting online status...';
-        python manage.py reset_online_status;
         echo 'Migration completed successfully';
       "
     environment:

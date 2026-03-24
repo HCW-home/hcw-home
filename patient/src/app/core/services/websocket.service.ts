@@ -135,6 +135,7 @@ export class WebSocketService implements OnDestroy {
           return;
         }
 
+
         console.log('[WS] Received message:', message);
         this.messageSubject.next(message as UserIncomingEvent);
       } catch (error) {

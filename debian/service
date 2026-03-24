@@ -7,7 +7,6 @@ User=hcw
 Environment=VIRTUAL_ENV=/usr/share/hcw/backend/venv
 EnvironmentFile=/etc/hcw/backend.conf
 WorkingDirectory=/usr/share/hcw/backend/
-ExecStartPre=/usr/share/hcw/backend/venv/bin/python manage.py reset_online_status
 ExecStartPre=/usr/share/hcw/backend/venv/bin/python manage.py migrate --noinput
 ExecStart=/usr/share/hcw/backend/venv/bin/daphne -p 8000 core.asgi:application
 

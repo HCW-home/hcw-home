@@ -17,9 +17,12 @@
         <span>{{ closeLabel }}</span>
       </button>
     } @else if (!hideAction) {
-      <button class="consultation-info-btn" (click)="onAccess($event)">
+      <button class="consultation-info-btn" [class.has-unread]="unreadCount > 0" (click)="onAccess($event)">
         <ion-icon name="chatbubbles-outline"></ion-icon>
         <span>{{ 'home.accessConsultation' | translate }}</span>
+        @if (unreadCount > 0) {
+          <span class="unread-badge">{{ unreadCount }} {{ (unreadCount === 1 ? 'home.unreadMessage' : 'home.unreadMessages') | translate }}</span>
+        }
       </button>
     }
   </div>

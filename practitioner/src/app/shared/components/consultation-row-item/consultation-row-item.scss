@@ -26,6 +26,27 @@
       font-weight: 500;
       color: var(--slate-400);
     }
+
+    .unread-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(8, 145, 178, 0.1);
+      color: var(--primary-600, #0891b2);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+
+      .unread-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary-600, #0891b2);
+        flex-shrink: 0;
+      }
+    }
   }
 
   .row-details {

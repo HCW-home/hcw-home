@@ -111,6 +111,7 @@
                   <app-consultation-info
                     [consultation]="request.consultation!"
                     [label]="'home.followUp' | translate"
+                    [unreadCount]="getUnreadCount(request.consultation!.id)"
                     [hideAction]="isConsultationExpanded(request.consultation!.id)"
                     [closeLabel]="isConsultationExpanded(request.consultation!.id) ? ('common.close' | translate) : ''"
                     (access)="viewConsultationFromRequest(request)"
@@ -195,6 +196,7 @@
                 <app-consultation-info
                   [consultation]="consultation"
                   [label]="'home.followUp' | translate"
+                  [unreadCount]="getUnreadCount(consultation.id)"
                   [hideAction]="isConsultationExpanded(consultation.id)"
                   [closeLabel]="isConsultationExpanded(consultation.id) ? ('common.close' | translate) : ''"
                   (access)="viewConsultationDetails(consultation)"

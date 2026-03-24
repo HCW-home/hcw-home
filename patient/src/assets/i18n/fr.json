@@ -146,6 +146,8 @@
         "requestConsultation": "Demander une consultation",
         "awaitingAssignment": "En attente de traitement",
         "accessConsultation": "Discuter avec le praticien",
+        "unreadMessage": "message non lu",
+        "unreadMessages": "messages non lus",
         "myConsultations": "Mes suivis/consultations",
         "managedBy": "Géré par {{name}}",
         "nextAppointmentLabel": "Prochain rendez-vous",

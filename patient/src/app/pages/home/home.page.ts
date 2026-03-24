@@ -82,6 +82,9 @@ export class HomePage implements OnInit, OnDestroy {
   private chatCurrentPage = 1;
   private pendingOpenChatId: number | null = null;
 
+  // Unread counts per consultation
+  private unreadCounts = signal<Map<number, number>>(new Map());
+
   constructor(
     private navCtrl: NavController,
     private route: ActivatedRoute,
@@ -217,6 +220,7 @@ export class HomePage implements OnInit, OnDestroy {
           this.consultations.set(response.consultations);
           this.appointments.set(response.appointments);
           this.isLoading.set(false);
+          this.updateUnreadCountsFromData(response);
 
           if (this.pendingOpenChatId) {
             const chatId = this.pendingOpenChatId;
@@ -242,6 +246,19 @@ export class HomePage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.refreshDashboard();
+      });
+
+    this.userWsService.consultationMessage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        const consultationId = event.consultation_id;
+        if (event.state === 'created' && consultationId !== this.expandedConsultationId()) {
+          const user = this.currentUser();
+          const senderId = event.data?.created_by?.id;
+          if (senderId && senderId !== user?.id && senderId !== user?.pk) {
+            this.incrementUnreadCount(consultationId);
+          }
+        }
       });
   }
 
@@ -516,6 +533,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.chatHasMore.set(true);
     this.chatWsService.connect(consultationId);
     this.loadChatMessages();
+    this.clearUnreadCount(consultationId);
+    this.consultationService.markConsultationRead(consultationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
     // Scroll so the chat input is visible and focus it
     setTimeout(() => {
@@ -662,5 +683,42 @@ export class HomePage implements OnInit, OnDestroy {
           );
         }
       });
+  }
+
+  // --- Unread counts ---
+
+  private updateUnreadCountsFromData(response: any): void {
+    const counts = new Map<number, number>();
+    for (const req of (response.requests || [])) {
+      if (req.consultation?.id && req.consultation.unread_count) {
+        counts.set(req.consultation.id, req.consultation.unread_count);
+      }
+    }
+    for (const c of (response.consultations || [])) {
+      if (c.id && c.unread_count) {
+        counts.set(c.id, c.unread_count);
+      }
+    }
+    this.unreadCounts.set(counts);
+  }
+
+  getUnreadCount(consultationId: number): number {
+    return this.unreadCounts().get(consultationId) || 0;
+  }
+
+  private incrementUnreadCount(consultationId: number): void {
+    this.unreadCounts.update(counts => {
+      const updated = new Map(counts);
+      updated.set(consultationId, (updated.get(consultationId) || 0) + 1);
+      return updated;
+    });
+  }
+
+  private clearUnreadCount(consultationId: number): void {
+    this.unreadCounts.update(counts => {
+      const updated = new Map(counts);
+      updated.delete(consultationId);
+      return updated;
+    });
   }
 }

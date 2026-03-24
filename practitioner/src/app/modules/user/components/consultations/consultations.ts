@@ -24,6 +24,7 @@ import { TypographyTypeEnum } from '../../../../shared/constants/typography';
 import { BadgeTypeEnum } from '../../../../shared/constants/badge';
 import { Svg } from '../../../../shared/ui-components/svg/svg';
 import { ConsultationService } from '../../../../core/services/consultation.service';
+import { UserWebSocketService } from '../../../../core/services/user-websocket.service';
 import { Consultation, Queue } from '../../../../core/models/consultation';
 import { Loader } from '../../../../shared/components/loader/loader';
 import { RoutePaths } from '../../../../core/constants/routes';
@@ -71,6 +72,7 @@ export class Consultations implements OnInit, OnDestroy {
   private toasterService = inject(ToasterService);
   private t = inject(TranslationService);
   private userService = inject(UserService);
+  private userWsService = inject(UserWebSocketService);
 
   private tabCache: Record<ConsultationTabType, TabCache> = {
     active: {
@@ -165,6 +167,23 @@ export class Consultations implements OnInit, OnDestroy {
       .subscribe(() => {
         this.invalidateCache();
         this.loadConsultations();
+      });
+
+    this.userWsService.consultationMessage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        if (event.state !== 'created') return;
+        const senderId = event.data?.created_by?.id;
+        const currentUserId = this.currentUser()?.pk;
+        if (senderId && senderId !== currentUserId) {
+          this.consultations.update(list =>
+            list.map(c =>
+              c.id === event.consultation_id
+                ? { ...c, unread_count: (c.unread_count || 0) + 1 }
+                : c
+            )
+          );
+        }
       });
   }
 

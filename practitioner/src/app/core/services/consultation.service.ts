@@ -200,6 +200,13 @@ export class ConsultationService {
     );
   }
 
+  markConsultationRead(consultationId: number): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(
+      `${this.apiUrl}/consultations/${consultationId}/mark_read/`,
+      {}
+    );
+  }
+
   getConsultationMessages(
     consultationId: number,
     params?: { page?: number; page_size?: number }

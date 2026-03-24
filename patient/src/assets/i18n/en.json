@@ -146,6 +146,8 @@
     "requestConsultation": "Request a consultation",
     "awaitingAssignment": "Awaiting doctor assignment",
     "accessConsultation": "Chat with practitioner",
+    "unreadMessage": "unread message",
+    "unreadMessages": "unread messages",
     "myConsultations": "My Follow-ups/Consultations",
     "managedBy": "Managed by {{name}}",
     "nextAppointmentLabel": "Next appointment",

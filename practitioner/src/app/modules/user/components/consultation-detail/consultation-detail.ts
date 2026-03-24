@@ -357,6 +357,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       this.loadMessages();
       this.connectWebSocket();
       this.checkJoinQueryParam();
+      this.consultationService.markConsultationRead(this.consultationId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
     });
 
     this.setupWebSocketListeners();

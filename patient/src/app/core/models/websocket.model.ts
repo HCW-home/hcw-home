@@ -169,7 +169,8 @@ export type UserIncomingEvent =
   | ErrorEvent
   | AppointmentJoinedEvent
   | AppointmentChangedEvent
-  | ConsultationChangedEvent;
+  | ConsultationChangedEvent
+  | MessageEvent;
 
 export interface ConsultationMessageEvent {
   type: 'consultation_message';

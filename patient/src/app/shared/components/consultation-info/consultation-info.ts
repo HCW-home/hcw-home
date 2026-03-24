@@ -21,6 +21,7 @@ export class ConsultationInfoComponent {
   @Input() label?: string;
   @Input() hideAction = false;
   @Input() closeLabel = '';
+  @Input() unreadCount = 0;
   @Output() access = new EventEmitter<Consultation>();
   @Output() close = new EventEmitter<void>();
 

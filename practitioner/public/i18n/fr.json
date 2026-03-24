@@ -255,7 +255,9 @@
         "created": "Créé",
         "closed": "Fermé",
         "description": "Description",
-        "status": "Statut"
+        "status": "Statut",
+        "unreadMessage": "message non lu",
+        "unreadMessages": "messages non lus"
     },
     "participantItem": {
         "pending": "En attente",

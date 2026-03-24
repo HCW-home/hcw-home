@@ -959,7 +959,9 @@
     "created": "Created",
     "closed": "Closed",
     "description": "Description",
-    "status": "Status"
+    "status": "Status",
+    "unreadMessage": "unread message",
+    "unreadMessages": "unread messages"
   },
   "participantItem": {
     "pending": "Pending",

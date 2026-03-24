@@ -12,6 +12,7 @@ import {
   AppointmentChangedEvent,
   ConsultationChangedEvent,
   CallRequestEvent,
+  MessageEvent as WsMessageEvent,
 } from '../models/websocket.model';
 
 @Injectable({
@@ -26,6 +27,7 @@ export class UserWebSocketService implements OnDestroy {
   private appointmentChangedSubject = new Subject<AppointmentChangedEvent>();
   private consultationChangedSubject = new Subject<ConsultationChangedEvent>();
   private callRequestSubject = new Subject<CallRequestEvent>();
+  private consultationMessageSubject = new Subject<WsMessageEvent>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectInterval = 5000; // 5 seconds between refresh attempts
   private isRefreshing = false;
@@ -42,6 +44,7 @@ export class UserWebSocketService implements OnDestroy {
   public appointmentChanged$: Observable<AppointmentChangedEvent> = this.appointmentChangedSubject.asObservable();
   public consultationChanged$: Observable<ConsultationChangedEvent> = this.consultationChangedSubject.asObservable();
   public callRequest$: Observable<CallRequestEvent> = this.callRequestSubject.asObservable();
+  public consultationMessage$: Observable<WsMessageEvent> = this.consultationMessageSubject.asObservable();
   public connectionState$: Observable<WebSocketState> = this.effectiveStateSubject.asObservable();
 
   constructor(
@@ -244,6 +247,10 @@ export class UserWebSocketService implements OnDestroy {
 
     this.wsService.on('error').subscribe((event) => {
       console.error('WebSocket error:', (event as { message: string }).message);
+    });
+
+    this.wsService.on('message').subscribe(event => {
+      this.consultationMessageSubject.next(event);
     });
   }
 

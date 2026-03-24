@@ -5,6 +5,12 @@
         {{ consultation().title || ('consultationRowItem.untitledConsultation' | translate) }}
       </app-typography>
       <span class="consultation-id">{{ getFormattedId() }}</span>
+      @if (consultation().unread_count) {
+        <span class="unread-badge">
+          <span class="unread-dot"></span>
+          {{ consultation().unread_count }} {{ (consultation().unread_count === 1 ? 'consultationRowItem.unreadMessage' : 'consultationRowItem.unreadMessages') | translate }}
+        </span>
+      }
     </div>
   </div>
 

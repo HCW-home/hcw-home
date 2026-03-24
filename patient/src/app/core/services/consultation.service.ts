@@ -66,6 +66,10 @@ export class ConsultationService {
     return this.api.patch<Appointment>(`/appointments/${id}/`, { status: 'cancelled' });
   }
 
+  markConsultationRead(consultationId: number): Observable<any> {
+    return this.api.post(`/user/consultations/${consultationId}/mark_read/`, {});
+  }
+
   getConsultationMessagesPaginated(consultationId: number, page: number = 1): Observable<PaginatedResponse<ConsultationMessage>> {
     return this.api.get<PaginatedResponse<ConsultationMessage>>(`/user/consultations/${consultationId}/messages/`, { page });
   }

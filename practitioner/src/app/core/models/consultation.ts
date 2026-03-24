@@ -115,6 +115,7 @@ export interface Consultation {
   group_id?: number;
   visible_by_patient: boolean;
   custom_fields?: CustomFieldValue[];
+  unread_count?: number;
 }
 
 export interface CreateConsultationRequest {

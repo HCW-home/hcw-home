@@ -146,6 +146,8 @@
         "requestConsultation": "Konsultation anfordern",
         "awaitingAssignment": "Warten auf Arztzuweisung",
         "accessConsultation": "Mit dem Behandler chatten",
+        "unreadMessage": "ungelesene Nachricht",
+        "unreadMessages": "ungelesene Nachrichten",
         "myConsultations": "Meine Nachsorgen/Konsultationen",
         "managedBy": "Betreut von {{name}}",
         "nextAppointmentLabel": "Naechster Termin",

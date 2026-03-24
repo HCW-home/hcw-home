@@ -560,6 +560,13 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
               }
               return [...msgs, newMessage];
             });
+            // Chat is open — mark as read and clear separator
+            if (!newMessage.isCurrentUser && !isSystem) {
+              this.unreadSeparatorTimestamp.set(null);
+              this.consultationService.markConsultationRead(this.consultationId)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe();
+            }
           }
         } else if (event.state === 'updated' || event.state === 'deleted') {
           this.loadMessages();

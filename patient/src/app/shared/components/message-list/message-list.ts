@@ -231,26 +231,33 @@ export class MessageListComponent implements OnInit, OnChanges, OnDestroy, After
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  shouldShowUnreadSeparator(index: number): boolean {
-    if (!this.unreadSeparatorTimestamp) {
-      if (index === 0) console.log('[unreadSep] no timestamp');
-      return false;
+  private firstUnreadIndex: number | null = null;
+  private lastComputedSeparatorTimestamp: string | null = null;
+  private lastComputedMessagesLength = 0;
+
+  private computeFirstUnreadIndex(): void {
+    if (this.unreadSeparatorTimestamp === this.lastComputedSeparatorTimestamp
+        && this.messages.length === this.lastComputedMessagesLength) {
+      return;
     }
-    const message = this.messages[index];
-    if (message.isCurrentUser || message.isSystem) return false;
+    this.lastComputedSeparatorTimestamp = this.unreadSeparatorTimestamp;
+    this.lastComputedMessagesLength = this.messages.length;
+    this.firstUnreadIndex = null;
+
+    if (!this.unreadSeparatorTimestamp) return;
     const separatorTime = new Date(this.unreadSeparatorTimestamp).getTime();
-    const msgTime = new Date(message.timestamp).getTime();
-    if (index === 0 || index === this.messages.length - 1) {
-      console.log(`[unreadSep] msg[${index}] ts=${message.timestamp} msgTime=${msgTime} separatorTime=${separatorTime} diff=${msgTime - separatorTime} isCurrentUser=${message.isCurrentUser}`);
+    for (let i = 0; i < this.messages.length; i++) {
+      const msg = this.messages[i];
+      if (!msg.isCurrentUser && !msg.isSystem && new Date(msg.timestamp).getTime() > separatorTime) {
+        this.firstUnreadIndex = i;
+        return;
+      }
     }
-    if (msgTime <= separatorTime) return false;
-    // Show only before the first unread message
-    if (index === 0) return true;
-    const prevMsg = this.messages[index - 1];
-    const prevTime = new Date(prevMsg.timestamp).getTime();
-    const result = prevTime <= separatorTime || prevMsg.isCurrentUser;
-    if (result) console.log(`[unreadSep] SHOW separator before msg[${index}]`);
-    return result;
+  }
+
+  shouldShowUnreadSeparator(index: number): boolean {
+    this.computeFirstUnreadIndex();
+    return this.firstUnreadIndex === index;
   }
 
   shouldShowDateSeparator(index: number): boolean {

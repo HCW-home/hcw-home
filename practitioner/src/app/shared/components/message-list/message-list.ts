@@ -259,17 +259,33 @@ export class MessageList
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  shouldShowUnreadSeparator(index: number): boolean {
-    if (!this.unreadSeparatorTimestamp) return false;
-    const message = this.messages[index];
-    if (message.isCurrentUser || message.isSystem) return false;
+  private firstUnreadIndex: number | null = null;
+  private lastComputedSeparatorTimestamp: string | null = null;
+  private lastComputedMessagesLength = 0;
+
+  private computeFirstUnreadIndex(): void {
+    if (this.unreadSeparatorTimestamp === this.lastComputedSeparatorTimestamp
+        && this.messages.length === this.lastComputedMessagesLength) {
+      return;
+    }
+    this.lastComputedSeparatorTimestamp = this.unreadSeparatorTimestamp;
+    this.lastComputedMessagesLength = this.messages.length;
+    this.firstUnreadIndex = null;
+
+    if (!this.unreadSeparatorTimestamp) return;
     const separatorTime = new Date(this.unreadSeparatorTimestamp).getTime();
-    const msgTime = new Date(message.timestamp).getTime();
-    if (msgTime <= separatorTime) return false;
-    if (index === 0) return true;
-    const prevMsg = this.messages[index - 1];
-    const prevTime = new Date(prevMsg.timestamp).getTime();
-    return prevTime <= separatorTime || prevMsg.isCurrentUser;
+    for (let i = 0; i < this.messages.length; i++) {
+      const msg = this.messages[i];
+      if (!msg.isCurrentUser && !msg.isSystem && new Date(msg.timestamp).getTime() > separatorTime) {
+        this.firstUnreadIndex = i;
+        return;
+      }
+    }
+  }
+
+  shouldShowUnreadSeparator(index: number): boolean {
+    this.computeFirstUnreadIndex();
+    return this.firstUnreadIndex === index;
   }
 
   shouldShowDateSeparator(index: number): boolean {

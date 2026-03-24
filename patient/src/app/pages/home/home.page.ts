@@ -84,6 +84,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Unread counts per consultation
   private unreadCounts = signal<Map<number, number>>(new Map());
+  private lastReadAtMap = new Map<number, string | null>();
   chatUnreadSeparator = signal<string | null>(null);
 
   constructor(
@@ -516,6 +517,13 @@ export class HomePage implements OnInit, OnDestroy {
               updatedAt: event.data.updated_at,
             };
             this.chatMessages.update(msgs => [...msgs, newMessage]);
+            // Chat is open — mark as read and clear separator
+            if (!isCurrentUser && !isSystem) {
+              this.chatUnreadSeparator.set(null);
+              this.consultationService.markConsultationRead(this.expandedConsultationId()!)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe();
+            }
           }
         } else if (event.state === 'updated' || event.state === 'deleted') {
           this.loadChatMessages();
@@ -524,6 +532,10 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private findLastReadAt(consultationId: number): string | null {
+    // Local override takes priority (set when closing chat)
+    if (this.lastReadAtMap.has(consultationId)) {
+      return this.lastReadAtMap.get(consultationId) || null;
+    }
     for (const req of this.requests()) {
       if (req.consultation?.id === consultationId) {
         return req.consultation.last_read_at || null;
@@ -535,6 +547,10 @@ export class HomePage implements OnInit, OnDestroy {
       }
     }
     return null;
+  }
+
+  private updateLocalLastReadAt(consultationId: number, timestamp: string): void {
+    this.lastReadAtMap.set(consultationId, timestamp);
   }
 
   openChat(consultationId: number): void {
@@ -570,6 +586,11 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   closeChat(): void {
+    // Update last_read_at locally so the separator works correctly on next open
+    const id = this.expandedConsultationId();
+    if (id) {
+      this.updateLocalLastReadAt(id, new Date().toISOString());
+    }
     this.chatWsService.disconnect();
     this.expandedConsultationId.set(null);
     this.chatMessages.set([]);
@@ -662,6 +683,11 @@ export class HomePage implements OnInit, OnDestroy {
     this.consultationService.sendConsultationMessage(id, data.content || '', data.attachment)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
+        next: () => {
+          this.consultationService.markConsultationRead(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe();
+        },
         error: async (error) => {
           const toast = await this.toastController.create({
             message: error?.error?.detail || this.t.instant('consultationDetail.failedSend'),
@@ -707,14 +733,15 @@ export class HomePage implements OnInit, OnDestroy {
   // --- Unread counts ---
 
   private updateUnreadCountsFromData(response: any): void {
+    const expandedId = this.expandedConsultationId();
     const counts = new Map<number, number>();
     for (const req of (response.requests || [])) {
-      if (req.consultation?.id && req.consultation.unread_count) {
+      if (req.consultation?.id && req.consultation.unread_count && req.consultation.id !== expandedId) {
         counts.set(req.consultation.id, req.consultation.unread_count);
       }
     }
     for (const c of (response.consultations || [])) {
-      if (c.id && c.unread_count) {
+      if (c.id && c.unread_count && c.id !== expandedId) {
         counts.set(c.id, c.unread_count);
       }
     }

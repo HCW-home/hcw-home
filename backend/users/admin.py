@@ -142,7 +142,8 @@ class UserAdmin(BaseUserAdmin, ModelAdmin, ImportExportModelAdmin):
         ),
         (
             "Authentication",
-            {"fields": ("one_time_auth_token", "verification_code", "is_first_login")},
+            {"fields": ("one_time_auth_token", "verification_code",
+                        "is_first_login", "verification_code_created_at", "verification_attempts")},
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )

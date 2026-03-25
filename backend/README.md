@@ -36,9 +36,3 @@ Get language string to translate
 ./manage.py makemessages --locale=fr --ignore='venv/*'
 ./manage.py compilemessages --ignore='venv/*'
 ```
-
-Start the server
-
-```
-./manage.py reset_online_status ; ./manage.py runserver
-```

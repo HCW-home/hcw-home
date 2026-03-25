@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 08:43+0000\n"
-"PO-Revision-Date: 2026-03-25 07:19+0000\n"
+"PO-Revision-Date: 2026-03-25 13:26+0000\n"
 "Last-Translator: Olivier Bitsch <olivier.b@iabsis.com>\n"
 "Language-Team: French <https://translate.iabsis.com/projects/hcwhome-v6/"
 "backend/fr/>\n"
@@ -680,16 +680,16 @@ msgstr ""
 
 #: core/templates/login.html:45
 msgid "Password"
-msgstr ""
+msgstr "Mot de passe"
 
 #: core/templates/login.html:61
 msgid "or"
-msgstr ""
+msgstr "ou"
 
 #: core/templates/login.html:71
 #, python-format
 msgid "Sign in with %(name)s"
-msgstr ""
+msgstr "Connectez-vous avec %(name)s"
 
 #: core/templates/login.html:79
 msgid "No identity provider configured."
@@ -698,10 +698,11 @@ msgstr "Aucun fournisseur d'identité trouvé."
 #: core/templates/login.html:82
 msgid "Please configure a Social Application in the admin panel."
 msgstr ""
+"Veuillez configurer une application sociale dans le panneau d'administration."
 
 #: core/views.py:37
 msgid "Invalid email or password."
-msgstr ""
+msgstr "Email ou mot de passe invalide."
 
 #: core/views.py:114
 msgid "Active Users"
@@ -1268,10 +1269,6 @@ msgstr ""
 "minutes"
 
 #: messaging/template.py:23
-#, fuzzy
-#| msgid ""
-#| "Your consultation appointment start at {{ obj.appointment.scheduled_at|"
-#| "localtime|time }}"
 msgid ""
 "Your consultation appointment will start at {{ obj.appointment.scheduled_at|"
 "localtime|time }}"
@@ -1294,27 +1291,14 @@ msgid "Your consultation has been scheduled"
 msgstr "Votre consultation a été planifiée"
 
 #: messaging/template.py:36
-#, fuzzy
-#| msgid ""
-#| "Hello,\n"
-#| "Your consultation has been successfully scheduled. \n"
-#| "Appointment scheduled by: {{ obj.appointment.scheduled_at|date }} at "
-#| "{{ obj.appointment.scheduled_at|time }} "
-#| "({{ obj.appointment.scheduled_at }})\n"
-#| "Please confirm your presence: {{config.patient_base_url}}?"
-#| "auth={{ obj.user.one_time_auth_token }}&action=presence"
 msgid ""
 "Your consultation has been scheduled for {{ obj.appointment.scheduled_at|"
 "localtime|date }} at {{ obj.appointment.scheduled_at|localtime|time }} "
 "({{ obj.appointment.scheduled_at }})"
 msgstr ""
-"Bonjour,\n"
-"Votre consultation a été planifiée avec succès. \n"
-"Rendez-vous prévu le : {{ obj.appointment.scheduled_at|date }} à "
-"{{ obj.appointment.scheduled_at|time }} "
-"({{ obj.appointment.scheduled_at }})\n"
-"Veuillez confirmer votre présence : {{config.patient_base_url}}?"
-"auth={{ obj.user.one_time_auth_token }}&action=presence"
+"Votre consultation est prévue pour le {{ obj.appointment."
+"scheduled_at|localtime|date }} à {{ obj.appointment.scheduled_at|localtime|"
+"time }} ({{ obj.appointment.scheduled_at }})"
 
 #: messaging/template.py:39
 msgid ""
@@ -1479,12 +1463,17 @@ msgid ""
 "A consultation \"{{ obj.title }}\" has been assigned to you. You can now "
 "interact with it and view its details."
 msgstr ""
+"Une consultation \"{{ obj.title }}\" vous a été attribuée. Vous pouvez "
+"maintenant interagir avec elle et voir ses détails."
 
 #: messaging/template.py:131
 msgid ""
 "<p>A consultation <strong>\"{{ obj.title }}\"</strong> has been assigned to "
 "you.</p><p>You can now interact with it and view its details.</p>"
 msgstr ""
+"<p>Une consultation <strong>\"{{ obj.title }}\"</strong> vous a été "
+"attribuée.</p><p>Vous pouvez maintenant interagir avec elle et consulter ses "
+"détails.</p>"
 
 #: messaging/template.py:135
 msgid "View consultation"

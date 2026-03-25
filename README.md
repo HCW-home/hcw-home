@@ -97,15 +97,22 @@ LANGUAGES = (
 )
 ```
 
-2. Create a new JSON file in both `practitioner/public/i18n/` and `patient/public/i18n/` (e.g., `it.json`), using `en.json` as a template.
-3. Create the backend locale directory and generate the `.po` file:
+2. Create a new JSON file in both `practitioner/public/i18n/` and `patient/src/assets/i18n/` (e.g., `it.json`), using `en.json` as a template.
+3. Register the Angular locale in both `practitioner/src/main.ts` and `patient/src/main.ts`:
+
+```typescript
+import localeIt from '@angular/common/locales/it';
+registerLocaleData(localeIt);
+```
+
+4. Create the backend locale directory and generate the `.po` file:
 
 ```bash
 cd backend
 python3 manage.py makemessages --locale=it --ignore='venv/*'
 ```
 
-4. Translate all strings and compile with `python3 manage.py compilemessages --ignore='venv/*'`.
+5. Translate all strings and compile with `python3 manage.py compilemessages --ignore='venv/*'`.
 
 
 ### Test data

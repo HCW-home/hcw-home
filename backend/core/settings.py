@@ -240,7 +240,9 @@ gettext = lambda s: s
 LANGUAGES = (
     ("en", gettext("English")),
     ("de", gettext("German")),
+    ("es", gettext("Spanish")),
     ("fr", gettext("French")),
+    ("it", gettext("Italian")),
 )
 
 # Static files (CSS, JavaScript, Images)

@@ -28,11 +28,13 @@ HCW@Home is a scalable, institution-level secure teleconsultation system for typ
 - **Booking Slots** - Manage availability and booking slots
 
 #### Multi-platform Support
+
 - **Progressive Web App (PWA)** - Installable web application for practitioners
 - **Cross-platform** - Works seamlessly on desktop and mobile devices
 - **Responsive Design** - All interfaces adapt seamlessly to any screen size
 
 #### Authentication & Security
+
 - **OpenID Connect** - External authentication support (SSO)
 - **JWT Authentication** - Secure token-based authentication
 - **Multi-factor Authentication** - Enhanced security for user accounts
@@ -40,6 +42,7 @@ HCW@Home is a scalable, institution-level secure teleconsultation system for typ
 - **Data Encryption** - Encrypted storage for sensitive information
 
 #### Customization & Configuration
+
 - **Multi-language Support** - Available in English, French, and German
 - **Custom Fields** - Define custom fields for consultations
 - **Message Templates** - Pre-defined templates with validation
@@ -72,7 +75,6 @@ HCW@Home is a scalable, institution-level secure teleconsultation system for typ
 ### Links
 
 - [Official Website](https://hcw-at-home.com/)
-- [HUG page about the solution](https://www.hug.ch/medecine-premier-recours/hughome)
 
 ### Licensing
 

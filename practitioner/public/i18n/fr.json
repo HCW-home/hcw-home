@@ -443,6 +443,7 @@
         "retry": "Réessayer",
         "failedToLoad": "Impossible de charger les données du tableau de bord",
         "errorLoading": "Erreur de chargement du tableau de bord",
+        "at": "à",
         "nextAppointment": "Prochain rendez-vous",
         "appointment": "Rendez-vous",
         "joinNow": "Rejoindre",

@@ -604,6 +604,7 @@
         "updateError": "Fehler beim Aktualisieren des Profils"
     },
     "dashboard": {
+        "at": "um",
         "now": "Jetzt",
         "soon": "Bald",
         "upcomingAppointments": "Anstehende Termine",

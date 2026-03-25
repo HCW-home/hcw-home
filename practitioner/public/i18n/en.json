@@ -107,6 +107,7 @@
     "updateError": "Error updating profile"
   },
   "dashboard": {
+    "at": "at",
     "loading": "Loading dashboard...",
     "retry": "Retry",
     "failedToLoad": "Failed to load dashboard data",

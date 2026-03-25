@@ -1,0 +1,629 @@
+[
+  {
+    "model": "users.organisation",
+    "pk": 1,
+    "fields": {
+      "name": "Hôpital Universitaire de Genève",
+      "primary_color_patient": "#0891b2",
+      "primary_color_practitioner": "#0891b2",
+      "street": "Rue Gabrielle-Perret-Gentil 4",
+      "city": "Genève",
+      "postal_code": "1205",
+      "country": "Suisse",
+      "is_main": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "admin@example.com",
+      "first_name": "Admin",
+      "last_name": "System",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "is_practitioner": true,
+      "is_first_login": false,
+      "temporary": false,
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "dr.martin@example.com",
+      "first_name": "Sophie",
+      "last_name": "Martin",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": true,
+      "is_first_login": false,
+      "temporary": false,
+      "job_title": "Médecin généraliste",
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "dr.bernard@example.com",
+      "first_name": "Marc",
+      "last_name": "Bernard",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": true,
+      "is_first_login": false,
+      "temporary": false,
+      "job_title": "Cardiologue",
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "dr.duval@example.com",
+      "first_name": "Claire",
+      "last_name": "Duval",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": true,
+      "is_first_login": false,
+      "temporary": false,
+      "job_title": "Dermatologue",
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+
+  {
+    "model": "users.user",
+    "pk": 10,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "jean.dupont@example.com",
+      "first_name": "Jean",
+      "last_name": "Dupont",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": false,
+      "is_first_login": false,
+      "temporary": false,
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 11,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "marie.leclerc@example.com",
+      "first_name": "Marie",
+      "last_name": "Leclerc",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": false,
+      "is_first_login": false,
+      "temporary": false,
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 12,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "ahmed.benali@example.com",
+      "first_name": "Ahmed",
+      "last_name": "Benali",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": false,
+      "is_first_login": false,
+      "temporary": false,
+      "communication_method": "sms",
+      "mobile_phone_number": "+41791234567",
+      "timezone": "Europe/Zurich"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 13,
+    "fields": {
+      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "email": "laura.rossi@example.com",
+      "first_name": "Laura",
+      "last_name": "Rossi",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": false,
+      "is_first_login": false,
+      "temporary": false,
+      "communication_method": "email",
+      "timezone": "Europe/Rome"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 14,
+    "fields": {
+      "email": null,
+      "first_name": "Patient",
+      "last_name": "Anonyme",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "is_practitioner": false,
+      "is_first_login": true,
+      "temporary": true,
+      "communication_method": "email",
+      "timezone": "Europe/Zurich"
+    }
+  },
+
+  {
+    "model": "consultations.queue",
+    "pk": 1,
+    "fields": {
+      "name": "Médecine générale"
+    }
+  },
+  {
+    "model": "consultations.queue",
+    "pk": 2,
+    "fields": {
+      "name": "Cardiologie"
+    }
+  },
+  {
+    "model": "consultations.queue",
+    "pk": 3,
+    "fields": {
+      "name": "Dermatologie"
+    }
+  },
+
+  {
+    "model": "consultations.consultation",
+    "pk": 1,
+    "fields": {
+      "title": "Suivi post-opératoire genou droit",
+      "description": "Patient opéré du ligament croisé antérieur le 15 mars. Suivi de rééducation et contrôle cicatrisation.",
+      "beneficiary": 10,
+      "created_by": 2,
+      "owned_by": 2,
+      "group": 1,
+      "visible_by_patient": true,
+      "closed_at": null,
+      "created_at": "2026-03-10T09:00:00Z",
+      "updated_at": "2026-03-20T14:30:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 2,
+    "fields": {
+      "title": "Bilan cardiologique annuel",
+      "description": "Contrôle annuel suite à un épisode de fibrillation auriculaire en 2025. ECG et échocardiographie prévus.",
+      "beneficiary": 11,
+      "created_by": 3,
+      "owned_by": 3,
+      "group": 2,
+      "visible_by_patient": true,
+      "closed_at": null,
+      "created_at": "2026-03-12T10:15:00Z",
+      "updated_at": "2026-03-22T11:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 3,
+    "fields": {
+      "title": "Consultation dermatologique - grain de beauté suspect",
+      "description": "Patiente inquiète d'un grain de beauté qui a changé de forme. Dermoscopie à prévoir.",
+      "beneficiary": 13,
+      "created_by": 4,
+      "owned_by": 4,
+      "group": 3,
+      "visible_by_patient": true,
+      "closed_at": null,
+      "created_at": "2026-03-18T08:30:00Z",
+      "updated_at": "2026-03-24T16:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 4,
+    "fields": {
+      "title": "Renouvellement ordonnance traitement chronique",
+      "description": "Renouvellement trimestriel du traitement pour hypertension et diabète type 2.",
+      "beneficiary": 12,
+      "created_by": 2,
+      "owned_by": 2,
+      "group": 1,
+      "visible_by_patient": true,
+      "closed_at": null,
+      "created_at": "2026-03-20T11:00:00Z",
+      "updated_at": "2026-03-24T09:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 5,
+    "fields": {
+      "title": "Consultation anonyme - orientation",
+      "description": "Demande d'orientation vers un spécialiste. Patient temporaire, pas encore identifié.",
+      "beneficiary": null,
+      "created_by": 2,
+      "owned_by": 2,
+      "group": 1,
+      "visible_by_patient": false,
+      "closed_at": null,
+      "created_at": "2026-03-22T14:00:00Z",
+      "updated_at": "2026-03-22T14:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 6,
+    "fields": {
+      "title": "Suivi grippe saisonnière",
+      "description": "Consultation de suivi après épisode grippal avec complications bronchiques. Évolution favorable.",
+      "beneficiary": 10,
+      "created_by": 2,
+      "owned_by": 2,
+      "group": 1,
+      "visible_by_patient": true,
+      "closed_at": "2026-03-15T16:30:00Z",
+      "created_at": "2026-03-05T09:00:00Z",
+      "updated_at": "2026-03-15T16:30:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 7,
+    "fields": {
+      "title": "Pré-consultation chirurgie cardiaque",
+      "description": "Préparation et bilan pré-opératoire pour remplacement valve aortique.",
+      "beneficiary": 11,
+      "created_by": 3,
+      "owned_by": 3,
+      "group": 2,
+      "visible_by_patient": true,
+      "closed_at": null,
+      "created_at": "2026-03-23T08:00:00Z",
+      "updated_at": "2026-03-25T10:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.consultation",
+    "pk": 8,
+    "fields": {
+      "title": "Suivi eczéma chronique",
+      "description": "Contrôle traitement corticoïdes topiques. Évaluation efficacité et effets secondaires.",
+      "beneficiary": 12,
+      "created_by": 4,
+      "owned_by": 4,
+      "group": 3,
+      "visible_by_patient": true,
+      "closed_at": "2026-03-20T12:00:00Z",
+      "created_at": "2026-02-28T10:00:00Z",
+      "updated_at": "2026-03-20T12:00:00Z"
+    }
+  },
+
+  {
+    "model": "consultations.appointment",
+    "pk": 1,
+    "fields": {
+      "type": "online",
+      "title": "Contrôle cicatrisation J+10",
+      "status": "scheduled",
+      "consultation": 1,
+      "scheduled_at": "2026-03-26T10:00:00Z",
+      "end_expected_at": "2026-03-26T10:30:00Z",
+      "created_by": 2,
+      "created_at": "2026-03-20T14:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 2,
+    "fields": {
+      "type": "online",
+      "title": "Échocardiographie de contrôle",
+      "status": "scheduled",
+      "consultation": 2,
+      "scheduled_at": "2026-03-27T14:00:00Z",
+      "end_expected_at": "2026-03-27T15:00:00Z",
+      "created_by": 3,
+      "created_at": "2026-03-22T11:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 3,
+    "fields": {
+      "type": "inPerson",
+      "title": "Dermoscopie grain de beauté",
+      "status": "scheduled",
+      "consultation": 3,
+      "scheduled_at": "2026-03-28T09:00:00Z",
+      "end_expected_at": "2026-03-28T09:30:00Z",
+      "created_by": 4,
+      "created_at": "2026-03-24T16:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 4,
+    "fields": {
+      "type": "online",
+      "title": "Téléconsultation renouvellement ordonnance",
+      "status": "scheduled",
+      "consultation": 4,
+      "scheduled_at": "2026-03-26T15:00:00Z",
+      "end_expected_at": "2026-03-26T15:20:00Z",
+      "created_by": 2,
+      "created_at": "2026-03-24T09:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 5,
+    "fields": {
+      "type": "online",
+      "title": "Premier contact patient",
+      "status": "cancelled",
+      "consultation": 1,
+      "scheduled_at": "2026-03-18T10:00:00Z",
+      "end_expected_at": "2026-03-18T10:30:00Z",
+      "created_by": 2,
+      "created_at": "2026-03-10T09:30:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 6,
+    "fields": {
+      "type": "online",
+      "title": "Bilan pré-opératoire en visio",
+      "status": "scheduled",
+      "consultation": 7,
+      "scheduled_at": "2026-03-29T08:30:00Z",
+      "end_expected_at": "2026-03-29T09:30:00Z",
+      "created_by": 3,
+      "created_at": "2026-03-23T08:30:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 7,
+    "fields": {
+      "type": "inPerson",
+      "title": "Consultation de suivi en cabinet",
+      "status": "scheduled",
+      "consultation": 7,
+      "scheduled_at": "2026-04-05T10:00:00Z",
+      "end_expected_at": "2026-04-05T11:00:00Z",
+      "created_by": 3,
+      "created_at": "2026-03-25T10:00:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 8,
+    "fields": {
+      "type": "online",
+      "title": "Suivi grippe - téléconsultation",
+      "status": "scheduled",
+      "consultation": 6,
+      "scheduled_at": "2026-03-14T11:00:00Z",
+      "end_expected_at": "2026-03-14T11:20:00Z",
+      "created_by": 2,
+      "created_at": "2026-03-05T09:30:00Z"
+    }
+  },
+  {
+    "model": "consultations.appointment",
+    "pk": 9,
+    "fields": {
+      "type": "online",
+      "title": "Contrôle résultats analyses",
+      "status": "scheduled",
+      "consultation": 4,
+      "scheduled_at": "2026-04-10T09:00:00Z",
+      "end_expected_at": "2026-04-10T09:30:00Z",
+      "created_by": 2,
+      "created_at": "2026-03-25T08:00:00Z"
+    }
+  },
+
+  {
+    "model": "consultations.participant",
+    "pk": 1,
+    "fields": {
+      "appointment": 1,
+      "user": 10,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": true
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 2,
+    "fields": {
+      "appointment": 1,
+      "user": 2,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 3,
+    "fields": {
+      "appointment": 2,
+      "user": 11,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": null,
+      "is_notified": true
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 4,
+    "fields": {
+      "appointment": 2,
+      "user": 3,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 5,
+    "fields": {
+      "appointment": 3,
+      "user": 13,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": true
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 6,
+    "fields": {
+      "appointment": 3,
+      "user": 4,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 7,
+    "fields": {
+      "appointment": 4,
+      "user": 12,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": true
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 8,
+    "fields": {
+      "appointment": 4,
+      "user": 2,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 9,
+    "fields": {
+      "appointment": 6,
+      "user": 11,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": null,
+      "is_notified": true
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 10,
+    "fields": {
+      "appointment": 6,
+      "user": 3,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 11,
+    "fields": {
+      "appointment": 7,
+      "user": 11,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": null,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 12,
+    "fields": {
+      "appointment": 7,
+      "user": 3,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 13,
+    "fields": {
+      "appointment": 9,
+      "user": 12,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": null,
+      "is_notified": false
+    }
+  },
+  {
+    "model": "consultations.participant",
+    "pk": 14,
+    "fields": {
+      "appointment": 9,
+      "user": 2,
+      "is_active": true,
+      "is_invited": true,
+      "is_confirmed": true,
+      "is_notified": false
+    }
+  }
+]

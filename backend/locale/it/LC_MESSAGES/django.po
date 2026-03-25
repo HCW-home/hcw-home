@@ -148,7 +148,7 @@ msgstr "percorso file S3"
 
 #: consultations/models.py:158
 msgid "S3 key set at recording start"
-msgstr "Impostazione del tasto S3 all'avvio della registrazione"
+msgstr "Chiave S3 impostata all'avvio della registrazione"
 
 #: consultations/models.py:160
 msgid "started at"
@@ -289,11 +289,11 @@ msgstr "frequenza"
 
 #: consultations/models.py:491
 msgid "instructions"
-msgstr "opportunità"
+msgstr "istruzioni"
 
 #: consultations/models.py:492
 msgid "notes"
-msgstr "attori"
+msgstr "note"
 
 #: consultations/models.py:495
 msgid "prescription"
@@ -404,7 +404,7 @@ msgstr ""
 
 #: consultations/serializers.py:460
 msgid "Scheduled time cannot be in the past."
-msgstr "Il momento programmato non può essere nel passato."
+msgstr "L'orario programmato non può essere nel passato."
 
 #: consultations/serializers.py:474
 msgid "End expected at time cannot be in the past."
@@ -465,7 +465,7 @@ msgstr "%(user_name)s ha partecipato alla riunione"
 #: consultations/views.py:564 consultations/views.py:568
 #: consultations/views.py:601 users/views.py:803
 msgid "Left successfully"
-msgstr "Destra sinistra"
+msgstr "Uscito con successo"
 
 #: consultations/views.py:576
 #, python-format
@@ -572,7 +572,7 @@ msgstr "Organizzazioni"
 
 #: core/settings.py:468
 msgid "Terms"
-msgstr "Informazioni"
+msgstr "Termini"
 
 #: core/settings.py:476
 msgid "Languages"
@@ -584,7 +584,7 @@ msgstr "Specialità"
 
 #: core/settings.py:504 core/views.py:125
 msgid "Consultations"
-msgstr "Abbonamenti"
+msgstr "Consultazioni"
 
 #: core/settings.py:537
 msgid "Reasons"
@@ -798,7 +798,7 @@ msgstr "server"
 
 #: mediaserver/models.py:25
 msgid "servers"
-msgstr "pedali"
+msgstr "server"
 
 #: mediaserver/models.py:60
 msgid "login"
@@ -862,7 +862,7 @@ msgstr "Il rendering è valido"
 
 #: messaging/admin.py:252
 msgid "Rendered subject"
-msgstr "Soggetto reso"
+msgstr "Oggetto renderizzato"
 
 #: messaging/admin.py:259
 msgid "Rendered text content"
@@ -1191,7 +1191,7 @@ msgstr "contenuto html"
 
 #: messaging/models.py:665
 msgid "subject"
-msgstr "soggetto"
+msgstr "oggetto"
 
 #: messaging/models.py:676
 msgid "communication method"

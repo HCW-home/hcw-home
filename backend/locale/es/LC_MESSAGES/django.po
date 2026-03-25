@@ -137,7 +137,7 @@ msgstr "cita"
 
 #: consultations/models.py:145
 msgid "appointments"
-msgstr "equipo"
+msgstr "citas"
 
 #: consultations/models.py:156
 msgid "egress ID"
@@ -149,7 +149,7 @@ msgstr "Ruta de archivo S3"
 
 #: consultations/models.py:158
 msgid "S3 key set at recording start"
-msgstr "Tecla S3 configurada al inicio de la grabación"
+msgstr "Clave S3 configurada al inicio de la grabación"
 
 #: consultations/models.py:160
 msgid "started at"
@@ -165,7 +165,7 @@ msgstr "mensaje"
 
 #: consultations/models.py:172
 msgid "appointment recording"
-msgstr "registro de citas"
+msgstr "grabación de cita"
 
 #: consultations/models.py:173
 msgid "appointment recordings"
@@ -213,7 +213,7 @@ msgstr "estado de lectura de la consulta"
 
 #: consultations/models.py:296
 msgid "consultation read statuses"
-msgstr "consulta leer estados"
+msgstr "estados de lectura de consulta"
 
 #: consultations/models.py:305 users/models.py:100
 msgid "speciality"
@@ -330,7 +330,7 @@ msgstr "Métrica de salud"
 
 #: consultations/models.py:513
 msgid "Request"
-msgstr "Pedido"
+msgstr "Solicitud"
 
 #: consultations/models.py:514
 msgid "Consultation"
@@ -428,7 +428,7 @@ msgstr ""
 
 #: consultations/views.py:282
 msgid "Cannot call in a closed consultation."
-msgstr "No se puede llamar durante una consulta privada."
+msgstr "No se puede llamar durante una consulta cerrada."
 
 #: consultations/views.py:288
 msgid "No beneficiary configured for this consultation."
@@ -440,7 +440,7 @@ msgstr "No hay ningún servidor multimedia disponible."
 
 #: consultations/views.py:480
 msgid "Cannot join call in closed consultation"
-msgstr "No puedo unirme a la llamada en la consulta cerrada."
+msgstr "No se puede unir a la llamada en la consulta cerrada."
 
 #: consultations/views.py:485 users/views.py:681
 msgid "Cannot join consultation if not online"
@@ -472,7 +472,7 @@ msgstr "%(user_name)s abandonó la reunión"
 
 #: consultations/views.py:631
 msgid "Only doctors can start recording"
-msgstr "Solo los médicos pueden comenzar a registrar."
+msgstr "Solo los médicos pueden comenzar a grabar."
 
 #: consultations/views.py:641
 msgid "Recording already in progress"
@@ -654,7 +654,7 @@ msgstr "Tasa de actividad del usuario"
 
 #: core/templates/admin/index.html:86
 msgid "Online Users Rate"
-msgstr "Valoración de los usuarios en línea"
+msgstr "Tasa de usuarios en línea"
 
 #: core/templates/admin/index.html:90
 msgid "Consultation Completion Rate"
@@ -674,7 +674,7 @@ msgstr "Usuarios totales"
 
 #: core/templates/admin/index.html:110 core/views.py:120
 msgid "Online Now"
-msgstr "Disponible ahora en línea"
+msgstr "En línea ahora"
 
 #: core/templates/admin/index.html:115
 msgid "Last updated:"
@@ -723,7 +723,7 @@ msgstr "Usuarios activos"
 
 #: core/views.py:130
 msgid "Appointments"
-msgstr "Equipo"
+msgstr "Citas"
 
 #: core/views.py:141
 msgid "Queues"
@@ -817,7 +817,7 @@ msgstr "URL de TURN (por ejemplo, turn://example.com)"
 
 #: mediaserver/models.py:75
 msgid "TURN URL"
-msgstr "URL DE GIRAR"
+msgstr "URL de TURN"
 
 #: mediaserver/models.py:76
 msgid "TURN URLs"
@@ -1187,7 +1187,7 @@ msgstr "contenido html"
 
 #: messaging/models.py:665
 msgid "subject"
-msgstr "sujeto"
+msgstr "asunto"
 
 #: messaging/models.py:676
 msgid "communication method"
@@ -1655,15 +1655,15 @@ msgstr "Mensajes:"
 
 #: users/views.py:283
 msgid "Cannot join call in a closed consultation."
-msgstr "No puedo unirme a una llamada en una consulta cerrada."
+msgstr "No se puede unir a una llamada en una consulta cerrada."
 
 #: users/views.py:761
 msgid "No consultation associated"
-msgstr "No se requiere consulta previa."
+msgstr "No hay consulta asociada."
 
 #: users/views.py:767
 msgid "Consultation is already closed"
-msgstr "El periodo de consulta ya ha finalizado."
+msgstr "La consulta ya está cerrada."
 
 #: users/views.py:778
 #, python-format

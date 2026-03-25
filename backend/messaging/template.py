@@ -20,10 +20,10 @@ DEFAULT_NOTIFICATION_MESSAGES = {
             "Your appointment will start in {{config.appointment_last_reminder}} minutes"
         ),
         "template_content": _(
-            """Your consultation appointment start at {{ obj.appointment.scheduled_at|localtime|time }}"""
+            """Your consultation appointment will start at {{ obj.appointment.scheduled_at|localtime|time }}"""
         ),
         "template_content_html": _(
-            """<p>Your consultation appointment start at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong></p>"""
+            """<p>Your consultation appointment will start at <strong>{{ obj.appointment.scheduled_at|localtime|time }}</strong></p>"""
         ),
         "action": "join",
         "action_label": _("Join the consultation"),

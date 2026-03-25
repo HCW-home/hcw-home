@@ -114,9 +114,16 @@ export class AuthService {
           this.currentUserSubject.next(user);
           if (user.preferred_language) {
             this.translationService.setLanguage(user.preferred_language);
-          } else {
-            const currentLang = this.translationService.currentLanguage();
-            this.updateProfile({ preferred_language: currentLang }).subscribe();
+          }
+          if (user.is_first_login) {
+            const updates: Partial<User> = { is_first_login: false };
+            if (!user.preferred_language) {
+              updates.preferred_language = this.translationService.currentLanguage();
+            }
+            if (!user.timezone || user.timezone === 'UTC') {
+              updates.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            }
+            this.updateProfile(updates).subscribe();
           }
         })
       );

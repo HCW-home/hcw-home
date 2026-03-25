@@ -98,29 +98,9 @@ export class TermsPage implements OnInit, OnDestroy {
 
     this.accepting = true;
 
-    const user = this.authService.currentUserValue;
-    const updates: Partial<{ timezone: string; preferred_language: string }> = {};
-
-    // Only set timezone if not already saved
-    if (!user?.timezone) {
-      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      updates.timezone = browserTimezone;
-    }
-
-    // Only set preferred_language if not already saved
-    if (!user?.preferred_language) {
-      updates.preferred_language = this.t.currentLanguage();
-    }
-
-    // Update profile before accepting terms (only if there are updates to make)
-    const updateObservable = Object.keys(updates).length > 0
-      ? this.authService.updateProfile(updates)
-      : this.authService.getCurrentUser();
-
-    updateObservable
+    this.termsService.acceptTerm(this.term.id)
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(() => this.termsService.acceptTerm(this.term!.id)),
         switchMap(() => this.authService.getCurrentUser())
       )
       .subscribe({

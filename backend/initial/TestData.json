@@ -17,7 +17,7 @@
     "model": "users.user",
     "pk": 1,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "admin@example.com",
       "first_name": "Admin",
       "last_name": "System",
@@ -35,7 +35,7 @@
     "model": "users.user",
     "pk": 2,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "dr.martin@example.com",
       "first_name": "Sophie",
       "last_name": "Martin",
@@ -54,7 +54,7 @@
     "model": "users.user",
     "pk": 3,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "dr.bernard@example.com",
       "first_name": "Marc",
       "last_name": "Bernard",
@@ -73,7 +73,7 @@
     "model": "users.user",
     "pk": 4,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "dr.duval@example.com",
       "first_name": "Claire",
       "last_name": "Duval",
@@ -93,7 +93,7 @@
     "model": "users.user",
     "pk": 10,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "jean.dupont@example.com",
       "first_name": "Jean",
       "last_name": "Dupont",
@@ -111,7 +111,7 @@
     "model": "users.user",
     "pk": 11,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "marie.leclerc@example.com",
       "first_name": "Marie",
       "last_name": "Leclerc",
@@ -129,7 +129,7 @@
     "model": "users.user",
     "pk": 12,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "ahmed.benali@example.com",
       "first_name": "Ahmed",
       "last_name": "Benali",
@@ -148,7 +148,7 @@
     "model": "users.user",
     "pk": 13,
     "fields": {
-      "password": "pbkdf2_sha256$870000$test$KzPCRbiKMTibmkFkLR7mxFmBN+egAdSP7Fp65A2dcYw=",
+      "password": "pbkdf2_sha256$1000000$tOUYUhxD8PHxIdv4YxQRyR$JCYSrE0WvkmBm2vUT8w7rbiDFwFtdNlHykhiyuNGObU=",
       "email": "laura.rossi@example.com",
       "first_name": "Laura",
       "last_name": "Rossi",

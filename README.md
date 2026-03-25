@@ -108,6 +108,36 @@ python3 manage.py makemessages --locale=it --ignore='venv/*'
 4. Translate all strings and compile with `python3 manage.py compilemessages --ignore='venv/*'`.
 
 
+### Test data
+
+A fixture file is provided to quickly populate the database with realistic test data:
+
+```bash
+cd backend
+python3 manage.py loaddata initial/TestData.json
+```
+
+This creates:
+- 1 organisation (Hôpital Universitaire de Genève)
+- 4 practitioners (1 admin, 1 generalist, 1 cardiologist, 1 dermatologist)
+- 5 patients (including 1 anonymous/temporary)
+- 3 queues (Médecine générale, Cardiologie, Dermatologie)
+- 8 consultations with various statuses (open, closed, with/without beneficiary)
+- 9 appointments (future, past, cancelled, online and in-person)
+
+All users share the same password: `Test1234`
+
+| Role | Email |
+|------|-------|
+| Admin | admin@example.com |
+| Practitioner | dr.martin@example.com |
+| Practitioner | dr.bernard@example.com |
+| Practitioner | dr.duval@example.com |
+| Patient | jean.dupont@example.com |
+| Patient | marie.leclerc@example.com |
+| Patient | ahmed.benali@example.com |
+| Patient | laura.rossi@example.com |
+
 ### Installation
 
 This part will coming soon.

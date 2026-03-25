@@ -22,3 +22,9 @@ Ajouter icone spécialisé
 ========================
 
 Ajoute une icone personnalisé pour la spécialité (paramétrable dans l'admin), visible par le patient dans http://localhost:8001/new-request
+
+Système de notification browser pour patient
+============================================
+
+Le patient ne semble pas avoir les notifications browser comme pour les practitioner. Il faut l'ajouter.
+

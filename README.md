@@ -97,7 +97,7 @@ LANGUAGES = (
 )
 ```
 
-2. Create a new JSON file in both `practitioner/public/i18n/` and `patient/src/assets/i18n/` (e.g., `it.json`), using `en.json` as a template.
+2. Create a new JSON file in both `practitioner/public/i18n/` and `patient/src/assets/i18n/` (e.g., `it.json`), using `en.json` as a template. Put the empty `{}` inside.
 3. Register the Angular locale in both `practitioner/src/main.ts` and `patient/src/main.ts`:
 
 ```typescript

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 07:08+0000\n"
-"PO-Revision-Date: 2026-03-05 11:13+0000\n"
+"PO-Revision-Date: 2026-03-25 07:19+0000\n"
 "Last-Translator: Olivier Bitsch <olivier.b@iabsis.com>\n"
 "Language-Team: French <https://translate.iabsis.com/projects/hcwhome-v6/"
 "backend/fr/>\n"
@@ -555,14 +555,10 @@ msgid "Users"
 msgstr "Utilisateurs"
 
 #: core/settings.py:442
-#, fuzzy
-#| msgid "group"
 msgid "Groups"
 msgstr "Groupes"
 
 #: core/settings.py:458 core/views.py:135
-#, fuzzy
-#| msgid "Configuration"
 msgid "Organizations"
 msgstr "Organisations"
 
@@ -575,32 +571,22 @@ msgid "Languages"
 msgstr "Langues"
 
 #: core/settings.py:482
-#, fuzzy
-#| msgid "specialities"
 msgid "Specialities"
 msgstr "Spécialités"
 
 #: core/settings.py:502 core/views.py:125
-#, fuzzy
-#| msgid "Configurations"
 msgid "Consultations"
 msgstr "Consultations"
 
 #: core/settings.py:535
-#, fuzzy
-#| msgid "reasons"
 msgid "Reasons"
 msgstr "Motifs"
 
 #: core/settings.py:563
-#, fuzzy
-#| msgid "Messages:"
 msgid "Messaging"
 msgstr "Messagerie"
 
 #: core/settings.py:568
-#, fuzzy
-#| msgid "messaging providers"
 msgid "Messaging providers"
 msgstr "Fournisseurs de messagerie"
 
@@ -641,8 +627,6 @@ msgid "Django site admin"
 msgstr "Administration du site Django"
 
 #: core/templates/admin/index.html:33
-#, fuzzy
-#| msgid "Missing argument"
 msgid "Management"
 msgstr "Gestion"
 
@@ -679,22 +663,16 @@ msgid "Platform activity summary for healthcare professionals"
 msgstr "Résumé de l'activité de la plateforme pour les professionnels de santé"
 
 #: core/templates/admin/index.html:106
-#, fuzzy
-#| msgid "users"
 msgid "Total Users"
 msgstr "Total des utilisateurs"
 
 #: core/templates/admin/index.html:110 core/views.py:120
-#, fuzzy
-#| msgid "Online"
 msgid "Online Now"
 msgstr "Actuellement en ligne"
 
 #: core/templates/admin/index.html:115
-#, fuzzy
-#| msgid "updated at"
 msgid "Last updated:"
-msgstr "Dernière mise à jour :"
+msgstr "Dernière mise à jour :"
 
 #: core/templates/login.html:5 core/templates/login.html:52 core/views.py:53
 msgid "Sign in"
@@ -742,20 +720,14 @@ msgid "Active Users"
 msgstr "Utilisateurs actifs"
 
 #: core/views.py:130
-#, fuzzy
-#| msgid "appointments"
 msgid "Appointments"
 msgstr "Rendez-vous"
 
 #: core/views.py:141
-#, fuzzy
-#| msgid "queues"
 msgid "Queues"
 msgstr "Files d'attente"
 
 #: core/views.py:147
-#, fuzzy
-#| msgid "Requested"
 msgid "Requests"
 msgstr "Demandes"
 
@@ -768,8 +740,6 @@ msgid "New user registrations"
 msgstr "Nouvelles inscriptions d'utilisateurs"
 
 #: core/views.py:163
-#, fuzzy
-#| msgid "Configurations"
 msgid "Consultations This Week"
 msgstr "Consultations cette semaine"
 
@@ -778,8 +748,6 @@ msgid "Consultations started this week"
 msgstr "Consultations démarrées cette semaine"
 
 #: core/views.py:169
-#, fuzzy
-#| msgid "appointments"
 msgid "Appointments This Week"
 msgstr "Rendez-vous cette semaine"
 
@@ -806,8 +774,6 @@ msgid "URL"
 msgstr "URL"
 
 #: mediaserver/models.py:17
-#, fuzzy
-#| msgid "API key"
 msgid "API token"
 msgstr "Jeton API"
 
@@ -864,10 +830,8 @@ msgid "Sender & Recipient"
 msgstr "Expéditeur et Destinataire"
 
 #: messaging/admin.py:162
-#, fuzzy
-#| msgid "content"
 msgid "Content"
-msgstr "contenu"
+msgstr "Contenu"
 
 #: messaging/admin.py:178
 msgid "Delivery status"
@@ -882,8 +846,6 @@ msgid "Technical"
 msgstr "Technique"
 
 #: messaging/admin.py:224 messaging/admin.py:457 messaging/admin.py:478
-#, fuzzy
-#| msgid "status"
 msgid "Status"
 msgstr "Statut"
 
@@ -892,10 +854,8 @@ msgid "Rendering is valid"
 msgstr "Le rendu est valide"
 
 #: messaging/admin.py:252
-#, fuzzy
-#| msgid "subject"
 msgid "Rendered subject"
-msgstr "sujet du modèle"
+msgstr "Sujet du modèle"
 
 #: messaging/admin.py:259
 msgid "Rendered text content"
@@ -920,16 +880,12 @@ msgstr ""
 "Votre consultation est prévue pour le {{ appointment.date }}."
 
 #: messaging/admin.py:444
-#, fuzzy
-#| msgid "Template Validations"
 msgid "Template Information"
-msgstr "Validations de modèles"
+msgstr "Information du modèle"
 
 #: messaging/admin.py:448
-#, fuzzy
-#| msgid "application secret"
 msgid "Validation Details"
-msgstr "secret d'application"
+msgstr "Détails de validation"
 
 #: messaging/admin.py:459
 msgid "Validation Response"
@@ -944,10 +900,8 @@ msgid "Content changed"
 msgstr "Contenu modifié"
 
 #: messaging/admin.py:516
-#, fuzzy
-#| msgid "template validation"
 msgid "Submit templates for validation"
-msgstr "validation de modèle"
+msgstr "Soumettre les modèles pour validation"
 
 #: messaging/admin.py:525
 #, python-format
@@ -955,10 +909,8 @@ msgid "%(count)d template(s) submitted for validation."
 msgstr "%(count)d modèle(s) soumis pour validation."
 
 #: messaging/admin.py:529
-#, fuzzy
-#| msgid "Current validation status"
 msgid "Check validation status"
-msgstr "Statut de validation actuel"
+msgstr "Vérifier les états de validation"
 
 #: messaging/admin.py:538
 #, python-format
@@ -966,10 +918,8 @@ msgid "Checking status for %(count)d template(s)."
 msgstr "Vérification de l'état du ou des modèles %(count)d."
 
 #: messaging/admin.py:543
-#, fuzzy
-#| msgid "template validations"
 msgid "Generate WhatsApp validations"
-msgstr "validations de modèles"
+msgstr "Générer les validations Whatsapp"
 
 #: messaging/admin.py:554
 msgid "No active WhatsApp provider found."
@@ -1000,14 +950,10 @@ msgid "client ID"
 msgstr "ID client"
 
 #: messaging/models.py:61
-#, fuzzy
-#| msgid "API secret"
 msgid "client secret"
 msgstr "secret client"
 
 #: messaging/models.py:66
-#, fuzzy
-#| msgid "Configuration key"
 msgid "application key"
 msgstr "clé d'application"
 
@@ -1020,14 +966,10 @@ msgid "consumer key"
 msgstr "clé consommateur"
 
 #: messaging/models.py:75
-#, fuzzy
-#| msgid "provider name"
 msgid "service name"
 msgstr "nom du service"
 
 #: messaging/models.py:79
-#, fuzzy
-#| msgid "source phone"
 msgid "from phone"
 msgstr "téléphone émetteur"
 
@@ -1044,8 +986,6 @@ msgid "priority"
 msgstr "priorité"
 
 #: messaging/models.py:91
-#, fuzzy
-#| msgid "prefixes"
 msgid "excluded prefixes"
 msgstr "préfixes exclus"
 
@@ -1058,8 +998,6 @@ msgstr ""
 "les préfixes multiples par des virgules (ex : +33, +41, +1)"
 
 #: messaging/models.py:100
-#, fuzzy
-#| msgid "prefixes"
 msgid "included prefixes"
 msgstr "préfixes inclus"
 
@@ -1109,16 +1047,10 @@ msgid "Unique identifier for the template"
 msgstr "Identifiant unique pour le modèle"
 
 #: messaging/models.py:253
-#, fuzzy
-#| msgid "template text"
 msgid "template html"
-msgstr "texte du modèle"
+msgstr "modèle html"
 
 #: messaging/models.py:255
-#, fuzzy
-#| msgid ""
-#| "Jinja2 template for message content, use {{ obj }} to get object "
-#| "attributes"
 msgid ""
 "Jinja2 template for message content in html, use {{ obj }} to get object "
 "attributes"
@@ -1138,8 +1070,6 @@ msgstr ""
 "aux attributs de l'objet"
 
 #: messaging/models.py:269
-#, fuzzy
-#| msgid "subject"
 msgid "template subject"
 msgstr "sujet du modèle"
 
@@ -1160,8 +1090,6 @@ msgid "Invalid Jinja2 template syntax: {}"
 msgstr "Syntaxe de modèle Jinja2 invalide : {}"
 
 #: messaging/models.py:552
-#, fuzzy
-#| msgid "created at"
 msgid "Created"
 msgstr "Créé le"
 
@@ -1182,8 +1110,6 @@ msgid "Failed"
 msgstr "Échoué"
 
 #: messaging/models.py:557
-#, fuzzy
-#| msgid "updated at"
 msgid "Outdated"
 msgstr "Obsolète"
 
@@ -1208,20 +1134,14 @@ msgid "The messaging provider where the template is validated"
 msgstr "Le fournisseur de messagerie où le modèle est validé"
 
 #: messaging/models.py:577
-#, fuzzy
-#| msgid "event"
 msgid "event type"
-msgstr "événement"
+msgstr "type d'événement"
 
 #: messaging/models.py:580
-#, fuzzy
-#| msgid "The local template that needs validation"
 msgid "The template event type to validate"
-msgstr "Le modèle local qui nécessite une validation"
+msgstr "Le type d'événement à valider"
 
 #: messaging/models.py:583
-#, fuzzy
-#| msgid "Languages"
 msgid "language code"
 msgstr "code de langue"
 
@@ -1257,16 +1177,12 @@ msgid "template validations"
 msgstr "validations de modèles"
 
 #: messaging/models.py:663
-#, fuzzy
-#| msgid "content"
 msgid "content text"
-msgstr "contenu"
+msgstr "texte du contenu"
 
 #: messaging/models.py:664
-#, fuzzy
-#| msgid "content"
 msgid "content html"
-msgstr "contenu"
+msgstr "contenu html"
 
 #: messaging/models.py:665
 msgid "subject"
@@ -1392,10 +1308,8 @@ msgid ""
 msgstr "Votre rendez-vous démarre à {{ obj.appointment.scheduled_at|date }}"
 
 #: messaging/template.py:29
-#, fuzzy
-#| msgid "Configuration"
 msgid "Join the consultation"
-msgstr "Rejoindre la consultation"
+msgstr "Rejoindre la consulation"
 
 #: messaging/template.py:34
 msgid "Your consultation has been scheduled"
@@ -1449,16 +1363,12 @@ msgstr ""
 "auth={{ obj.user.one_time_auth_token }}&action=presence"
 
 #: messaging/template.py:43 messaging/template.py:67
-#, fuzzy
-#| msgid "Click here to confirm your presence"
 msgid "Confirm your presence"
-msgstr "Cliquez ici pour confirmer votre présence"
+msgstr "Confirmez votre présence"
 
 #: messaging/template.py:48
-#, fuzzy
-#| msgid "Your consultation has been scheduled"
 msgid "Your appointment has been cancelled"
-msgstr "Votre consultation a été planifiée"
+msgstr "Votre rendez-vous a été annulé"
 
 #: messaging/template.py:49
 #, fuzzy
@@ -1491,10 +1401,8 @@ msgstr ""
 "time }}."
 
 #: messaging/template.py:55
-#, fuzzy
-#| msgid "Your consultation has been scheduled"
 msgid "Your appointment has been updated"
-msgstr "Votre consultation a été planifiée"
+msgstr "Votre rendez-vous a été mis à jour"
 
 #: messaging/template.py:57
 #, fuzzy
@@ -1556,10 +1464,8 @@ msgstr ""
 "confirmation : <strong>{{ obj.verification_code }}</strong></p>"
 
 #: messaging/template.py:83
-#, fuzzy
-#| msgid "Can view own assigned consultations"
 msgid "New message in consultation"
-msgstr "Nouveau message dans une consultation"
+msgstr "Nouveau message dans votre suivi"
 
 #: messaging/template.py:85
 msgid ""
@@ -1582,28 +1488,20 @@ msgid "Click here to answer"
 msgstr "Cliquez ici pour répondre"
 
 #: messaging/template.py:100
-#, fuzzy
-#| msgid "Email address"
 msgid "Verify your email address"
-msgstr "Adresse e-mail"
+msgstr "Vérifiez votre adresse e-mail"
 
 #: messaging/template.py:102
-#, fuzzy
-#| msgid "Email address"
 msgid "We are requiring to verify your email address."
-msgstr "Adresse e-mail"
+msgstr "Nous avons besoin de vérifier votre adresse e-mail."
 
 #: messaging/template.py:105
-#, fuzzy
-#| msgid "Email address"
 msgid "<p>We are requiring to verify your email address.</p>"
-msgstr "Adresse e-mail"
+msgstr "<p>Nous vous demandons de vérifier votre adresse e-mail.</p>"
 
 #: messaging/template.py:110
-#, fuzzy
-#| msgid "from email"
 msgid "Verify my email"
-msgstr "email émetteur"
+msgstr "Vérifiez mon email"
 
 #: messaging/template.py:113 messaging/template.py:123
 msgid "Reset your password"
@@ -1746,8 +1644,6 @@ msgid "web push subscriptions"
 msgstr "abonnements push web"
 
 #: users/models.py:161
-#, fuzzy
-#| msgid "Email address"
 msgid "email address"
 msgstr "Adresse e-mail"
 
@@ -1821,16 +1717,12 @@ msgid "Cannot join call in a closed consultation."
 msgstr "Impossible de participer à l'appel si la consultation est fermée"
 
 #: users/views.py:761
-#, fuzzy
-#| msgid "Your consultation has been scheduled"
 msgid "No consultation associated"
-msgstr "Votre consultation a été planifiée"
+msgstr "Aucune consultation associée"
 
 #: users/views.py:767
-#, fuzzy
-#| msgid "Consultations started this week"
 msgid "Consultation is already closed"
-msgstr "Consultations démarrées cette semaine"
+msgstr "La consultation est déjà fermée"
 
 #: users/views.py:778
 #, python-format

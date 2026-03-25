@@ -419,6 +419,9 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       .subscribe({
         next: queues => {
           this.queues.set(queues);
+          if (queues.length === 0) {
+            this.editForm.get('group_id')?.disable();
+          }
         },
         error: error => {
           this.toasterService.show(
@@ -426,6 +429,7 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
             this.t.instant('consultationDetail.errorLoadingQueues'),
             getErrorMessage(error)
           );
+          this.editForm.get('group_id')?.disable();
         },
       });
   }

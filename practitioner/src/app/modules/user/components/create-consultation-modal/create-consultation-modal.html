@@ -71,7 +71,7 @@
         <div class="form-group">
           <app-select
             [label]="'consultationForm.selectPractitioner' | translate"
-            [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+            [placeholder]="'consultations.searchPractitioner' | translate"
             [options]="[]"
             [asyncSearch]="practitionerSearchFn"
             [clearable]="true"
@@ -83,7 +83,7 @@
           <app-select
             [label]="'consultationForm.selectGroup' | translate"
             [options]="queueOptions()"
-            [placeholder]="'consultationForm.selectGroupPlaceholder' | translate"
+            [placeholder]="queueOptions().length === 0 ? ('consultationForm.selectGroupNoGroups' | translate) : ('consultationForm.selectGroupPlaceholder' | translate)"
             [clearable]="true"
             formControlName="group_id">
           </app-select>
@@ -92,6 +92,7 @@
         <div class="form-group">
           <app-checkbox
             [label]="'createConsultationModal.disablePatientChat' | translate"
+            [disabled]="!consultationForm.get('beneficiary_id')?.value"
             [ngModel]="!consultationForm.get('visible_by_patient')?.value"
             [ngModelOptions]="{standalone: true}"
             (ngModelChange)="consultationForm.patchValue({visible_by_patient: !$event})">

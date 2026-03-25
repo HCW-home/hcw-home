@@ -57,6 +57,7 @@
           <div class="form-group visibility-toggle">
             <app-checkbox
               [label]="'consultationForm.visibleByPatient' | translate"
+              [disabled]="!consultationForm.get('beneficiary_id')?.value"
               formControlName="visible_by_patient">
             </app-checkbox>
           </div>
@@ -133,22 +134,28 @@
           <div class="form-group">
             <app-select
               [label]="'consultationForm.selectPractitioner' | translate"
-              [placeholder]="'consultationForm.searchByNameOrEmail' | translate"
+              [placeholder]="'consultations.searchPractitioner' | translate"
               [options]="[]"
               [asyncSearch]="practitionerSearchFn"
               [clearable]="true"
               formControlName="owned_by_id">
             </app-select>
+            <span class="field-helper-text">
+              {{ 'consultationForm.practitionerHelperText' | translate }}
+            </span>
           </div>
 
           <div class="form-group">
             <app-select
               [label]="'consultationForm.selectGroup' | translate"
               [options]="queueOptions()"
-              [placeholder]="'consultationForm.selectGroupPlaceholder' | translate"
+              [placeholder]="queueOptions().length === 0 ? ('consultationForm.selectGroupNoGroups' | translate) : ('consultationForm.selectGroupPlaceholder' | translate)"
               [clearable]="true"
               formControlName="group_id">
             </app-select>
+            <span class="field-helper-text">
+              {{ 'consultationForm.groupHelperText' | translate }}
+            </span>
           </div>
         </div>
       </div>

@@ -1301,7 +1301,7 @@ msgstr "Votre rendez-vous démarre à {{ obj.appointment.scheduled_at|date }}"
 #, fuzzy
 #| msgid "Configuration"
 msgid "Join the consultation"
-msgstr "consultation"
+msgstr "Rejoindre la consultation"
 
 #: messaging/template.py:34
 msgid "Your consultation has been scheduled"

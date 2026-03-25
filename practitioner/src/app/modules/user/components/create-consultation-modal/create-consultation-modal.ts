@@ -225,7 +225,12 @@ export class CreateConsultationModal implements OnInit, OnDestroy {
     this.consultationService.getQueues()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: queues => this.queues.set(queues),
+        next: queues => {
+          this.queues.set(queues);
+          if (queues.length === 0) {
+            this.consultationForm.get('group_id')?.disable();
+          }
+        },
       });
   }
 

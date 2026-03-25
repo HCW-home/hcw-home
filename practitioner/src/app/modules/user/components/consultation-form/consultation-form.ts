@@ -390,10 +390,14 @@ export class ConsultationForm implements OnInit, OnDestroy {
       .subscribe({
         next: queues => {
           this.queues.set(queues);
+          if (queues.length === 0) {
+            this.consultationForm.get('group_id')?.disable();
+          }
         },
         error: (error) => {
           this.toasterService.show('error', this.t.instant('consultationForm.errorLoadingQueues'), getErrorMessage(error));
           this.queues.set([]);
+          this.consultationForm.get('group_id')?.disable();
         },
       });
   }

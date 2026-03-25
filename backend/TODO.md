@@ -39,11 +39,6 @@ Controle pendant l'appel pas clair
 
 Il faudrait ajouter des petits labels à droite des boutons.
 
-Appeler le patient doit être grisé si pas online
-================================================
-
-Le patient ne doit pas pouvoir être appelé directement si pas online.
-
 Ajouter icone spécialisé
 ========================
 

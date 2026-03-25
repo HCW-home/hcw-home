@@ -251,7 +251,7 @@
               @if (isEditMode()) {
               <app-select
                 [options]="queueOptions()"
-                [placeholder]="'consultationDetail.selectGroup' | translate"
+                [placeholder]="queueOptions().length === 0 ? ('consultationForm.selectGroupNoGroups' | translate) : ('consultationDetail.selectGroup' | translate)"
                 [clearable]="true"
                 formControlName="group_id">
               </app-select>

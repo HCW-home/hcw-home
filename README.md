@@ -80,6 +80,34 @@ HCW@Home is a scalable, institution-level secure teleconsultation system for typ
 
 HCW@Home is provided under GPLv3.
 
+### Contribute to translations
+
+A web interface is available at [translate.iabsis.com](https://translate.iabsis.com/) to help with translations without needing to edit files directly.
+
+For developers who prefer working with files directly or need to add new language:
+
+1. Register the language in `backend/core/settings.py` in the `LANGUAGES` tuple. This is required for the language to appear in the `/api/config` endpoint used by the frontends:
+
+```python
+LANGUAGES = (
+    ("en", gettext("English")),
+    ("de", gettext("German")),
+    ("fr", gettext("French")),
+    ("it", gettext("Italian")),  # new language
+)
+```
+
+2. Create a new JSON file in both `practitioner/public/i18n/` and `patient/public/i18n/` (e.g., `it.json`), using `en.json` as a template.
+3. Create the backend locale directory and generate the `.po` file:
+
+```bash
+cd backend
+python3 manage.py makemessages --locale=it --ignore='venv/*'
+```
+
+4. Translate all strings and compile with `python3 manage.py compilemessages --ignore='venv/*'`.
+
+
 ### Installation
 
 This part will coming soon.

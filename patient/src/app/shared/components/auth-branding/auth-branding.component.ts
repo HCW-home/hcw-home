@@ -14,7 +14,7 @@ export class AuthBrandingComponent implements OnInit {
   private authService = inject(AuthService);
 
   siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
+  branding = '';
 
   ngOnInit(): void {
     this.authService.getConfig().subscribe({

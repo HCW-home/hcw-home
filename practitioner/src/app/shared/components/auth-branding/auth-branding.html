@@ -5,6 +5,8 @@
     } @else {
       <img src="/images/logo.svg" alt="Logo" class="logo-img" />
     }
-    <h1>{{ branding }}</h1>
+    @if (branding) {
+      <h1>{{ branding }}</h1>
+    }
   </div>
 </div>

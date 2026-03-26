@@ -16,7 +16,7 @@ export class AuthBranding implements OnInit {
   private themeService = inject(ThemeService);
 
   siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
+  branding = '';
 
   ngOnInit(): void {
     this.authService.getOpenIDConfig().subscribe({

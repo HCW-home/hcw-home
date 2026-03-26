@@ -1,9 +1,6 @@
 services:
 
   migrate:
-    build:
-      context: backend
-      target: api
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     command: >
       sh -c "
@@ -58,9 +55,6 @@ services:
       - "8082:8080"
 
   celery:
-    build:
-      context: backend
-      target: api
     entrypoint: celery -A core.celery worker --loglevel=info
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always
@@ -78,9 +72,6 @@ services:
         condition: service_healthy
 
   scheduler:
-    build:
-      context: backend
-      target: api
     entrypoint: celery -A core beat --loglevel=info
     image: docker.io/iabsis/hcw6-backend:${TAG:-latest}
     restart: always

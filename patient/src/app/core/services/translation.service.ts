@@ -44,6 +44,7 @@ export class TranslationService {
   private availableLanguagesSignal = signal<AppLanguage[]>(DEFAULT_FALLBACK);
   private http = new HttpClient(inject(HttpBackend));
   private injector = inject(Injector);
+  private initialized = false;
 
   readonly currentLanguage = this.currentLanguageSignal.asReadonly();
   readonly availableLanguages = this.availableLanguagesSignal.asReadonly();
@@ -95,9 +96,10 @@ export class TranslationService {
     const currentLang = this.currentLanguageSignal();
     this.translate.use(langCode);
     this.fetchAndApplyOverrides(langCode);
-    if (langCode !== currentLang) {
+    if (this.initialized && langCode !== currentLang) {
       import('./auth.service').then(m => this.injector.get(m.AuthService).invalidateConfigCache());
     }
+    this.initialized = true;
     this.currentLanguageSignal.set(langCode);
     localStorage.setItem(STORAGE_KEY, langCode);
     document.documentElement.lang = langCode;

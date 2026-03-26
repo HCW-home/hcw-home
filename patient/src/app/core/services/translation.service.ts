@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, Injector, signal } from '@angular/core';
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { TranslateService, TranslationObject } from '@ngx-translate/core';
 import { catchError, EMPTY } from 'rxjs';
@@ -43,6 +43,7 @@ export class TranslationService {
   private currentLanguageSignal = signal<string>(DEFAULT_LANGUAGE);
   private availableLanguagesSignal = signal<AppLanguage[]>(DEFAULT_FALLBACK);
   private http = new HttpClient(inject(HttpBackend));
+  private injector = inject(Injector);
 
   readonly currentLanguage = this.currentLanguageSignal.asReadonly();
   readonly availableLanguages = this.availableLanguagesSignal.asReadonly();
@@ -91,8 +92,12 @@ export class TranslationService {
   }
 
   setLanguage(langCode: string): void {
+    const currentLang = this.currentLanguageSignal();
     this.translate.use(langCode);
     this.fetchAndApplyOverrides(langCode);
+    if (langCode !== currentLang) {
+      import('./auth.service').then(m => this.injector.get(m.AuthService).invalidateConfigCache());
+    }
     this.currentLanguageSignal.set(langCode);
     localStorage.setItem(STORAGE_KEY, langCode);
     document.documentElement.lang = langCode;

@@ -106,17 +106,19 @@ export class Auth {
   }
 
   getOpenIDConfig(): Observable<IOpenIDConfig> {
-    // Return cached config if available
     if (this.configCache$) {
       return this.configCache$;
     }
 
-    // Otherwise, make a new request and cache it
     this.configCache$ = this.http
       .get<IOpenIDConfig>(`${environment.apiUrl}/config/`)
       .pipe(shareReplay(1));
 
     return this.configCache$;
+  }
+
+  invalidateConfigCache(): void {
+    this.configCache$ = null;
   }
 
   loginWithOpenID(authorizationCode: string): Observable<IResponseLogin> {

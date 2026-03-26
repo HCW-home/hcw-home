@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, Injector, signal } from '@angular/core';
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { TranslateService, TranslationObject } from '@ngx-translate/core';
 import { catchError, EMPTY, Observable, shareReplay } from 'rxjs';
@@ -41,6 +41,7 @@ export class TranslationService {
   private currentLanguageSignal = signal<string>(DEFAULT_LANGUAGE);
   private availableLanguagesSignal = signal<AppLanguage[]>(DEFAULT_FALLBACK);
   private http = new HttpClient(inject(HttpBackend));
+  private injector = inject(Injector);
   private loadedLanguages = new Set<string>();
   private pendingRequests = new Map<string, Observable<Record<string, string>>>();
 
@@ -83,9 +84,10 @@ export class TranslationService {
 
     this.translate.use(langCode);
 
-    // Only fetch overrides if language changed and not already loaded
     if (langCode !== currentLang) {
       this.fetchAndApplyOverrides(langCode);
+      // Invalidate config cache so translated fields (login text, footer) are reloaded
+      import('./auth').then(m => this.injector.get(m.Auth).invalidateConfigCache());
     }
 
     this.currentLanguageSignal.set(langCode);

@@ -75,6 +75,11 @@ export class AuthService {
     return this.configData;
   }
 
+  invalidateConfigCache(): void {
+    this.configCache$ = null;
+    this.configData = null;
+  }
+
   /**
    * Preload config before app renders.
    * Called via APP_INITIALIZER.

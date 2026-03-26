@@ -126,7 +126,7 @@ export class OnboardingPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ config, user }) => {
-          this.siteLogoWhite = config.site_logo_white;
+          this.siteLogoWhite = config.main_organization?.logo_white || null;
           if (config.branding) {
             this.branding = config.branding;
           }

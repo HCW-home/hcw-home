@@ -44,6 +44,8 @@ export interface IConfigLanguage {
 export interface IOrganization {
   id: number;
   name: string;
+  logo_color: string | null;
+  logo_white: string | null;
   footer_patient: string | null;
   footer_practitioner: string | null;
   default_term?: number;

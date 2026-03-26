@@ -74,7 +74,7 @@ export class RegisterPage implements OnInit {
     this.authService.getConfig().subscribe({
       next: (config: any) => {
         this.registrationEnabled = config.registration_enabled;
-        this.siteLogoWhite = config.site_logo_white;
+        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
           this.branding = config.branding;
         }

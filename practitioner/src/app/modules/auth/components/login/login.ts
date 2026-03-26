@@ -87,7 +87,7 @@ export class Login implements OnInit {
         this.openIdEnabled = config.enabled;
         this.openIdProviderName = config.provider_name || 'OpenID';
         this.disablePasswordLogin = config.disable_password_login || false;
-        this.siteLogoWhite = config.site_logo_white;
+        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
           this.branding = config.branding;
           this.titleService.setTitle(config.branding);

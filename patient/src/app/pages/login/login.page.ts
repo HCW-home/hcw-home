@@ -100,7 +100,7 @@ export class LoginPage implements OnInit {
     this.authService.getConfig().subscribe({
       next: (config: any) => {
         this.registrationEnabled = config.registration_enabled;
-        this.siteLogoWhite = config.site_logo_white;
+        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
           this.branding = config.branding;
         }
@@ -289,6 +289,6 @@ export class LoginPage implements OnInit {
   }
 
   forgotPassword(): void {
-    this.navCtrl.navigateForward("/forgot-password");
+    this.navCtrl.navigateForward("/forgot-password", { queryParams: { email: this.email } });
   }
 }

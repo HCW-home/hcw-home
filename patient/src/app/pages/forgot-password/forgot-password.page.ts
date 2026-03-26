@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -49,7 +50,8 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private authService: AuthService,
     private navCtrl: NavController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private route: ActivatedRoute
   ) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
@@ -57,9 +59,14 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const email = this.route.snapshot.queryParamMap.get('email');
+    if (email) {
+      this.forgotPasswordForm.patchValue({ email });
+    }
+
     this.authService.getConfig().subscribe({
       next: (config: any) => {
-        this.siteLogoWhite = config.site_logo_white;
+        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
           this.branding = config.branding;
         }

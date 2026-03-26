@@ -82,7 +82,7 @@ export class ResetPassword implements OnInit {
 
     this.adminAuthService.getOpenIDConfig().subscribe({
       next: config => {
-        this.siteLogoWhite = config.site_logo_white || null;
+        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
           this.branding = config.branding;
         }

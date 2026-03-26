@@ -66,7 +66,7 @@ export class Sidebar implements OnInit, OnDestroy {
 
     this.authService.getOpenIDConfig().subscribe({
       next: config => {
-        this.siteLogo = config.site_logo;
+        this.siteLogo = config.main_organization?.logo_color || null;
         if (config.branding) {
           this.branding = config.branding;
           this.titleService.setTitle(config.branding);

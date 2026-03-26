@@ -34,7 +34,7 @@ interface ForgotPasswordForm {
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss',
 })
-export class ForgotPassword implements OnInit {
+export class ForgotPassword {
   loadingButton = false;
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);

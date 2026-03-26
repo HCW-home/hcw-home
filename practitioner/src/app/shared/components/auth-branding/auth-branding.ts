@@ -7,7 +7,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 @Component({
   selector: 'app-auth-branding',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule],
   templateUrl: './auth-branding.html',
   styleUrl: './auth-branding.scss',
 })

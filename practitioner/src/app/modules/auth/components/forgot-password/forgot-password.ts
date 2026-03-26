@@ -21,8 +21,8 @@ import { Auth } from '../../../../core/services/auth';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { ValidationService } from '../../../../core/services/validation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
-import { ThemeService } from '../../../../core/services/theme.service';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
+import { AuthBranding } from '../../../../shared/components/auth-branding/auth-branding';
 
 interface ForgotPasswordForm {
   email: FormControl<string>;
@@ -30,39 +30,21 @@ interface ForgotPasswordForm {
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [Button, Input, Typography, RouterLink, ReactiveFormsModule, TranslatePipe, LanguageSelector],
+  imports: [Button, Input, Typography, RouterLink, ReactiveFormsModule, TranslatePipe, LanguageSelector, AuthBranding],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss',
 })
 export class ForgotPassword implements OnInit {
   loadingButton = false;
-  siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private toaster = inject(ToasterService);
   private adminAuthService = inject(Auth);
   public validationService = inject(ValidationService);
   private t = inject(TranslationService);
-  private themeService = inject(ThemeService);
-
   form: FormGroup<ForgotPasswordForm> = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
   });
-
-  ngOnInit() {
-    this.adminAuthService.getOpenIDConfig().subscribe({
-      next: (config: any) => {
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-        if (config.primary_color_practitioner) {
-          this.themeService.applyPrimaryColor(config.primary_color_practitioner);
-        }
-      },
-    });
-  }
 
   onSubmit() {
     if (this.form.valid) {

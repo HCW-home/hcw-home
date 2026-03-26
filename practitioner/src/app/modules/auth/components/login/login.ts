@@ -25,6 +25,7 @@ import { ValidationService } from '../../../../core/services/validation.service'
 import { Auth } from '../../../../core/services/auth';
 import { ErrorMessage } from '../../../../shared/components/error-message/error-message';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
+import { AuthBranding } from '../../../../shared/components/auth-branding/auth-branding';
 import { UserService } from '../../../../core/services/user.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 
@@ -44,6 +45,7 @@ interface LoginForm {
     TranslatePipe,
     ReactiveFormsModule,
     LanguageSelector,
+    AuthBranding,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -54,8 +56,6 @@ export class Login implements OnInit {
   openIdEnabled = false;
   openIdProviderName = '';
   disablePasswordLogin = false;
-  siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private titleService = inject(Title);
@@ -87,9 +87,7 @@ export class Login implements OnInit {
         this.openIdEnabled = config.enabled;
         this.openIdProviderName = config.provider_name || 'OpenID';
         this.disablePasswordLogin = config.disable_password_login || false;
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
         if (config.branding) {
-          this.branding = config.branding;
           this.titleService.setTitle(config.branding);
         }
         if (config.site_favicon) {

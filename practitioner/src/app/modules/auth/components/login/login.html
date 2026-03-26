@@ -1,16 +1,6 @@
 <div class="login-page">
   <div class="auth-card">
-    <div class="left-side">
-      <div class="left-content">
-        @if (siteLogoWhite) {
-        <img [src]="siteLogoWhite" alt="Logo" class="logo-img" />
-        } @else {
-        <img src="/images/logo.svg" alt="Logo" class="logo-img" />
-        }
-        <h1>{{ branding }}</h1>
-        <p>{{ 'login.subtitle' | translate }}</p>
-      </div>
-    </div>
+    <app-auth-branding />
     <div class="right-side">
       <div class="right-content">
         <form

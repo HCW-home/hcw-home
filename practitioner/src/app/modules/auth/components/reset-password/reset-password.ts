@@ -25,8 +25,8 @@ import { regexpPasswordSpec } from '../../../../shared/tools/regular-expressions
 import { ErrorMessage } from '../../../../shared/components/error-message/error-message';
 import { ToasterService } from '../../../../core/services/toaster.service';
 import { LanguageSelector } from '../../../../shared/components/language-selector/language-selector';
+import { AuthBranding } from '../../../../shared/components/auth-branding/auth-branding';
 import { RoutePaths } from '../../../../core/constants/routes';
-import { ThemeService } from '../../../../core/services/theme.service';
 
 interface SetPasswordForm {
   password: FormControl<string>;
@@ -35,15 +35,13 @@ interface SetPasswordForm {
 
 @Component({
   selector: 'app-reset-password',
-  imports: [Button, Input, Typography, ReactiveFormsModule, ErrorMessage, TranslatePipe, LanguageSelector, RouterLink],
+  imports: [Button, Input, Typography, ReactiveFormsModule, ErrorMessage, TranslatePipe, LanguageSelector, RouterLink, AuthBranding],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss',
 })
 export class ResetPassword implements OnInit {
   loadingButton = false;
   errorMessage = '';
-  branding = 'HCW@Home';
-  siteLogoWhite: string | null = null;
   public mode: 'set' | 'reset' = 'reset';
   private formBuilder = inject(FormBuilder);
   private adminAuthService = inject(Auth);
@@ -52,7 +50,6 @@ export class ResetPassword implements OnInit {
   private toaster = inject(ToasterService);
   public validationService = inject(ValidationService);
   private t = inject(TranslationService);
-  private themeService = inject(ThemeService);
   token = this.route.snapshot.params['token'];
   uid = this.route.snapshot.params['uid'];
 
@@ -82,15 +79,8 @@ export class ResetPassword implements OnInit {
 
     this.adminAuthService.getOpenIDConfig().subscribe({
       next: config => {
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
         if (config.languages?.length) {
           this.t.loadLanguages(config.languages);
-        }
-        if (config.primary_color_practitioner) {
-          this.themeService.applyPrimaryColor(config.primary_color_practitioner);
         }
       },
     });

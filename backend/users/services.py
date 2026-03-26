@@ -2,6 +2,7 @@ import logging
 
 from asgiref.sync import sync_to_async
 from django.core.cache import cache
+from django.db import connection
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,8 @@ class UserOnlineStatusService:
     """
 
     def _get_cache_key(self, user_id):
-        return f"{ONLINE_CACHE_PREFIX}{user_id}"
+        schema = connection.tenant.schema_name
+        return f"{schema}:{ONLINE_CACHE_PREFIX}{user_id}"
 
     def set_user_online(self, user_id):
         cache.set(self._get_cache_key(user_id), True, ONLINE_CACHE_TIMEOUT)

@@ -39,7 +39,9 @@ class Server(models.Model):
     def get_server(cls) -> 'Server':
         """Get server with round robin"""
 
-        current_index = cache.get("round_robin_index", 0)
+        schema = connection.tenant.schema_name
+        cache_key = f"{schema}:round_robin_index"
+        current_index = cache.get(cache_key, 0)
 
         active_servers = cls.objects.filter(is_active=True)
         active_server_count = active_servers.count()
@@ -49,7 +51,7 @@ class Server(models.Model):
                 next_index = (1 + i + current_index) % active_server_count
                 obj = active_servers[next_index]
                 obj.instance.test_connection()
-                cache.set("round_robin_index", next_index)
+                cache.set(cache_key, next_index)
                 return obj
             except:
                 logger.warning(f"The server is not reachable or has wrong credential: {obj}")

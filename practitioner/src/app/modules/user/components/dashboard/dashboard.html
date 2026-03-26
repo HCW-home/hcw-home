@@ -169,9 +169,17 @@
                 </app-typography>
               </div>
             </div>
-            @if (overdueConsultations().length > 0) {
-              <span class="overdue-badge">{{ 'dashboard.pending' | translate: { count: overdueConsultations().length } }}</span>
-            }
+            <div class="header-right">
+              @if (overdueTotal() > 0) {
+                <span class="overdue-badge">{{ 'dashboard.pending' | translate: { count: overdueTotal() } }}</span>
+              }
+              <app-button
+                [text]="'dashboard.viewAll' | translate"
+                [size]="ButtonSizeEnum.small"
+                [style]="ButtonStyleEnum.stroke"
+                (buttonClick)="navigateToOverdueConsultations()">
+              </app-button>
+            </div>
           </div>
           <div class="section-content">
             @if (overdueConsultations().length === 0) {

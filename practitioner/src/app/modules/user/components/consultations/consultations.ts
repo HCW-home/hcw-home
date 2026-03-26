@@ -150,11 +150,10 @@ export class Consultations implements OnInit, OnDestroy {
         fragment === 'overdue'
       ) {
         this.activeTab.set(fragment);
-        this.loadConsultations();
       }
+      this.loadConsultations();
     });
 
-    this.loadConsultations();
     this.loadCounts();
     this.loadQueues();
 
@@ -167,6 +166,14 @@ export class Consultations implements OnInit, OnDestroy {
       .subscribe(() => {
         this.invalidateCache();
         this.loadConsultations();
+      });
+
+    this.userWsService.consultationEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.invalidateCache();
+        this.loadConsultations();
+        this.loadCounts();
       });
 
     this.userWsService.consultationMessage$

@@ -277,6 +277,7 @@ export interface DashboardResponse {
   next_appointment: DashboardNextAppointment | null;
   upcoming_appointments: Appointment[];
   overdue_consultations: Consultation[];
+  overdue_total: number;
 }
 
 export interface IParticipantDetail {

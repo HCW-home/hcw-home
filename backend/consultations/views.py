@@ -1376,6 +1376,17 @@ class DashboardPractitionerView(APIView):
 
         ctx = {"request": request}
 
+        overdue_qs = (
+            consultations_qs.active.exclude(
+                appointments__scheduled_at__gte=timezone.now()
+                - timedelta(hours=2),
+                appointments__status=AppointmentStatus.scheduled,
+            )
+            .distinct()
+            .order_by("-created_at")
+        )
+        overdue_total = overdue_qs.count()
+
         return Response(
             {
                 "next_appointment": AppointmentCreateSerializer(
@@ -1385,16 +1396,11 @@ class DashboardPractitionerView(APIView):
                     remaining_appointments, many=True, context=ctx
                 ).data,
                 "overdue_consultations": ConsultationSerializer(
-                    consultations_qs.active.exclude(
-                        appointments__scheduled_at__gte=timezone.now()
-                        - timedelta(hours=2),
-                        appointments__status=AppointmentStatus.scheduled,
-                    )
-                    .distinct()
-                    .order_by("-created_at")[:3],
+                    overdue_qs[:3],
                     many=True,
                     context=ctx,
                 ).data,
+                "overdue_total": overdue_total,
             },
             status=status.HTTP_200_OK,
         )

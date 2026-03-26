@@ -85,6 +85,7 @@ export class Dashboard implements OnInit, OnDestroy {
   nextAppointment = signal<DashboardNextAppointment | null>(null);
   upcomingAppointments = signal<Appointment[]>([]);
   overdueConsultations = signal<Consultation[]>([]);
+  overdueTotal = signal(0);
 
   tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
   appointmentEarlyJoinMinutes = 5; // Default value
@@ -150,6 +151,7 @@ export class Dashboard implements OnInit, OnDestroy {
           this.nextAppointment.set(data.next_appointment);
           this.upcomingAppointments.set(data.upcoming_appointments || []);
           this.overdueConsultations.set(data.overdue_consultations || []);
+          this.overdueTotal.set(data.overdue_total || 0);
           this.loading.set(false);
         },
         error: err => {
@@ -220,6 +222,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   navigateToConsultations(): void {
     this.router.navigate(['/app/consultations']);
+  }
+
+  navigateToOverdueConsultations(): void {
+    this.router.navigate(['/app/consultations'], { fragment: 'overdue' });
   }
 
   navigateToAppointments(): void {

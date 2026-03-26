@@ -883,6 +883,7 @@ class Message(ModelCeleryAbstract):
                     "access_link": self.access_link,
                     "organisation": main_org,
                     "branding": constance_config.site_name,
+                    "has_logo": bool(main_org and main_org.logo_white),
                 },
             )
         except Exception as e:

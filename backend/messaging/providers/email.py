@@ -1,4 +1,6 @@
 import logging
+import mimetypes
+from email.mime.image import MIMEImage
 from typing import TYPE_CHECKING, Any, Tuple
 
 from django.conf import settings
@@ -19,6 +21,8 @@ class Main(BaseMessagingProvider):
     required_fields = ["from_email"]
 
     def send(self, message: "Message"):
+        from users.models import Organisation
+
         from_email = self.messaging_provider.from_email or settings.DEFAULT_FROM_EMAIL
         logger.info(
             "Preparing email message_id=%s to=%s from=%s",
@@ -42,6 +46,20 @@ class Main(BaseMessagingProvider):
         )
 
         email.attach_alternative(html_body, "text/html")
+
+        # Attach logo inline if configured
+        main_org = Organisation.objects.filter(is_main=True).first()
+        if main_org and main_org.logo_white:
+            try:
+                logo_data = main_org.logo_white.read()
+                mime_type = mimetypes.guess_type(main_org.logo_white.name)[0] or "image/png"
+                subtype = mime_type.split("/")[1]
+                img = MIMEImage(logo_data, _subtype=subtype)
+                img.add_header("Content-ID", "<logo>")
+                img.add_header("Content-Disposition", "inline", filename="logo")
+                email.attach(img)
+            except Exception as e:
+                logger.warning("Failed to attach inline logo: %s", e)
 
         # Attach ICS file if available (for appointments)
         ics_data = message.ics_attachment

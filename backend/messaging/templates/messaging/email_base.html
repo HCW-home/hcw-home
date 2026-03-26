@@ -43,13 +43,13 @@
 
         .email-header {
             background: {{ organisation.primary_color_patient|default:"#0891b2" }};
-            padding: 36px 32px;
+            padding: {% if has_logo %}16px 32px{% else %}36px 32px{% endif %};
             text-align: center;
         }
 
         .email-header img {
-            max-height: 60px;
-            max-width: 200px;
+            max-height: 80px;
+            max-width: 280px;
         }
 
         .email-header h1 {
@@ -166,7 +166,9 @@
     <div class="email-wrapper">
         <div class="email-container">
             <div class="email-header">
-                {% if branding %}
+                {% if has_logo %}
+                <img src="cid:logo" alt="{{ branding }}">
+                {% elif branding %}
                 <h1>{{ branding }}</h1>
                 {% endif %}
             </div>

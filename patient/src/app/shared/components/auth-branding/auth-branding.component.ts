@@ -17,8 +17,8 @@ export class AuthBrandingComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   siteLogoWhite: string | null = null;
-  branding = '';
   loginText: string | null = null;
+  configError = false;
 
   constructor() {
     effect(() => {
@@ -35,9 +35,13 @@ export class AuthBrandingComponent implements OnDestroy {
   private loadConfig(): void {
     this.authService.getConfig().pipe(takeUntil(this.destroy$)).subscribe({
       next: (config: any) => {
+        if (!config) {
+          this.configError = true;
+          return;
+        }
+        this.configError = false;
         this.siteLogoWhite = config.main_organization?.logo_white || null;
         this.loginText = config.main_organization?.login_text_patient || null;
-        this.branding = config.branding || '';
       },
     });
   }

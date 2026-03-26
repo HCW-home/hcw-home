@@ -34,6 +34,18 @@
       max-width: 320px;
       margin: 0 auto;
     }
+
+    .error-text {
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.5;
+      max-width: 280px;
+      margin: 0 auto;
+      background: rgba(255, 0, 0, 0.5);
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
   }
 }
 

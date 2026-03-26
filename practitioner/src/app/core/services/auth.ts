@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, shareReplay, catchError, of } from 'rxjs';
 import { SuccessResponse } from '../models/succesResponse';
 import { environment } from '../../../environments/environment';
 import { SKIP_ERROR_TOAST } from '../interceptors/auth.interceptor';
@@ -112,7 +112,7 @@ export class Auth {
 
     this.configCache$ = this.http
       .get<IOpenIDConfig>(`${environment.apiUrl}/config/`)
-      .pipe(shareReplay(1));
+      .pipe(catchError(() => of(null as unknown as IOpenIDConfig)), shareReplay(1));
 
     return this.configCache$;
   }

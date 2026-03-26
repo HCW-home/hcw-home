@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom, from, switchMap, tap, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, from, switchMap, tap, shareReplay, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, LoginRequest, LoginResponse, RegisterRequest, MagicLinkRequest, MagicLinkVerify, TokenAuthRequest, TokenAuthResponse } from '../models/user.model';
 import { StorageService } from './storage.service';
@@ -65,6 +65,7 @@ export class AuthService {
     if (!this.configCache$) {
       this.configCache$ = this.http.get(`${this.apiUrl}/config/`).pipe(
         tap(config => this.configData = config),
+        catchError(() => of(null)),
         shareReplay(1)
       );
     }

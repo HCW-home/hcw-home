@@ -5,7 +5,8 @@ import random
 import uuid
 import secrets
 
-from django.db import connection
+import uuid
+
 from django.utils.translation import gettext as _
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.openid_connect.views import (
@@ -295,7 +296,7 @@ class UserConsultationsViewSet(viewsets.ReadOnlyModelViewSet):
                 {
                     "url": server.url,
                     "token": consultation_call_info,
-                    "room": f"{connection.tenant.schema_name}_consultation_{consultation.pk}",
+                    "room": str(consultation.room_uuid),
                 }
             )
         except Exception:
@@ -742,7 +743,7 @@ class UserAppointmentsViewSet(viewsets.ReadOnlyModelViewSet):
                 {
                     "url": server.url,
                     "token": consultation_call_info,
-                    "room": f"{connection.tenant.schema_name}_appointment_{appointment.pk}",
+                    "room": str(appointment.room_uuid),
                 }
             )
         except Exception as e:
@@ -1294,13 +1295,14 @@ class TestRTCView(APIView):
         try:
             server = Server.get_server()
 
-            test_info = server.instance.user_test_info(request.user)
+            test_room_uuid = uuid.uuid4()
+            test_info = server.instance.user_test_info(request.user, room_uuid=test_room_uuid)
 
             return Response(
                 {
                     "url": server.url,
                     "token": test_info,
-                    "room": f"{connection.tenant.schema_name}_usertest_{request.user.pk}",
+                    "room": str(test_room_uuid),
                 }
             )
         except Exception as e:

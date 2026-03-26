@@ -1,5 +1,6 @@
 import time
 import asyncio
+import uuid
 from typing import Optional
 
 from django.conf import settings
@@ -16,8 +17,6 @@ from livekit.api import (
     StopEgressRequest,
     RoomCompositeEgressRequest,
 )
-
-from django.db import connection
 
 from . import BaseMediaserver
 
@@ -67,11 +66,8 @@ class Main(BaseMediaserver):
                 )
             )
 
-    def _get_tenant_prefix(self):
-        return connection.tenant.schema_name
-
     def appointment_participant_info(self, appointment, user):
-        room_name = f"{self._get_tenant_prefix()}_appointment_{appointment.pk}"
+        room_name = str(appointment.room_uuid)
 
         video_grants = VideoGrants(
             room=room_name,
@@ -94,8 +90,10 @@ class Main(BaseMediaserver):
             .to_jwt()
         )
 
-    def user_test_info(self, user):
-        room_name = f"{self._get_tenant_prefix()}_usertest_{user.pk}"
+    def user_test_info(self, user, room_uuid=None):
+        if room_uuid is None:
+            room_uuid = uuid.uuid4()
+        room_name = str(room_uuid)
 
         video_grants = VideoGrants(
             room=room_name,
@@ -119,7 +117,7 @@ class Main(BaseMediaserver):
         )
 
     def consultation_user_info(self, consultation, user):
-        room_name = f"{self._get_tenant_prefix()}_consultation_{consultation.pk}"
+        room_name = str(consultation.room_uuid)
 
         video_grants = VideoGrants(
             room=room_name,

@@ -45,6 +45,9 @@ class Type(models.TextChoices):
 
 
 class Consultation(models.Model):
+    room_uuid = models.UUIDField(
+        _("room UUID"), default=uuid.uuid4, editable=False, unique=True
+    )
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
     closed_at = models.DateTimeField(_("closed at"), null=True, blank=True)
@@ -102,6 +105,9 @@ class AppointmentStatus(models.TextChoices):
 
 
 class Appointment(models.Model):
+    room_uuid = models.UUIDField(
+        _("room UUID"), default=uuid.uuid4, editable=False, unique=True
+    )
     type = models.CharField(choices=Type.choices, default=Type.online)
     title = models.CharField(_("title"), max_length=255, null=True, blank=True)
     status = models.CharField(

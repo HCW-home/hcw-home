@@ -10,7 +10,7 @@ from core.mixins import CreatedByMixin
 from django.conf import settings
 from constance import config
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import connection, models
 from django.db.models import Count, F, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
@@ -245,7 +245,7 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
                 {
                     "url": server.url,
                     "token": consultation_call_info,
-                    "room": f"consultation_{consultation.pk}",
+                    "room": f"{connection.tenant.schema_name}_consultation_{consultation.pk}",
                 }
             )
         except Exception as e:
@@ -545,7 +545,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 {
                     "url": server.url,
                     "token": consultation_call_info,
-                    "room": f"appointment_{appointment.pk}",
+                    "room": f"{connection.tenant.schema_name}_appointment_{appointment.pk}",
                 }
             )
         except Exception as e:
@@ -642,7 +642,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        room_name = f"appointment_{appointment.pk}"
+        room_name = f"{connection.tenant.schema_name}_appointment_{appointment.pk}"
 
         try:
             server = Server.get_server()

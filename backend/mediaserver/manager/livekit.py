@@ -17,6 +17,8 @@ from livekit.api import (
     RoomCompositeEgressRequest,
 )
 
+from django.db import connection
+
 from . import BaseMediaserver
 
 
@@ -65,8 +67,11 @@ class Main(BaseMediaserver):
                 )
             )
 
+    def _get_tenant_prefix(self):
+        return connection.tenant.schema_name
+
     def appointment_participant_info(self, appointment, user):
-        room_name = f"appointment_{appointment.pk}"
+        room_name = f"{self._get_tenant_prefix()}_appointment_{appointment.pk}"
 
         video_grants = VideoGrants(
             room=room_name,
@@ -90,7 +95,7 @@ class Main(BaseMediaserver):
         )
 
     def user_test_info(self, user):
-        room_name = f"usertest_{user.pk}"
+        room_name = f"{self._get_tenant_prefix()}_usertest_{user.pk}"
 
         video_grants = VideoGrants(
             room=room_name,
@@ -114,7 +119,7 @@ class Main(BaseMediaserver):
         )
 
     def consultation_user_info(self, consultation, user):
-        room_name = f"consultation_{consultation.pk}"
+        room_name = f"{self._get_tenant_prefix()}_consultation_{consultation.pk}"
 
         video_grants = VideoGrants(
             room=room_name,

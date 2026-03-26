@@ -867,8 +867,12 @@ class Message(ModelCeleryAbstract):
     def render_full_html(self):
         """Render the complete HTML email with base template"""
         try:
+            from constance import config as constance_config
+            from users.models import Organisation
+
             content_html = self.render_content_html
             subject = self.render_subject
+            main_org = Organisation.objects.filter(is_main=True).first()
 
             return render_to_string(
                 "messaging/email_base.html",
@@ -877,6 +881,8 @@ class Message(ModelCeleryAbstract):
                     "subject": subject,
                     "action_label": self.action_label,
                     "access_link": self.access_link,
+                    "organisation": main_org,
+                    "branding": constance_config.site_name,
                 },
             )
         except Exception as e:

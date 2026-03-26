@@ -6,14 +6,13 @@
         [src]="siteLogo"
         alt="Logo"
         class="logo-custom-img"
-        [style.width.px]="isCollapsed ? 40 : 44"
-        [style.height.px]="isCollapsed ? 40 : 44" />
+        [class.logo-full-width]="!isCollapsed" />
       } @else {
       <app-svg
         src="svg/logo.svg"
         [svgStyle]="{'width.px': isCollapsed ? 40 : 44, 'height.px': isCollapsed ? 40 : 44}">
       </app-svg>
-      } @if (!isCollapsed) {
+      } @if (!isCollapsed && !siteLogo) {
       <div class="logo-text">
         <app-typography
           [variant]="TypographyTypeEnum['body-l-bold']"

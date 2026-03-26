@@ -20,40 +20,6 @@
     background: #fff;
   }
 
-  .left-side {
-    flex: 1;
-    background: var(--ion-color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-
-    .left-content {
-      text-align: center;
-      color: #fff;
-
-      .logo-img {
-        max-height: 80px;
-        max-width: 100%;
-        object-fit: contain;
-        margin-bottom: 20px;
-      }
-
-      h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 12px;
-      }
-
-      p {
-        font-size: 0.95rem;
-        opacity: 0.9;
-        line-height: 1.5;
-        max-width: 280px;
-        margin: 0 auto;
-      }
-    }
-  }
 
   .right-side {
     flex: 1;
@@ -282,27 +248,6 @@
       min-height: 100%;
     }
 
-    .left-side {
-      padding: 32px 24px;
-      min-height: auto;
-
-      .left-content {
-        .logo-img {
-          max-height: 56px;
-          max-width: 100%;
-          margin-bottom: 12px;
-        }
-
-        h1 {
-          font-size: 1.5rem;
-          margin-bottom: 8px;
-        }
-
-        p {
-          font-size: 0.85rem;
-        }
-      }
-    }
 
     .right-side {
       padding: 24px;

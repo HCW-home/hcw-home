@@ -17,6 +17,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { AuthBrandingComponent } from '../../shared/components/auth-branding/auth-branding.component';
 
 @Component({
   selector: 'app-reset-password',
@@ -33,8 +34,7 @@ import { TranslationService } from '../../core/services/translation.service';
     IonIcon,
     IonText,
     IonSpinner,
-    TranslatePipe
-  ]
+    TranslatePipe, AuthBrandingComponent]
 })
 export class ResetPasswordPage implements OnInit, OnDestroy {
   private t = inject(TranslationService);
@@ -47,8 +47,6 @@ export class ResetPasswordPage implements OnInit, OnDestroy {
   showPassword = false;
   showConfirmPassword = false;
   errorMessage: string | null = null;
-  siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
 
   constructor(
     private fb: FormBuilder,
@@ -71,14 +69,6 @@ export class ResetPasswordPage implements OnInit, OnDestroy {
       this.errorMessage = this.t.instant('resetPassword.invalidLink');
     }
 
-    this.authService.getConfig().subscribe({
-      next: (config: any) => {
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-      },
-    });
   }
 
   ngOnDestroy(): void {

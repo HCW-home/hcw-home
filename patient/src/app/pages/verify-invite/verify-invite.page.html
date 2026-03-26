@@ -1,12 +1,6 @@
 <ion-content class="verify-content" [scrollY]="false">
   <div class="auth-card">
-    <div class="left-side">
-      <div class="left-content">
-        <img src="assets/images/logo.svg" alt="Logo" class="logo-img" />
-        <h1>{{ branding }}</h1>
-        <p>{{ 'verifyInvite.welcomeMessage' | translate }}</p>
-      </div>
-    </div>
+    <app-auth-branding />
     <div class="right-side">
       <div class="right-content">
         @if (isLoading) {

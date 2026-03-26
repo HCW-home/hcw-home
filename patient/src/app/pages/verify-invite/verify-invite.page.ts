@@ -20,6 +20,7 @@ import { ActionHandlerService } from '../../core/services/action-handler.service
 import { ConsultationService } from '../../core/services/consultation.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { AuthBrandingComponent } from '../../shared/components/auth-branding/auth-branding.component';
 
 @Component({
   selector: 'app-verify-invite',
@@ -37,8 +38,7 @@ import { LanguageSelectorComponent } from '../../shared/components/language-sele
     IonText,
     IonSpinner,
     TranslatePipe,
-    LanguageSelectorComponent
-  ]
+    LanguageSelectorComponent, AuthBrandingComponent]
 })
 export class VerifyInvitePage implements OnInit, OnDestroy {
   private t = inject(TranslationService);
@@ -51,7 +51,6 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
   requiresVerification = false;
   errorMessage: string | null = null;
   isResending = false;
-  branding = "HCW@Home";
 
   verificationForm: FormGroup;
 
@@ -72,11 +71,7 @@ export class VerifyInvitePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Load config
     this.authService.getConfig().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (config: any) => {
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-      },
+      next: (config: any) => {      },
       error: (err: any) => console.error('Failed to load config', err)
     });
 

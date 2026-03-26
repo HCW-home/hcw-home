@@ -18,6 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { AuthBrandingComponent } from '../../shared/components/auth-branding/auth-branding.component';
 
 @Component({
   selector: 'app-forgot-password',
@@ -35,16 +36,13 @@ import { LanguageSelectorComponent } from '../../shared/components/language-sele
     IonText,
     IonSpinner,
     TranslatePipe,
-    LanguageSelectorComponent
-  ]
+    LanguageSelectorComponent, AuthBrandingComponent]
 })
 export class ForgotPasswordPage implements OnInit, OnDestroy {
   private t = inject(TranslationService);
   private destroy$ = new Subject<void>();
   forgotPasswordForm: FormGroup;
   isLoading = false;
-  siteLogoWhite: string | null = null;
-  branding = 'HCW@Home';
 
   constructor(
     private fb: FormBuilder,
@@ -64,14 +62,6 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
       this.forgotPasswordForm.patchValue({ email });
     }
 
-    this.authService.getConfig().subscribe({
-      next: (config: any) => {
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-      },
-    });
   }
 
   ngOnDestroy(): void {

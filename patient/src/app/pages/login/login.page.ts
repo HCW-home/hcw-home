@@ -25,6 +25,7 @@ import { TranslationService } from "../../core/services/translation.service";
 import { ActionHandlerService } from "../../core/services/action-handler.service";
 import { ConsultationService } from "../../core/services/consultation.service";
 import { LanguageSelectorComponent } from "../../shared/components/language-selector/language-selector.component";
+import { AuthBrandingComponent } from '../../shared/components/auth-branding/auth-branding.component';
 
 @Component({
   selector: "app-login",
@@ -42,8 +43,7 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
     IonIcon,
     IonText,
     IonSpinner,
-    LanguageSelectorComponent,
-  ],
+    LanguageSelectorComponent, AuthBrandingComponent],
 })
 export class LoginPage implements OnInit {
   private t = inject(TranslationService);
@@ -58,8 +58,6 @@ export class LoginPage implements OnInit {
 
   showPassword = false;
   registrationEnabled = false;
-  siteLogoWhite: string | null = null;
-  branding = "HCW@Home";
 
   isLoading = false;
   isResending = false;
@@ -99,12 +97,7 @@ export class LoginPage implements OnInit {
     }
     this.authService.getConfig().subscribe({
       next: (config: any) => {
-        this.registrationEnabled = config.registration_enabled;
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-        if (config.languages?.length) {
+        this.registrationEnabled = config.registration_enabled;        if (config.languages?.length) {
           this.t.loadLanguages(config.languages);
         }
       },

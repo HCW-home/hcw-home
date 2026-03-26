@@ -1,20 +1,6 @@
 <ion-content class="register-content" [scrollY]="false">
   <div class="auth-card">
-    <div class="left-side">
-      <div class="left-content">
-        @if (siteLogoWhite) {
-        <img [src]="siteLogoWhite" alt="Logo" class="logo-img" />
-        } @else {
-        <img src="assets/images/logo.svg" alt="Logo" class="logo-img" />
-        }
-        <h1>{{ branding }}</h1>
-        @if (!siteLogoWhite) {
-        <p>
-          {{ 'register.platformDescription' | translate }}
-        </p>
-        }
-      </div>
-    </div>
+    <app-auth-branding />
     <div class="right-side">
       <div class="right-content">
         <h2>{{ 'register.title' | translate }}</h2>

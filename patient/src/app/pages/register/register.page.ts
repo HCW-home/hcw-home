@@ -21,6 +21,7 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { AuthService } from "../../core/services/auth.service";
 import { TranslationService } from "../../core/services/translation.service";
 import { LanguageSelectorComponent } from "../../shared/components/language-selector/language-selector.component";
+import { AuthBrandingComponent } from '../../shared/components/auth-branding/auth-branding.component';
 
 @Component({
   selector: "app-register",
@@ -37,8 +38,7 @@ import { LanguageSelectorComponent } from "../../shared/components/language-sele
     IonIcon,
     IonText,
     TranslatePipe,
-    LanguageSelectorComponent,
-  ],
+    LanguageSelectorComponent, AuthBrandingComponent],
 })
 export class RegisterPage implements OnInit {
   private t = inject(TranslationService);
@@ -48,8 +48,6 @@ export class RegisterPage implements OnInit {
   registrationEnabled = true;
   loading = true;
   successMessage: string | null = null;
-  siteLogoWhite: string | null = null;
-  branding = "HCW@Home";
 
   constructor(
     private fb: FormBuilder,
@@ -73,12 +71,7 @@ export class RegisterPage implements OnInit {
   ngOnInit() {
     this.authService.getConfig().subscribe({
       next: (config: any) => {
-        this.registrationEnabled = config.registration_enabled;
-        this.siteLogoWhite = config.main_organization?.logo_white || null;
-        if (config.branding) {
-          this.branding = config.branding;
-        }
-        this.loading = false;
+        this.registrationEnabled = config.registration_enabled;        this.loading = false;
       },
       error: () => {
         this.registrationEnabled = false;

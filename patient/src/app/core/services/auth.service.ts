@@ -59,14 +59,28 @@ export class AuthService {
   }
 
   private configCache$: Observable<any> | null = null;
+  private configData: any = null;
 
   getConfig(): Observable<any> {
     if (!this.configCache$) {
       this.configCache$ = this.http.get(`${this.apiUrl}/config/`).pipe(
+        tap(config => this.configData = config),
         shareReplay(1)
       );
     }
     return this.configCache$;
+  }
+
+  getConfigSnapshot(): any {
+    return this.configData;
+  }
+
+  /**
+   * Preload config before app renders.
+   * Called via APP_INITIALIZER.
+   */
+  initConfig(): Promise<any> {
+    return firstValueFrom(this.getConfig());
   }
 
   verifyEmail(token: string): Observable<any> {

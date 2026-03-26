@@ -13,6 +13,8 @@ import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules, w
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { register } from 'swiper/element/bundle';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { APP_INITIALIZER } from '@angular/core';
+import { AuthService } from './app/core/services/auth.service';
 import { importProvidersFrom, isDevMode } from '@angular/core';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -204,6 +206,12 @@ bootstrapApplication(AppComponent, {
     ),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: AuthService) => () => auth.initConfig(),
+      deps: [AuthService],
+      multi: true,
+    },
     importProvidersFrom(IonicStorageModule.forRoot()),
     provideTranslateService({
       loader: provideTranslateHttpLoader({

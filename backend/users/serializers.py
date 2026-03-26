@@ -39,6 +39,8 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "logo_color",
             "logo_white",
             "favicon",
+            "login_text_patient",
+            "login_text_practitioner",
             "footer_patient",
             "footer_practitioner",
             "primary_color_patient",

@@ -17,11 +17,13 @@ export class AuthBranding implements OnInit {
 
   siteLogoWhite: string | null = null;
   branding = '';
+  loginText: string | null = null;
 
   ngOnInit(): void {
     this.authService.getOpenIDConfig().subscribe({
       next: config => {
         this.siteLogoWhite = config.main_organization?.logo_white || null;
+        this.loginText = config.main_organization?.login_text_practitioner || null;
         if (config.branding) {
           this.branding = config.branding;
         }

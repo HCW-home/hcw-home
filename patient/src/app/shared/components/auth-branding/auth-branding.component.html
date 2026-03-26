@@ -8,5 +8,8 @@
     @if (branding) {
       <h1>{{ branding }}</h1>
     }
+    @if (loginText) {
+      <div class="login-text" [innerHTML]="loginText"></div>
+    }
   </div>
 </div>

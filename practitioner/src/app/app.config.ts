@@ -1,4 +1,5 @@
 import {
+  APP_INITIALIZER,
   ApplicationConfig,
   isDevMode,
   provideBrowserGlobalErrorListeners,
@@ -7,6 +8,7 @@ import {
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import {
   provideHttpClient,
   withFetch,
@@ -90,6 +92,7 @@ import {
   lucideSquare,
 } from '@ng-icons/lucide';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { Auth } from './core/services/auth';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -171,6 +174,12 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: Auth) => () => firstValueFrom(auth.getOpenIDConfig()),
+      deps: [Auth],
+      multi: true,
+    },
     provideTranslateService({
       loader: provideTranslateHttpLoader({
         prefix: './i18n/',

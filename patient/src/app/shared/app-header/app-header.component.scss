@@ -2,7 +2,9 @@ ion-header {
   ion-toolbar {
     --background: var(--app-card-background);
     --border-width: 0;
-    padding: var(--app-spacing-md) var(--app-spacing-lg);
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+    padding: 4px var(--app-spacing-lg);
     border-bottom: 1px solid var(--app-border-color);
 
     .header-content {
@@ -36,11 +38,11 @@ ion-header {
       display: flex;
       align-items: center;
       gap: var(--app-spacing-sm);
+      height: 100%;
 
       .logo-img {
-        max-width: 120px;
-        height: 36px;
-        padding: 0 10px;
+        max-width: 220px;
+        max-height: 48px;
         object-fit: contain;
       }
 

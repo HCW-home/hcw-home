@@ -60,8 +60,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
           if (config?.branding) {
             this.branding.set(config.branding);
           }
-          if (config?.site_logo) {
-            this.siteLogo.set(config.site_logo);
+          if (config?.main_organization?.logo_color) {
+            this.siteLogo.set(config.main_organization.logo_color);
           }
         },
       });

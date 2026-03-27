@@ -289,16 +289,16 @@ class ConsultationViewSet(CreatedByMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            server = Server.get_server()
-            consultation_call_info = server.instance.consultation_user_info(
-                consultation, request.user
-            )
-        except Exception:
+        server = Server.get_server()
+        if not server:
             return Response(
                 {"detail": _("No media server available.")},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        consultation_call_info = server.instance.consultation_user_info(
+            consultation, request.user
+        )
 
         # Send call_request WebSocket event to the beneficiary
         channel_layer = get_channel_layer()

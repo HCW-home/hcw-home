@@ -3,7 +3,7 @@ from typing import Union
 import logging
 
 from django.core.cache import cache
-from django.db import models
+from django.db import connection, models
 from django.utils.translation import gettext_lazy as _
 
 from . import manager
@@ -39,8 +39,8 @@ class Server(models.Model):
     def get_server(cls) -> 'Server':
         """Get server with round robin"""
 
-        schema = connection.tenant.schema_name
-        cache_key = f"{schema}:round_robin_index"
+
+        cache_key = "round_robin_index"
         current_index = cache.get(cache_key, 0)
 
         active_servers = cls.objects.filter(is_active=True)

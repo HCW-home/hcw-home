@@ -346,6 +346,8 @@ CACHES = {
         if not DEBUG
         else "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}",
+        'KEY_FUNCTION': 'django_tenants.cache.make_key',
+        'REVERSE_KEY_FUNCTION': 'django_tenants.cache.reverse_key',
     }
 }
 STATIC_ROOT = os.getenv("STATIC_ROOT", "statics")

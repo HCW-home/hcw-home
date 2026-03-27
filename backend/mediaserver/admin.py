@@ -4,6 +4,7 @@ from django.contrib import messages
 from .models import Server, Turn, TurnURL
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import action
+from unfold.widgets import UnfoldAdminPasswordWidget
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
@@ -22,12 +23,22 @@ class TurnAdmin(ModelAdmin):
     turn_urls.short_description = 'URLs'
 
 class ServerForm(forms.ModelForm):
+    api_secret = forms.CharField(
+        label=_("API secret"),
+        widget=UnfoldAdminPasswordWidget(),
+        required=False,
+        help_text=_("Leave blank to keep the current value."),
+    )
+
     class Meta:
         model = Server
         fields = "__all__"
-        widgets = {
-            "api_secret": forms.PasswordInput(render_value=True),
-        }
+
+    def clean_api_secret(self):
+        value = self.cleaned_data.get("api_secret")
+        if not value and self.instance.pk:
+            return self.instance.api_secret
+        return value
 
 
 @admin.register(Server)

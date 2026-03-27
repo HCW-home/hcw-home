@@ -110,11 +110,12 @@ export class PreJoinLobby implements OnInit, OnDestroy {
 
   private async initializeDevices(): Promise<void> {
     this.isLoading.set(true);
+    let cameraStarted = false;
     try {
       // Try video preview separately - camera may not be available
       try {
         await this.mediaDeviceService.startVideoPreview();
-        this.attachVideoPreview();
+        cameraStarted = true;
       } catch {
         this.cameraEnabled.set(false);
       }
@@ -152,6 +153,10 @@ export class PreJoinLobby implements OnInit, OnDestroy {
     } finally {
       this.isLoading.set(false);
       this.cdr.markForCheck();
+      // Attach video preview after loading is done so the <video> element exists in the DOM
+      if (cameraStarted && this.cameraEnabled()) {
+        this.attachVideoPreview();
+      }
     }
   }
 

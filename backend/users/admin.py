@@ -54,7 +54,13 @@ admin.site.register(SocialApp, ModelAdmin)
 
 
 admin.site.unregister(TokenProxy)
-admin.site.register(TokenProxy, ModelAdmin)
+
+
+@admin.register(TokenProxy)
+class TokenAdmin(ModelAdmin):
+    list_display = ["key", "user", "created"]
+    fields = ["user"]
+    ordering = ["-created"]
 
 admin.site.unregister(SocialToken)
 admin.site.register(SocialToken, ModelAdmin)

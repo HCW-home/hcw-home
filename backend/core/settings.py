@@ -693,19 +693,25 @@ UNFOLD = {
                         "link": reverse_lazy(
                             "admin:consultations_customfield_changelist"
                         ),
-                        "permission": lambda request: request.user.has_perm(
-                            "consultations.view_customfield"
-                        ),
+                        "permission": lambda request: request.user.is_superuser,
                     },
                     {
                         "title": _("Translation Overrides"),
                         "icon": "translate",
                         "link": reverse_lazy("admin:translations_override_editor"),
+                        "permission": lambda request: request.user.is_superuser,
                     },
                     {
                         "title": _("Configuration"),
                         "icon": "settings",
                         "link": reverse_lazy("admin:constance_config_changelist"),
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("API Tokens"),
+                        "icon": "key",
+                        "link": reverse_lazy("admin:authtoken_tokenproxy_changelist"),
+                        "permission": lambda request: request.user.is_superuser,
                     },
                 ],
             },

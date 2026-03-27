@@ -855,8 +855,14 @@
         "languageFrench": "Francés",
         "callBeneficiary": "Llamar al paciente",
         "callFailed": "No se pudo iniciar la llamada. Inténtelo de nuevo.",
+        "callDisabled": "Llamada no disponible",
+        "callDisabledAppointment": "Tiene una cita en curso. Haga clic de nuevo para llamar de todos modos.",
         "callDeclined": "Llamada rechazada",
         "callDeclinedMessage": "{{name}} rechazó la llamada.",
+        "callAppointmentModalTitle": "Cita programada",
+        "callAppointmentModalMessage": "Tiene una cita programada. ¿Desea unirse a la cita en su lugar?",
+        "joinAppointment": "Unirse a la cita",
+        "callPatientOnly": "Llamar solo al paciente",
         "error": "Error"
     },
     "appointmentFormModal": {

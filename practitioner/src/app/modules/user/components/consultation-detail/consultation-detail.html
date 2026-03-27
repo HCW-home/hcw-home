@@ -671,7 +671,7 @@
             [style]="ButtonStyleEnum.primary"
             [size]="ButtonSizeEnum.small"
             [loading]="isCallingBeneficiary()"
-            [disabled]="isCallingBeneficiary() || !consultation()?.beneficiary?.is_online || hasUpcomingAppointment()"
+            [disabled]="isCallingBeneficiary() || !consultation()?.beneficiary?.is_online"
             (buttonClick)="callBeneficiary()">
           </app-button>
           }
@@ -680,6 +680,34 @@
     </div>
     }
   </div>
+
+  <app-modal
+    [isOpen]="showCallAppointmentModal()"
+    [title]="'consultationDetail.callAppointmentModalTitle' | translate"
+    size="small"
+    (closed)="showCallAppointmentModal.set(false)">
+    <p>{{ 'consultationDetail.callAppointmentModalMessage' | translate }}</p>
+    <div modal-footer class="call-appointment-modal-footer">
+      <app-button
+        [text]="'consultationDetail.cancel' | translate"
+        [style]="ButtonStyleEnum.stroke"
+        [size]="ButtonSizeEnum.medium"
+        (buttonClick)="showCallAppointmentModal.set(false)">
+      </app-button>
+      <app-button
+        [text]="'consultationDetail.joinAppointment' | translate"
+        [style]="ButtonStyleEnum.primary"
+        [size]="ButtonSizeEnum.medium"
+        (buttonClick)="onCallModalJoinAppointment()">
+      </app-button>
+      <app-button
+        [text]="'consultationDetail.callPatientOnly' | translate"
+        [style]="ButtonStyleEnum.stroke"
+        [size]="ButtonSizeEnum.medium"
+        (buttonClick)="onCallModalCallOnly()">
+      </app-button>
+    </div>
+  </app-modal>
 
   <app-appointment-form-modal
     [isOpen]="showCreateAppointmentModal()"

@@ -293,8 +293,14 @@
         "typeInPerson": "Di persona",
         "callBeneficiary": "Chiamare il paziente",
         "callFailed": "Impossibile avviare la chiamata. Riprova.",
+        "callDisabled": "Chiamata non disponibile",
+        "callDisabledAppointment": "Hai un appuntamento in corso. Clicca di nuovo per chiamare comunque.",
         "callDeclined": "Chiamata rifiutata",
         "callDeclinedMessage": "{{name}} ha rifiutato la chiamata.",
+        "callAppointmentModalTitle": "Appuntamento programmato",
+        "callAppointmentModalMessage": "Hai un appuntamento programmato. Vuoi unirti all'appuntamento invece?",
+        "joinAppointment": "Unisciti all'appuntamento",
+        "callPatientOnly": "Chiama solo il paziente",
         "error": "Errore"
     },
     "appointmentForm": {

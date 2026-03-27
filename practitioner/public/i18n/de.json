@@ -551,8 +551,14 @@
         "languageFrench": "Französisch",
         "callBeneficiary": "Patient anrufen",
         "callFailed": "Anruf konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+        "callDisabled": "Anruf nicht verfügbar",
+        "callDisabledAppointment": "Sie haben einen laufenden Termin. Klicken Sie erneut, um trotzdem anzurufen.",
         "callDeclined": "Anruf abgelehnt",
         "callDeclinedMessage": "{{name}} hat den Anruf abgelehnt.",
+        "callAppointmentModalTitle": "Geplanter Termin",
+        "callAppointmentModalMessage": "Sie haben einen geplanten Termin. Möchten Sie stattdessen dem Termin beitreten?",
+        "joinAppointment": "Termin beitreten",
+        "callPatientOnly": "Nur Patient anrufen",
         "error": "Fehler"
     },
     "participantItem": {

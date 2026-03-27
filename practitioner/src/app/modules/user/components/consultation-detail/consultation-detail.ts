@@ -77,6 +77,7 @@ import {
 } from '../../../../shared/tools/helper';
 import { LocalDatePipe } from '../../../../shared/pipes/local-date.pipe';
 import { getErrorMessage } from '../../../../core/utils/error-helper';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AppointmentFormModal } from './appointment-form-modal/appointment-form-modal';
 import { RoutePaths } from '../../../../core/constants/routes';
 import { ParticipantItem } from '../../../../shared/components/participant-item/participant-item';
@@ -107,6 +108,7 @@ type AppointmentTimeFilter = 'all' | 'upcoming' | 'past';
     Checkbox,
     Select,
     AppointmentFormModal,
+    ModalComponent,
     FullCalendarModule,
     LocalDatePipe,
     ParticipantItem,
@@ -167,15 +169,19 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
   tooEarlyError = signal<{ appointmentId: number; time: string; minutes: number } | null>(null);
   appointmentEarlyJoinMinutes = 5; // Default value
 
-  hasUpcomingAppointment = computed(() => {
+  upcomingAppointment = computed<Appointment | null>(() => {
     const now = Date.now();
     const earlyMs = this.appointmentEarlyJoinMinutes * 60 * 1000;
-    return this.appointments().some(a => {
+    return this.appointments().find(a => {
       if (a.status !== AppointmentStatus.SCHEDULED) return false;
       const start = new Date(a.scheduled_at).getTime();
       return (start - now) <= earlyMs;
-    });
+    }) ?? null;
   });
+
+  hasUpcomingAppointment = computed(() => !!this.upcomingAppointment());
+
+  showCallAppointmentModal = signal(false);
 
   isExportingPdf = signal(false);
 
@@ -1428,6 +1434,32 @@ export class ConsultationDetail implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    const upcoming = this.upcomingAppointment();
+    if (upcoming) {
+      // If appointment has more than just patient + practitioner, show modal
+      if (upcoming.participants.length > 2) {
+        this.showCallAppointmentModal.set(true);
+        return;
+      }
+    }
+
+    this.doCallBeneficiary();
+  }
+
+  onCallModalJoinAppointment(): void {
+    this.showCallAppointmentModal.set(false);
+    const upcoming = this.upcomingAppointment();
+    if (upcoming) {
+      this.joinVideoCall(upcoming.id);
+    }
+  }
+
+  onCallModalCallOnly(): void {
+    this.showCallAppointmentModal.set(false);
+    this.doCallBeneficiary();
+  }
+
+  private doCallBeneficiary(): void {
     this.isCallingBeneficiary.set(true);
     this.consultationService.callBeneficiary(this.consultationId).subscribe({
       next: (config) => {

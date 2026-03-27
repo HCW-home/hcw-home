@@ -787,8 +787,14 @@
         "languageFrench": "Français",
         "callBeneficiary": "Appeler le patient",
         "callFailed": "Impossible de lancer l'appel. Veuillez réessayer.",
+        "callDisabled": "Appel indisponible",
+        "callDisabledAppointment": "Vous avez un rendez-vous en cours. Cliquez à nouveau pour appeler quand même.",
         "callDeclined": "Appel refusé",
         "callDeclinedMessage": "{{name}} a refusé l'appel.",
+        "callAppointmentModalTitle": "Rendez-vous planifié",
+        "callAppointmentModalMessage": "Vous avez un rendez-vous planifié. Souhaitez-vous plutôt rejoindre le rendez-vous ?",
+        "joinAppointment": "Rejoindre le rendez-vous",
+        "callPatientOnly": "Appeler le patient uniquement",
         "error": "Erreur"
     },
     "appointmentFormModal": {

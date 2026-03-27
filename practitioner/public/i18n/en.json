@@ -729,8 +729,14 @@
     "languageFrench": "French",
     "callBeneficiary": "Call Patient",
     "callFailed": "Failed to initiate the call. Please try again.",
+    "callDisabled": "Call unavailable",
+    "callDisabledAppointment": "You have an ongoing appointment. Click again to call anyway.",
     "callDeclined": "Call Declined",
     "callDeclinedMessage": "{{name}} declined the call.",
+    "callAppointmentModalTitle": "Scheduled appointment",
+    "callAppointmentModalMessage": "You have a scheduled appointment. Would you like to join the appointment instead?",
+    "joinAppointment": "Join appointment",
+    "callPatientOnly": "Call patient only",
     "error": "Error"
   },
   "appointmentFormModal": {

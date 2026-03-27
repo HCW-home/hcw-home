@@ -753,6 +753,11 @@ CONSTANCE_CONFIG = {
         10,
         "Maximum file upload size in MB (0 to disable limit)",
     ),
+    "users_visibility": (
+        "all",
+        "Controls which users practitioners can see: all = all users, alone = only patients + self, organization = patients + same organization practitioners",
+        "users_visibility_select",
+    ),
 }
 
 
@@ -764,6 +769,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Security": ("temporary_participant_token_expiry_hours",),
     "Uploads": ("max_upload_size_mb",),
     "Authentication": ("disable_password_login", "enable_registration"),
+    "Visibility": ("users_visibility",),
 }
 
 # CORS Configuration
@@ -795,7 +801,6 @@ CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if 
 
 # ENABLE_REGISTRATION = os.getenv("ENABLE_REGISTRATION", "False") == "True"
 DISABLE_PASSWORD_LOGIN = os.getenv("DISABLE_PASSWORD_LOGIN", "False") == "True"
-USERS_VISIBILITY = os.getenv("USERS_VISIBILITY", "")  # Options: "", "alone", "organization"
 
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
@@ -804,6 +809,17 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 CONSTANCE_ADDITIONAL_FIELDS = {
     **UNFOLD_CONSTANCE_ADDITIONAL_FIELDS,
+    "users_visibility_select": [
+        "django.forms.fields.ChoiceField",
+        {
+            "widget": "django.forms.Select",
+            "choices": (
+                ("all", "All users"),
+                ("alone", "Only patients and self"),
+                ("organization", "Patients and same organization"),
+            ),
+        },
+    ],
 }
 
 CONSTANCE_FILE_ROOT = "constance"

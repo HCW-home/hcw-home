@@ -81,7 +81,7 @@ from .serializers import (
     UserParticipantDetailSerializer,
     WebPushSubscriptionSerializer,
 )
-
+from constance import config
 
 class UniversalPagination(PageNumberPagination):
     page_size = 20
@@ -829,11 +829,11 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         base_queryset = self.queryset
 
-        visibility = settings.USERS_VISIBILITY
+        visibility = config.users_visibility
         current_user = self.request.user
 
-        if not visibility:
-            # Empty or not set: return all users (default behavior)
+        if not visibility or visibility == "all":
+            # All users (default behavior)
             return base_queryset
 
         elif visibility == "alone":

@@ -1,5 +1,6 @@
 import logging
 import mimetypes
+from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from typing import TYPE_CHECKING, Any, Tuple
 
@@ -51,10 +52,19 @@ class Main(BaseMessagingProvider):
         main_org = Organisation.objects.filter(is_main=True).first()
         if main_org and main_org.logo_white:
             try:
+                main_org.logo_white.open("rb")
                 logo_data = main_org.logo_white.read()
+                main_org.logo_white.close()
                 mime_type = mimetypes.guess_type(main_org.logo_white.name)[0] or "image/png"
-                subtype = mime_type.split("/")[1]
-                img = MIMEImage(logo_data, _subtype=subtype)
+                maintype, subtype = mime_type.split("/", 1)
+
+                if maintype == "image" and subtype not in ("svg+xml",):
+                    img = MIMEImage(logo_data, _subtype=subtype)
+                else:
+                    # SVG and other non-standard image types
+                    img = MIMEBase(maintype, subtype)
+                    img.set_payload(logo_data)
+
                 img.add_header("Content-ID", "<logo>")
                 img.add_header("Content-Disposition", "inline", filename="logo")
                 email.attach(img)

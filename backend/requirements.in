@@ -40,3 +40,4 @@ pywebpush
 reportlab
 django-tenants
 tenant-schemas-celery
+drf-spectacular-sidecar

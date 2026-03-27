@@ -102,6 +102,7 @@ SHARED_APPS = (
     "dj_rest_auth",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_celery_results",
     "location_field",
 )
@@ -299,6 +300,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "HCW@Home API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
     "COMPONENTS": {
         "securitySchemes": {
             "bearerAuth": {  # OpenAPI 3

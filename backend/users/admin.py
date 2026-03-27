@@ -29,6 +29,7 @@ from unfold.contrib.import_export.forms import (
 )
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from unfold.widgets import UnfoldAdminColorInputWidget
+from rest_framework.authtoken.models import TokenProxy
 
 from .models import (
     FCMDeviceOverride,
@@ -50,6 +51,10 @@ class GroupAdmin(BaseGroupAdmin, ModelAdmin):
 
 admin.site.unregister(SocialApp)
 admin.site.register(SocialApp, ModelAdmin)
+
+
+admin.site.unregister(TokenProxy)
+admin.site.register(TokenProxy, ModelAdmin)
 
 admin.site.unregister(SocialToken)
 admin.site.register(SocialToken, ModelAdmin)

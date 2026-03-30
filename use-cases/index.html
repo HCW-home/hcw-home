@@ -1,0 +1,957 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for HCW@Home V6 teleconsultation platform">
+      
+      
+      
+        <link rel="canonical" href="https://hcw-at-home.com/docs/use-cases/">
+      
+      
+        <link rel="prev" href="../deployment/debian/">
+      
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../fr/use-cases/" hreflang="fr">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Use Cases - HCW@Home Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#use-cases" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="HCW@Home Documentation" class="md-header__button md-logo" aria-label="HCW@Home Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HCW@Home Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Use Cases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../fr/use-cases/" hreflang="fr" class="md-select__link">
+              Francais
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="HCW@Home Documentation" class="md-nav__button md-logo" aria-label="HCW@Home Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HCW@Home Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/docker-compose/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Compose
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/debian/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debian Packages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#spontaneous-consultation-chat-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spontaneous Consultation (chat + call)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scheduled-appointment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduled Appointment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-participant-consultation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-participant Consultation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anonymous-patient-invitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anonymous Patient Invitation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue-management-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Queue Management (Groups)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tele-triage-pre-consultation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tele-triage / Pre-consultation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-and-prescription-sharing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Document and Prescription Sharing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-organization-multi-tenant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-organization / Multi-tenant
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unified-authentication-sso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified Authentication (SSO)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#administration-and-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Administration and Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#role-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Role Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#spontaneous-consultation-chat-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spontaneous Consultation (chat + call)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scheduled-appointment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduled Appointment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-participant-consultation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-participant Consultation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anonymous-patient-invitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anonymous Patient Invitation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#queue-management-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Queue Management (Groups)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tele-triage-pre-consultation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tele-triage / Pre-consultation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-and-prescription-sharing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Document and Prescription Sharing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-organization-multi-tenant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-organization / Multi-tenant
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unified-authentication-sso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified Authentication (SSO)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#administration-and-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Administration and Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#role-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Role Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="use-cases">Use Cases</h1>
+<p>HCW@Home covers the main teleconsultation scenarios in the medical and institutional domains.</p>
+<h2 id="spontaneous-consultation-chat-call">Spontaneous Consultation (chat + call)</h2>
+<p>A practitioner creates a consultation for a patient and communicates in real time.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The practitioner creates a new consultation from their interface</li>
+<li>The patient receives an invitation via SMS or email with an access link</li>
+<li>The patient accesses the interface via their browser (no installation required)</li>
+<li>Practitioner and patient exchange via chat (messages, files, images)</li>
+<li>The practitioner initiates a video or audio call</li>
+<li>The patient receives the call notification and joins the consultation</li>
+<li>The practitioner closes the consultation when finished</li>
+</ol>
+<p><strong>Features used:</strong> real-time chat, audio/video calls, file sharing, push notifications, SMS/email invitations.</p>
+<hr />
+<h2 id="scheduled-appointment">Scheduled Appointment</h2>
+<p>A practitioner schedules a consultation at a specific date and time with one or more participants.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The practitioner creates an appointment from the calendar (FullCalendar)</li>
+<li>They select the type: online (video) or in-person</li>
+<li>Invited participants receive an automatic reminder (configurable: 24h before, 10 min before, etc.)</li>
+<li>At the appointment time, each participant joins the video room</li>
+<li>The practitioner can record the session if needed</li>
+</ol>
+<p><strong>Features used:</strong> calendar, automatic reminders, multi-participant video, session recording (S3).</p>
+<hr />
+<h2 id="multi-participant-consultation">Multi-participant Consultation</h2>
+<p>Multiple practitioners and/or guests participate in the same consultation.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The practitioner creates an appointment and adds multiple participants (colleagues, specialists, interpreters)</li>
+<li>Each participant receives an invitation</li>
+<li>Everyone joins the same video conference room</li>
+<li>Screen sharing is available for presenting documents</li>
+</ol>
+<p><strong>Features used:</strong> multi-participant consultations, screen sharing, group chat.</p>
+<hr />
+<h2 id="anonymous-patient-invitation">Anonymous Patient Invitation</h2>
+<p>A patient without an account is invited for a one-time teleconsultation.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The practitioner creates a consultation and generates an invitation link</li>
+<li>The link is sent via SMS or email to the patient</li>
+<li>The patient accesses the consultation via their browser, without creating an account</li>
+<li>After the consultation, the temporary account is automatically deleted (configurable)</li>
+</ol>
+<p><strong>Features used:</strong> temporary users, link invitations, auto-cleanup.</p>
+<hr />
+<h2 id="queue-management-groups">Queue Management (Groups)</h2>
+<p>Consultation requests are distributed among practitioners in the same department.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The administrator creates groups (e.g., "General Medicine", "Cardiology", "Dermatology")</li>
+<li>Practitioners are assigned to one or more groups</li>
+<li>A consultation request arrives in a group</li>
+<li>Practitioners in the group see the request and one of them takes charge</li>
+<li>The consultation is assigned to the practitioner who accepted</li>
+</ol>
+<p><strong>Features used:</strong> groups/queues, automatic or manual assignment, configurable assignment methods.</p>
+<hr />
+<h2 id="tele-triage-pre-consultation">Tele-triage / Pre-consultation</h2>
+<p>A patient fills out a request form with custom fields before being connected.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The administrator configures custom fields (reason, symptoms, urgency, etc.)</li>
+<li>The patient or an operator submits a consultation request</li>
+<li>The request is routed to the appropriate group based on the reason</li>
+<li>The practitioner reviews the pre-filled information before taking charge</li>
+</ol>
+<p><strong>Features used:</strong> custom fields, consultation reasons, queues.</p>
+<hr />
+<h2 id="document-and-prescription-sharing">Document and Prescription Sharing</h2>
+<p>The practitioner securely shares documents, reports, or prescriptions with the patient.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>During or after the consultation, the practitioner sends files via chat</li>
+<li>Files are scanned by the antivirus (ClamAV) before being transmitted</li>
+<li>The patient downloads the documents from their interface</li>
+<li>A PDF consultation report can be generated</li>
+</ol>
+<p><strong>Features used:</strong> file sharing, ClamAV antivirus, PDF report generation.</p>
+<hr />
+<h2 id="multi-organization-multi-tenant">Multi-organization / Multi-tenant</h2>
+<p>Multiple organizations (hospitals, clinics) share the same instance with complete data isolation.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The system administrator creates a tenant for each organization</li>
+<li>Each organization has its own domain (e.g., <code>hospital-a.example.com</code>, <code>clinic-b.example.com</code>)</li>
+<li>Users, consultations, and configurations are completely isolated between tenants</li>
+<li>Each organization can customize its logo, colors, and settings</li>
+</ol>
+<p><strong>Features used:</strong> multi-tenancy by PostgreSQL schema, custom domains, independent configuration per tenant.</p>
+<hr />
+<h2 id="unified-authentication-sso">Unified Authentication (SSO)</h2>
+<p>Users log in via the institution's existing authentication system.</p>
+<p><strong>Typical flow:</strong></p>
+<ol>
+<li>The administrator configures the OpenID Connect provider (Keycloak, Azure AD, etc.)</li>
+<li>Practitioners log in via the "Sign in with..." button on the login page</li>
+<li>Authentication is delegated to the identity provider</li>
+<li>The account is automatically created on first login</li>
+</ol>
+<p><strong>Features used:</strong> OpenID Connect, JWT, automatic account creation.</p>
+<hr />
+<h2 id="administration-and-monitoring">Administration and Monitoring</h2>
+<p>The administrator manages the platform via a dedicated interface.</p>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li><strong>User management</strong>: create, edit, disable practitioner and patient accounts</li>
+<li><strong>Configuration</strong>: set up reminders, timeouts, site name, application URLs</li>
+<li><strong>Message templates</strong>: customize emails and SMS sent to patients</li>
+<li><strong>Translations</strong>: override translations directly from the admin interface</li>
+<li><strong>Import/Export</strong>: bulk import or export data (users, etc.)</li>
+<li><strong>Monitoring</strong>: dashboard with usage statistics</li>
+<li><strong>API tokens</strong>: generate tokens for integration with third-party systems</li>
+</ul>
+<p><strong>Features used:</strong> Unfold interface, constance (dynamic configuration), import/export, REST API with Swagger documentation.</p>
+<hr />
+<h2 id="role-summary">Role Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Interface</th>
+<th>Access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Patient</strong></td>
+<td>Patient app (Ionic/web)</td>
+<td>Consultations, chat, calls, files</td>
+</tr>
+<tr>
+<td><strong>Practitioner</strong></td>
+<td>Practitioner app (Angular PWA)</td>
+<td>Full consultation management, appointments, calendar</td>
+</tr>
+<tr>
+<td><strong>Administrator</strong></td>
+<td>Django admin (Unfold)</td>
+<td>Configuration, users, templates, monitoring</td>
+</tr>
+<tr>
+<td><strong>Super administrator</strong></td>
+<td>Django admin</td>
+<td>System configuration, API tokens, advanced settings</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

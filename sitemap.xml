@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://hcw-at-home.com/docs/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/use-cases/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/use-cases/"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/use-cases/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/deployment/debian/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/deployment/debian/"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/deployment/debian/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/deployment/docker-compose/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/deployment/docker-compose/"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/deployment/docker-compose/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/fr/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/fr/use-cases/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/use-cases/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/use-cases/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/fr/deployment/debian/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/deployment/debian/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/deployment/debian/"/>
+    </url>
+    <url>
+        <loc>https://hcw-at-home.com/docs/fr/deployment/docker-compose/</loc>
+        <lastmod>2026-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="https://hcw-at-home.com/docs/fr/deployment/docker-compose/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://hcw-at-home.com/docs/deployment/docker-compose/"/>
+    </url>
+</urlset>

@@ -4,11 +4,13 @@ flows:
 - publish-github
 - sonar
 - podman-compose
+- mkdocs-github
 options:
  distrib: "debian"
  codename: "trixie"
  disable_clean: "true"
  weblate_project: "hcwhome-v6/backend"
  external_git_url: "git@github.com:HCW-home/hcw-home.git"
+ mkdocs-github-repo: "git@github.com:HCW-home/hcw-home.git"
 modes:
 - ON_TAG

@@ -1,4 +1,4 @@
-import { Component, Input, HostListener, input, inject } from '@angular/core';
+import { Component, HostListener, input, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,9 +10,9 @@ import { CommonModule } from '@angular/common';
 import { SidebarItem } from '../../../models/sidebar';
 import { BadgeComponent } from '../../../badge/badge.component';
 import { AuthService } from '../../../auth/auth.service';
-import { LoginUser } from '../../../models/user.model';
 import { MatMenuModule } from '@angular/material/menu';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { User } from '../../../models/user.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -38,7 +38,7 @@ export class SidebarComponent {
   pendingConsultations = input<number | undefined>(0);
   activeConsultations = input<number | undefined>(0);
   private authService = inject(AuthService)
-  currentUser: LoginUser | null = null;
+  currentUser: User | null = null;
   showDropdown=false
 
 
@@ -49,7 +49,7 @@ export class SidebarComponent {
 
   ngOnInit() {
     this.checkMobileView();
-    this.currentUser=this.authService.getCurrentUser()
+    this.currentUser = this.authService.getCurrentUser()
 
     this.sidebarItems = [
       { icon: 'icon-dashboard.svg', label: 'Dashboard', route: '/dashboard' },
@@ -70,7 +70,7 @@ export class SidebarComponent {
         label: 'Consultation history',
         route: '/closed-consultations',
       },
-      { icon: 'icon-invite.svg', label: 'Invites', route: '/invites' },
+      { icon: 'icon-invite.svg', label: 'My Invitations', route: '/invites' },
       { icon: 'icon-calendar.svg', label: 'Availability', route: '/availability' },
     ];
   }
@@ -98,7 +98,7 @@ export class SidebarComponent {
   }
 
 
-  logout(){
+  logout() {
     this.authService.logout()
   }
 }

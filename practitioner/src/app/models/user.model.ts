@@ -64,7 +64,7 @@ export interface User {
   status: UserStatus;
   createdAt: string | Date;
   updatedAt: string | Date;
-  UserNotificationSetting:NotificationSettings;
+  UserNotificationSetting:NotificationSettings| null;
 
   //term data 
   termVersion: number;
@@ -74,6 +74,9 @@ export interface User {
     id: number;
     name: string;
   }[];
+  // Tokens
+  accessToken: string;
+  refreshToken: string;
 
   groups: {
     id: number;
@@ -108,53 +111,7 @@ export interface ApiResponse<T> {
   statusCode: number;
 }
 
-export interface LoginUser {
-  id: number;
-  role: UserRole;
-  firstName: string;
-  lastName: string;
-  email: string;
-  temporaryAccount: boolean;
-  phoneNumber?: string | null;
-  country?: string | null;
-  sex?: UserSex | null;
-  status: UserStatus;
-  createdAt: string | Date;
-  updatedAt: string | Date;
 
-
-  //term data 
-  termVersion: number;
-  acceptedAt: string | Date;
-
-
-  // Tokens
-  accessToken: string;
-  refreshToken: string;
-
-  // New fields for display
-  organizations: {
-    id: number;
-    name: string;
-  }[];
-
-  groups: {
-    id: number;
-    name: string;
-  }[];
-
-  languages: {
-    id: number;
-    name: string;
-  }[];
-
-  specialities: {
-    id: number;
-    name: string;
-  }[];
-  UserNotificationSetting:NotificationSettings| null
-
-}
 
 
 export interface Term {

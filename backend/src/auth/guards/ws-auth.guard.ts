@@ -8,16 +8,23 @@ import { UserResponseDto } from 'src/user/dto/user-response.dto';
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
+    const strict = process.env.WS_AUTH_STRICT === 'true';
+
     const token =
       client.handshake?.auth?.token ||
-      client.handshake?.headers?.authorization?.replace('Bearer ', '');
+      (client.handshake?.headers?.authorization || '').replace('Bearer ', '') ||
+      null;
+
+    if (!token && strict) {
+      throw HttpExceptionHelper.unauthorized('WebSocket token missing');
+    }
 
     if (!token) {
-      throw HttpExceptionHelper.unauthorized('WebSocket token missing');
+      return true;
     }
 
     try {
@@ -30,21 +37,31 @@ export class WsAuthGuard implements CanActivate {
         payload === null ||
         !('userEmail' in payload)
       ) {
-        throw HttpExceptionHelper.unauthorized('Invalid token payload');
+        if (strict) {
+          throw HttpExceptionHelper.unauthorized('Invalid token payload');
+        }
+        return true;
       }
       const userEmail = (payload as jwt.JwtPayload).userEmail as string;
       const user = await this.authService.findByEmail(userEmail);
       if (!user) {
-        throw HttpExceptionHelper.unauthorized('No user found');
+        if (strict) {
+          throw HttpExceptionHelper.unauthorized('No user found');
+        }
+        return true;
       }
       client.data.user = plainToInstance(UserResponseDto, user, {
         excludeExtraneousValues: false,
       });
       return true;
     } catch (error) {
-      throw HttpExceptionHelper.unauthorized(
-        'Invalid or expired WebSocket token',
-      );
+      if (strict) {
+        throw HttpExceptionHelper.unauthorized(
+          'Invalid or expired WebSocket token',
+        );
+      }
+      // In permissive mode, don't block connection for token validation errors.
+      return true;
     }
   }
 }

@@ -14,7 +14,7 @@ export class GroupService {
   constructor(private http: HttpClient) {}
 
   getGroupsByOrganization(organizationId: number): Observable<Group[]> {
-    const url = `${environment.apiUrl}/v1/organization/${organizationId}/groups`;
+    const url = `${environment.apiUrl}/organization/${organizationId}/groups`;
     return this.http.get<ApiResponse<Group[]>>(url).pipe(
       map(response => response.data)
     );

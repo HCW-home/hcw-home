@@ -3,14 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { map, switchMap, catchError } from "rxjs/operators";
 
 import { Router } from "@angular/router";
-import { environment } from "../../environments/environment";
-import { LoginUser, UpdateUserProfileDto, ApiResponse, User } from "../models/user.model";
+import { UpdateUserProfileDto, ApiResponse, User } from "../models/user.model";
 import { Observable, throwError } from "rxjs";
+import { API_BASE_URL } from "../constants/api-endpoints";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-  private baseurl = `${environment.apiUrl}/v1/auth`;
-  private _user = signal<LoginUser | null>(null);
+  private baseurl = `${API_BASE_URL}/auth`;
+  private _user = signal<User | null>(null);
   private _loginChecked = signal(false);
   user = this._user.asReadonly();
   readonly loginChecked = this._loginChecked.asReadonly();
@@ -37,7 +37,7 @@ export class AuthService {
     return this.http.get<any>(`${this.baseurl}/me`, { headers }).pipe(
       map(res => {
         if (res.data) {
-          const fullUser: LoginUser = {
+          const fullUser: User = {
             ...res.data,
             accessToken: accessToken,
             refreshToken: refreshToken
@@ -65,7 +65,7 @@ export class AuthService {
       );
   }
 
-  storeCurrentUser(user: LoginUser) {
+  storeCurrentUser(user: User) {
     localStorage.setItem('currentUser', JSON.stringify(user));
     this._user.set(user);
     this._loginChecked.set(true);
@@ -122,7 +122,7 @@ export class AuthService {
           if (!currentUser) {
             throw new Error('[AuthService] No current user found for refreshToken');
           }
-          const updatedUser: LoginUser = {
+          const updatedUser: User = {
             ...currentUser,
             accessToken: res.data.accessToken,
             refreshToken: res.data.refreshToken || rToken, // Use new refresh token if provided
@@ -156,7 +156,7 @@ export class AuthService {
     );
   }
 
-  getCurrentUser(): LoginUser | null {
+  getCurrentUser(): User | null {
     const user = this._user();
     return user;
   }

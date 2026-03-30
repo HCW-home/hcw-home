@@ -71,9 +71,6 @@ export class TermController {
         return ApiResponseDto.success(data, 'Term created successfully', HttpStatus.CREATED);
     }
 
-
-
-
     @Roles(Role.ADMIN)
     @Patch(':id')
     @ApiOperation({ summary: 'Update terms by ID for an organization' })
@@ -97,8 +94,6 @@ export class TermController {
         return ApiResponseDto.success(data, 'Term deleted successfully', HttpStatus.OK);
     }
 
-
-
     @Roles(Role.ADMIN)
     @Get('organization/:id')
     @ApiOperation({ summary: 'List all terms for an organization' })
@@ -121,7 +116,7 @@ export class TermController {
         )
     }
 
-    @Roles(Role.ADMIN,Role.PATIENT,Role.PRACTITIONER)
+    @Roles(Role.ADMIN, Role.PATIENT, Role.PRACTITIONER)
     @Get('latest')
     @ApiOperation({ summary: 'Get latest terms for language and country in org' })
     @ApiQuery({ name: 'language', required: true })

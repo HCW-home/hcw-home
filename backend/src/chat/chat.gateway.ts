@@ -10,15 +10,24 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
+import { UseGuards } from '@nestjs/common';
+import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ReadMessageDto } from './dto/read-message.dto';
 import { TypingIndicatorDto } from './dto/typing-indicator.dto';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 
+@UseGuards(WsAuthGuard)
 @WebSocketGateway({
   namespace: '/chat',
-  cors: true,
+  cors: {
+    origin: '*', // Allow all origins in development
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['*'],
+    transports: ['websocket', 'polling'],
+  },
   allowEIO3: true,
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -30,6 +39,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     string,
     { userId: number; consultationId: number; timeout: NodeJS.Timeout }
   >();
+  // Rate limiting: userId -> { timestamps: number[] }
+  private readonly messageRateLimit = new Map<number, number[]>();
+  private readonly typingRateLimit = new Map<number, number[]>();
+  private readonly MESSAGE_LIMIT = 10; // max messages per window
+  private readonly MESSAGE_WINDOW_MS = 10000; // 10 seconds
+  private readonly TYPING_LIMIT = 20; // max typing events per window
+  private readonly TYPING_WINDOW_MS = 10000; // 10 seconds
 
   constructor(
     private readonly chatService: ChatService,
@@ -146,6 +162,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new WsException('Invalid consultation or user for message');
       }
 
+      // Rate limiting check
+      const now = Date.now();
+      const timestamps = this.messageRateLimit.get(userId) || [];
+      // Remove timestamps outside window
+      const recent = timestamps.filter(ts => now - ts < this.MESSAGE_WINDOW_MS);
+      if (recent.length >= this.MESSAGE_LIMIT) {
+        client.emit('message_error', {
+          error: 'Rate limit exceeded. Please wait before sending more messages.',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+      recent.push(now);
+      this.messageRateLimit.set(userId, recent);
+
       // Create message in database
       const createdMessage = await this.chatService.createMessage(payload);
 
@@ -223,6 +254,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (payload.consultationId !== consultationId) {
         throw new WsException('Invalid consultation for typing indicator');
       }
+
+      // Rate limiting check for typing
+      const now = Date.now();
+      const timestamps = this.typingRateLimit.get(userId) || [];
+      const recent = timestamps.filter(ts => now - ts < this.TYPING_WINDOW_MS);
+      if (recent.length >= this.TYPING_LIMIT) {
+        client.emit('error', {
+          message: 'Rate limit exceeded for typing events. Please wait.',
+        });
+        return;
+      }
+      recent.push(now);
+      this.typingRateLimit.set(userId, recent);
 
       this.stopTyping(client);
 

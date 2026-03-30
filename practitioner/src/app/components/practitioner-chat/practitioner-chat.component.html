@@ -1,5 +1,27 @@
 <div class="chat-container" *ngIf="isVisible">
-  <!-- Chat Header -->
+  <!-- Error Banner for Message Send -->
+  <div class="error-banner" *ngIf="messageSendError">
+    <span>❌ {{ messageSendError }}</span>
+  </div>
+  <!-- Error Banner for File Upload -->
+  <div class="error-banner" *ngIf="uploadError">
+    <span>❌ {{ uploadError }}</span>
+  </div>
+  <!-- Search & Filter Bar -->
+  <div class="chat-search-filter">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search messages..."
+      class="search-bar"
+    />
+    <select [(ngModel)]="filterType" class="filter-select">
+      <option value="all">All</option>
+      <option value="text">Text</option>
+      <option value="image">Image</option>
+      <option value="file">File</option>
+    </select>
+  </div>
   <div class="chat-header">
     <div class="header-left">
       <h3>💬 Chat</h3>
@@ -25,7 +47,7 @@
     <!-- Messages List -->
     <div class="messages-list">
       <div
-        *ngFor="let message of messages; trackBy: trackByMessageId"
+        *ngFor="let message of filteredMessages; trackBy: trackByMessageId"
         class="message-wrapper"
         [ngClass]="{
           'own-message': message.isFromPractitioner,
@@ -45,8 +67,17 @@
                   (message.isFromPractitioner ? practitionerName : "Patient")
               }}</span>
               <span class="message-time">{{
-                formatMessageTime(message.createdAt)
+                formatMessageTime(message.createdAt || "")
               }}</span>
+              <!-- Delivery Status Checkmarks -->
+              <span *ngIf="message.isFromPractitioner" class="delivery-status">
+                <ng-container [ngSwitch]="message.deliveryStatus">
+                  <span *ngSwitchCase="'pending'">🕓</span>
+                  <span *ngSwitchCase="'sent'">✓</span>
+                  <span *ngSwitchCase="'read'">✓✓</span>
+                  <span *ngSwitchDefault>✓</span>
+                </ng-container>
+              </span>
             </div>
           </div>
 

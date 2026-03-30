@@ -136,6 +136,12 @@ export class JoinConsultationResponseDto {
   messages?: JoinConsultationMessageDto[];
 
   @ApiPropertyOptional({
+    description: 'Number of unread messages for the joining user in this consultation',
+    example: 0,
+  })
+  unreadMessageCount?: number;
+
+  @ApiPropertyOptional({
     description: 'Mediasoup session details for this consultation',
     type: 'object',
     properties: {

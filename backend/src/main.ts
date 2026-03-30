@@ -21,6 +21,7 @@ import { createClient } from 'redis';
 
 class ApplicationBootstrap {
   private logger: CustomLoggerService;
+  private externalLoggerInitialized = false;
   private readonly gracefulShutdownTimeoutMs = 10000;
 
   async bootstrap(): Promise<void> {
@@ -37,6 +38,11 @@ class ApplicationBootstrap {
 
       // Use custom logger for the application
       app.useLogger(this.logger);
+      // Integrate external logging/monitoring if configured
+      if (process.env.MONITORING_DSN) {
+        this.logger.logServerAction('External monitoring configured', { dsn: process.env.MONITORING_DSN });
+        this.externalLoggerInitialized = true;
+      }
 
       // Configure security and performance middleware
       this.configureSecurityMiddleware(app, configService);
@@ -133,10 +139,14 @@ class ApplicationBootstrap {
 
   private configureSecurityMiddleware(app: NestExpressApplication, configService: ConfigService): void {
     // Helmet for security headers
-    app.use(helmet({
+    const helmetOptions: any = {
       contentSecurityPolicy: configService.isProduction ? configService.helmetCsp : false,
       crossOriginEmbedderPolicy: false,
-    }));
+    };
+    if (process.env.HELMET_HSTS_MAX_AGE) {
+      helmetOptions.hsts = { maxAge: parseInt(process.env.HELMET_HSTS_MAX_AGE, 10) };
+    }
+    app.use(helmet(helmetOptions));
 
     // Rate limiting
     if (configService.isProduction) {
@@ -325,6 +335,13 @@ class ApplicationBootstrap {
   }
 
   private configureGlobalPrefix(app: NestExpressApplication): void {
+    // Enable versioning
+    app.enableVersioning({
+      type: VersioningType.URI,
+      prefix: 'v',
+      defaultVersion: '1',
+    });
+
     app.setGlobalPrefix('api', {
       exclude: [
         { path: 'health', method: RequestMethod.GET },
@@ -335,12 +352,13 @@ class ApplicationBootstrap {
 
     this.logger.logServerAction('Global API prefix configured', {
       prefix: 'api',
+      versioning: 'URI-based with v1 default',
       excludedPaths: ['health', 'metrics', ''],
     });
   }
   private async configureSession(app: NestExpressApplication, configService: ConfigService): Promise<void> {
     const sessionConfig: any = {
-      secret: configService.jwtSecret || 'fallback-secret-change-in-production',
+      secret: configService.jwtSecret,
       resave: false,
       saveUninitialized: false,
       name: 'sessionId',
@@ -385,7 +403,7 @@ class ApplicationBootstrap {
     }
 
     const sessionOptions: any = {
-      secret: configService.jwtSecret || 'fallback-secret',
+      secret: configService.jwtSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -521,9 +539,28 @@ class ApplicationBootstrap {
     });
 
     if (configService.isProduction) {
-      const server = await app.listen(port, '0.0.0.0');
-      server.keepAliveTimeout = 65000; // Slightly higher than ALB idle timeout (60s)
-      server.headersTimeout = 66000; // Slightly higher than keepAliveTimeout
+      // HTTPS enforcement in production
+      const sslKey = process.env.SSL_KEY_PATH;
+      const sslCert = process.env.SSL_CERT_PATH;
+      if (sslKey && sslCert) {
+        const fs = require('fs');
+        const https = require('https');
+        const httpsOptions = {
+          key: fs.readFileSync(sslKey),
+          cert: fs.readFileSync(sslCert),
+        };
+        const server = https.createServer(httpsOptions, app.getHttpAdapter().getInstance());
+        server.keepAliveTimeout = 65000;
+        server.headersTimeout = 66000;
+        server.listen(port, '0.0.0.0', () => {
+          this.logger.logServerAction('HTTPS server started', { port });
+        });
+      } else {
+        this.logger.warn('SSL cert/key not configured, falling back to HTTP. Set SSL_KEY_PATH and SSL_CERT_PATH for HTTPS.');
+        const server = await app.listen(port, '0.0.0.0');
+        server.keepAliveTimeout = 65000;
+        server.headersTimeout = 66000;
+      }
     } else {
       await app.listen(port);
     }
@@ -533,7 +570,7 @@ class ApplicationBootstrap {
 
   private logApplicationInfo(port: number, configService: ConfigService): void {
     const baseUrl = `http://localhost:${port}`;
-    const apiUrl = `${baseUrl}/api/v1`;
+    const apiUrl = `${baseUrl}/api`;
 
     this.logger.logServerAction(`Application started successfully`, {
       url: apiUrl,

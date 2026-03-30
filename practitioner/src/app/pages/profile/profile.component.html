@@ -228,7 +228,7 @@
         </app-button>
 
         <app-button [type]="ButtonType.Submit" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium"
-          [disabled]="!profileForm.valid|| isSaving()">
+          [disabled]="isSaving()">
           @if (isSaving()) {
           <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
           }

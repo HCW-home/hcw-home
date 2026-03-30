@@ -1,1 +1,44 @@
-<p>toast-container works!</p>
+<div class="toast-container">
+  <div
+    *ngFor="let msg of toast.messages$ | async; trackBy: trackToast"
+    class="toast"
+    [ngClass]="'toast-' + msg.type"
+    [@slideIn]
+  >
+    <div class="toast-content">
+      <div class="toast-icon">
+        <span *ngIf="msg.type === 'success'">✅</span>
+        <span *ngIf="msg.type === 'error'">❌</span>
+        <span *ngIf="msg.type === 'warning'">⚠️</span>
+        <span *ngIf="msg.type === 'info'">ℹ️</span>
+      </div>
+
+      <div class="toast-body">
+        <div class="toast-message">{{ msg.message }}</div>
+        <div class="toast-timestamp">{{ formatTime(msg.timestamp) }}</div>
+      </div>
+
+      <div class="toast-actions">
+        <button
+          *ngIf="msg.action"
+          class="toast-action-btn"
+          (click)="onAction(msg)"
+        >
+          {{ msg.action.label }}
+        </button>
+        <button
+          class="toast-close"
+          (click)="closeToast(msg.id)"
+          aria-label="Close notification"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="toast-progress"
+      [style.animation-duration]="getProgressDuration(msg.type) + 'ms'"
+    ></div>
+  </div>
+</div>

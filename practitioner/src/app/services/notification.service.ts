@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
 import { ApiResponse } from '../dtos';
+import { API_ENDPOINTS } from '../constants/api-endpoints';
 
 export interface NotificationSettings {
   enabled: boolean;
@@ -13,10 +13,10 @@ export interface NotificationSettings {
   providedIn: 'root'
 })
 export class NotificationService {
-  private baseUrl = `${environment.apiUrl}/v1/notifications`;
+  private baseUrl = API_ENDPOINTS.NOTIFICATIONS;
 
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Update notification settings for the current user

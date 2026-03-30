@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { SmsProviderService } from './sms_provider.service';
 import { SmsProviderController } from './sms_provider.controller';
 import { DatabaseModule } from 'src/database/database.module';
-import { UserModule } from 'src/user/user.module';
+import { CoreModule } from '../core/core.module';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [SmsProviderController],
   providers: [SmsProviderService],
-  imports: [DatabaseModule, UserModule, AuthModule],
+  imports: [DatabaseModule, CoreModule, AuthModule],
   exports: [SmsProviderService],
 })
-export class SmsProviderModule {}
+export class SmsProviderModule { }

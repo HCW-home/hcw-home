@@ -1,14 +1,20 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="custom-toolbar">
-    <ion-title class="custom-title">
-     {{title}}
-    </ion-title>
+    <!-- Title -->
+    <ion-title class="custom-title">{{ title }}</ion-title>
+
+    <!-- Consultation Button -->
     <ion-buttons slot="end" *ngIf="showConsultationRequest">
       <ion-button class="consultation-btn" (click)="goToConsultationRequest()">
         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-        Consultation
-        <br />
-        Request
+        Consultation<br />Request
+      </ion-button>
+    </ion-buttons>
+
+    <!-- Admin Icon (goes directly to profile) -->
+    <ion-buttons slot="end" *ngIf="isLoggedIn">
+      <ion-button fill="clear" class="admin-btn" (click)="goToProfile()">
+        <ion-icon [src]="'assets/svg/icon-user.svg'" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

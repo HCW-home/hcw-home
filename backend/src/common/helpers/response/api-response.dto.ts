@@ -15,6 +15,9 @@ export class ApiResponseDto<T> implements IApiResponse<T> {
   timestamp: string;
   requestId?: string;
   path?: string;
+  // Allow these for join endpoints (for controller serialization convenience)
+  consultationId?: number;
+  sessionUrl?: string;
 
   constructor(partial: Partial<ApiResponseDto<T>>) {
     Object.assign(this, partial);
@@ -179,8 +182,7 @@ export class PaginationMetaDto implements IPaginationMeta {
 
 export class PaginatedApiResponseDto<T>
   extends ApiResponseDto<T[]>
-  implements IPaginatedResponse<T>
-{
+  implements IPaginatedResponse<T> {
   pagination: PaginationMetaDto;
 
   constructor(partial: Partial<PaginatedApiResponseDto<T>>) {

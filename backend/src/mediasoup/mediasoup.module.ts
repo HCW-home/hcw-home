@@ -9,11 +9,11 @@ import { AuthModule } from 'src/auth/auth.module';
 import { MediaEventService } from './media-event.service';
 import { MediasoupSessionService } from './mediasoup-session.service';
 import { ChatModule } from 'src/chat/chat.module';
-import { ConsultationInvitationModule } from 'src/consultation/consultation-invitation.module';
+import { InviteModule } from 'src/auth/invite/invite.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule, DatabaseModule, UserModule, AuthModule, ChatModule, ConsultationInvitationModule],
+  imports: [ConfigModule, DatabaseModule, UserModule, AuthModule, ChatModule, InviteModule],
   controllers: [MediasoupServerController],
   providers: [
     MediasoupServerService,

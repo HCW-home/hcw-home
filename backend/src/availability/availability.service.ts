@@ -1,8 +1,7 @@
 import {
   Injectable,
-  NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { DatabaseService } from '../database/database.service';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
@@ -10,7 +9,7 @@ import { CreateTimeSlotDto } from './dto/time-slot.dto';
 
 @Injectable()
 export class AvailabilityService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService) { }
 
   async createAvailability(createAvailabilityDto: CreateAvailabilityDto) {
     const existingAvailability =
@@ -23,7 +22,7 @@ export class AvailabilityService {
       });
 
     if (existingAvailability) {
-      throw new ConflictException('Availability already exists for this day');
+      throw HttpExceptionHelper.conflict('Availability already exists for this day');
     }
 
     return this.databaseService.practitionerAvailability.create({
@@ -99,7 +98,7 @@ export class AvailabilityService {
       });
 
     if (!availability) {
-      throw new NotFoundException('Availability not found');
+      throw HttpExceptionHelper.notFound('Availability not found');
     }
 
     return availability;
@@ -237,7 +236,7 @@ export class AvailabilityService {
     startDate: Date,
     endDate: Date,
   ) {
-    
+
     const start = new Date(startDate);
     start.setUTCHours(0, 0, 0, 0);
 
@@ -263,11 +262,11 @@ export class AvailabilityService {
     });
 
     if (!timeSlot) {
-      throw new NotFoundException('Time slot not found');
+      throw HttpExceptionHelper.notFound('Time slot not found');
     }
 
     if (timeSlot.status !== 'AVAILABLE') {
-      throw new ConflictException('Time slot is not available');
+      throw HttpExceptionHelper.conflict('Time slot is not available');
     }
 
     return this.databaseService.timeSlot.update({

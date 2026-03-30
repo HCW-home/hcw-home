@@ -4,11 +4,12 @@ import { WhatsappTemplateController } from './whatsapp-template.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { WhatsappTemplateSeederService } from './whatsapp-template-seeder.service';
 import { ConfigModule } from 'src/config/config.module';
-import { AuthModule } from 'src/auth/auth.module';
+import { CoreModule } from '../core/core.module';
 import { TwilioWhatsappService } from './twilio-template.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [DatabaseModule, ConfigModule, AuthModule],
+  imports: [DatabaseModule, ConfigModule, CoreModule, AuthModule],
   controllers: [WhatsappTemplateController],
   providers: [
     WhatsappTemplateService,
@@ -21,4 +22,4 @@ import { TwilioWhatsappService } from './twilio-template.service';
     TwilioWhatsappService,
   ],
 })
-export class WhatsappTemplateModule {}
+export class WhatsappTemplateModule { }

@@ -68,7 +68,7 @@ export class AvailabilityComponent implements OnInit {
   private getAuthHeaders() {
     const userJson = localStorage.getItem('currentUser');
     const user = userJson ? JSON.parse(userJson) : null;
-    const token = user?.tokens?.accessToken;
+    const token = user?.accessToken;
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -80,7 +80,6 @@ export class AvailabilityComponent implements OnInit {
       const headers = this.getAuthHeaders();
       const response = await this.http.get<any>(`${environment.apiUrl}/user/role/practitioners`, { headers }).toPromise();
       this.practitioners = response?.data || [];
-      console.log('Loaded practitioners:', this.practitioners.length);
     } catch (error) {
       console.error('Failed to load practitioners', error);
       this.practitioners = [];
@@ -90,10 +89,9 @@ export class AvailabilityComponent implements OnInit {
   async loadAvailabilities(): Promise<void> {
     this.isLoading = true;
     try {
-      console.log('Loading availabilities...');
       const headers = this.getAuthHeaders();
-      this.availabilities = await this.http.get<Availability[]>(`${environment.apiUrl}/availability/all`, { headers }).toPromise() || [];
-      console.log('Loaded availabilities:', this.availabilities.length);
+      const response = await this.http.get<any>(`${environment.apiUrl}/availability/all`, { headers }).toPromise() || [];
+      this.availabilities = response?.data || []
     } catch (error) {
       console.error('Failed to load availabilities', error);
       this.availabilities = [];
@@ -105,15 +103,20 @@ export class AvailabilityComponent implements OnInit {
   async onSubmit(): Promise<void> {
     if (this.availabilityForm.valid) {
       try {
-        const formData = this.availabilityForm.value;
-        console.log('Submitting availability form:', formData);
-        
+        const rawValue = this.availabilityForm.value;
+        const formData = {
+          ...rawValue,
+          practitionerId: Number(rawValue.practitionerId),
+          dayOfWeek: Number(rawValue.dayOfWeek),
+        };
+
         const headers = this.getAuthHeaders();
         
         if (this.editingId) {
           await this.http.patch(`${environment.apiUrl}/availability/${this.editingId}`, formData, { headers }).toPromise();
           console.log('Availability updated successfully');
         } else {
+          console.log("Creating new availability...");
           await this.http.post(`${environment.apiUrl}/availability`, formData, { headers }).toPromise();
           console.log('Availability created successfully');
         }

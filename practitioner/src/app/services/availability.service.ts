@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_ENDPOINTS } from '../constants/api-endpoints';
 
 export interface TimeSlot {
   id: number;
@@ -42,46 +43,25 @@ export interface UpdateAvailabilityRequest {
   providedIn: 'root'
 })
 export class AvailabilityService {
-  private apiUrl = 'http://localhost:3000/api/v1';
+  private apiUrl = API_ENDPOINTS.AVAILABILITY;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken');
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-  }
-
-  getCurrentPractitionerId(): number {
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    return user.id;
-  }
-
+  // Auth headers are provided by the global HTTP interceptor. Services should not read tokens directly.
   getMyAvailability(): Observable<any> {
-    const practitionerId = this.getCurrentPractitionerId();
-    return this.http.get<any>(`${this.apiUrl}/availability/practitioner/${practitionerId}`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<any>(`${this.apiUrl}/my-availability`);
   }
 
   createAvailability(data: CreateAvailabilityRequest): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/availability`, data, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.post<any>(this.apiUrl, data);
   }
 
   updateAvailability(id: number, data: UpdateAvailabilityRequest): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/availability/${id}`, data, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.patch<any>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteAvailability(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/availability/${id}`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   getMyTimeSlots(startDate?: string, endDate?: string): Observable<any> {
@@ -89,25 +69,15 @@ export class AvailabilityService {
     if (startDate && endDate) {
       params = { startDate, endDate };
     }
-    return this.http.get<any>(`${this.apiUrl}/availability/my-slots`, { 
-      params,
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<any>(`${this.apiUrl}/my-slots`, { params });
   }
 
   generateTimeSlots(startDate: string, endDate: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/availability/generate-slots`, {
-      startDate,
-      endDate
-    }, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.post<any>(`${this.apiUrl}/generate-slots`, { startDate, endDate });
   }
 
   updateSlotStatus(slotId: number, status: 'AVAILABLE' | 'BLOCKED'): Observable<TimeSlot> {
-    return this.http.patch<TimeSlot>(`${this.apiUrl}/availability/slots/${slotId}`, { status }, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.patch<TimeSlot>(`${this.apiUrl}/slots/${slotId}`, { status });
   }
 
   getDayName(dayOfWeek: number): string {

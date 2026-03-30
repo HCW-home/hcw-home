@@ -9,13 +9,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { forkJoin, Subject, of } from 'rxjs';
-import { takeUntil, catchError, finalize, single } from 'rxjs/operators';
-
-import { UserService } from '../../services/user.service';
+import { takeUntil, catchError, finalize } from 'rxjs/operators';
 import { LanguageService } from '../../services/language.service';
 import { SpecialityService } from '../../services/speciality.service';
 import { ToastService } from '../../services/toast/toast.service';
-import { User, UserSex, Language, Speciality, UpdateUserProfileDto, LoginUser } from '../../models/user.model';
+import { User, UserSex, Language, Speciality, UpdateUserProfileDto } from '../../models/user.model';
 import { ButtonComponent } from '../../components/ui/button/button.component';
 import { ButtonVariant, ButtonSize, ButtonType } from '../../constants/button.enums';
 import { ConfigService } from '../../services/config.service';
@@ -25,7 +23,7 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { NotificationService } from '../../services/notification.service';
 import { NotificationSettings } from '../../services/notification.service';
 
-const PHONE_NUMBER_REGEX = /^[+]?[1-9][\d\s\-\(\)]{7,15}$/;
+const PHONE_NUMBER_REGEX = /^\+[1-9][\d\s\-\(\)]{7,14}$/;
 const MIN_NAME_LENGTH = 2;
 const MAX_NAME_LENGTH = 50;
 
@@ -68,7 +66,6 @@ interface GenderOption {
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
-  private readonly userService = inject(UserService);
   private readonly languageService = inject(LanguageService);
   private readonly specialityService = inject(SpecialityService);
   private readonly configService = inject(ConfigService)
@@ -77,7 +74,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
-
   readonly profileForm: FormGroup;
   readonly currentUser = signal<User | null>(null);
   readonly languages = signal<Language[]>([]);
@@ -98,6 +94,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   constructor() {
     this.profileForm = this.createProfileForm();
   }
+
 
 
 
@@ -134,15 +131,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   loadProfileData(): void {
     this.isLoading.set(true);
+    const user = this.authservice.getCurrentUser();
+    this.currentUser.set(user);
 
     forkJoin({
-      user: this.userService.getCurrentUser().pipe(
-        catchError(error => {
-          console.error('Error loading user profile:', error);
-          this.toastService.showError('Failed to load user profile');
-          return of(null);
-        })
-      ),
       languages: this.languageService.getAllLanguages().pipe(
         catchError(error => {
           console.error('Error loading languages:', error);
@@ -168,8 +160,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$),
       finalize(() => this.isLoading.set(false))
     ).subscribe({
-      next: ({ user, languages, specialities, countries }) => {
-        this.currentUser.set(user);
+      next: ({ languages, specialities, countries }) => {
         this.languages.set(languages);
         this.specialities.set(specialities);
         this.countries.set(countries)
@@ -237,7 +228,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
 
   onSave(): void {
-    if (!this.profileForm.valid || !this.currentUser()) {
+    if (!this.currentUser()) {
       this.markFormGroupTouched();
       return;
     }
@@ -275,7 +266,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         const existingUser = this.authservice.getCurrentUser();
         if (existingUser) {
-          const loginUser: LoginUser = {
+          const loginUser: User = {
             ...updatedUser,
             accessToken: existingUser.accessToken,
             refreshToken: existingUser.refreshToken,
@@ -284,13 +275,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
 
         this.currentUser.set(updatedUser);
+        this.populateForm(updatedUser);
         this.profileForm.markAsPristine();
       },
       error: (error) => {
-        console.error('Error updating profile', error);
-        this.snackBarService.showError('Failed to update profile. Please try again.');
+        if (error.error.error?.validationErrors) {
+          const firstKey = Object.keys(error.error.error.validationErrors)[0];
+          const firstError = error.error.error.validationErrors[firstKey][0];
+          this.snackBarService.showError(firstError);
+        } else {
+          this.snackBarService.showError(error.error?.message || 'Something went wrong');
+        }
       }
     });
+
   }
 
   onReset(): void {

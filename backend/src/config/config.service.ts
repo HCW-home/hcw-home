@@ -1,9 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { Environment } from './environment.enum';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class ConfigService {
+  // SSL/TLS for HTTPS
+  get sslKeyPath(): string | undefined {
+    return this.configService.get<string>('SSL_KEY_PATH');
+  }
+  get sslCertPath(): string | undefined {
+    return this.configService.get<string>('SSL_CERT_PATH');
+  }
+
+  get monitoringDsn(): string | undefined {
+    return this.configService.get<string>('MONITORING_DSN');
+  }
+
+  // Security Headers
+  get helmetHstsMaxAge(): number | undefined {
+    const raw = this.configService.get<string>('HELMET_HSTS_MAX_AGE');
+    if (!raw) return undefined;
+    const parsed = parseInt(raw, 10);
+    return isNaN(parsed) ? undefined : parsed;
+  }
   get helmetCsp() {
     return {
       directives: {
@@ -120,7 +140,7 @@ export class ConfigService {
 
   // --- Swagger Server URL ---
   get swaggerServerUrl() {
-    return this.configService.get<string>('SWAGGER_SERVER_URL', `http://localhost:${this.port}/api/v1`);
+    return this.configService.get<string>('SWAGGER_SERVER_URL', `http://localhost:${this.port}/api`);
   }
   private readonly logger = new Logger(ConfigService.name);
 
@@ -175,6 +195,17 @@ export class ConfigService {
       throw new Error('Database URL is required in production environment');
     }
     return url;
+  }
+
+  /**
+   * Debounce (milliseconds) for focused patient_joined emits to practitioners
+   * Can be configured via PATIENT_JOINED_DEBOUNCE_MS environment variable
+   */
+  get patientJoinedDebounceMs(): number {
+    const raw = this.configService.get<string>('PATIENT_JOINED_DEBOUNCE_MS');
+    if (!raw) return 10000; // default 10s
+    const parsed = parseInt(raw, 10);
+    return isNaN(parsed) ? 10000 : parsed;
   }
 
   get jwtSecret(): string {
@@ -359,8 +390,29 @@ export class ConfigService {
 
   // Session and Timeout Configuration
   get sessionTimeoutMs(): number {
-    return this.getNumber('SESSION_TIMEOUT_MS', 30 * 60 * 1000); // 30 minutes
+    return this.getNumber('SESSION_TIMEOUT_MS', 30 * 60 * 1000); // 30 minutes default
   }
+
+  // ================ WAITING ROOM & AUDIO ALERT CONFIGURATION ================
+
+  get soundAlertEnabled(): boolean {
+    return this.configService.get<string>('SOUND_ALERT_ENABLED')?.toLowerCase() === 'true' || true;
+  }
+
+  get soundAlertUrl(): string {
+    return this.configService.get<string>('SOUND_ALERT_URL') || '/assets/sounds/patient-joined.mp3';
+  }
+
+  get waitingRoomTimeoutMinutes(): number {
+    return this.getNumber('WAITING_ROOM_TIMEOUT_MINUTES', 30);
+  }
+
+  get maxWaitingRoomSessions(): number {
+    return this.getNumber('MAX_WAITING_ROOM_SESSIONS', 10);
+  }
+
+  // ================ CONSULTATION URLS GENERATION ================
+  // (See comprehensive generateConsultationUrls method below)
 
   get consultationTimeoutMs(): number {
     return this.getNumber('CONSULTATION_TIMEOUT_MS', 60 * 60 * 1000); // 1 hour
@@ -408,7 +460,7 @@ export class ConfigService {
   }
 
   // Consultation-Specific URL Generators
-  generateConsultationUrls(consultationId: number, userRole: string) {
+  generateConsultationUrls(consultationId: number, userRole: UserRole | string) {
     const patientWaitingRoom = this.generatePatientRoute(`/waiting-room/${consultationId}`);
     const patientConsultationRoom = this.generatePatientRoute(`/consultation-room/${consultationId}`);
     const practitionerConsultationRoom = this.generatePractitionerRoute(`/consultation/${consultationId}`);
@@ -574,7 +626,7 @@ export class ConfigService {
   // ===================================================================
 
   get chatMaxFileSize(): number {
-    return this.getNumber('CHAT_MAX_FILE_SIZE_MB', 10) * 1024 * 1024; 
+    return this.getNumber('CHAT_MAX_FILE_SIZE_MB', 10) * 1024 * 1024;
   }
 
   get chatMessageHistoryLimit(): number {

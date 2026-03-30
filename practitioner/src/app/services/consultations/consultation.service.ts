@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { of, type Observable, map, switchMap } from 'rxjs';
+import { of, type Observable, map, switchMap, catchError } from 'rxjs';
 import type { Consultation } from '../../models/consultations/consultation.model';
 import { ConsultationStatus } from '../../constants/consultation-status.enum';
 import { formatConsultationTime } from '../../utils/date-utils';
@@ -10,6 +10,7 @@ import type {
 } from '../../dtos/consultations/consultation-dashboard-response.dto';
 import { UserService } from '../user.service';
 import { WaitingRoomResponse } from '../../dtos/consultations/consultation-dashboard-response.dto';
+import { API_ENDPOINTS } from '../../constants/api-endpoints';
 
 export interface SubmitFeedbackRequest {
   consultationId: number;
@@ -45,6 +46,13 @@ export interface CreatePatientConsultationRequest {
   scheduledDate?: Date;
   specialityId?: number;
   symptoms?: string;
+  manualSend?: boolean;
+  planLater?: boolean;
+  timezone?: string;
+  guests?: {
+    lovedOne?: boolean;
+    colleague?: boolean;
+  };
 }
 
 export interface CreatePatientConsultationResponse {
@@ -90,7 +98,34 @@ export interface CreatePatientConsultationResponse {
   providedIn: 'root',
 })
 export class ConsultationService {
-  private baseUrl = 'http://localhost:3000/api/v1/consultation';
+  /**
+   * Send a message to a patient in the waiting room
+   */
+  async sendMessageToPatient(consultationId: number, message: string): Promise<void> {
+    try {
+      await this.http.post<any>(`${this.baseUrl}/${consultationId}/send-message`, {
+        message,
+        recipientType: 'patient'
+      }).toPromise();
+    } catch (error: any) {
+      console.error('Failed to send message to patient:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Dismiss a patient from the waiting room
+   */
+  async dismissPatientFromWaitingRoom(consultationId: number): Promise<void> {
+    try {
+      await this.http.post<any>(`${this.baseUrl}/${consultationId}/dismiss-patient`, {}).toPromise();
+    } catch (error: any) {
+      console.error('Failed to dismiss patient:', error);
+      throw error;
+    }
+  }
+
+  private baseUrl = API_ENDPOINTS.CONSULTATION;
 
   constructor(
     private http: HttpClient,
@@ -142,9 +177,6 @@ export class ConsultationService {
       })
     );
   }
-
-
-
 
   getWaitingRoomConsultations(practitionerId: number, page: number = 1, limit: number = 10): Observable<any> {
     const params = new HttpParams()

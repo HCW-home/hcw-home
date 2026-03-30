@@ -3,14 +3,14 @@ import { AuthService } from './auth.service';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { SnackbarService } from '../services/snackbar/snackbar.service';
+import { ToastService } from '../services/toast/toast.service';
 import { RoutePaths } from '../constants/route-paths.enum';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const token = authService.getToken();
-  const snackbarService = inject(SnackbarService)
+  const toastService = inject(ToastService)
 
   // Clone request with token if available
   const authReq = token
@@ -62,7 +62,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         authService.logout();
         router.navigate([`/${RoutePaths.Login}`]);
-        snackbarService.showInfo("session expired,Login Again")
+        toastService.showInfo("session expired,Login Again")
       }
 
       return throwError(() => error);

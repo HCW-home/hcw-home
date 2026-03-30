@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { CreateLanguageDto } from './dto/create-language.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class LanguageService {
-  constructor(private prisma: DatabaseService) {}
+  constructor(private prisma: DatabaseService) { }
 
   create(data: CreateLanguageDto) {
     return this.prisma.language.create({ data });
@@ -21,13 +22,13 @@ export class LanguageService {
 
   async update(id: number, data: UpdateLanguageDto) {
     const existing = await this.prisma.language.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Language not found');
+    if (!existing) throw HttpExceptionHelper.notFound('Language not found');
     return this.prisma.language.update({ where: { id }, data });
   }
 
   async remove(id: number) {
     const existing = await this.prisma.language.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Language not found');
+    if (!existing) throw HttpExceptionHelper.notFound('Language not found');
     return this.prisma.language.delete({ where: { id } });
   }
 }

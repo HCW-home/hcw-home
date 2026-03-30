@@ -1,7 +1,6 @@
 import {
   Injectable,
-  ConflictException,
-  NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -14,10 +13,13 @@ import { OrganizationResponseDto } from './dto/organization-response.dto';
 import { OrganizationMemberResponseDto } from './dto/organization-member-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Prisma } from '@prisma/client';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 
 @Injectable()
 export class OrganizationService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly logger = new Logger(OrganizationService.name);
+
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async create(
     createOrganizationDto: CreateOrganizationDto,
@@ -29,7 +31,7 @@ export class OrganizationService {
       });
 
     if (existingOrganization) {
-      throw new ConflictException('Organization name already exists');
+      throw HttpExceptionHelper.conflict('Organization name already exists');
     }
 
     // Create organization
@@ -105,7 +107,7 @@ export class OrganizationService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     return plainToInstance(OrganizationResponseDto, organization, {
@@ -139,7 +141,7 @@ export class OrganizationService {
       });
 
     if (!existingOrganization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     // Check name uniqueness if name is being updated
@@ -153,7 +155,7 @@ export class OrganizationService {
       });
 
       if (nameExists) {
-        throw new ConflictException('Organization name already exists');
+        throw HttpExceptionHelper.conflict('Organization name already exists');
       }
     }
 
@@ -191,7 +193,7 @@ export class OrganizationService {
       });
 
     if (!existingOrganization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     const organization = await this.databaseService.organization.delete({
@@ -213,7 +215,7 @@ export class OrganizationService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     // Check if user exists
@@ -222,7 +224,7 @@ export class OrganizationService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw HttpExceptionHelper.notFound('User not found');
     }
 
     // Check if user is already a member
@@ -237,7 +239,7 @@ export class OrganizationService {
       });
 
     if (existingMember) {
-      throw new ConflictException(
+      throw HttpExceptionHelper.conflict(
         'User is already a member of this organization',
       );
     }
@@ -285,7 +287,7 @@ export class OrganizationService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     // Build where clause
@@ -390,7 +392,7 @@ export class OrganizationService {
     });
 
     if (!member) {
-      throw new NotFoundException('Organization or Member not found');
+      throw HttpExceptionHelper.notFound('Organization or Member not found');
     }
 
     return plainToInstance(OrganizationMemberResponseDto, member, {
@@ -413,7 +415,7 @@ export class OrganizationService {
       });
 
     if (!existingMember) {
-      throw new NotFoundException('Organization or Member not found');
+      throw HttpExceptionHelper.notFound('Organization or Member not found');
     }
 
     // Update member role
@@ -463,7 +465,7 @@ export class OrganizationService {
       });
 
     if (!existingMember) {
-      throw new NotFoundException('Organization or Member not found');
+      throw HttpExceptionHelper.notFound('Organization or Member not found');
     }
 
     // Delete member

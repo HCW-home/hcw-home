@@ -8,7 +8,7 @@ import { throwError } from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-  private baseurl = `${environment.apiUrl}/v1/auth`;
+  private baseurl = `${environment.apiUrl}/auth`;
   private _user = signal<LoginUser | null>(null);
   private _loginChecked = signal(false);
   user = this._user.asReadonly();

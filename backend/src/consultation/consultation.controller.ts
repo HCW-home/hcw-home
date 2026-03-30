@@ -17,6 +17,19 @@ import {
 } from '@nestjs/common';
 import { ConsultationService } from './consultation.service';
 import { ConsultationMediaSoupService } from './consultation-mediasoup.service';
+import { EnhancedRealtimeService } from './enhanced-realtime.service';
+import { ChatService } from '../chat/chat.service';
+import { MessageType } from '../chat/dto/create-message.dto';
+import { WaitingRoomService } from './waiting-room.service';
+import { UserRole } from '@prisma/client';
+import {
+  PractitionerWaitingRoomDto,
+  JoinWaitingRoomDto,
+  AdmitFromWaitingRoomDto,
+  LiveConsultationJoinDto,
+  LiveConsultationDataDto
+} from './dto/waiting-room.dto';
+import { CustomLoggerService } from 'src/logger/logger.service';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   JoinConsultationDto,
@@ -25,7 +38,6 @@ import {
 import { UserIdParamPipe } from './validation/user-id-param.pipe';
 import { ConsultationIdParamPipe } from './validation/consultation-id-param.pipe';
 import { ApiResponseDto } from 'src/common/helpers/response/api-response.dto';
-import { WaitingRoomPreviewResponseDto } from './dto/waiting-room-preview.dto';
 import {
   AdmitPatientDto,
   AdmitPatientResponseDto,
@@ -66,6 +78,20 @@ import { CreatePatientConsultationResponseDto } from './dto/invite-form.dto';
 import { CreatePatientConsultationDto } from './dto/invite-form.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
 import { SubmitFeedbackDto, FeedbackResponseDto } from './dto/submit-feedback.dto';
+import {
+  ConnectionQualityDto,
+  MediaDeviceStatusDto,
+  RealTimeEventDto,
+  WaitingRoomSessionDto,
+  TypingIndicatorDto
+} from './dto/enhanced-realtime.dto';
+import {
+  UpdateMediaDeviceStatusDto,
+  UpdateConnectionQualityDto,
+  CreateRealTimeEventDto,
+  SendEnhancedMessageDto,
+  RealtimeWaitingRoomStatsDto
+} from './dto/realtime-input.dto';
 
 @ApiTags('consultation')
 @Controller('consultation')
@@ -94,9 +120,71 @@ export class ConsultationController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  @Post(':consultationId/magic-link')
+  @ApiOperation({ summary: 'Generate magic link for a participant during live consultation' })
+  @ApiParam({ name: 'consultationId', type: Number, description: 'Consultation ID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', format: 'email', description: 'Participant email address' },
+        role: {
+          type: 'string',
+          enum: ['EXPERT', 'GUEST', 'PATIENT'],
+          description: 'Participant role'
+        },
+        name: { type: 'string', description: 'Participant display name' },
+        notes: { type: 'string', description: 'Optional notes for the participant' },
+        expiresInMinutes: { type: 'number', default: 60, description: 'Link expiration in minutes' }
+      },
+      required: ['email', 'role', 'name']
+    }
+  })
+  @ApiOkResponse({
+    description: 'Magic link generated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        magicLink: { type: 'string', description: 'Generated magic link URL' },
+        token: { type: 'string', description: 'Invitation token' },
+        expiresAt: { type: 'string', format: 'date-time', description: 'Link expiration time' }
+      }
+    }
+  })
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async generateMagicLink(
+    @Param('consultationId', ParseIntPipe) consultationId: number,
+    @Body() body: {
+      email: string;
+      role: 'EXPERT' | 'GUEST' | 'PATIENT';
+      name: string;
+      notes?: string;
+      expiresInMinutes?: number;
+    },
+    @Query('userId', UserIdParamPipe) userId: number,
+  ): Promise<any> {
+    const result = await this.consultationService.generateMagicLinkForParticipant(
+      consultationId,
+      userId,
+      body.email,
+      body.role as any,
+      body.name,
+      body.notes,
+      body.expiresInMinutes || 60,
+    );
+    return {
+      ...result,
+      timestamp: new Date().toISOString(),
+    };
+  }
   constructor(
     private readonly consultationService: ConsultationService,
     private readonly consultationMediaSoupService: ConsultationMediaSoupService,
+    private readonly logger: CustomLoggerService,
+    private readonly enhancedRealtimeService: EnhancedRealtimeService,
+    private readonly chatService: ChatService,
+    private readonly waitingRoomService: WaitingRoomService,
   ) { }
 
   @Post()
@@ -307,14 +395,22 @@ export class ConsultationController {
     @Param('id', ConsultationIdParamPipe) id: number,
     @Body() body: JoinConsultationDto,
   ): Promise<any> {
-    const result = await this.consultationService.joinAsPractitioner(
-      id,
-      body.userId,
-    );
-    return {
-      ...result,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const result = await this.consultationService.joinAsPractitioner(
+        id,
+        body.userId,
+      );
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Successfully joined consultation',
+        consultationId: id,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('[joinPractitioner] Error:', error);
+      throw error;
+    }
   }
 
   @Post('/admit')
@@ -369,48 +465,25 @@ export class ConsultationController {
 
   @Get('/waiting-room')
   @ApiOperation({
-    summary:
-      'Get waiting room consultations for a practitioner with pagination',
+    summary: 'Get practitioner waiting room with patients ready for consultation'
   })
-  @ApiQuery({ name: 'userId', type: Number, description: 'Practitioner ID' })
-  @ApiQuery({
-    name: 'page',
-    type: Number,
-    required: false,
-    description: 'Page number (default 1)',
-  })
-  @ApiQuery({
-    name: 'limit',
-    type: Number,
-    required: false,
-    description: 'Items per page (default 10)',
-  })
-  @ApiQuery({
-    name: 'sortOrder',
-    enum: ['asc', 'desc'],
-    required: false,
-    description: 'Sort order by scheduledDate',
-  })
-  @ApiOkResponse({
-    description: 'Waiting room consultations',
-    type: ApiResponseDto<WaitingRoomPreviewResponseDto>,
-  })
-  async getWaitingRoom(
-    @Query('userId', UserIdParamPipe) userId: number,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
+  @ApiQuery({ name: 'userId', type: Number, description: 'Practitioner User ID' })
+  @ApiQuery({ name: 'page', type: Number, required: false, description: 'Page number (default 1)' })
+  @ApiQuery({ name: 'limit', type: Number, required: false, description: 'Items per page (default 10)' })
+  @ApiQuery({ name: 'sortOrder', enum: ['asc', 'desc'], required: false, description: 'Sort order' })
+  @ApiOkResponse({ description: 'Practitioner waiting room data', type: PractitionerWaitingRoomDto })
+  async getPractitionerWaitingRoom(
+    @Query('userId', ParseIntPipe) userId: number,
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('limit', ParseIntPipe) limit = 10,
     @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'asc',
-  ): Promise<any> {
-    const result = await this.consultationService.getWaitingRoomConsultations(
+  ): Promise<PractitionerWaitingRoomDto> {
+    return this.waitingRoomService.getPractitionerWaitingRoom(
       userId,
       page,
       limit,
       sortOrder,
     );
-    return {
-      ...result,
-      timestamp: new Date().toISOString(),
-    };
   }
 
   @Get('/history')
@@ -480,18 +553,14 @@ export class ConsultationController {
     @Res() res: Response,
   ) {
     try {
-      console.log(
-        `PDF download request - Consultation ID: ${id}, Requester ID: ${requesterId}`,
-      );
+      this.logger.log(`PDF download request - Consultation ID: ${id}, Requester ID: ${requesterId}`);
 
       const pdfBuffer = await this.consultationService.downloadConsultationPdf(
         id,
         requesterId,
       );
 
-      console.log(
-        `PDF generated successfully - Size: ${pdfBuffer.length} bytes`,
-      );
+      this.logger.log(`PDF generated successfully - Size: ${pdfBuffer.length} bytes`);
 
       res
         .status(HttpStatus.OK)
@@ -502,7 +571,7 @@ export class ConsultationController {
         })
         .send(pdfBuffer);
     } catch (error) {
-      console.error('PDF generation error:', error);
+      this.logger.error('PDF generation error:', error);
 
       if (error.status) {
         throw error;
@@ -1033,5 +1102,292 @@ export class ConsultationController {
       ...result,
       timestamp: new Date().toISOString(),
     };
+  }
+
+
+  @Get(':consultationId/waiting-room/sessions')
+  @ApiOperation({ summary: 'Get waiting room sessions for a consultation' })
+  @ApiOkResponse({ description: 'Waiting room sessions retrieved successfully', type: [WaitingRoomSessionDto] })
+  async getWaitingRoomSessions(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number
+  ): Promise<WaitingRoomSessionDto[]> {
+    return this.waitingRoomService.getWaitingRoomSessions(consultationId);
+  }
+
+  @Post(':consultationId/waiting-room/enter')
+  @ApiOperation({ summary: 'Enter waiting room for a consultation' })
+  @ApiOkResponse({ description: 'Successfully entered waiting room', type: WaitingRoomSessionDto })
+  async enterWaitingRoom(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number
+  ): Promise<WaitingRoomSessionDto> {
+    return this.enhancedRealtimeService.enterWaitingRoom(consultationId, userId);
+  }
+
+  @Get(':consultationId/waiting-room/stats')
+  @ApiOperation({ summary: 'Get waiting room statistics' })
+  @ApiOkResponse({ description: 'Waiting room stats retrieved successfully', type: RealtimeWaitingRoomStatsDto })
+  async getWaitingRoomStats(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number
+  ): Promise<RealtimeWaitingRoomStatsDto> {
+    return this.waitingRoomService.getWaitingRoomStats(consultationId);
+  }
+
+  @Get(':consultationId/media-device-status')
+  @ApiOperation({ summary: 'Get media device status for user in consultation' })
+  @ApiOkResponse({ description: 'Media device status retrieved successfully', type: MediaDeviceStatusDto })
+  async getMediaDeviceStatus(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number
+  ): Promise<MediaDeviceStatusDto | null> {
+    return this.enhancedRealtimeService.getMediaDeviceStatus(consultationId, userId);
+  }
+
+  @Patch(':consultationId/media-device-status')
+  @ApiOperation({ summary: 'Update media device status' })
+  @ApiOkResponse({ description: 'Media device status updated successfully', type: MediaDeviceStatusDto })
+  async updateMediaDeviceStatus(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number,
+    @Body() updateDto: UpdateMediaDeviceStatusDto
+  ): Promise<MediaDeviceStatusDto> {
+    return this.enhancedRealtimeService.updateMediaDeviceStatus(consultationId, userId, updateDto);
+  }
+
+  @Post(':consultationId/connection-quality')
+  @ApiOperation({ summary: 'Update connection quality metrics' })
+  @ApiOkResponse({ description: 'Connection quality updated successfully', type: ConnectionQualityDto })
+  async updateConnectionQuality(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number,
+    @Body() updateDto: UpdateConnectionQualityDto
+  ): Promise<ConnectionQualityDto> {
+    return this.enhancedRealtimeService.updateConnectionQuality(consultationId, userId, updateDto);
+  }
+
+  @Get(':consultationId/connection-quality/history')
+  @ApiOperation({ summary: 'Get connection quality history for user' })
+  @ApiOkResponse({ description: 'Connection quality history retrieved successfully', type: [ConnectionQualityDto] })
+  async getConnectionQualityHistory(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number
+  ): Promise<ConnectionQualityDto[]> {
+    return this.enhancedRealtimeService.getConnectionQualityHistory(consultationId, userId);
+  }
+
+  @Get(':consultationId/events')
+  @ApiOperation({ summary: 'Get real-time events for consultation' })
+  @ApiOkResponse({ description: 'Real-time events retrieved successfully', type: [RealTimeEventDto] })
+  async getRealTimeEvents(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('limit') limit?: number
+  ): Promise<RealTimeEventDto[]> {
+    return this.enhancedRealtimeService.getRealTimeEvents(consultationId, limit);
+  }
+
+  @Post(':consultationId/events')
+  @ApiOperation({ summary: 'Create a real-time event' })
+  @ApiCreatedResponse({ description: 'Real-time event created successfully', type: RealTimeEventDto })
+  async createRealTimeEvent(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number,
+    @Body() createDto: CreateRealTimeEventDto
+  ): Promise<RealTimeEventDto> {
+    return this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, createDto);
+  }
+
+  @Post(':consultationId/messages')
+  @ApiOperation({ summary: 'Send an enhanced message' })
+  @ApiCreatedResponse({ description: 'Message sent successfully' })
+  async sendEnhancedMessage(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Query('userId', UserIdParamPipe) userId: number,
+    @Body() messageDto: SendEnhancedMessageDto
+  ): Promise<any> {
+    // Convert SendEnhancedMessageDto to CreateMessageDto format
+    const createMessageDto = {
+      userId,
+      consultationId,
+      content: messageDto.content,
+      messageType: (messageDto.messageType as MessageType) || MessageType.TEXT,
+      mediaUrl: messageDto.mediaUrl,
+      fileName: messageDto.fileName,
+      fileSize: messageDto.fileSize,
+      clientUuid: `msg_${Date.now()}_${userId}` // Generate client UUID
+    };
+
+    const message = await this.chatService.createMessage(createMessageDto);
+
+    // Create real-time event for the message
+    await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+      eventType: 'new_message',
+      eventData: {
+        messageId: message.id,
+        messageType: message.messageType,
+        hasMedia: !!message.mediaUrl
+      }
+    });
+
+    return message;
+  }
+
+  @Patch(':consultationId/messages/:messageId/read')
+  @ApiOperation({ summary: 'Mark message as read' })
+  @ApiOkResponse({ description: 'Message marked as read successfully' })
+  async markMessageAsRead(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number,
+    @Param('messageId', ParseIntPipe) messageId: number,
+    @Query('userId', UserIdParamPipe) userId: number
+  ): Promise<any> {
+    const readMessageDto = {
+      messageId,
+      userId,
+      consultationId
+    };
+    const result = await this.chatService.markMessageAsRead(readMessageDto);
+    return { message: 'Message marked as read', data: result };
+  }
+
+  @Get(':consultationId/typing-indicators')
+  @ApiOperation({ summary: 'Get current typing indicators' })
+  @ApiOkResponse({ description: 'Typing indicators retrieved successfully', type: [TypingIndicatorDto] })
+  async getTypingIndicators(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number
+  ): Promise<TypingIndicatorDto[]> {
+    return this.enhancedRealtimeService.getTypingIndicators(consultationId);
+  }
+
+  @Get(':consultationId/enhanced/health')
+  @ApiOperation({ summary: 'Get enhanced consultation health status' })
+  @ApiOkResponse({
+    description: 'Health status retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string' },
+        consultationId: { type: 'number' },
+        timestamp: { type: 'string', format: 'date-time' },
+        activeFeatures: { type: 'array', items: { type: 'string' } },
+        waitingRoomSessions: { type: 'array', items: { $ref: '#/components/schemas/WaitingRoomSessionDto' } },
+        recentEvents: { type: 'array', items: { $ref: '#/components/schemas/RealTimeEventDto' } }
+      }
+    }
+  })
+  async getEnhancedConsultationHealth(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number
+  ): Promise<{
+    status: string;
+    consultationId: number;
+    timestamp: string;
+    activeFeatures: string[];
+    waitingRoomSessions: WaitingRoomSessionDto[];
+    recentEvents: RealTimeEventDto[];
+  }> {
+    const sessions = await this.waitingRoomService.getWaitingRoomSessions(consultationId);
+    const events = await this.enhancedRealtimeService.getRealTimeEvents(consultationId, 1);
+
+    return {
+      status: 'healthy',
+      consultationId,
+      timestamp: new Date().toISOString(),
+      activeFeatures: [
+        'waiting_room',
+        'real_time_events',
+        'enhanced_messaging',
+        'media_device_status',
+        'connection_quality'
+      ],
+      waitingRoomSessions: sessions,
+      recentEvents: events
+    };
+  }
+
+  @Get(':consultationId/enhanced/participants/status')
+  @ApiOperation({ summary: 'Get comprehensive participant status' })
+  @ApiOkResponse({ description: 'Participant status retrieved successfully' })
+  async getParticipantsStatus(
+    @Param('consultationId', ConsultationIdParamPipe) consultationId: number
+  ): Promise<any> {
+    const [sessions, events] = await Promise.all([
+      this.waitingRoomService.getWaitingRoomSessions(consultationId),
+      this.enhancedRealtimeService.getRealTimeEvents(consultationId, 10)
+    ]);
+
+    return {
+      consultationId,
+      waitingRoomSessions: sessions,
+      recentEvents: events,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+
+  @Post('/waiting-room/join')
+  @ApiOperation({ summary: 'Patient joins waiting room via magic link' })
+  @ApiCreatedResponse({ description: 'Successfully joined waiting room' })
+  async joinWaitingRoom(@Body() dto: JoinWaitingRoomDto): Promise<{ success: boolean; waitingRoomSession: any }> {
+    return this.waitingRoomService.joinWaitingRoom(dto);
+  }
+
+  @Post('/waiting-room/admit')
+  @ApiOperation({ summary: 'Practitioner admits patient from waiting room to live consultation' })
+  @ApiCreatedResponse({ description: 'Patient successfully admitted to live consultation' })
+  async admitPatientFromWaitingRoom(
+    @Body() dto: AdmitFromWaitingRoomDto,
+    @Query('practitionerId', ParseIntPipe) practitionerId: number
+  ): Promise<{ success: boolean }> {
+    return this.waitingRoomService.admitPatientFromWaitingRoom(dto, practitionerId);
+  }
+
+  @Post('/live/join')
+  @ApiOperation({ summary: 'Join live consultation (practitioner/expert/guest)' })
+  @ApiCreatedResponse({ description: 'Successfully joined live consultation', type: LiveConsultationDataDto })
+  async joinLiveConsultation(@Body() dto: LiveConsultationJoinDto): Promise<LiveConsultationDataDto> {
+    return this.waitingRoomService.joinLiveConsultation(dto);
+  }
+
+  @Post(':consultationId/test-patient-joined')
+  @ApiOperation({ summary: 'Test patient joined notification (for development only)' })
+  @ApiParam({ name: 'consultationId', type: Number, description: 'Consultation ID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        patientFirstName: { type: 'string', default: 'Test Patient' },
+        practitionerId: { type: 'number', description: 'Target practitioner ID' }
+      },
+      required: ['practitionerId']
+    }
+  })
+  @ApiOkResponse({ description: 'Test patient joined event emitted successfully' })
+  async testPatientJoinedEvent(
+    @Param('consultationId', ParseIntPipe) consultationId: number,
+    @Body() body: { patientFirstName?: string; practitionerId: number }
+  ): Promise<{ success: boolean; message: string }> {
+    const patientFirstName = body.patientFirstName || 'Test Patient';
+
+    // Use the consultation service to emit test event
+    const result = await this.consultationService.testEmitPatientJoined(
+      consultationId,
+      body.practitionerId,
+      patientFirstName
+    );
+
+    return {
+      success: true,
+      message: `Test patient_joined event sent to practitioner ${body.practitionerId} for consultation ${consultationId}`
+    };
+  }
+
+  /**
+   * Generate initials from name for testing
+   */
+  private generateInitials(name: string): string {
+    if (!name) return 'P';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
   }
 }

@@ -12,7 +12,7 @@ import { CreatetermDto } from '../models/term.model';
   providedIn: 'root',
 })
 export class TermsService {
-  private baseUrl = `${environment.apiUrl}/v1/term`;
+  private baseUrl = `${environment.apiUrl}/term`;
 
   constructor(private http: HttpClient) {}
   getAll(query?: TermQuery): Observable<any> {

@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { AuthService } from '../../auth/auth.service';
-import { SnackbarService } from '../../services/snackbar/snackbar.service';
+import { ToastService } from '../../services/toast/toast.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '../ui/button/button.component';
 @Component({
@@ -43,7 +42,7 @@ export class SetPasswordComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private snackbarService: SnackbarService,
+    private toastService: ToastService,
     private router: Router
   ) {
 
@@ -68,7 +67,7 @@ export class SetPasswordComponent {
       const password = this.resetForm.get('password')?.value;
       this.authService.updatePassword(password, username).subscribe({
         next: (res) => {
-          this.snackbarService.showSuccess(res.message || 'Password set successful');
+          this.toastService.showSuccess(res.message || 'Password set successful');
           this.loading.set(false);
           const loginUrl = `/login?aT=${accessToken}&rT=${refreshToken}`;
           this.router.navigateByUrl(loginUrl).then(() => {
@@ -78,7 +77,7 @@ export class SetPasswordComponent {
         error: (err) => {
           this.error = err?.error.message;
           this.loading.set(false);
-          this.snackbarService.showError('Failed to reset password');
+          this.toastService.showError('Failed to reset password');
         },
       });
     }

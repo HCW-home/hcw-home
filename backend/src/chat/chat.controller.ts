@@ -67,7 +67,7 @@ export class ChatController {
   })
   @UseInterceptors(FileInterceptor('file', {
     limits: {
-      fileSize: 50 * 1024 * 1024, 
+      fileSize: 50 * 1024 * 1024,
     },
   }))
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
@@ -178,6 +178,48 @@ export class ChatController {
     @Query('consultationId', ParseIntPipe) consultationId: number,
   ) {
     return this.chatService.deleteMessage(messageId, userId, consultationId);
+  }
+
+  @Post('upload')
+  @ApiOperation({ summary: 'Upload file for chat message' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload for chat messages',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'File to upload (images, documents, etc.)',
+        },
+        consultationId: { type: 'string' },
+        userId: { type: 'string' },
+        content: { type: 'string' },
+      },
+      required: ['file', 'consultationId', 'userId'],
+    },
+  })
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 50 * 1024 * 1024,
+    },
+  }))
+  async uploadChatFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { consultationId: string; userId: string; content?: string },
+  ) {
+    const consultationId = parseInt(body.consultationId);
+    const userId = parseInt(body.userId);
+
+    // Create message with file
+    const createMessageDto = new CreateMessageDto();
+    createMessageDto.consultationId = consultationId;
+    createMessageDto.userId = userId;
+    createMessageDto.content = body.content || `Shared a file: ${file.originalname}`;
+    createMessageDto.clientUuid = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return this.chatService.createMessage(createMessageDto, file);
   }
 
   @Post('system-message')

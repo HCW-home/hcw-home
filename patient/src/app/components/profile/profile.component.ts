@@ -238,6 +238,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.profileForm.markAsPristine();
     }
   }
+  onLogout(): void {
+    this.authservice.logout();
+  }
 
   private markFormGroupTouched(): void {
     Object.keys(this.profileForm.controls).forEach(key => {

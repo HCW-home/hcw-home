@@ -88,6 +88,12 @@ model User {
   MediaEvent         MediaEvent[]
   messagesRead       Message[]  @relation("MessageReadBy")
   feedbacks          ConsultationFeedback[]
+  connectionQualities ConnectionQuality[]
+  mediaDeviceStatuses MediaDeviceStatus[]
+  waitingRoomSessions WaitingRoomSession[]
+  realTimeEvents     RealTimeEvent[]
+  typingIndicators   TypingIndicator[]
+  participantsAdmitted Participant[]      @relation("ParticipantAdmittedBy")
 }
 model UserNotificationSetting {
   id          Int      @id @default(autoincrement())
@@ -260,6 +266,7 @@ enum MessageService {
 model Consultation {
   id                   Int                @id @default(autoincrement())
   scheduledDate        DateTime?
+  timezone             String? 
   createdAt            DateTime?
   startedAt            DateTime?
   closedAt             DateTime?
@@ -279,6 +286,10 @@ model Consultation {
   requiresPayment      Boolean            @default(true)  // New field
   reminderEnabled      Boolean            @default(true)
   remindersSent        Json?              @default("{}")
+  // Enhanced waiting room fields
+  waitingRoomEnabled   Boolean            @default(true)
+  autoAdmitPatients    Boolean            @default(false)
+  maxWaitingTime       Int                @default(30) // in minutes
 
   participants           Participant[]
   group                  Group?                   @relation(fields: [groupId], references: [id])
@@ -300,6 +311,12 @@ model Consultation {
   MediaPermissionStatus MediaPermissionStatus[]
   ConsultationInvitation ConsultationInvitation[]
   MediaEvent             MediaEvent[]
+  // Enhanced real-time communication relations
+  connectionQualities ConnectionQuality[]
+  mediaDeviceStatuses MediaDeviceStatus[]
+  waitingRoomSessions WaitingRoomSession[]
+  realTimeEvents     RealTimeEvent[]
+  typingIndicators   TypingIndicator[]
 }
 
 model ConsultationInvitation {
@@ -472,9 +489,15 @@ model Participant {
   lastActiveAt DateTime?
   inWaitingRoom Boolean  @default(true)
   role         UserRole
+  // Enhanced participant tracking
+  admittedAt           DateTime?
+  admittedBy           Int?
+  waitingRoomEnteredAt DateTime?
+  connectionQualityScore Int      @default(100)
 
  consultation Consultation @relation(fields: [consultationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
+  admittedByUser User?      @relation("ParticipantAdmittedBy", fields: [admittedBy], references: [id])
 
   @@unique([consultationId, userId])
   @@index([consultationId, isActive]) 
@@ -496,10 +519,17 @@ model Message {
   messageType   MessageType @default(TEXT)
   fileName      String?
   fileSize      Int?
+  // Enhanced message features
+  replyToId     Int?
+  isRead        Boolean   @default(false)
+  readAt        DateTime?
+  deliveryStatus String   @default("sent") @db.VarChar(50)
 
   readReceipts  MessageReadReceipt[]
   user          User      @relation(fields: [userId], references: [id])
   consultation  Consultation? @relation(fields: [consultationId], references: [id])
+  replyTo       Message?  @relation("MessageReply", fields: [replyToId], references: [id])
+  replies       Message[] @relation("MessageReply")
 
   @@index([consultationId])
   @@unique([clientUuid, consultationId, userId])  
@@ -745,4 +775,99 @@ model ConsultationFeedback {
   @@index([consultationId])
   @@index([userId])
   @@map("consultation_feedback")
+}
+
+model ConnectionQuality {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  consultationId    Int
+  packetLoss        Decimal  @default(0.00) @db.Decimal(5, 2)
+  latency           Int      @default(0)
+  reconnectAttempts Int      @default(0)
+  signalStrength    Int      @default(100)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consultationId])
+  @@index([consultationId])
+  @@map("connection_quality")
+}
+
+model MediaDeviceStatus {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  consultationId       Int
+  cameraAvailable      Boolean  @default(false)
+  cameraEnabled        Boolean  @default(false)
+  cameraBlocked        Boolean  @default(false)
+  microphoneAvailable  Boolean  @default(false)
+  microphoneEnabled    Boolean  @default(false)
+  microphoneBlocked    Boolean  @default(false)
+  lastUpdated          DateTime @default(now())
+  createdAt            DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consultationId])
+  @@index([consultationId])
+  @@map("media_device_status")
+}
+
+model WaitingRoomSession {
+  id                Int       @id @default(autoincrement())
+  consultationId    Int
+  userId            Int
+  enteredAt         DateTime  @default(now())
+  admittedAt        DateTime?
+  leftAt            DateTime?
+  estimatedWaitTime Int? 
+  queuePosition     Int?
+  status            String    @default("waiting") @db.VarChar(50)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([consultationId])
+  @@index([userId])
+  @@index([status])
+  @@map("waiting_room_session")
+}
+
+model RealTimeEvent {
+  id             Int       @id @default(autoincrement())
+  consultationId Int
+  userId         Int?
+  eventType      String    @db.VarChar(100) // 'user_joined', 'user_left', 'waiting_for_participant', etc.
+  eventData      Json?
+  message        String?   @db.Text
+  createdAt      DateTime  @default(now())
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([consultationId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("real_time_event")
+}
+
+model TypingIndicator {
+  id             Int      @id @default(autoincrement())
+  consultationId Int
+  userId         Int
+  isTyping       Boolean  @default(false)
+  lastUpdated    DateTime @default(now())
+
+  consultation Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consultationId])
+  @@index([consultationId])
+  @@map("typing_indicator")
 }

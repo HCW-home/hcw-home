@@ -1,95 +1,132 @@
 <div class="detail-panel open">
-    <div class="panel-header">
-        <h2>Open Consultation Details</h2>
-        <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" (click)="onClose()" class="close-button" ariaLabel="Close panel">
-            <app-svg-icon src="x" [svgStyle]="{ 'width.px': 16, 'height.px': 16 }" ariaLabel="Close icon">
-            </app-svg-icon>
+  <div class="panel-header">
+    <h2>Open Consultation Details</h2>
+    <app-button
+      [variant]="ButtonVariant.Secondary"
+      [size]="ButtonSize.Small"
+      (click)="onClose()"
+      class="close-button"
+      ariaLabel="Close panel"
+    >
+      <app-svg-icon
+        src="x"
+        [svgStyle]="{ 'width.px': 16, 'height.px': 16 }"
+        ariaLabel="Close icon"
+      >
+      </app-svg-icon>
+    </app-button>
+  </div>
+
+  <div class="panel-content">
+    <section class="detail-section">
+      <div class="section-header">
+        <h3>General Information</h3>
+        <app-button
+          [variant]="ButtonVariant.Primary"
+          [size]="ButtonSize.Small"
+          (click)="onInviteColleague()"
+        >
+          Invite a colleague
         </app-button>
-    </div>
+      </div>
 
-    <div class="panel-content">
-        <section class="detail-section">
-            <div class="section-header">
-                <h3>General Information</h3>
-                <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Small" (click)="onInviteColleague()">
-                    Invite a colleague
-                </app-button>
-            </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Patient name</span>
+          <div class="patient-name-row">
+            <span class="value">{{ getPatientName() }}</span>
+            <span class="offline-badge" *ngIf="consultation.patient.isOffline"
+              >Offline</span
+            >
+            <app-button
+              [variant]="ButtonVariant.Secondary"
+              [size]="ButtonSize.Small"
+              class="email-btn"
+            >
+              <app-svg-icon
+                src="mail"
+                [svgStyle]="{ 'width.px': 16, 'height.px': 16 }"
+                ariaLabel="Email icon"
+              >
+              </app-svg-icon>
+            </app-button>
+          </div>
+        </div>
 
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="label">Patient name</span>
-                    <div class="patient-name-row">
-                        <span class="value">{{ getPatientName() }}</span>
-                        <span class="offline-badge" *ngIf="consultation.patient.isOffline">Offline</span>
-                        <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Small" class="email-btn">
-                            <app-svg-icon src="mail" [svgStyle]="{ 'width.px': 16, 'height.px': 16 }"
-                                ariaLabel="Email icon">
-                            </app-svg-icon>
-                        </app-button>
-                    </div>
-                </div>
+        <div class="info-item">
+          <span class="label">Sex</span>
+          <span class="value">{{ getSexDisplay() }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Sex</span>
-                    <span class="value">{{ getSexDisplay() }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Requested by</span>
+          <span class="value">{{ "-" }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Requested by</span>
-                    <span class="value">{{ '-' }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Waiting queue</span>
+          <span class="value">{{ "-" }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Waiting queue</span>
-                    <span class="value">{{'-' }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Message</span>
+          <span class="value">{{ consultation.lastMessage }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Message</span>
-                    <span class="value">{{ consultation.lastMessage }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Time</span>
+          <span class="value">{{ getFormattedDate() }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Time</span>
-                    <span class="value">{{ getFormattedDate() }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Participant</span>
+          <span class="value">{{ consultation.participantCount || "-" }}</span>
+        </div>
 
-                <div class="info-item">
-                    <span class="label">Participant</span>
-                    <span class="value">{{ consultation.participantCount || '-' }}</span>
-                </div>
+        <div class="info-item">
+          <span class="label">Patient invited at</span>
+          <span class="value">{{ getFormattedInviteDate() }}</span>
+        </div>
+      </div>
+    </section>
 
-                <div class="info-item">
-                    <span class="label">Patient invited at</span>
-                    <span class="value">{{ getFormattedInviteDate() }}</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="detail-section">
-            <h3>Actions</h3>
-            <div class="action-buttons">
-                <app-button [variant]="ButtonVariant.Secondary" [size]="ButtonSize.Medium" (click)="onSendInvitation()">
-                    Send again the invitation
-                </app-button>
-            </div>
-        </section>
-
-        <section class="detail-section">
-            <h3>Additional Information</h3>
-            <div class="placeholder-section">
-                <p>Additional consultation details and controls will appear here</p>
-            </div>
-        </section>
-    </div>
-
-    <div class="panel-footer">
-        <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" (click)="onCloseConsultation()">
-            Close
+    <section class="detail-section">
+      <h3>Actions</h3>
+      <div class="action-buttons">
+        <app-button
+          [variant]="ButtonVariant.Secondary"
+          [size]="ButtonSize.Medium"
+          (click)="onSendInvitation()"
+        >
+          Send again the invitation
         </app-button>
-        <app-button [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium" (click)="onJoin()">
-            Resume
-        </app-button>
-    </div>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <h3>Additional Information</h3>
+      <div class="placeholder-section">
+        <p>Additional consultation details and controls will appear here</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="panel-footer">
+    <app-button
+      [variant]="ButtonVariant.Secondary"
+      [size]="ButtonSize.Medium"
+      (click)="onCloseConsultation()"
+    >
+      Close Consultation
+    </app-button>
+    <app-button
+      [variant]="ButtonVariant.Primary"
+      [size]="ButtonSize.Medium"
+      (click)="onJoin()"
+      class="join-consultation-btn"
+      [disabled]="consultation.status === 'COMPLETED'"
+    >
+      Join Consultation Room
+    </app-button>
+  </div>
 </div>

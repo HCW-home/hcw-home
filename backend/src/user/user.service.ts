@@ -1,9 +1,7 @@
 // src/modules/user/services/user.service.ts
 import {
   Injectable,
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { DatabaseService } from './../database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,10 +12,13 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly logger = new Logger(UserService.name);
+
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const {
@@ -36,7 +37,7 @@ export class UserService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw HttpExceptionHelper.conflict('Email already exists');
     }
 
     // Hash password
@@ -127,7 +128,7 @@ export class UserService {
       sortOrder,
     } = query;
     const skip = (page - 1) * limit;
-    
+
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 
@@ -186,7 +187,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw HttpExceptionHelper.notFound('User not found');
     }
 
     return plainToInstance(UserResponseDto, user, {
@@ -228,7 +229,7 @@ export class UserService {
     });
 
     if (!existingUser) {
-      throw new NotFoundException('User not found');
+      throw HttpExceptionHelper.notFound('User not found');
     }
 
     // Check email uniqueness if email is being updated
@@ -242,7 +243,7 @@ export class UserService {
       });
 
       if (emailExists) {
-        throw new ConflictException('Email already exists');
+        throw HttpExceptionHelper.conflict('Email already exists');
       }
     }
     let user;
@@ -313,7 +314,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw HttpExceptionHelper.notFound('User not found');
     }
 
     // Verify current password
@@ -323,7 +324,7 @@ export class UserService {
     );
 
     if (!isCurrentPasswordValid) {
-      throw new BadRequestException('Current password is incorrect');
+      throw HttpExceptionHelper.badRequest('Current password is incorrect');
     }
 
     // Hash new password
@@ -351,7 +352,7 @@ export class UserService {
     });
 
     if (!existingUser) {
-      throw new NotFoundException('User not found');
+      throw HttpExceptionHelper.notFound('User not found');
     }
 
     const user = await this.databaseService.user.delete({

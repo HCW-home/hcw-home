@@ -1,10 +1,8 @@
 import {
   Injectable,
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
   Logger,
 } from '@nestjs/common';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { DatabaseService } from '../database/database.service';
 import { TwilioWhatsappService } from './twilio-template.service';
 import { CreateWhatsappTemplateDto } from './dto/create-whatsapp-template.dto';
@@ -39,7 +37,7 @@ export class WhatsappTemplateService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly twilioWhatsappService: TwilioWhatsappService,
-  ) {}
+  ) { }
 
   async create(
     createWhatsappTemplateDto: CreateWhatsappTemplateDto,
@@ -52,7 +50,7 @@ export class WhatsappTemplateService {
         });
 
       if (existingTemplate) {
-        throw new ConflictException('Template key already exists');
+        throw HttpExceptionHelper.conflict('Template key already exists');
       }
     }
 
@@ -166,7 +164,7 @@ export class WhatsappTemplateService {
     });
 
     if (!template) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     return plainToInstance(WhatsappTemplateResponseDto, template, {
@@ -199,7 +197,7 @@ export class WhatsappTemplateService {
       });
 
     if (!existingTemplate) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     // Check key uniqueness if key is being updated
@@ -216,7 +214,7 @@ export class WhatsappTemplateService {
       });
 
       if (keyExists) {
-        throw new ConflictException('Template key already exists');
+        throw HttpExceptionHelper.conflict('Template key already exists');
       }
     }
 
@@ -273,7 +271,7 @@ export class WhatsappTemplateService {
       });
 
     if (!existingTemplate) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     // Update status to DRAFT instead of deleting
@@ -299,19 +297,15 @@ export class WhatsappTemplateService {
     });
 
     if (!template) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     if (!template.key) {
-      throw new BadRequestException(
-        'Template must have a key to submit for approval',
-      );
+      throw HttpExceptionHelper.badRequest('Template must have a key to submit for approval');
     }
 
     if (!template.category) {
-      throw new BadRequestException(
-        'Template must have a category to submit for approval',
-      );
+      throw HttpExceptionHelper.badRequest('Template must have a category to submit for approval');
     }
 
     try {
@@ -374,9 +368,7 @@ export class WhatsappTemplateService {
       this.logger.error(
         `Failed to submit template ${id} for approval: ${error.message}`,
       );
-      throw new BadRequestException(
-        `Failed to submit template for approval: ${error.message}`,
-      );
+      throw HttpExceptionHelper.badRequest(`Failed to submit template for approval: ${error.message}`);
     }
   }
 
@@ -494,7 +486,7 @@ export class WhatsappTemplateService {
     });
 
     if (!template) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     try {
@@ -512,9 +504,7 @@ export class WhatsappTemplateService {
       return { message: 'Template deleted successfully' };
     } catch (error) {
       this.logger.error(`Failed to delete template ${id}: ${error.message}`);
-      throw new BadRequestException(
-        `Failed to delete template: ${error.message}`,
-      );
+      throw HttpExceptionHelper.badRequest(`Failed to delete template: ${error.message}`);
     }
   }
 
@@ -686,7 +676,7 @@ export class WhatsappTemplateService {
     });
 
     if (!template) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     return plainToInstance(WhatsappTemplateResponseDto, template, {
@@ -706,7 +696,7 @@ export class WhatsappTemplateService {
     });
 
     if (!template) {
-      throw new NotFoundException('WhatsApp template not found');
+      throw HttpExceptionHelper.notFound('WhatsApp template not found');
     }
 
     // Validate category if provided
@@ -714,9 +704,7 @@ export class WhatsappTemplateService {
       dto.category &&
       !this.twilioWhatsappService.validateCategory(dto.category)
     ) {
-      throw new BadRequestException(
-        'Invalid category. Must be UTILITY, MARKETING, or AUTHENTICATION',
-      );
+      throw HttpExceptionHelper.badRequest('Invalid category. Must be UTILITY, MARKETING, or AUTHENTICATION');
     }
 
     const updatedTemplate = await this.databaseService.whatsapp_Template.update(

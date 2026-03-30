@@ -79,7 +79,7 @@ export class LoginComponent implements OnInit {
   returnUrl: string = '';
   showPasswordLogin = signal(true);
   showOpenIdLogin = signal(true);
-  openIdLoginUrl:string=`${environment.apiUrl}/v1/auth/openid/login?role=admin`
+  openIdLoginUrl:string=`${environment.apiUrl}/auth/openid/login?role=admin`
 
   ngOnInit() {
     const queryParams = this.route.snapshot.queryParams;

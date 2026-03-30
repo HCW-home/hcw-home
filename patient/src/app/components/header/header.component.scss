@@ -8,27 +8,38 @@
 }
 
 .custom-title {
-  width: 100%;
   font-size: 1.6rem;
   font-weight: 600;
 }
 
+/* Consultation Button */
 .consultation-btn {
   --background: var(--success-color);
   --color: #f5f6fa;
   font-weight: 600;
   font-size: 1.2rem;
-  margin-right: 32px;
-  padding-right: 56px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
 
   ion-icon {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     margin-right: 6px;
   }
 }
 
-.consultation-btn::part(native) {
-  border-radius: 8px !important;
-  box-shadow: 0px 20px 40px rgba(102, 92, 100, 0.3);
-  padding: 10px 20px;
+/* Admin Button & Icon */
+.admin-btn {
+  --width: 60px;   
+  --height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  ion-icon {
+    width: 50px;   
+    height: 50px;  
+  }
 }

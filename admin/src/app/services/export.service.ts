@@ -17,6 +17,6 @@ export class ExportService {
     if (filters.practitionerId) params = params.set('practitionerId', Number(filters.practitionerId));
     if (filters.status) params = params.set('status', filters.status);
 
-    return this.http.get(`${environment.apiUrl}/v1/export/consultations/csv`, { params, responseType: 'text' });
+    return this.http.get(`${environment.apiUrl}/export/consultations/csv`, { params, responseType: 'text' });
   }
 }

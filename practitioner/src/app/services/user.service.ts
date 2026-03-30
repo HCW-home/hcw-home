@@ -1,33 +1,50 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { User, UpdateUserProfileDto, ApiResponse } from '../models/user.model';
-
-const API_BASE_URL = 'http://localhost:3000/api/v1';
-const ENDPOINTS = {
-  AUTH_ME: `${API_BASE_URL}/auth/me`,
-  USER: `${API_BASE_URL}/user`,
-} as const;
+import { User, UpdateUserProfileDto } from '../models/user.model';
+import { API_ENDPOINTS } from '../constants/api-endpoints';
+import { BaseHttpService } from './base-http.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
-  constructor(private readonly http: HttpClient) {}
+export class UserService extends BaseHttpService {
+  private cachedUser: User | null = null;
 
-  getCurrentUser(): Observable<User> {
-    return this.http.get<ApiResponse<User>>(ENDPOINTS.AUTH_ME)
-      .pipe(map((response: ApiResponse<User>) => response.data));
+  constructor(http: HttpClient) {
+    super(http);
+  }
+
+  getCurrentUser(forceRefresh: boolean = false): Observable<User> {
+    if (this.cachedUser && !forceRefresh) {
+      return new Observable<User>((observer) => {
+        observer.next(this.cachedUser!);
+        observer.complete();
+      });
+    }
+    return new Observable<User>((observer) => {
+      this.get<User>(API_ENDPOINTS.AUTH_ME).subscribe({
+        next: (user) => {
+          this.cachedUser = user;
+          observer.next(user);
+          observer.complete();
+        },
+        error: (err) => {
+          observer.error(err);
+        }
+      });
+    });
   }
 
   getUserById(id: number): Observable<User> {
-    return this.http.get<ApiResponse<User>>(`${ENDPOINTS.USER}/${id}`)
-      .pipe(map((response: ApiResponse<User>) => response.data));
+    return this.get<User>(`${API_ENDPOINTS.USER}/${id}`);
   }
 
   updateUserProfile(userId: number, updateData: UpdateUserProfileDto): Observable<User> {
-    return this.http.patch<ApiResponse<User>>(`${ENDPOINTS.USER}/${userId}`, updateData)
-      .pipe(map((response: ApiResponse<User>) => response.data));
+    return this.patch<User>(`${API_ENDPOINTS.USER}/${userId}`, updateData);
+  }
+
+  clearUserCache(): void {
+    this.cachedUser = null;
   }
 }

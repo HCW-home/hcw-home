@@ -1,6 +1,7 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
@@ -9,19 +10,31 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards, Inject, forwardRef } from '@nestjs/common';
+import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { ConsultationService } from './consultation.service';
 import { ConsultationUtilityService } from './consultation-utility.service';
 import { ConsultationMediaSoupService } from './consultation-mediasoup.service';
 import { DatabaseService } from 'src/database/database.service';
 import { MediasoupSessionService } from 'src/mediasoup/mediasoup-session.service';
 import { ConsultationStatus, UserRole } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 import { EndConsultationDto } from './dto/end-consultation.dto';
 import { RateConsultationDto } from './dto/rate-consultation.dto';
 import { ActivateConsultationDto } from './dto/activate-consultation.dto';
-import { ConsultationInvitationService } from './consultation-invitation.service';
+import { InviteService } from '../auth/invite/invite.service';
 import { IConsultationGateway } from './interfaces/consultation-gateway.interface';
 import { ConfigService } from '../config/config.service';
+import { ChatService } from '../chat/chat.service';
+import { MessageType } from '../chat/dto/create-message.dto';
+import { EnhancedRealtimeService } from './enhanced-realtime.service';
+import { WaitingRoomService } from './waiting-room.service';
+import {
+  UpdateMediaDeviceStatusDto,
+  UpdateConnectionQualityDto,
+  SendEnhancedMessageDto,
+  UpdateTypingIndicatorDto,
+} from './dto/realtime-input.dto';
 
 function sanitizePayload<T extends object, K extends keyof T>(
   payload: T,
@@ -36,9 +49,19 @@ function sanitizePayload<T extends object, K extends keyof T>(
   return sanitized;
 }
 
-@WebSocketGateway({ namespace: '/consultation', cors: true })
+@UseGuards(WsAuthGuard)
+@WebSocketGateway({
+  namespace: '/consultation',
+  cors: {
+    origin: '*', // Allow all origins in development
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['*'],
+    transports: ['websocket', 'polling'],
+  },
+})
 export class ConsultationGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, IConsultationGateway {
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, IConsultationGateway {
   @WebSocketServer()
   server: Server;
 
@@ -48,17 +71,36 @@ export class ConsultationGateway
   private clientProducers = new Map<string, Set<string>>();
   private clientConsumers = new Map<string, Set<string>>();
 
+  // Enhanced features
+  private connectedClients = new Map<string, Socket & { userId?: number; consultationId?: number; userRole?: UserRole }>();
+  private consultationRooms = new Map<number, Set<string>>();
+  private userConnectionQuality = new Map<string, any>();
+  private connectionRetryAttempts = new Map<string, number>();
+  private clientLastSeen = new Map<string, Date>();
+  private clientHeartbeat = new Map<string, NodeJS.Timeout>();
+
   private joinNotificationDebounce = new Map<string, number>();
+  // Short debounce for patient_joined focused emits to avoid duplicate rapid notifications
+  private patientJoinedDebounce = new Map<string, number>();
 
   constructor(
     private readonly databaseService: DatabaseService,
+    @Inject(forwardRef(() => ConsultationService))
     private readonly consultationService: ConsultationService,
     private readonly consultationUtilityService: ConsultationUtilityService,
     private readonly consultationMediaSoupService: ConsultationMediaSoupService,
     private readonly mediasoupSessionService: MediasoupSessionService,
-    private readonly invitationService: ConsultationInvitationService,
+    private readonly invitationService: InviteService,
     private readonly configService: ConfigService,
+    private readonly enhancedRealtimeService: EnhancedRealtimeService,
+    private readonly chatService: ChatService,
+    private readonly waitingRoomService: WaitingRoomService,
   ) { }
+
+  afterInit(server: Server) {
+    this.logger.log('🚀 ConsultationGateway initialized');
+    this.logger.log(`✅ WebSocket server is ready: ${!!server}`);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -108,11 +150,31 @@ export class ConsultationGateway
         await client.join(`${role.toLowerCase()}:${userId}`);
       }
 
+      // Also join a generic user room so server-side emit helpers can target users
+      // regardless of role-specific room naming used elsewhere in the codebase.
+      await client.join(`user-${userId}`);
+
       client.data = { consultationId, userId, role };
       this.clientRooms.set(client.id, consultationId);
       this.clientTransports.set(client.id, new Set());
       this.clientProducers.set(client.id, new Set());
       this.clientConsumers.set(client.id, new Set());
+
+      // Enhanced features - store client with extended properties
+      const enhancedClient = client as Socket & { userId?: number; consultationId?: number; userRole?: UserRole };
+      enhancedClient.userId = userId;
+      enhancedClient.consultationId = consultationId;
+      enhancedClient.userRole = role;
+      this.connectedClients.set(client.id, enhancedClient);
+      this.updateClientLastSeen(client.id);
+      this.startClientHeartbeat(client.id, client);
+      this.resetConnectionRetryAttempts(client.id);
+
+      // Add to consultation room tracking
+      if (!this.consultationRooms.has(consultationId)) {
+        this.consultationRooms.set(consultationId, new Set());
+      }
+      this.consultationRooms.get(consultationId)?.add(client.id);
 
       await this.databaseService.participant.upsert({
         where: { consultationId_userId: { consultationId, userId } },
@@ -134,8 +196,11 @@ export class ConsultationGateway
       this.logger.log(
         `Client connected: ${client.id}, Consultation: ${consultationId}, User: ${userId}, Role: ${role}`,
       );
+      // Audit log for connection will be after nowISO is declared
 
       const nowISO = new Date().toISOString();
+      // Audit log for connection
+      this.logger.verbose(`[AUDIT] User ${userId} (${role}) joined consultation ${consultationId} at ${nowISO}`);
 
       const roleLabels = {
         [UserRole.PATIENT]: 'Patient',
@@ -149,6 +214,14 @@ export class ConsultationGateway
         role,
         timestamp: nowISO,
         message: `${roleLabels[role]} joined the consultation`,
+      });
+      // Emit a reconnection-friendly event for clients to re-sync state
+      this.server.to(client.id).emit('session_sync', {
+        consultationId,
+        userId,
+        role,
+        timestamp: nowISO,
+        message: 'Session synchronized after connection/reconnection',
       });
 
       if (role === UserRole.PATIENT) {
@@ -195,6 +268,43 @@ export class ConsultationGateway
             include: { owner: true, rating: true },
           },
         );
+
+        // Emit a canonical waiting room notification to the practitioner (if assigned)
+        try {
+          const patientUser = await this.databaseService.user.findUnique({
+            where: { id: userId },
+            select: { firstName: true, lastName: true, country: true },
+          });
+
+          const practitionerId = consultation?.owner?.id ?? consultation?.ownerId;
+          if (practitionerId) {
+            const initials = `${(patientUser?.firstName?.[0] ?? '')}${(patientUser?.lastName?.[0] ?? '')}`.toUpperCase();
+            this.server
+              .to(`practitioner:${practitionerId}`)
+              .emit('waiting_room_notification', {
+                consultationId,
+                patientId: userId,
+                patientFirstName: patientUser?.firstName ?? 'Patient',
+                patientInitials: initials,
+                joinTime: new Date().toISOString(),
+                language: patientUser?.country ?? null,
+                message: 'Patient is waiting in the consultation room',
+              });
+            // Also emit a focused patient_joined event targeted at the practitioner (centralized helper)
+            const requestId = (client.handshake.headers && (client.handshake.headers['x-request-id'] as string)) || uuidv4();
+            this.emitPatientJoinedToPractitioner(practitionerId, {
+              consultationId,
+              patientId: userId,
+              patientFirstName: patientUser?.firstName ?? 'Patient',
+              joinTime: new Date().toISOString(),
+              message: 'Patient joined and is waiting',
+              origin: 'socket',
+              requestId,
+            });
+          }
+        } catch (e) {
+          this.logger.warn(`Failed to emit waiting_room_notification: ${e?.message ?? e}`);
+        }
 
         if (consultation) {
           const canJoin = consultation.status === ConsultationStatus.ACTIVE;
@@ -289,6 +399,22 @@ export class ConsultationGateway
       this.clientProducers.delete(client.id);
       this.clientConsumers.delete(client.id);
 
+      // Enhanced features cleanup
+      this.connectedClients.delete(client.id);
+      this.consultationRooms.get(consultationId)?.delete(client.id);
+      this.userConnectionQuality.delete(client.id);
+
+      // Create real-time event for user leaving (if enhanced service is available)
+      try {
+        await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+          eventType: 'user_left',
+          message: `User left the consultation`,
+          eventData: { userRole: role, leftAt: new Date() }
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to create enhanced real-time event: ${error.message}`);
+      }
+
       const consultation = await this.databaseService.consultation.findUnique({
         where: { id: consultationId },
       });
@@ -308,6 +434,16 @@ export class ConsultationGateway
         role,
         timestamp: nowISO,
         message: `${roleLabels[role]} left the consultation`,
+      });
+      // Audit log for disconnect
+      this.logger.verbose(`[AUDIT] User ${userId} (${role}) left consultation ${consultationId} at ${nowISO}`);
+      // Always emit disconnect event for session recovery
+      this.server.to(client.id).emit('session_ended', {
+        consultationId,
+        userId,
+        role,
+        timestamp: nowISO,
+        message: 'Session ended due to disconnect',
       });
 
       if (role === UserRole.PRACTITIONER || role === UserRole.EXPERT) {
@@ -375,7 +511,6 @@ export class ConsultationGateway
     try {
       const { consultationId, patientId } = data;
       const { role, userId } = client.data;
-
       if (role !== UserRole.PRACTITIONER && role !== UserRole.ADMIN) {
         throw new Error('Only practitioners or admins can admit patients');
       }
@@ -507,6 +642,20 @@ export class ConsultationGateway
     }
   }
 
+  @SubscribeMessage('join_practitioner_room')
+  async handleJoinPractitionerRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { practitionerId: number },
+  ) {
+    try {
+      if (!data || !data.practitionerId) return;
+      await client.join(`practitioner:${data.practitionerId}`);
+      this.logger.log(`Client ${client.id} joined practitioner:${data.practitionerId} room via join_practitioner_room`);
+    } catch (error) {
+      this.logger.warn(`join_practitioner_room failed: ${error?.message ?? error}`);
+    }
+  }
+
   @SubscribeMessage('check_session_status')
   async handleCheckSessionStatus(
     @ConnectedSocket() client: Socket,
@@ -635,6 +784,50 @@ export class ConsultationGateway
       : 'wait_in_consultation_room';
   }
 
+  /**
+   * Centralized helper to emit a focused patient_joined event to a practitioner.
+   * Applies a short debounce to avoid duplicate rapid notifications and logs every emit.
+   */
+  emitPatientJoinedToPractitioner(practitionerId: number, payload: any): void {
+    try {
+      if (!practitionerId) return;
+      const key = `patient_joined:${payload.consultationId}:${practitionerId}`;
+      const now = Date.now();
+      const last = this.patientJoinedDebounce.get(key) ?? 0;
+      const debounceMs = this.configService?.patientJoinedDebounceMs ?? 10000;
+      if (now - last < debounceMs) {
+        this.logger.log({
+          message: 'Skipped patient_joined emit due to debounce',
+          consultationId: payload.consultationId,
+          practitionerId,
+          patientId: payload.patientId,
+          elapsedMs: now - last,
+        } as any);
+        return;
+      }
+
+      this.patientJoinedDebounce.set(key, now);
+
+      // Structured log for telemetry
+      this.logger.log({
+        message: 'Emitting patient_joined to practitioner',
+        consultationId: payload.consultationId,
+        practitionerId,
+        patientId: payload.patientId,
+        origin: payload.origin ?? 'unknown',
+        requestId: payload.requestId ?? null,
+        timestamp: new Date().toISOString(),
+      } as any);
+
+      // Attach server-side emittedAt for traceability
+      const emitPayload = { ...payload, emittedAt: new Date().toISOString() };
+
+      this.server.to(`practitioner:${practitionerId}`).emit('patient_joined', emitPayload);
+    } catch (error) {
+      this.logger.warn(`emitPatientJoinedToPractitioner failed: ${error?.message ?? error}`);
+    }
+  }
+
   @UseGuards()
   @SubscribeMessage('invite_participant')
   async handleInviteParticipant(
@@ -679,7 +872,7 @@ export class ConsultationGateway
       }
 
       const userRole = client.data.role;
-      const userId = client.data.user.id;
+      const userId = client.data.userId;
       if (userRole !== UserRole.PRACTITIONER && userRole !== UserRole.ADMIN) {
         throw new WsException('Not authorized to invite participants');
       }
@@ -1778,12 +1971,1016 @@ export class ConsultationGateway
     }
   }
 
-  // Implementation for IConsultationGateway interface
+  // ================ ENHANCED REALTIME FEATURES ================
+
+  @SubscribeMessage('enter_waiting_room')
+  async handleEnterWaitingRoom(@ConnectedSocket() client: Socket) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      const session = await this.enhancedRealtimeService.enterWaitingRoom(
+        consultationId,
+        userId
+      );
+
+      client.emit('waiting_room_entered', {
+        session,
+        message: 'You have entered the waiting room'
+      });
+
+      // Notify practitioners about patient in waiting room
+      await this.notifyPractitionersAboutWaitingPatient(consultationId, userId, session);
+
+    } catch (error) {
+      this.logger.error(`Enter waiting room error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('get_waiting_room_stats')
+  async handleGetWaitingRoomStats(@ConnectedSocket() client: Socket) {
+    try {
+      const { consultationId } = client.data ?? {};
+      if (!consultationId) {
+        throw new WsException('Invalid consultation ID');
+      }
+
+      const stats = await this.waitingRoomService.getWaitingRoomStats(consultationId);
+      client.emit('waiting_room_stats', stats);
+
+    } catch (error) {
+      this.logger.error(`Get waiting room stats error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('update_media_device_status')
+  async handleUpdateMediaDeviceStatus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: UpdateMediaDeviceStatusDto
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      const deviceStatus = await this.enhancedRealtimeService.updateMediaDeviceStatus(
+        consultationId,
+        userId,
+        data
+      );
+
+      // Notify all participants about device status change
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('media_device_status_updated', {
+        userId: userId,
+        deviceStatus,
+        consultationId: consultationId
+      });
+
+    } catch (error) {
+      this.logger.error(`Update media device status error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('update_connection_quality')
+  async handleUpdateConnectionQuality(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: UpdateConnectionQualityDto
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      const connectionQuality = await this.enhancedRealtimeService.updateConnectionQuality(
+        consultationId,
+        userId,
+        data
+      );
+
+      // Store current quality for monitoring
+      this.userConnectionQuality.set(client.id, {
+        ...data,
+        timestamp: new Date()
+      });
+
+      // Notify practitioners about poor connection quality
+      if (data.signalStrength && data.signalStrength < 30) {
+        await this.notifyPractitionersAboutPoorConnection(consultationId, userId, data);
+      }
+
+      client.emit('connection_quality_updated', connectionQuality);
+
+    } catch (error) {
+      this.logger.error(`Update connection quality error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('send_enhanced_message')
+  async handleSendEnhancedMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: SendEnhancedMessageDto
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Convert to ChatService format
+      const createMessageDto = {
+        userId,
+        consultationId,
+        content: data.content,
+        messageType: (data.messageType as MessageType) || MessageType.TEXT,
+        mediaUrl: data.mediaUrl,
+        fileName: data.fileName,
+        fileSize: data.fileSize,
+        clientUuid: `msg_${Date.now()}_${userId}`
+      };
+
+      const message = await this.chatService.createMessage(createMessageDto);
+
+      // Create real-time event
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'new_message',
+        eventData: {
+          messageId: message.id,
+          messageType: message.messageType,
+          hasMedia: !!message.mediaUrl
+        }
+      });
+
+      // Broadcast message to all participants
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('enhanced_message_received', {
+        message,
+        consultationId,
+        senderId: userId
+      });
+
+    } catch (error) {
+      this.logger.error(`Send enhanced message error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('update_typing_indicator_enhanced')
+  async handleUpdateTypingIndicatorEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: UpdateTypingIndicatorDto
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      await this.enhancedRealtimeService.updateTypingIndicator(
+        consultationId,
+        userId,
+        data
+      );
+
+      // Broadcast typing indicator to other participants
+      const roomName = `consultation:${consultationId}`;
+      client.to(roomName).emit('typing_indicator_updated', {
+        userId,
+        isTyping: data.isTyping,
+        consultationId
+      });
+
+    } catch (error) {
+      this.logger.error(`Update typing indicator error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('add_participant_enhanced')
+  async handleAddParticipantEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: {
+      role: UserRole;
+      email: string;
+      firstName: string;
+      lastName: string;
+      notes?: string
+    }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can add participants');
+      }
+
+      const invitation = await this.invitationService.createInvitationEmail(
+        consultationId,
+        userId,
+        data.email,
+        data.role,
+        `${data.firstName} ${data.lastName}`,
+        data.notes
+      );
+
+      // Create real-time event
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'participant_invited',
+        message: `${data.firstName} ${data.lastName} (${data.role.toLowerCase()}) has been invited to join`,
+        eventData: {
+          invitationId: invitation.id,
+          participantName: `${data.firstName} ${data.lastName}`,
+          role: data.role,
+          email: data.email
+        }
+      });
+
+      // Notify all participants
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('participant_invited', {
+        email: data.email,
+        role: data.role,
+        invitationId: invitation.id,
+        addedBy: userId,
+        consultationId
+      });
+
+    } catch (error) {
+      this.logger.error(`Add participant error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('remove_participant_enhanced')
+  async handleRemoveParticipantEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { participantUserId: number }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can remove participants');
+      }
+
+      await this.enhancedRealtimeService.removeParticipant(
+        consultationId,
+        data.participantUserId,
+        userId
+      );
+
+      // Notify the removed participant
+      const participantSocket = this.findClientByUser(consultationId, data.participantUserId);
+      if (participantSocket) {
+        participantSocket.emit('removed_from_consultation', {
+          message: 'You have been removed from the consultation',
+          removedBy: userId,
+          consultationId
+        });
+        participantSocket.disconnect();
+      }
+
+      // Notify remaining participants
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('participant_removed', {
+        participantUserId: data.participantUserId,
+        removedBy: userId,
+        consultationId
+      });
+
+    } catch (error) {
+      this.logger.error(`Remove participant error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('media_permission_error_enhanced')
+  async handleMediaPermissionErrorEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { errorType: string; errorMessage: string }
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'media_permission_error',
+        message: data.errorMessage,
+        eventData: { errorType: data.errorType }
+      });
+
+      // Notify practitioners about the media permission error
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('media_permission_error_occurred', {
+        userId,
+        errorType: data.errorType,
+        errorMessage: data.errorMessage,
+        consultationId
+      });
+
+    } catch (error) {
+      this.logger.error(`Media permission error handling error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('create_system_notification_enhanced')
+  async handleCreateSystemNotificationEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { notificationType: string; message: string; priority: 'LOW' | 'MEDIUM' | 'HIGH' }
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'system_notification',
+        message: data.message,
+        eventData: {
+          notificationType: data.notificationType,
+          priority: data.priority
+        }
+      });
+
+      // Broadcast system notification
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('system_notification_created', {
+        notificationType: data.notificationType,
+        message: data.message,
+        priority: data.priority,
+        createdBy: userId,
+        consultationId,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error(`Create system notification error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  // ================ NEW WAITING ROOM WEBSOCKET HANDLERS ================
+
+  @SubscribeMessage('join_waiting_room_enhanced')
+  async handleJoinWaitingRoomEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { consultationId: number; userId: number; preferredLanguage?: string }
+  ) {
+    try {
+      const result = await this.waitingRoomService.joinWaitingRoom({
+        consultationId: data.consultationId,
+        userId: data.userId,
+        preferredLanguage: data.preferredLanguage
+      });
+
+      client.emit('waiting_room_joined', {
+        success: result.success,
+        waitingRoomSession: result.waitingRoomSession,
+        message: 'Successfully joined waiting room'
+      });
+
+      // Notify practitioners about new patient in waiting room
+      const consultationId = result.waitingRoomSession.consultationId;
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('patient_entered_waiting_room', {
+        waitingRoomSession: result.waitingRoomSession,
+        patientId: data.userId,
+        joinedAt: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error(`Join waiting room enhanced error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('admit_from_waiting_room_enhanced')
+  async handleAdmitFromWaitingRoomEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { consultationId: number; patientId: number; welcomeMessage?: string }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can admit patients from waiting room');
+      }
+
+      const result = await this.waitingRoomService.admitPatientFromWaitingRoom(
+        {
+          consultationId: data.consultationId,
+          patientId: data.patientId,
+          welcomeMessage: data.welcomeMessage
+        },
+        userId
+      );
+
+      // Notify patient they've been admitted to live consultation
+      const patientSocket = this.findClientByUser(consultationId, data.patientId);
+      if (patientSocket) {
+        patientSocket.emit('admitted_to_live_consultation', {
+          message: data.welcomeMessage || 'You have been admitted to the live consultation',
+          consultationId: data.consultationId,
+          admittedBy: userId,
+          admittedAt: new Date().toISOString()
+        });
+      }
+
+      // Notify all practitioners
+      const roomName = `consultation:${data.consultationId}`;
+      this.server.to(roomName).emit('patient_admitted_from_waiting_room', {
+        patientId: data.patientId,
+        consultationId: data.consultationId,
+        admittedBy: userId,
+        success: result.success
+      });
+
+    } catch (error) {
+      this.logger.error(`Admit from waiting room enhanced error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('join_live_consultation_enhanced')
+  async handleJoinLiveConsultationEnhanced(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { consultationId: number; userId: number; role: UserRole }
+  ) {
+    try {
+      const liveConsultationData = await this.waitingRoomService.joinLiveConsultation({
+        consultationId: data.consultationId,
+        userId: data.userId,
+        role: data.role
+      });
+
+      client.emit('live_consultation_joined', {
+        liveConsultationData,
+        message: 'Successfully joined live consultation'
+      });
+
+      // Notify other participants about new participant
+      const roomName = `consultation:${data.consultationId}`;
+      client.to(roomName).emit('participant_joined_live', {
+        userId: data.userId,
+        userRole: data.role,
+        consultationId: data.consultationId,
+        joinedAt: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error(`Join live consultation enhanced error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('get_practitioner_waiting_room')
+  async handleGetPractitionerWaitingRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { practitionerId: number }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can access waiting room dashboard');
+      }
+
+      const waitingRoomData = await this.waitingRoomService.getPractitionerWaitingRoom(data.practitionerId);
+
+      client.emit('practitioner_waiting_room_data', {
+        waitingRoomData,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error(`Get practitioner waiting room error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('waiting_room_heartbeat')
+  async handleWaitingRoomHeartbeat(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { waitingRoomSessionId: number; patientId: number }
+  ) {
+    try {
+      // Update timestamp for waiting room session
+      await this.databaseService.waitingRoomSession.update({
+        where: { id: data.waitingRoomSessionId },
+        data: { updatedAt: new Date() }
+      });
+
+      client.emit('waiting_room_heartbeat_ack', {
+        sessionId: data.waitingRoomSessionId,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error(`Waiting room heartbeat error: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  // Helper methods for enhanced features
+  private findClientByUser(consultationId: number, userId: number): Socket | undefined {
+    for (const [clientId, client] of this.connectedClients) {
+      if (client.userId === userId && client.consultationId === consultationId) {
+        return client;
+      }
+    }
+    return undefined;
+  }
+
+  private async notifyPractitionersAboutWaitingPatient(consultationId: number, patientId: number, session: any) {
+    try {
+      const practitioners = await this.databaseService.participant.findMany({
+        where: {
+          consultationId,
+          role: UserRole.PRACTITIONER,
+          isActive: true
+        },
+        include: { user: true }
+      });
+
+      for (const practitioner of practitioners) {
+        const practitionerSocket = this.findClientByUser(consultationId, practitioner.userId);
+        if (practitionerSocket) {
+          practitionerSocket.emit('patient_in_waiting_room', {
+            patientId,
+            session,
+            consultationId,
+            message: 'A patient is waiting in the waiting room'
+          });
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to notify practitioners about waiting patient: ${error.message}`);
+    }
+  }
+
+  private async notifyPractitionersAboutPoorConnection(consultationId: number, userId: number, connectionData: any) {
+    try {
+      const practitioners = await this.databaseService.participant.findMany({
+        where: {
+          consultationId,
+          role: UserRole.PRACTITIONER,
+          isActive: true
+        }
+      });
+
+      for (const practitioner of practitioners) {
+        const practitionerSocket = this.findClientByUser(consultationId, practitioner.userId);
+        if (practitionerSocket) {
+          practitionerSocket.emit('poor_connection_detected', {
+            affectedUserId: userId,
+            connectionData,
+            consultationId,
+            message: 'Poor connection quality detected for a participant'
+          });
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to notify practitioners about poor connection: ${error.message}`);
+    }
+  }
+
   emitToRoom(consultationId: number, event: string, data: any): void {
-    this.server.to(`consultation-${consultationId}`).emit(event, data);
+    this.server.to(`consultation:${consultationId}`).emit(event, data);
   }
 
   emitToUser(userId: number, event: string, data: any): void {
-    this.server.to(`user-${userId}`).emit(event, data);
+    // Emit to multiple possible user room patterns for compatibility with
+    try {
+      this.server.to(`user-${userId}`).emit(event, data);
+      this.server.to(`practitioner:${userId}`).emit(event, data);
+      this.server.to(`patient:${userId}`).emit(event, data);
+      this.server.to(`user:${userId}`).emit(event, data);
+    } catch (e) {
+      this.logger.warn(`emitToUser encountered an error emitting to user ${userId}: ${e.message}`);
+    }
+  }
+
+  /**
+   * Update client last seen timestamp
+   */
+  private updateClientLastSeen(clientId: string): void {
+    this.clientLastSeen.set(clientId, new Date());
+  }
+
+  /**
+   * Start client heartbeat monitoring
+   */
+  private startClientHeartbeat(clientId: string, client: Socket): void {
+    this.stopClientHeartbeat(clientId);
+
+    const heartbeatInterval = setInterval(() => {
+      if (client.connected) {
+        client.emit('heartbeat', { timestamp: new Date().toISOString() });
+        this.updateClientLastSeen(clientId);
+      } else {
+        this.stopClientHeartbeat(clientId);
+      }
+    }, 30000);
+
+    this.clientHeartbeat.set(clientId, heartbeatInterval);
+  }
+
+  /**
+   * Stop client heartbeat monitoring
+   */
+  private stopClientHeartbeat(clientId: string): void {
+    const heartbeat = this.clientHeartbeat.get(clientId);
+    if (heartbeat) {
+      clearInterval(heartbeat);
+      this.clientHeartbeat.delete(clientId);
+    }
+  }
+
+  /**
+   * Reset connection retry attempts
+   */
+  private resetConnectionRetryAttempts(clientId: string): void {
+    this.connectionRetryAttempts.set(clientId, 0);
+  }
+
+  /**
+   * Increment connection retry attempts
+   */
+  private incrementConnectionRetryAttempts(clientId: string): number {
+    const current = this.connectionRetryAttempts.get(clientId) || 0;
+    const newCount = current + 1;
+    this.connectionRetryAttempts.set(clientId, newCount);
+    return newCount;
+  }
+
+  /**
+   * Handle connection quality updates from clients
+   */
+  @SubscribeMessage('connection_quality_update')
+  async handleConnectionQualityUpdate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { quality: 'good' | 'fair' | 'poor'; latency?: number; packetLoss?: number }
+  ) {
+    try {
+      const { consultationId, userId } = client.data || {};
+      if (!consultationId || !userId) return;
+
+      const qualityData = {
+        ...data,
+        timestamp: new Date().toISOString(),
+        clientId: client.id
+      };
+
+      this.userConnectionQuality.set(client.id, qualityData);
+
+      client.to(`consultation:${consultationId}`).emit('participant_connection_quality', {
+        userId,
+        quality: data.quality,
+        timestamp: qualityData.timestamp
+      });
+
+      // If connection is poor, provide guidance
+      if (data.quality === 'poor') {
+        client.emit('connection_guidance', {
+          message: 'Your connection quality is poor. Consider moving closer to your router or switching to a wired connection.',
+          suggestions: [
+            'Check your internet connection',
+            'Close other applications using bandwidth',
+            'Move closer to your WiFi router',
+            'Switch to wired connection if possible'
+          ]
+        });
+      }
+
+    } catch (error) {
+      this.logger.error(`Failed to handle connection quality update:`, error);
+    }
+  }
+
+
+  @SubscribeMessage('send_message')
+  async handleSendMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: SendEnhancedMessageDto
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Convert to ChatService format
+      const createMessageDto = {
+        userId,
+        consultationId,
+        content: data.content,
+        messageType: (data.messageType as MessageType) || MessageType.TEXT,
+        mediaUrl: data.mediaUrl,
+        fileName: data.fileName,
+        fileSize: data.fileSize,
+        clientUuid: `msg_${Date.now()}_${userId}`
+      };
+
+      const message = await this.chatService.createMessage(createMessageDto);
+
+      // Create real-time event
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'new_message',
+        eventData: {
+          messageId: message.id,
+          messageType: message.messageType,
+          hasMedia: !!message.mediaUrl
+        }
+      });
+
+      // Broadcast message to all participants
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('new_message', {
+        message,
+        consultationId,
+        senderId: userId
+      });
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Send message error: ${errMsg}`);
+      client.emit('error', { message: errMsg });
+    }
+  }
+
+  @SubscribeMessage('add_participant')
+  async handleAddParticipant(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: {
+      role: UserRole;
+      email: string;
+      firstName: string;
+      lastName: string;
+      notes?: string
+    }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can add participants');
+      }
+
+      // Use existing invitation service
+      const invitation = await this.invitationService.createInvitationEmail(
+        consultationId,
+        userId,
+        data.email.trim().toLowerCase(),
+        data.role,
+        `${data.firstName} ${data.lastName}`,
+        data.notes
+      );
+
+      // Notify all participants about new invitation
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('participant_invited', {
+        invitationId: invitation.id,
+        participantName: `${data.firstName} ${data.lastName}`,
+        role: data.role,
+        consultationId: consultationId,
+        invitedBy: userId
+      });
+
+      client.emit('add_participant_success', {
+        invitationId: invitation.id,
+        magicLink: `${process.env.FRONTEND_URL}/join/${invitation.token}`
+      });
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Add participant error: ${errMsg}`);
+      client.emit('error', { message: errMsg });
+    }
+  }
+
+  @SubscribeMessage('remove_participant')
+  async handleRemoveParticipant(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { participantId: number; reason?: string }
+  ) {
+    try {
+      const { consultationId, userId, role } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      if (role !== UserRole.PRACTITIONER) {
+        throw new WsException('Only practitioners can remove participants');
+      }
+
+      // Update participant status to inactive
+      await this.databaseService.participant.updateMany({
+        where: {
+          consultationId,
+          userId: data.participantId
+        },
+        data: {
+          isActive: false,
+          lastActiveAt: new Date()
+        }
+      });
+
+      // Notify the removed participant
+      const removedSocket = this.findClientByUser(consultationId, data.participantId);
+      if (removedSocket) {
+        removedSocket.emit('participant_removed', {
+          reason: data.reason || 'Removed from consultation',
+          consultationId: consultationId
+        });
+        removedSocket.disconnect();
+      }
+
+      // Notify other participants
+      const roomName = `consultation:${consultationId}`;
+      client.to(roomName).emit('participant_removed_notification', {
+        participantId: data.participantId,
+        consultationId: consultationId,
+        removedBy: userId
+      });
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Remove participant error: ${errMsg}`);
+      client.emit('error', { message: errMsg });
+    }
+  }
+
+  @SubscribeMessage('media_permission_error')
+  async handleMediaPermissionError(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { errorType: string; errorDetails?: any }
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Log the media permission error
+      this.logger.warn(`Media permission error for user ${userId} in consultation ${consultationId}: ${data.errorType}`, data.errorDetails);
+
+      // Send guidance back to the client
+      client.emit('media_permission_guidance', {
+        errorType: data.errorType,
+        message: this.getMediaErrorGuidance(data.errorType),
+        consultationId: consultationId
+      });
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Media permission error handling failed: ${errMsg}`);
+    }
+  }
+
+  @SubscribeMessage('toggle_video')
+  async handleToggleVideo(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { enabled: boolean; participantId: string }
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Create real-time event for video toggle
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'video_toggled',
+        message: `Video ${data.enabled ? 'enabled' : 'disabled'}`,
+        eventData: { enabled: data.enabled, participantId: data.participantId }
+      });
+
+      // Broadcast to all participants in the consultation
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('participant_video_toggled', {
+        participantId: data.participantId,
+        userId: userId,
+        enabled: data.enabled,
+        consultationId: consultationId,
+        timestamp: new Date().toISOString()
+      });
+
+      this.logger.debug(`Video toggled for user ${userId} in consultation ${consultationId}: ${data.enabled}`);
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Toggle video error: ${errMsg}`);
+    }
+  }
+
+  @SubscribeMessage('toggle_audio')
+  async handleToggleAudio(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { enabled: boolean; participantId: string }
+  ) {
+    try {
+      const { consultationId, userId } = client.data ?? {};
+      if (!consultationId || !userId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Create real-time event for audio toggle
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, userId, {
+        eventType: 'audio_toggled',
+        message: `Audio ${data.enabled ? 'enabled' : 'disabled'}`,
+        eventData: { enabled: data.enabled, participantId: data.participantId }
+      });
+
+      // Broadcast to all participants in the consultation
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('participant_audio_toggled', {
+        participantId: data.participantId,
+        userId: userId,
+        enabled: data.enabled,
+        consultationId: consultationId,
+        timestamp: new Date().toISOString()
+      });
+
+      this.logger.debug(`Audio toggled for user ${userId} in consultation ${consultationId}: ${data.enabled}`);
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`Toggle audio error: ${errMsg}`);
+    }
+  }
+
+  @SubscribeMessage('create_system_notification')
+  async handleCreateSystemNotification(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { messageType: string; messageData: any }
+  ) {
+    try {
+      const { consultationId } = client.data ?? {};
+      if (!consultationId) {
+        throw new WsException('Invalid client state');
+      }
+
+      // Create real-time event for system notification
+      await this.enhancedRealtimeService.createRealTimeEvent(consultationId, null, {
+        eventType: 'system_notification',
+        message: `System notification: ${data.messageType}`,
+        eventData: data.messageData
+      });
+
+      // Broadcast system notification to all participants
+      const roomName = `consultation:${consultationId}`;
+      this.server.to(roomName).emit('system_notification', {
+        messageType: data.messageType,
+        messageData: data.messageData,
+        consultationId: consultationId,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error ? (error as any).message : String(error);
+      this.logger.error(`System notification error: ${errMsg}`);
+    }
+  }
+
+
+  private getMediaErrorGuidance(errorType: string): string {
+    switch (errorType) {
+      case 'camera_denied':
+      case 'microphone_denied':
+        return 'Click the camera icon in your browser address bar and select "Allow" for camera and microphone access.';
+      case 'device_unavailable':
+        return 'Make sure your camera and microphone are properly connected and try refreshing the page.';
+      case 'device_in_use':
+        return 'Close other video conferencing applications (Zoom, Teams, etc.) and refresh the page.';
+      default:
+        return 'Try refreshing the page or contact support if the problem persists.';
+    }
   }
 }

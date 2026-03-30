@@ -9,16 +9,17 @@ import { SessionSerializer } from './strategies/serialize';
 import { AdminStrategy } from './strategies/admin.strategy';
 import { PractitionerStrategy } from './strategies/practitionner.stretegy';
 import { ConfigModule } from 'src/config/config.module';
-import { InviteController } from './invite/invite.controller';
 import { InviteModule } from './invite/invite.module';
+import { InviteController } from './invite/invite.controller';
 import { MagicLinkStrategy } from './strategies/magic-link.strategy';
+import { EmailModule } from 'src/common/email/email.module';
 
 @Module({
-  imports: [ConfigModule, JwtModule, PassportModule.register({session:true}), InviteModule],
+  imports: [ConfigModule, JwtModule, PassportModule.register({ session: true }), InviteModule, EmailModule],
   controllers: [AuthController, InviteController],
   providers: [
     AuthService,
-    LocalStrategy, 
+    LocalStrategy,
     AuthGuard,
     SessionSerializer,
     AdminStrategy,
@@ -27,4 +28,4 @@ import { MagicLinkStrategy } from './strategies/magic-link.strategy';
   ],
   exports: [AuthService, AuthGuard, JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }

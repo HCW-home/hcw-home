@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { ToastService } from '../../services/toast/toast.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay, map, catchError } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { API_ENDPOINTS } from '../../constants/api-endpoints';
 import {
   OpenConsultationResponse,
   OpenConsultation,
@@ -16,9 +18,9 @@ import { monthNames } from '../../constants/month.enum';
   providedIn: 'root',
 })
 export class OpenConsultationService {
-  private apiUrl = 'http://localhost:3000/api/v1/consultation';
+  private apiUrl = API_ENDPOINTS.CONSULTATION;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private toastService: ToastService) { }
 
   getOpenConsultations(
     practitionerId: number,
@@ -37,7 +39,7 @@ export class OpenConsultationService {
       .pipe(
         map((response) => response.data),
         catchError((error) => {
-          console.error('Error fetching open consultations:', error);
+          this.toastService.showError('Error fetching open consultations');
           return of({
             consultations: [],
             total: 0,
@@ -68,7 +70,7 @@ export class OpenConsultationService {
       .pipe(
         map((response) => response.data),
         catchError((error) => {
-          console.error('Error fetching consultation details:', error);
+          this.toastService.showError('Error fetching consultation details');
           return of(null);
         })
       );
@@ -78,7 +80,6 @@ export class OpenConsultationService {
     consultationId: number,
     practitionerId: number
   ): Observable<JoinConsultationResponse> {
-    // Use the correct backend API endpoint for practitioner join
     const body = { userId: practitionerId };
 
     return this.http
@@ -97,7 +98,7 @@ export class OpenConsultationService {
           };
         }),
         catchError((error) => {
-          console.error('Error joining consultation:', error);
+          this.toastService.showError('Error joining consultation');
           return of({
             success: false,
             statusCode: 500,
@@ -133,7 +134,7 @@ export class OpenConsultationService {
       .pipe(
         map((response) => response.data),
         catchError((error) => {
-          console.error('Error closing consultation:', error);
+          this.toastService.showError('Error closing consultation');
           return of({
             success: false,
             statusCode: 500,
@@ -146,7 +147,15 @@ export class OpenConsultationService {
   }
 
   sendInvitation(consultationId: number): Observable<{ success: boolean }> {
-    return of({ success: true }).pipe(delay(500));
+    return this.http.post<ApiResponse<{ success: boolean }>>(
+      `${this.apiUrl}/${consultationId}/invite`, {}
+    ).pipe(
+      map((response) => response.data),
+      catchError((error) => {
+        this.toastService.showError('Error sending invitation');
+        return of({ success: false });
+      })
+    );
   }
 
   formatDate(date: Date | string): string {

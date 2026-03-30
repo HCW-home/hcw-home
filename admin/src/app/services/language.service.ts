@@ -14,7 +14,7 @@ export class LanguageService {
   constructor(private http: HttpClient) {}
 
   getAllLanguages(): Observable<Language[]> {
-    return this.http.get<ApiResponse<Language[]>>(`${environment.apiUrl}/v1/language`).pipe(
+    return this.http.get<ApiResponse<Language[]>>(`${environment.apiUrl}/language`).pipe(
       map(response => response.data)
     );
   }

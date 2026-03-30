@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { tap } from 'rxjs/operators';
+import { ToastService } from '../../services/toast/toast.service';
+import { API_ENDPOINTS } from '../../constants/api-endpoints';
 import {
   ConsultationHistoryItem,
   ConsultationDetail,
@@ -26,9 +27,9 @@ import { ConsultationStatus } from '../../constants/consultation-status.enum';
   providedIn: 'root',
 })
 export class ConsultationHistoryService {
-  private apiUrl = 'http://localhost:3000/api/v1/consultation';
+  private apiUrl = API_ENDPOINTS.CONSULTATION;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private toastService: ToastService) { }
 
   getClosedConsultations(
     practitionerId: number
@@ -41,7 +42,8 @@ export class ConsultationHistoryService {
       map((response) => {
         const data = response?.data?.data || response?.data || response;
         return Array.isArray(data) ? data.map(this.mapToHistoryItem) : [];
-      })
+      }),
+      catchError((error) => this.handleError(error))
     );
   }
 
@@ -52,7 +54,10 @@ export class ConsultationHistoryService {
       .get<ConsultationDetailResponseDto>(
         `${this.apiUrl}/${consultationId}/details`
       )
-      .pipe(map(this.mapToDetailItem));
+      .pipe(
+        map(this.mapToDetailItem),
+        catchError((error) => this.handleError(error))
+      );
   }
 
 
@@ -74,20 +79,20 @@ export class ConsultationHistoryService {
         if (!contentType || !contentType.includes('application/pdf')) {
           throw new Error('Invalid file type received. Expected PDF.');
         }
-        
+
         if (!response.body) {
           throw new Error('No PDF data received from server.');
         }
 
         return response.body;
       }),
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   downloadAndSavePDF(
-    consultationId: number, 
-    requesterId: number, 
+    consultationId: number,
+    requesterId: number,
     customFilename?: string
   ): Observable<void> {
     return this.downloadConsultationPDF(consultationId, requesterId).pipe(
@@ -101,7 +106,7 @@ export class ConsultationHistoryService {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }),
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
@@ -109,26 +114,26 @@ export class ConsultationHistoryService {
     try {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      
+
       link.href = url;
       link.download = filename;
       link.style.display = 'none';
-      
+
       document.body.appendChild(link);
       link.click();
       setTimeout(() => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       }, 100);
-    } catch (error) {
-      console.error('Failed to save PDF file:', error);
+    } catch (error: any) {
+      this.toastService.showError('Failed to save PDF file to device');
       throw new Error('Failed to save PDF file to device');
     }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unexpected error occurred';
-    
+
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Network error: ${error.error.message}`;
     } else {
@@ -150,79 +155,77 @@ export class ConsultationHistoryService {
       }
     }
 
-    console.error('ConsultationHistoryService Error:', error);
+    this.toastService.showError(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 
-private mapToHistoryItem = (data: any): ConsultationHistoryItem => {
-  const consultationData = data.consultation || data;
-  const patientData = data.patient;
-  const duration = data.duration || '';
+  private mapToHistoryItem = (data: any): ConsultationHistoryItem => {
+    const consultationData = data.consultation || data;
+    const patientData = data.patient;
+    const duration = data.duration || '';
 
-  const start = consultationData.startedAt ? new Date(consultationData.startedAt) : undefined;
-  const end = consultationData.closedAt ? new Date(consultationData.closedAt) : undefined;
-  const calculatedDuration = start && end ? this.calculateDuration(start, end) : duration;
+    const start = consultationData.startedAt ? new Date(consultationData.startedAt) : undefined;
+    const end = consultationData.closedAt ? new Date(consultationData.closedAt) : undefined;
+    const calculatedDuration = start && end ? this.calculateDuration(start, end) : duration;
 
-  const participants: Participant[] = (data.participants || consultationData.participants || []).map(
-    (p: ParticipantResponseDto) => ({
-      id: p.id,
-      consultationId: p.consultationId,
-      userId: p.userId,
-      isActive: p.isActive,
-      isBeneficiary: p.isBeneficiary,
-      token: p.token,
-      joinedAt: p.joinedAt ? new Date(p.joinedAt) : null,
-    })
-  );
+    const participants: Participant[] = (data.participants || consultationData.participants || []).map(
+      (p: ParticipantResponseDto) => ({
+        id: p.id,
+        consultationId: p.consultationId,
+        userId: p.userId,
+        isActive: p.isActive,
+        isBeneficiary: p.isBeneficiary,
+        token: p.token,
+        joinedAt: p.joinedAt ? new Date(p.joinedAt) : null,
+      })
+    );
 
-  const consultation: Consultation = {
-    id: consultationData.id,
-    scheduledDate: consultationData.scheduledDate ? new Date(consultationData.scheduledDate) : null,
-    createdAt: consultationData.createdAt ? new Date(consultationData.createdAt) : null,
-    startedAt: start || null,
-    closedAt: end || null,
-    createdBy: consultationData.createdBy,
-    groupId: consultationData.groupId,
-    ownerId: consultationData.owner || consultationData.ownerId,
-    whatsappTemplateId: consultationData.whatsappTemplateId,
-    status: consultationData.status,
+    const consultation: Consultation = {
+      id: consultationData.id,
+      scheduledDate: consultationData.scheduledDate ? new Date(consultationData.scheduledDate) : null,
+      createdAt: consultationData.createdAt ? new Date(consultationData.createdAt) : null,
+      startedAt: start || null,
+      closedAt: end || null,
+      createdBy: consultationData.createdBy,
+      groupId: consultationData.groupId,
+      ownerId: consultationData.owner || consultationData.ownerId,
+      whatsappTemplateId: consultationData.whatsappTemplateId,
+      status: consultationData.status,
+    };
+
+    const patient: User = this.mapUserResponseToUser(patientData);
+
+    return {
+      consultation,
+      patient,
+      participants,
+      duration: calculatedDuration,
+    };
   };
-
-  const patient: User = this.mapUserResponseToUser(patientData);
-
-  return {
-    consultation,
-    patient,
-    participants,
-    duration: calculatedDuration,
-  };
-};
 
   private mapToDetailItem = (
-  response: any
-): ConsultationDetail => {
-  const data = response?.data?.data || response?.data || response;
-  
-  console.log('Response structure:', response);
-  console.log('Extracted data:', data);
-  
-  const history = this.mapToHistoryItem(data);
+    response: any
+  ): ConsultationDetail => {
+    const data = response?.data?.data || response?.data || response;
 
-  const messages: Message[] = (data.messages || []).map(
-    (m: MessageResponseDto) => ({
-      id: m.id,
-      userId: m.userId,
-      content: m.content,
-      consultationId: m.consultationId,
-      createdAt: m.createdAt ? new Date(m.createdAt) : new Date(),
-    })
-  );
 
-  return {
-    ...history,
-    messages,
+    const history = this.mapToHistoryItem(data);
+
+    const messages: Message[] = (data.messages || []).map(
+      (m: MessageResponseDto) => ({
+        id: m.id,
+        userId: m.userId,
+        content: m.content,
+        consultationId: m.consultationId,
+        createdAt: m.createdAt ? new Date(m.createdAt) : new Date(),
+      })
+    );
+
+    return {
+      ...history,
+      messages,
+    };
   };
-};
 
   private mapUserResponseToUser(userDto: UserResponseDto): User {
     return {
@@ -246,14 +249,10 @@ private mapToHistoryItem = (data: any): ConsultationHistoryItem => {
     const mins = Math.floor(diffMs / 60000);
     const secs = Math.floor((diffMs % 60000) / 1000);
     if (mins > 0) {
-      return `${mins} minute${mins !== 1 ? 's' : ''} ${secs} second${
-        secs !== 1 ? 's' : ''
-      }`;
+      return `${mins} minute${mins !== 1 ? 's' : ''} ${secs} second${secs !== 1 ? 's' : ''
+        }`;
     }
     return `${secs} second${secs !== 1 ? 's' : ''}`;
   }
 }
 
-function throwError(arg0: () => Error): Observable<never> {
-  throw new Error('Function not implemented.');
-}

@@ -2,8 +2,9 @@ import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
-  BadRequestException,
 } from '@nestjs/common';
+import { HttpExceptionHelper } from '../helpers/execption/http-exception.helper';
+import { CustomHttpException } from '../helpers/execption/http-exception';
 import { ZodSchema, ZodError } from 'zod';
 import { ApiResponseDto } from '../helpers/response/api-response.dto';
 
@@ -14,7 +15,7 @@ export class ZodValidationPipe implements PipeTransform {
     private options: { validateTypes?: ArgumentMetadata['type'][] } = {
       validateTypes: ['body', 'query', 'param'],
     },
-  ) {}
+  ) { }
 
   transform(value: any, metadata: ArgumentMetadata) {
     const typesToValidate = this.options.validateTypes || [
@@ -29,7 +30,7 @@ export class ZodValidationPipe implements PipeTransform {
 
     try {
       if (value === undefined || value === null) {
-        throw new BadRequestException('Request data is required');
+        throw HttpExceptionHelper.badRequest('Request data is required');
       }
 
       const parsedValue = this.schema.parse(value);
@@ -50,14 +51,15 @@ export class ZodValidationPipe implements PipeTransform {
           'Validation failed',
         );
 
-        throw new BadRequestException(response);
+        throw HttpExceptionHelper.badRequest('Validation failed');
       }
 
-      if (error instanceof BadRequestException) {
+      // If error is already a custom HttpException, rethrow
+      if (error instanceof CustomHttpException) {
         throw error;
       }
 
-      throw new BadRequestException('Validation failed');
+      throw HttpExceptionHelper.badRequest('Validation failed');
     }
   }
 }

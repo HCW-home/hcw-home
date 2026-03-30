@@ -1,9 +1,7 @@
 import {
   Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
 } from '@nestjs/common';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { DatabaseService } from '../database/database.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -13,7 +11,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class GroupService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async create(organizationId: number, createGroupDto: CreateGroupDto) {
     // Verify organization exists
@@ -22,7 +20,7 @@ export class GroupService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     // Check if group name already exists in the organization
@@ -34,9 +32,7 @@ export class GroupService {
     });
 
     if (existingGroup) {
-      throw new ConflictException(
-        'Group name already exists in this organization',
-      );
+      throw HttpExceptionHelper.conflict('Group name already exists in this organization');
     }
 
     const group = await this.databaseService.group.create({
@@ -71,7 +67,7 @@ export class GroupService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw HttpExceptionHelper.notFound('Organization not found');
     }
 
     const {
@@ -152,7 +148,7 @@ export class GroupService {
     });
 
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     return {
@@ -173,7 +169,7 @@ export class GroupService {
     });
 
     if (!existingGroup) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     // Check if new name conflicts with existing group
@@ -187,9 +183,7 @@ export class GroupService {
       });
 
       if (conflictingGroup) {
-        throw new ConflictException(
-          'Group name already exists in this organization',
-        );
+        throw HttpExceptionHelper.conflict('Group name already exists in this organization');
       }
     }
 
@@ -233,7 +227,7 @@ export class GroupService {
     });
 
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     await this.databaseService.group.delete({
@@ -261,7 +255,7 @@ export class GroupService {
     });
 
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     // Verify user exists and is a member of the organization
@@ -272,9 +266,7 @@ export class GroupService {
       });
 
     if (!organizationMember) {
-      throw new BadRequestException(
-        'User is not a member of this organization',
-      );
+      throw HttpExceptionHelper.badRequest('User is not a member of this organization');
     }
 
     // Check if user is already a member of the group
@@ -285,7 +277,7 @@ export class GroupService {
     );
 
     if (existingMembership) {
-      throw new ConflictException('User is already a member of this group');
+      throw HttpExceptionHelper.conflict('User is already a member of this group');
     }
 
     const groupMember = await this.databaseService.groupMember.create({
@@ -312,7 +304,7 @@ export class GroupService {
     });
 
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     const groupMember = await this.databaseService.groupMember.findFirst({
@@ -330,7 +322,7 @@ export class GroupService {
     });
 
     if (!groupMember) {
-      throw new NotFoundException('User is not a member of this group');
+      throw HttpExceptionHelper.notFound('User is not a member of this group');
     }
 
     await this.databaseService.groupMember.delete({
@@ -351,7 +343,7 @@ export class GroupService {
     });
 
     if (!group) {
-      throw new NotFoundException('Group not found');
+      throw HttpExceptionHelper.notFound('Group not found');
     }
 
     const {

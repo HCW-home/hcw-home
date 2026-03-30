@@ -1,8 +1,7 @@
 import {
   Injectable,
-  NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
+import { HttpExceptionHelper } from '../common/helpers/execption/http-exception.helper';
 import { DatabaseService } from '../database/database.service';
 import { CreateSmsProviderDto } from './dto/create-sms_provider.dto';
 import { UpdateSmsProviderDto } from './dto/update-sms_provider.dto';
@@ -13,7 +12,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SmsProviderService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async create(
     createSmsProviderDto: CreateSmsProviderDto,
@@ -21,7 +20,7 @@ export class SmsProviderService {
     try {
       // Get the next order number if not provided
       let orderValue = createSmsProviderDto.order;
-      
+
       if (!orderValue) {
         const maxOrder = await this.databaseService.smsProvider.findFirst({
           orderBy: { order: 'desc' },
@@ -49,7 +48,7 @@ export class SmsProviderService {
       });
     } catch (error) {
       if (error.code === 'P2002' && error.meta?.target?.includes('order')) {
-        throw new BadRequestException('Order number already exists');
+        throw HttpExceptionHelper.badRequest('Order number already exists');
       }
       throw error;
     }
@@ -131,7 +130,7 @@ export class SmsProviderService {
     });
 
     if (!smsProvider) {
-      throw new NotFoundException('SMS provider not found');
+      throw HttpExceptionHelper.notFound('SMS provider not found');
     }
 
     return plainToInstance(SmsProviderResponseDto, smsProvider, {
@@ -152,13 +151,13 @@ export class SmsProviderService {
       });
 
     if (!existingSmsProvider) {
-      throw new NotFoundException('SMS provider not found');
+      throw HttpExceptionHelper.notFound('SMS provider not found');
     }
 
     try {
       // If order is being updated, handle order rebalancing
-      if (updateSmsProviderDto.order !== undefined && 
-          updateSmsProviderDto.order !== existingSmsProvider.order) {
+      if (updateSmsProviderDto.order !== undefined &&
+        updateSmsProviderDto.order !== existingSmsProvider.order) {
         return await this.updateProviderOrder(id, updateSmsProviderDto.order, updateSmsProviderDto);
       }
 
@@ -185,7 +184,7 @@ export class SmsProviderService {
       });
     } catch (error) {
       if (error.code === 'P2002' && error.meta?.target?.includes('order')) {
-        throw new BadRequestException('Order number already exists');
+        throw HttpExceptionHelper.badRequest('Order number already exists');
       }
       throw error;
     }
@@ -200,7 +199,7 @@ export class SmsProviderService {
       });
 
     if (!existingSmsProvider) {
-      throw new NotFoundException('SMS provider not found');
+      throw HttpExceptionHelper.notFound('SMS provider not found');
     }
 
     try {
@@ -239,8 +238,8 @@ export class SmsProviderService {
 
   // Update provider order with proper rebalancing
   private async updateProviderOrder(
-    id: number, 
-    newOrder: number, 
+    id: number,
+    newOrder: number,
     additionalUpdateData?: Partial<UpdateSmsProviderDto>
   ): Promise<SmsProviderResponseDto> {
     return await this.databaseService.$transaction(async (tx) => {
@@ -249,13 +248,13 @@ export class SmsProviderService {
         where: { id },
         select: { order: true }
       });
-      
+
       if (!currentProvider) {
-        throw new NotFoundException('Provider not found');
+        throw HttpExceptionHelper.notFound('Provider not found');
       }
-      
+
       const currentOrder = currentProvider.order!;
-      
+
       if (newOrder > currentOrder) {
         // Moving down: shift others up
         await tx.smsProvider.updateMany({
@@ -285,7 +284,7 @@ export class SmsProviderService {
           }
         });
       }
-      
+
       // Update the current provider's order and other data
       const updateData = {
         ...additionalUpdateData,
@@ -315,17 +314,17 @@ export class SmsProviderService {
       const providers = await this.databaseService.smsProvider.findMany({
         orderBy: { order: 'asc' }
       });
-      
+
       await this.databaseService.$transaction(
-        providers.map((provider, index) => 
+        providers.map((provider, index) =>
           this.databaseService.smsProvider.update({
             where: { id: provider.id },
             data: { order: index + 1 }
           })
         )
       );
-      
-      return { 
+
+      return {
         message: 'Order sequence fixed successfully',
         fixedCount: providers.length
       };
@@ -341,9 +340,9 @@ export class SmsProviderService {
       const orderNumbers = providerOrders.map(p => p.order);
       const uniqueOrders = new Set(orderNumbers);
       if (orderNumbers.length !== uniqueOrders.size) {
-        throw new BadRequestException('Duplicate order numbers in reorder request');
+        throw HttpExceptionHelper.badRequest('Duplicate order numbers in reorder request');
       }
-  
+
       // Method 1: Use temporary negative values to avoid conflicts
       const updatedProviders = await this.databaseService.$transaction(async (tx) => {
         // Step 1: Set all orders to temporary negative values
@@ -355,7 +354,7 @@ export class SmsProviderService {
             })
           )
         );
-  
+
         // Step 2: Set the actual order values
         const finalUpdates = await Promise.all(
           providerOrders.map(({ id, order }) =>
@@ -365,21 +364,21 @@ export class SmsProviderService {
             })
           )
         );
-  
+
         return finalUpdates;
       });
-  
+
       return updatedProviders.map((provider) =>
         plainToInstance(SmsProviderResponseDto, provider, {
           excludeExtraneousValues: false,
         })
       );
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof HttpExceptionHelper.badRequest) {
         throw error;
       }
       if (error.code === 'P2002' && error.meta?.target?.includes('order')) {
-        throw new BadRequestException('Duplicate order numbers in reorder request');
+        throw HttpExceptionHelper.badRequest('Duplicate order numbers in reorder request');
       }
       throw error;
     }

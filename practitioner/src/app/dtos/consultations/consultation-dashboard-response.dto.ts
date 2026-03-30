@@ -2,12 +2,14 @@ import { Consultation } from "../../models/consultations/consultation.model";
 import { OpenConsultationPatient } from "./open-consultation.dto";
 
 export interface WaitingRoomItem {
+  selected: boolean;
   id: number;
   patientInitials: string;
   joinTime: Date | null;
   language: string | null;
   queuePosition: number;
   estimatedWaitTime: string;
+  reason?: string;
 }
 
 export interface WaitingRoomResponse {

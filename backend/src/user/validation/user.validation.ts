@@ -32,7 +32,7 @@ export const createUserSchema = z.object({
   temporaryAccount: z.boolean().optional().default(false),
   phoneNumber: z
     .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
+    .regex(/^\+[1-9]\d{7,14}$/, 'Phone number must start with a country code (e.g., +91...)')
     .optional(),
   country: z
     .string()
@@ -60,6 +60,20 @@ export const changePasswordSchema = z.object({
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       'New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    ),
+});
+export const updatePasswordSchema = z.object({
+  username: z
+    .string()
+    .min(1, 'Username is required'),
+
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password cannot exceed 100 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
     ),
 });
 

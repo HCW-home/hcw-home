@@ -33,7 +33,7 @@ export class UserService {
     if (sortBy) params = params.append('sortBy', sortBy);
     if (sortOrder) params = params.append('sortOrder', sortOrder);
 
-    return this.http.get<ApiResponse<User[]>>(`${environment.apiUrl}/v1/user`, {
+    return this.http.get<ApiResponse<User[]>>(`${environment.apiUrl}/user`, {
       params
     }).pipe(
       map(response => ({
@@ -46,22 +46,22 @@ export class UserService {
   }
 
   getUserById(id: number): Observable<User> {
-    return this.http.get<ApiResponse<User>>(`${environment.apiUrl}/v1/user/${id}`, {
+    return this.http.get<ApiResponse<User>>(`${environment.apiUrl}/user/${id}`, {
     }).pipe(map(response => response.data));
   }
 
   createUser(userDto: CreateUserDto): Observable<User> {
-    return this.http.post<ApiResponse<User>>(`${environment.apiUrl}/v1/user`, userDto, {
+    return this.http.post<ApiResponse<User>>(`${environment.apiUrl}/user`, userDto, {
     }).pipe(map(response => response.data));
   }
 
   updateUser(id: number, userDto: UpdateUserDto): Observable<User> {
-    return this.http.patch<ApiResponse<User>>(`${environment.apiUrl}/v1/user/${id}`, userDto, {
+    return this.http.patch<ApiResponse<User>>(`${environment.apiUrl}/user/${id}`, userDto, {
     }).pipe(map(response => response.data));
   }
 
   deleteUser(id: number): Observable<User> {
-    return this.http.delete<ApiResponse<User>>(`${environment.apiUrl}/v1/user/${id}`, {
+    return this.http.delete<ApiResponse<User>>(`${environment.apiUrl}/user/${id}`, {
     }).pipe(map(response => response.data));
   }
 }

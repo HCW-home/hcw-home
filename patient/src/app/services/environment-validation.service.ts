@@ -39,7 +39,7 @@ export class EnvironmentValidationService {
  }
 
  getBackendHealthStatus(): Promise<boolean> {
-  return fetch(`${environment.apiUrl}/health`)
+  return fetch(`${environment.baseUrl}/v1/health`)
    .then(response => {
     if (response.ok) {
      console.log('✅ Backend is accessible at:', environment.apiUrl);

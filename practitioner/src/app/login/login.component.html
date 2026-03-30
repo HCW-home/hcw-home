@@ -42,7 +42,16 @@
       <!-- Password -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Password</mat-label>
-        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
+          autocomplete="password" />
+        <button mat-icon-button matSuffix type="button" (click)="showPassword = !showPassword"
+          [attr.aria-label]="'Toggle password visibility'">
+          @if(showPassword) {
+          <svg-icon src="assets/svg/eye_open.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+          } @else {
+          <svg-icon src="assets/svg/eye_closed.svg" [svgStyle]="{ width: '24px', height: '24px' }"></svg-icon>
+          }
+        </button>        
         <mat-error *ngIf="password?.touched || password?.dirty">
           <span *ngIf="password.hasError('required')">Password is required</span>
         </mat-error>

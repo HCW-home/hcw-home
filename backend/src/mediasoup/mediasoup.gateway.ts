@@ -17,17 +17,25 @@ import { MediasoupSessionService } from './mediasoup-session.service';
 import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { sanitizePayload } from 'src/common/helpers/sanitize.helper';
 import { DatabaseService } from 'src/database/database.service';
-import { ConsultationInvitationService } from 'src/consultation/consultation-invitation.service';
+import { InviteService } from 'src/auth/invite/invite.service';
 import { UserRole } from '@prisma/client';
 
 import { MediaEventService } from './media-event.service';
 import { ChatService } from '../chat/chat.service';
 import { MediaEventType } from '@prisma/client';
 
-@WebSocketGateway({ namespace: '/mediasoup', cors: true })
+@WebSocketGateway({
+  namespace: '/mediasoup',
+  cors: {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['*'],
+    transports: ['websocket', 'polling'],
+  },
+})
 export class MediasoupGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(MediasoupGateway.name);
   private clientTransports: Map<string, Set<string>> = new Map();
@@ -37,11 +45,11 @@ export class MediasoupGateway
 
   constructor(
     private readonly mediasoupService: MediasoupSessionService,
-    private readonly invitationService: ConsultationInvitationService,
+    private readonly invitationService: InviteService,
     private readonly databaseService: DatabaseService,
     private readonly mediaEventService: MediaEventService,
     private readonly chatService: ChatService,
-  ) {}
+  ) { }
 
   afterInit(): void {
     this.logger.log('Mediasoup WebSocket Gateway initialized');
@@ -568,13 +576,11 @@ export class MediasoupGateway
           camera,
           microphone,
           timestamp: new Date().toISOString(),
-          message: `User ${userId} denied permission for ${
-            camera === 'denied' || camera === 'blocked' ? 'camera ' : ''
-          }${
-            microphone === 'denied' || microphone === 'blocked'
+          message: `User ${userId} denied permission for ${camera === 'denied' || camera === 'blocked' ? 'camera ' : ''
+            }${microphone === 'denied' || microphone === 'blocked'
               ? 'microphone'
               : ''
-          }.`,
+            }.`,
         });
     } catch (error) {
       this.logger.error(

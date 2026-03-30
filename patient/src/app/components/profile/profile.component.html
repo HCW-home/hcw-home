@@ -164,7 +164,7 @@
             <label class="readonly-label">Email</label>
             <span class="readonly-value">{{ user.email }}</span>
           </div>
-        }
+          }
 
           <div class="readonly-field">
             <label class="readonly-label">Role</label>
@@ -199,6 +199,12 @@
             </div>
           </div>
           }
+          <div class="logout-button-wrapper" style="margin-top: 16px; text-align: right;">
+            <app-button [type]="ButtonType.Button" [variant]="ButtonVariant.Primary" [size]="ButtonSize.Medium"
+              (click)="onLogout()" [disabled]="isSaving()">
+              Log out
+            </app-button>
+          </div>
         </mat-card-content>
       </mat-card>
       }

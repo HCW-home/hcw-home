@@ -17,7 +17,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
-import { LoginUser } from '../models/user.model';
 import { SnackbarService } from '../services/snackbar/snackbar.service';
 import { AccessDeniedComponent } from '../components/access-denied/access-denied.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
@@ -66,7 +65,7 @@ export class LoginComponent implements OnInit {
   private termService= inject(TermService)
   errorMessage:string = '';
   showSetPasswordForm:boolean=false;
-
+  showPassword = false;
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),

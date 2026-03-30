@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConsultationHistoryItem } from '../models/consultations/consultation.model';
 import { ConsultationHistoryService } from '../services/consultations/consultation-history.service';
@@ -9,7 +9,10 @@ import { ButtonVariant, ButtonSize } from '../constants/button.enums';
 import { HttpClientModule } from '@angular/common/http';
 import { OverlayComponent } from '../components/overlay/overlay.component';
 import { UserService } from '../services/user.service';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { DashboardWebSocketService } from '../services/dashboard-websocket.service';
+import { EventBusService } from '../services/event-bus.service';
 
 @Component({
   selector: 'app-consultation-history',
@@ -25,7 +28,7 @@ import { switchMap } from 'rxjs/operators';
   templateUrl: './consultation-history.component.html',
   styleUrls: ['./consultation-history.component.scss'],
 })
-export class ConsultationHistoryComponent implements OnInit {
+export class ConsultationHistoryComponent implements OnInit, OnDestroy {
   consultations: ConsultationHistoryItem[] = [];
   loading = false;
   error: string | null = null;
@@ -44,14 +47,24 @@ export class ConsultationHistoryComponent implements OnInit {
   readonly ButtonSize = ButtonSize;
 
   private practitionerId: number | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private consultationService: ConsultationHistoryService,
-    private userService: UserService
+    private userService: UserService,
+    private dashboardWebSocketService: DashboardWebSocketService,
+    private eventBusService: EventBusService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadConsultations();
+    this.setupWebSocketSubscriptions();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadConsultations(): void {
@@ -63,7 +76,8 @@ export class ConsultationHistoryComponent implements OnInit {
         switchMap(user => {
           this.practitionerId = user.id;
           return this.consultationService.getClosedConsultations(user.id);
-        })
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe({
         next: (consultations) => {
@@ -77,6 +91,62 @@ export class ConsultationHistoryComponent implements OnInit {
           console.error('Error loading consultations:', error);
         },
       });
+  }
+
+  private setupWebSocketSubscriptions(): void {
+    // Listen for consultation closed events (new items for history)
+    this.eventBusService.on('consultation:closed')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleNewClosedConsultation(data);
+      });
+
+    // Listen for consultation status updates that might affect closed consultations
+    this.eventBusService.on('consultation:status_updated')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleConsultationStatusUpdate(data);
+      });
+
+    // Listen for consultation completion events
+    this.eventBusService.on('consultation:completed')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: any) => {
+        this.handleConsultationCompleted(data);
+      });
+  }
+
+  private handleNewClosedConsultation(data: any): void {
+    // Check if this consultation belongs to current practitioner
+    if (data.practitionerId === this.practitionerId) {
+      // Refresh the consultations list to include the newly closed consultation
+      this.loadConsultations();
+    }
+  }
+
+  private handleConsultationStatusUpdate(data: any): void {
+    // Find if this consultation is in our history
+    const consultationIndex = this.consultations.findIndex(
+      c => c.consultation.id === data.consultationId
+    );
+    
+    if (consultationIndex !== -1) {
+      // Update the consultation status
+      this.consultations[consultationIndex].consultation = {
+        ...this.consultations[consultationIndex].consultation,
+        ...data.updates
+      };
+      this.cdr.detectChanges();
+    }
+  }
+
+  private handleConsultationCompleted(data: any): void {
+    // Check if this consultation belongs to current practitioner
+    if (data.practitionerId === this.practitionerId) {
+      // Add the completed consultation to the history list
+      // We could either refresh the entire list or prepend the new item
+      this.loadConsultations();
+    }
   }
 
   private initializePagination(): void {

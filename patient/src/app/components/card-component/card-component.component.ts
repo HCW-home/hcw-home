@@ -10,7 +10,8 @@ import { addIcons } from 'ionicons';
 import {
   videocamOutline, starOutline,
   calendarOutline,
-  checkmarkCircle
+  checkmarkCircle,
+  informationCircleOutline
 } from 'ionicons/icons';
 
 import { AuthService } from 'src/app/services/auth.service';
@@ -51,7 +52,8 @@ export class CardComponentComponent {
       videocamOutline,
       starOutline,
       calendarOutline,
-      checkmarkCircle
+      checkmarkCircle,
+      informationCircleOutline
     });
   }
   @Input() activeConsultations: Consultation[] = [];

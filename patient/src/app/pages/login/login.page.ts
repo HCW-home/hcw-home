@@ -28,8 +28,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { lastValueFrom, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RoutePaths } from 'src/app/constants/route-path.enum';
-
-
+import { logInOutline } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
 
 
 function atLeastOneRequired(controlNames: string[]) {
@@ -65,6 +65,11 @@ function atLeastOneRequired(controlNames: string[]) {
   ]
 })
 export class LoginPage implements OnInit, OnDestroy {
+    constructor() {
+      addIcons({
+        logInOutline
+      });
+    }
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toastController = inject(ToastController);

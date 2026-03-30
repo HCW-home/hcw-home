@@ -14,7 +14,7 @@ export class SpecialityService {
   constructor(private http: HttpClient) {}
 
   getAllSpecialities(): Observable<Speciality[]> {
-    return this.http.get<ApiResponse<Speciality[]>>(`${environment.apiUrl}/v1/speciality`).pipe(
+    return this.http.get<ApiResponse<Speciality[]>>(`${environment.apiUrl}/speciality`).pipe(
       map(response => response.data)
     );
   }

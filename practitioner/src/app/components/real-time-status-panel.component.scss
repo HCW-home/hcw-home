@@ -1,0 +1,40 @@
+.real-time-status-panel {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.status-indicator {
+  display: flex;
+  align-items: center;
+}
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4caf50;
+  margin-right: 8px;
+}
+.waiting-room-alert {
+  background: #ffe082;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+.participants-section {
+  margin-top: 1rem;
+}
+.participant-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.system-messages {
+  margin-top: 1rem;
+}
+.media-permission-status {
+  margin-top: 1rem;
+  background: #e3f2fd;
+  padding: 0.5rem;
+  border-radius: 4px;
+}

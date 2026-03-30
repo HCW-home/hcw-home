@@ -1,0 +1,45 @@
+site_name: HCW@Home Documentation
+site_description: Documentation for HCW@Home V6 teleconsultation platform
+site_url: https://hcw-at-home.com/docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+plugins:
+  - search
+  - mermaid2
+  - i18n:
+      languages:
+        - locale: en
+          name: English
+          default: true
+        - locale: fr
+          name: Francais
+
+nav:
+  - Home: index.md
+  - Deployment:
+    - Docker Compose: deployment/docker-compose.md
+    - Debian Packages: deployment/debian.md
+  - Use Cases: use-cases.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables

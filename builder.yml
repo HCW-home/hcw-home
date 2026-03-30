@@ -11,6 +11,6 @@ options:
  disable_clean: "true"
  weblate_project: "hcwhome-v6/backend"
  external_git_url: "git@github.com:HCW-home/hcw-home.git"
- mkdocs-github-repo: "git@github.com:HCW-home/hcw-home.git"
+ mkdocs_github_repo: "git@github.com:HCW-home/hcw-home.git"
 modes:
 - ON_TAG
